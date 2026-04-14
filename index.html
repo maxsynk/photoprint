@@ -68,15 +68,9 @@
             <div id="counter"></div>
             
             <div id="cam-controls" style="display:flex; align-items:center; justify-content:space-evenly; width:100%; padding-bottom:30px; pointer-events: auto;">
-                <div class="cam-btn" onclick="voltarHome()">
-                    <svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
-                </div>
-
+                <div class="cam-btn" onclick="voltarHome()"><svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg></div>
                 <div id="shutter-placeholder"></div>
-
-                <div class="cam-btn" id="flip-btn" onclick="switchCam()">
-                    <svg viewBox="0 0 24 24"><path d="M7,15L11,19V16H14A5,5 0 0,1 19,21H21A7,7 0 0,0 14,14H11V11L7,15M17,9L13,5V8H10A5,5 0 0,0 5,3H3A7,7 0 0,1 10,10H13V13L17,9Z" /></svg>
-                </div>
+                <div class="cam-btn" id="flip-btn" onclick="switchCam()"><svg viewBox="0 0 24 24"><path d="M7,15L11,19V16H14A5,5 0 0,1 19,21H21A7,7 0 0,0 14,14H11V11L7,15M17,9L13,5V8H10A5,5 0 0,0 5,3H3A7,7 0 0,1 10,10H13V13L17,9Z" /></svg></div>
             </div>
         </div>
     </div>
@@ -103,6 +97,7 @@
         let cancelado = false;
         let currentFacingMode = "environment"; 
         
+        // MEDIDAS REAIS PASSADAS POR VOCÊ
         const FORMATOS = {
             TIRINHA: { w: 600, h: 1800, fotos: 3, label: "MODO: TIRINHA (5X15)" },
             POLAROID: { w: 1200, h: 1500, fotos: 1, label: "MODO: POLAROID" },
@@ -126,7 +121,7 @@
                     document.getElementById('nome-evento').innerText = ev;
                     const upperEv = ev.toUpperCase();
                     
-                    // PRIORIDADE PARA POLAROID
+                    // Lógica rigorosa de identificação
                     if (upperEv.includes("POLAROID")) {
                         currentConfig = FORMATOS.POLAROID;
                     } else if (upperEv.includes("TIRINHA")) {
@@ -154,7 +149,7 @@
         async function startStream(mode) {
             if (stream) stream.getTracks().forEach(t => t.stop());
             stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: mode, width: { ideal: 1920 } } 
+                video: { facingMode: mode, width: { ideal: 1920 }, height: { ideal: 1080 } } 
             });
             document.getElementById('v').srcObject = stream;
         }
@@ -164,10 +159,9 @@
                 pics = []; cancelado = false;
                 await startStream(currentFacingMode);
                 document.getElementById('cam-container').style.display = "block";
-                document.getElementById('flip-btn').style.visibility = "visible";
                 document.getElementById('shutter-placeholder').innerHTML = '<div onclick="iniciarSequencia()" class="shutter-btn"></div>';
                 document.getElementById('counter').innerText = "";
-            } catch (err) { alert("Permita o acesso à câmera."); }
+            } catch (err) { alert("Câmera não disponível."); }
         }
 
         async function switchCam() {
@@ -183,7 +177,6 @@
 
         async function iniciarSequencia() {
             document.getElementById('shutter-placeholder').innerHTML = ""; 
-            document.getElementById('flip-btn').style.visibility = "hidden"; // Esconde inverter durante a contagem
             go(1);
         }
 
@@ -210,10 +203,12 @@
             f.style.display = "block"; setTimeout(() => f.style.display = "none", 100);
             const v = document.getElementById('v');
             const cv = document.getElementById('c-snap');
-            cv.width = v.videoWidth; cv.height = v.videoHeight;
+            
+            // Captura sempre em alta resolução
+            cv.width = v.videoWidth; 
+            cv.height = v.videoHeight;
             const ctx = cv.getContext('2d');
             
-            // Espelhamento se usar frontal
             if (currentFacingMode === "user") {
                 ctx.translate(cv.width, 0);
                 ctx.scale(-1, 1);
@@ -235,27 +230,39 @@
             const ctx = cv.getContext('2d');
             const m = new Image();
             m.crossOrigin = "anonymous";
+            
             m.onload = () => {
-                cv.width = currentConfig.w; cv.height = currentConfig.h;
+                // AQUI ESTÁ A CHAVE: Forçamos o canvas a ter o tamanho do formato escolhido
+                cv.width = currentConfig.w; 
+                cv.height = currentConfig.h;
+
                 const hPart = cv.height / total;
+                
                 pics.forEach((img, i) => {
+                    // Calcula escala para preencher o espaço sem sobrar buraco
                     const s = Math.max(cv.width / img.width, hPart / img.height);
+                    const drawW = img.width * s;
+                    const drawH = img.height * s;
+                    const offsetX = (cv.width - drawW) / 2;
+                    const offsetY = (i * hPart) + (hPart - drawH) / 2;
+
                     ctx.save();
-                    ctx.beginPath(); ctx.rect(0, i * hPart, cv.width, hPart); ctx.clip();
-                    ctx.drawImage(img, (cv.width - img.width * s) / 2, (i * hPart) + (hPart - img.height * s) / 2, img.width * s, img.height * s);
+                    ctx.beginPath(); 
+                    ctx.rect(0, i * hPart, cv.width, hPart); 
+                    ctx.clip();
+                    ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
                     ctx.restore();
-                    if (total > 1 && i < total - 1) {
-                        ctx.fillStyle = "white"; 
-                        ctx.fillRect(0, (i + 1) * hPart - 2, cv.width, 4); 
-                    }
                 });
+
+                // Moldura por cima
                 ctx.drawImage(m, 0, 0, cv.width, cv.height);
+
                 const previewUrl = cv.toDataURL('image/jpeg', 0.8);
                 document.getElementById('loader').innerHTML = `
-                    <img src="${previewUrl}" style="height:60vh; border:3px solid white;">
+                    <img src="${previewUrl}" style="max-height:60vh; border:3px solid white; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
                     <div style="display:flex; gap:15px; margin-top:15px;">
-                        <button onclick="enviarBlob()" style="padding:15px 30px; background:var(--neon); border:none; font-weight:bold; border-radius:10px;">IMPRIMIR</button>
-                        <button onclick="location.reload()" style="padding:15px 30px; background:#444; color:white; border:none; border-radius:10px;">REFAZER</button>
+                        <button onclick="enviarBlob()" style="padding:15px 30px; background:var(--neon); border:none; font-weight:bold; border-radius:10px; cursor:pointer;">IMPRIMIR</button>
+                        <button onclick="location.reload()" style="padding:15px 30px; background:#444; color:white; border:none; border-radius:10px; cursor:pointer;">REFAZER</button>
                     </div>
                 `;
             };
@@ -267,11 +274,11 @@
             const cv = document.getElementById('c-strip');
             cv.toBlob(async b => {
                 const fd = new FormData();
-                fd.append('file', b, 'f.jpg');
+                fd.append('file', b, 'foto.jpg');
                 fd.append('evento', ev);
                 await fetch(`${API}/upload`, { method: 'POST', body: fd });
                 location.reload();
-            }, 'image/jpeg', 0.9);
+            }, 'image/jpeg', 0.95);
         }
 
         setInterval(sync, 3000);

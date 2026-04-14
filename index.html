@@ -8,31 +8,58 @@
         :root { --neon: #39ff14; --dark: #050505; --orange: #ff8800; }
         body { font-family: 'Segoe UI', sans-serif; text-align: center; background: var(--dark); color: white; margin: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
         
-        /* Header */
+        /* Header e Subtítulo */
         .header { margin-top: 20px; z-index: 10; }
         .brand-title { font-size: 32px; font-weight: 900; color: var(--neon); text-shadow: 0 0 10px var(--neon); letter-spacing: 5px; margin: 0; }
-        #nome-evento { font-size: 20px; font-weight: bold; color: var(--orange); text-transform: uppercase; margin: 5px 0; }
+        .subtitle { color: white; font-size: 14px; letter-spacing: 2px; margin-top: 5px; opacity: 0.8; }
+        
+        /* Posicionamento do Evento e Formato (Baixado 1cm/40px) */
+        .info-container { margin-top: 40px; }
+        #nome-evento { font-size: 20px; font-weight: bold; color: var(--neon); text-transform: uppercase; margin: 5px 0; }
         #formato-view { font-size: 11px; color: var(--neon); border: 1px solid var(--neon); padding: 4px 12px; border-radius: 20px; display: inline-block; font-weight: bold; }
 
-        /* Câmera em Tempo Real */
+        /* Interface da Câmera */
         #cam-container { position: fixed; inset: 0; background: #000; display: none; z-index: 1000; }
-        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        video { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Contador Neon */
-        #overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
-        #counter { font-size: 180px; font-weight: 900; color: var(--neon); text-shadow: 0 0 40px #000; }
-        #indicator { position: absolute; top: 40px; font-size: 20px; font-weight: bold; background: rgba(0,0,0,0.7); padding: 8px 25px; border-radius: 50px; border: 2px solid var(--neon); color: var(--neon); }
+        /* Overlay e Elementos de Controle */
+        #overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 40px 20px; pointer-events: none; }
+        #counter { font-size: 150px; font-weight: 900; color: var(--neon); text-shadow: 0 0 40px #000; display: flex; align-items: center; justify-content: center; flex-grow: 1; }
+        #indicator { font-size: 18px; font-weight: bold; background: rgba(0,0,0,0.6); padding: 8px 20px; border-radius: 50px; border: 1px solid var(--neon); color: var(--neon); }
 
-        /* Botão Olho Central */
+        /* Botão Pulsante (Aro Verde, Meio Preto) */
+        .pulse-button {
+            width: 80px; height: 80px;
+            background: black;
+            border-radius: 50%;
+            cursor: pointer;
+            pointer-events: auto;
+            border: 4px solid var(--neon);
+            box-shadow: 0 0 15px var(--neon);
+            animation: pulse 1.5s infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(57, 255, 20, 0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 15px rgba(57, 255, 20, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(57, 255, 20, 0); }
+        }
+
+        /* Botão Voltar com Setinha (Inferior Esquerdo) */
+        .btn-back-camera {
+            position: absolute; bottom: 30px; left: 30px;
+            background: rgba(0,0,0,0.5); color: white; border: 1px solid white;
+            padding: 10px 15px; border-radius: 10px; font-size: 14px;
+            pointer-events: auto; display: flex; align-items: center; gap: 5px;
+        }
+
+        /* Botão Olho Central Tela Inicial */
         .main-ui { flex-grow: 1; display: flex; align-items: center; justify-content: center; }
-        .btn-start { width: 180px; height: 180px; border-radius: 50%; border: 4px solid #222; background: #000; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(57, 255, 20, 0.2); }
-        .iris { width: 60px; height: 60px; border-radius: 50%; border: 3px solid var(--neon); box-shadow: 0 0 15px var(--neon); animation: eyeMove 4s infinite ease-in-out; }
+        .btn-start { width: 160px; height: 160px; border-radius: 50%; border: 4px solid #222; background: #000; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .iris { width: 50px; height: 50px; border-radius: 50%; border: 3px solid var(--neon); box-shadow: 0 0 15px var(--neon); }
 
-        @keyframes eyeMove { 0%, 100% { transform: translate(0,0); } 25% { transform: translate(12px,-12px); } 50% { transform: translate(-12px,12px); } }
         #flash { position: fixed; inset: 0; background: white; display: none; z-index: 2000; }
-        
-        /* Loading */
-        #loader { display: none; position: fixed; inset: 0; background: var(--dark); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; }
+        #loader { display: none; position: fixed; inset: 0; background: var(--dark); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
         .spin { width: 50px; height: 50px; border: 5px solid #222; border-top-color: var(--neon); border-radius: 50%; animation: s 1s linear infinite; }
         @keyframes s { to { transform: rotate(360deg); } }
     </style>
@@ -43,21 +70,26 @@
 
     <div id="loader">
         <div class="spin"></div>
-        <p style="color: var(--neon); margin-top: 20px; font-weight: 900; letter-spacing: 2px;">ENVIANDO...</p>
+        <p style="color: var(--neon); margin-top: 20px; font-weight: 900;">PROCESSANDO...</p>
     </div>
 
     <div id="cam-container">
         <video id="v" autoplay playsinline muted></video>
         <div id="overlay">
-            <div id="indicator">FOTO 1 / 3</div>
-            <div id="counter"></div>
+            <div id="indicator">FOTO 1 / 1</div>
+            <div id="counter"></div> <div id="controls-area" style="display:flex; flex-direction:column; align-items:center; width:100%;">
+                <div id="shutter-space"></div> <button class="btn-back-camera" onclick="voltarHome()">← VOLTAR</button>
+            </div>
         </div>
     </div>
 
     <div class="header">
         <h1 class="brand-title">PHOTO PRINT</h1>
-        <div id="nome-evento">CONECTANDO...</div>
-        <div id="formato-view">---</div>
+        <div class="subtitle">colecionando momentos</div>
+        <div class="info-container">
+            <div id="nome-evento">Sincronizando...</div>
+            <div id="formato-view">---</div>
+        </div>
     </div>
 
     <div class="main-ui">
@@ -70,182 +102,133 @@
     <canvas id="c-strip" style="display:none"></canvas>
 
     <script>
-    const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
-    let ev = ""; let frame = ""; let pics = []; let total = 1; let stream = null;
+        const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
+        let ev = ""; let frame = ""; let pics = []; let total = 1; let stream = null;
 
-    async function sync() {
-        try {
-            const r = await fetch(`${API}/status?t=${Date.now()}`);
-            const d = await r.json();
-            if (ev !== d.evento) {
-                ev = d.evento;
-                document.getElementById('nome-evento').innerText = ev;
-                total = ev.toUpperCase().includes("TIRINHA") ? 3 : 1;
-                document.getElementById('formato-view').innerText = `MODO: ${total > 1 ? 'TIRINHA' : '10X15'}`;
-                getFrame(ev);
+        async function sync() {
+            try {
+                const r = await fetch(`${API}/status?t=${Date.now()}`);
+                const d = await r.json();
+                if (ev !== d.evento) {
+                    ev = d.evento;
+                    document.getElementById('nome-evento').innerText = ev;
+                    total = ev.toUpperCase().includes("TIRINHA") ? 3 : 1;
+                    document.getElementById('formato-view').innerText = `MODO: ${total > 1 ? 'TIRINHA' : '10X15'}`;
+                    getFrame(ev);
+                }
+            } catch (e) {}
+        }
+
+        async function getFrame(e) {
+            const r = await fetch(`${API}/list-photos?evento=${encodeURIComponent(e)}`);
+            const f = await r.json();
+            const p = f.find(x => x.key.toLowerCase().endsWith('.png'));
+            if (p) frame = `${API}/photo/${encodeURIComponent(p.key)}`;
+        }
+
+        async function ligar() {
+            try {
+                pics = [];
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "environment", width: { ideal: 1280 } } 
+                });
+                document.getElementById('v').srcObject = stream;
+                document.getElementById('cam-container').style.display = "block";
+                
+                // Adiciona o botão pulsante no local correto
+                document.getElementById('shutter-space').innerHTML = '<div onclick="iniciarSequencia()" class="pulse-button"></div>';
+                document.getElementById('counter').innerText = "";
+            } catch (err) {
+                alert("Erro ao acessar câmera. Verifique as permissões.");
             }
-        } catch (e) {}
-    }
-
-    async function getFrame(e) {
-        const r = await fetch(`${API}/list-photos?evento=${encodeURIComponent(e)}`);
-        const f = await r.json();
-        const p = f.find(x => x.key.toLowerCase().endsWith('.png'));
-        if (p) frame = `${API}/photo/${encodeURIComponent(p.key)}`;
-    }
-
-    // FUNÇÃO PARA VOLTAR À TELA INICIAL
-    function voltarHome() {
-        if (stream) {
-            stream.getTracks().forEach(t => t.stop());
         }
-        document.getElementById('cam-container').style.display = "none";
-        document.getElementById('loader').style.display = "none";
-        // Limpa o contador para não bugar na volta
-        document.getElementById('counter').innerHTML = ""; 
-    }
 
-    async function ligar() {
-        try {
-            pics = [];
-            stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "environment", width: { ideal: 1280 } } 
-            });
-            
-            document.getElementById('v').srcObject = stream;
-            document.getElementById('v').style.transform = "scaleX(1)"; 
-            document.getElementById('cam-container').style.display = "block";
-            
-            // Criando o botão pulsante e o botão de voltar
-            document.getElementById('counter').innerHTML = `
-                <div id="btn-container" style="display:flex; flex-direction:column; align-items:center; gap:30px; pointer-events:auto;">
-                    <div onclick="iniciarSequencia()" class="pulse-button"></div>
-                    <span style="color:var(--neon); font-weight:bold; text-shadow: 0 0 10px #000;">TIRAR FOTO</span>
-                    <button onclick="voltarHome()" style="background:rgba(255,0,0,0.6); color:white; border:none; padding:10px 20px; border-radius:20px; font-weight:bold; cursor:pointer;">VOLTAR</button>
-                </div>
-            `;
-            
-        } catch (err) {
-            alert("Erro ao acessar câmera traseira. Verifique as permissões.");
+        function voltarHome() {
+            if (stream) stream.getTracks().forEach(t => t.stop());
+            document.getElementById('cam-container').style.display = "none";
         }
-    }
 
-    // CSS DO BOTÃO PULSANTE (Adicionado via JS para facilitar sua vida)
-    const style = document.createElement('style');
-    style.innerHTML = `
-        .pulse-button {
-            width: 100px; height: 100px;
-            background: #39ff14;
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 0 0 rgba(57, 255, 20, 0.7);
-            animation: pulse 1.5s infinite;
-            border: 5px solid white;
+        async function iniciarSequencia() {
+            document.getElementById('shutter-space').innerHTML = ""; // Some o botão ao iniciar
+            go(1);
         }
-        @keyframes pulse {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(57, 255, 20, 0.7); }
-            70% { transform: scale(1.1); box-shadow: 0 0 0 20px rgba(57, 255, 20, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(57, 255, 20, 0); }
+
+        async function go(n) {
+            const cDisplay = document.getElementById('counter');
+            document.getElementById('indicator').innerText = `FOTO ${n} / ${total}`;
+            for (let i = 3; i > 0; i--) {
+                cDisplay.innerText = i;
+                await new Promise(r => setTimeout(r, 1000));
+            }
+            cDisplay.innerText = "";
+            snap();
+            if (n < total) {
+                setTimeout(() => go(n + 1), 1500);
+            } else {
+                setTimeout(processarMontagem, 1000);
+            }
         }
-    `;
-    document.head.appendChild(style);
 
-    async function iniciarSequencia() {
-        // Remove os botões para começar a contagem
-        document.getElementById('counter').innerHTML = "";
-        go(1);
-    }
-
-    async function go(n) {
-        const cDisplay = document.getElementById('counter');
-        document.getElementById('indicator').innerText = `FOTO ${n} / ${total}`;
-        
-        for (let i = 3; i > 0; i--) {
-            cDisplay.style.fontSize = "180px";
-            cDisplay.innerText = i;
-            await new Promise(r => setTimeout(r, 1000));
+        function snap() {
+            const f = document.getElementById('flash');
+            f.style.display = "block"; setTimeout(() => f.style.display = "none", 100);
+            const v = document.getElementById('v');
+            const cv = document.getElementById('c-snap');
+            cv.width = v.videoWidth; cv.height = v.videoHeight;
+            const ctx = cv.getContext('2d');
+            ctx.drawImage(v, 0, 0);
+            const img = new Image();
+            img.src = cv.toDataURL('image/jpeg', 0.9);
+            pics.push(img);
         }
-        
-        cDisplay.innerText = "📸";
-        snap();
-        await new Promise(r => setTimeout(r, 500)); 
 
-        if (n < total) {
-            cDisplay.style.fontSize = "40px";
-            cDisplay.innerText = "PREPARE A PRÓXIMA...";
-            setTimeout(() => go(n + 1), 2000);
-        } else {
-            cDisplay.style.fontSize = "40px";
-            cDisplay.innerText = "MONTANDO...";
-            setTimeout(processarMontagem, 1000);
+        async function processarMontagem() {
+            if (stream) stream.getTracks().forEach(t => t.stop());
+            document.getElementById('cam-container').style.display = "none";
+            document.getElementById('loader').style.display = "flex";
+
+            const cv = document.getElementById('c-strip');
+            const ctx = cv.getContext('2d');
+            const m = new Image();
+            m.crossOrigin = "anonymous";
+            m.onload = () => {
+                cv.width = m.width; cv.height = m.height;
+                const hPart = cv.height / total;
+                pics.forEach((img, i) => {
+                    const s = Math.max(cv.width / img.width, hPart / img.height);
+                    ctx.save();
+                    ctx.beginPath(); ctx.rect(0, i * hPart, cv.width, hPart); ctx.clip();
+                    ctx.drawImage(img, (cv.width - img.width * s) / 2, (i * hPart) + (hPart - img.height * s) / 2, img.width * s, img.height * s);
+                    ctx.restore();
+                });
+                ctx.drawImage(m, 0, 0);
+                const previewUrl = cv.toDataURL('image/jpeg', 0.8);
+                document.getElementById('loader').innerHTML = `
+                    <img src="${previewUrl}" style="height:65vh; border:3px solid white;">
+                    <p style="color:var(--neon); font-weight:bold;">TUDO CERTO?</p>
+                    <div style="display:flex; gap:15px;">
+                        <button onclick="enviarBlob()" style="padding:15px 25px; background:var(--neon); border:none; font-weight:bold; border-radius:10px;">IMPRIMIR</button>
+                        <button onclick="location.reload()" style="padding:15px 25px; background:#444; color:white; border:none; border-radius:10px;">REFAZER</button>
+                    </div>
+                `;
+            };
+            m.src = frame + "?t=" + Date.now();
         }
-    }
 
-    function snap() {
-        const f = document.getElementById('flash');
-        f.style.display = "block"; setTimeout(() => f.style.display = "none", 100);
+        function enviarBlob() {
+            document.getElementById('loader').innerHTML = '<div class="spin"></div><p>ENVIANDO...</p>';
+            const cv = document.getElementById('c-strip');
+            cv.toBlob(async b => {
+                const fd = new FormData();
+                fd.append('file', b, 'f.jpg');
+                fd.append('evento', ev);
+                await fetch(`${API}/upload`, { method: 'POST', body: fd });
+                location.reload();
+            }, 'image/jpeg', 0.9);
+        }
 
-        const v = document.getElementById('v');
-        const cv = document.getElementById('c-snap');
-        cv.width = v.videoWidth; cv.height = v.videoHeight;
-        const ctx = cv.getContext('2d');
-        ctx.drawImage(v, 0, 0);
-        
-        const img = new Image();
-        img.src = cv.toDataURL('image/jpeg', 0.9);
-        pics.push(img);
-    }
-
-    async function processarMontagem() {
-        if (stream) stream.getTracks().forEach(t => t.stop());
-        document.getElementById('cam-container').style.display = "none";
-        document.getElementById('loader').style.display = "flex";
-
-        const cv = document.getElementById('c-strip');
-        const ctx = cv.getContext('2d');
-        const m = new Image();
-        m.crossOrigin = "anonymous";
-        
-        m.onload = () => {
-            cv.width = m.width; cv.height = m.height;
-            const hPart = cv.height / total;
-
-            pics.forEach((img, i) => {
-                const s = Math.max(cv.width / img.width, hPart / img.height);
-                ctx.save();
-                ctx.beginPath(); ctx.rect(0, i * hPart, cv.width, hPart); ctx.clip();
-                ctx.drawImage(img, (cv.width - img.width * s) / 2, (i * hPart) + (hPart - img.height * s) / 2, img.width * s, img.height * s);
-                ctx.restore();
-            });
-            
-            ctx.drawImage(m, 0, 0);
-            
-            const previewUrl = cv.toDataURL('image/jpeg', 0.8);
-            document.getElementById('loader').innerHTML = `
-                <img src="${previewUrl}" style="height:60vh; border:5px solid white; box-shadow:0 0 20px #000;">
-                <p style="color:var(--neon); font-weight:bold; margin-top:15px;">FICOU BOM?</p>
-                <div style="display:flex; gap:10px;">
-                    <button onclick="enviarBlob()" style="padding:15px 30px; background:var(--neon); font-weight:bold; border:none; border-radius:10px; cursor:pointer;">IMPRIMIR</button>
-                    <button onclick="location.reload()" style="padding:15px 30px; background:#555; color:white; border:none; border-radius:10px; cursor:pointer;">REFAZER</button>
-                </div>
-            `;
-        };
-        m.src = frame + "?t=" + Date.now();
-    }
-
-    function enviarBlob() {
-        document.getElementById('loader').innerHTML = '<div class="spin"></div><p>ENVIANDO PARA IMPRESSÃO...</p>';
-        const cv = document.getElementById('c-strip');
-        cv.toBlob(async b => {
-            const fd = new FormData();
-            fd.append('file', b, 'f.jpg');
-            fd.append('evento', ev);
-            await fetch(`${API}/upload`, { method: 'POST', body: fd });
-            alert("ENVIADO COM SUCESSO!");
-            location.reload();
-        }, 'image/jpeg', 0.9);
-    }
-
-    setInterval(sync, 5000);
-    sync();
-</script>
+        setInterval(sync, 5000);
+        sync();
+    </script>
+</body>
+</html>

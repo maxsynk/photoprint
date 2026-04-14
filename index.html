@@ -94,48 +94,88 @@
         if (p) frame = `${API}/photo/${encodeURIComponent(p.key)}`;
     }
 
+    // FUNÇÃO PARA VOLTAR À TELA INICIAL
+    function voltarHome() {
+        if (stream) {
+            stream.getTracks().forEach(t => t.stop());
+        }
+        document.getElementById('cam-container').style.display = "none";
+        document.getElementById('loader').style.display = "none";
+        // Limpa o contador para não bugar na volta
+        document.getElementById('counter').innerHTML = ""; 
+    }
+
     async function ligar() {
         try {
             pics = [];
-            // AJUSTE 1: Câmera Traseira (environment)
             stream = await navigator.mediaDevices.getUserMedia({ 
                 video: { facingMode: "environment", width: { ideal: 1280 } } 
             });
             
             document.getElementById('v').srcObject = stream;
-            document.getElementById('v').style.transform = "scaleX(1)"; // Remove o espelhamento para câmera traseira
+            document.getElementById('v').style.transform = "scaleX(1)"; 
             document.getElementById('cam-container').style.display = "block";
             
-            // AJUSTE 2: Não começa sozinho. Mostra o botão de acionamento.
-            document.getElementById('counter').innerHTML = '<button onclick="iniciarSequencia()" style="font-size:30px; padding:20px; border-radius:50px; border:none; background:var(--neon); font-weight:bold;">TIRAR FOTO</button>';
+            // Criando o botão pulsante e o botão de voltar
+            document.getElementById('counter').innerHTML = `
+                <div id="btn-container" style="display:flex; flex-direction:column; align-items:center; gap:30px; pointer-events:auto;">
+                    <div onclick="iniciarSequencia()" class="pulse-button"></div>
+                    <span style="color:var(--neon); font-weight:bold; text-shadow: 0 0 10px #000;">TIRAR FOTO</span>
+                    <button onclick="voltarHome()" style="background:rgba(255,0,0,0.6); color:white; border:none; padding:10px 20px; border-radius:20px; font-weight:bold; cursor:pointer;">VOLTAR</button>
+                </div>
+            `;
             
         } catch (err) {
             alert("Erro ao acessar câmera traseira. Verifique as permissões.");
         }
     }
 
+    // CSS DO BOTÃO PULSANTE (Adicionado via JS para facilitar sua vida)
+    const style = document.createElement('style');
+    style.innerHTML = `
+        .pulse-button {
+            width: 100px; height: 100px;
+            background: #39ff14;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 0 rgba(57, 255, 20, 0.7);
+            animation: pulse 1.5s infinite;
+            border: 5px solid white;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(57, 255, 20, 0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 20px rgba(57, 255, 20, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(57, 255, 20, 0); }
+        }
+    `;
+    document.head.appendChild(style);
+
     async function iniciarSequencia() {
-        go(1); // Começa a contagem da primeira foto
+        // Remove os botões para começar a contagem
+        document.getElementById('counter').innerHTML = "";
+        go(1);
     }
 
     async function go(n) {
         const cDisplay = document.getElementById('counter');
         document.getElementById('indicator').innerText = `FOTO ${n} / ${total}`;
         
-        // AJUSTE 3: Contagem Regressiva Visual
         for (let i = 3; i > 0; i--) {
+            cDisplay.style.fontSize = "180px";
             cDisplay.innerText = i;
             await new Promise(r => setTimeout(r, 1000));
         }
         
-        cDisplay.innerText = "SMILE! 📸";
+        cDisplay.innerText = "📸";
         snap();
-        await new Promise(r => setTimeout(r, 500)); // Delay do flash
+        await new Promise(r => setTimeout(r, 500)); 
 
         if (n < total) {
+            cDisplay.style.fontSize = "40px";
             cDisplay.innerText = "PREPARE A PRÓXIMA...";
             setTimeout(() => go(n + 1), 2000);
         } else {
+            cDisplay.style.fontSize = "40px";
             cDisplay.innerText = "MONTANDO...";
             setTimeout(processarMontagem, 1000);
         }
@@ -149,7 +189,6 @@
         const cv = document.getElementById('c-snap');
         cv.width = v.videoWidth; cv.height = v.videoHeight;
         const ctx = cv.getContext('2d');
-        // Sem espelhamento para câmera traseira
         ctx.drawImage(v, 0, 0);
         
         const img = new Image();
@@ -181,20 +220,21 @@
             
             ctx.drawImage(m, 0, 0);
             
-            // AJUSTE 4: Mostrar Preview para o Cliente
             const previewUrl = cv.toDataURL('image/jpeg', 0.8);
             document.getElementById('loader').innerHTML = `
-                <img src="${previewUrl}" style="width:70%; border:5px solid white; box-shadow:0 0 20px #000;">
+                <img src="${previewUrl}" style="height:60vh; border:5px solid white; box-shadow:0 0 20px #000;">
                 <p style="color:var(--neon); font-weight:bold; margin-top:15px;">FICOU BOM?</p>
-                <button onclick="enviarBlob()" style="padding:15px 30px; background:var(--neon); font-weight:bold; border-radius:10px;">IMPRIMIR AGORA</button>
-                <button onclick="location.reload()" style="background:none; color:white; border:none; margin-top:10px;">Tirar outra</button>
+                <div style="display:flex; gap:10px;">
+                    <button onclick="enviarBlob()" style="padding:15px 30px; background:var(--neon); font-weight:bold; border:none; border-radius:10px; cursor:pointer;">IMPRIMIR</button>
+                    <button onclick="location.reload()" style="padding:15px 30px; background:#555; color:white; border:none; border-radius:10px; cursor:pointer;">REFAZER</button>
+                </div>
             `;
         };
         m.src = frame + "?t=" + Date.now();
     }
 
     function enviarBlob() {
-        document.getElementById('loader').innerHTML = '<div class="spin"></div><p>ENVIANDO...</p>';
+        document.getElementById('loader').innerHTML = '<div class="spin"></div><p>ENVIANDO PARA IMPRESSÃO...</p>';
         const cv = document.getElementById('c-strip');
         cv.toBlob(async b => {
             const fd = new FormData();

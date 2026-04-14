@@ -25,13 +25,14 @@
         #counter { font-size: 150px; font-weight: 900; color: var(--neon); text-shadow: 0 0 40px #000; display: flex; align-items: center; justify-content: center; flex-grow: 1; }
         #indicator { font-size: 18px; font-weight: bold; background: rgba(0,0,0,0.6); padding: 8px 20px; border-radius: 50px; border: 1px solid var(--neon); color: var(--neon); }
 
-        /* Botão Olho BBB Pulsante */
+        /* 1. Botão Olho (Posicionado mais para baixo) */
+        .main-ui { flex-grow: 1; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 80px; }
         .btn-eye { 
-            width: 140px; height: 140px; border-radius: 50%; border: 4px solid #222; background: #000; 
-            cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative;
+            width: 130px; height: 130px; border-radius: 50%; border: 4px solid #222; background: #000; 
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
             box-shadow: 0 0 0 rgba(57, 255, 20, 0.7); animation: pulse-border 2s infinite;
         }
-        .iris { width: 45px; height: 45px; border-radius: 50%; border: 3px solid var(--neon); box-shadow: 0 0 15px var(--neon); }
+        .iris { width: 40px; height: 40px; border-radius: 50%; border: 3px solid var(--neon); box-shadow: 0 0 15px var(--neon); }
         
         @keyframes pulse-border {
             0% { box-shadow: 0 0 0 0 rgba(57, 255, 20, 0.7); }
@@ -39,20 +40,21 @@
             100% { box-shadow: 0 0 0 0 rgba(57, 255, 20, 0); }
         }
 
-        /* Botão Obturador na Câmera (Preto com Aro Verde) */
+        /* 2. Seta Voltar Diferente (Minimalista) */
+        .back-circle {
+            position: absolute; left: 30px; bottom: 45px;
+            width: 50px; height: 50px; background: rgba(255,255,255,0.1);
+            border: 1px solid white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; pointer-events: auto;
+        }
+        .back-circle svg { width: 24px; height: 24px; fill: white; }
+
         .shutter-btn {
             width: 80px; height: 80px; background: black; border-radius: 50%; 
             border: 4px solid var(--neon); cursor: pointer; pointer-events: auto;
             box-shadow: 0 0 15px var(--neon); animation: pulse-border 1.5s infinite;
         }
-
-        /* Seta Voltar */
-        .back-arrow {
-            font-size: 40px; color: white; background: none; border: none; 
-            cursor: pointer; pointer-events: auto; margin-top: 15px; opacity: 0.8;
-        }
-
-        .main-ui { flex-grow: 1; display: flex; align-items: center; justify-content: center; }
 
         #flash { position: fixed; inset: 0; background: white; display: none; z-index: 2000; }
         #loader { display: none; position: fixed; inset: 0; background: var(--dark); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
@@ -74,9 +76,11 @@
         <div id="overlay">
             <div id="indicator">FOTO 1 / 1</div>
             <div id="counter"></div>
-            <div id="cam-controls" style="display:flex; flex-direction:column; align-items:center; width:100%;">
+            <div id="cam-controls" style="display:flex; align-items:center; justify-content:center; width:100%; position:relative; min-height:100px;">
+                <div class="back-circle" onclick="voltarHome()">
+                    <svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+                </div>
                 <div id="shutter-placeholder"></div>
-                <button class="back-arrow" onclick="voltarHome()">↩</button>
             </div>
         </div>
     </div>
@@ -103,7 +107,6 @@
         const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
         let ev = ""; let frame = ""; let pics = []; let total = 1; let stream = null;
 
-        // 1. CORREÇÃO SINCRONIZAÇÃO: Forçar atualização frequente
         async function sync() {
             try {
                 const r = await fetch(`${API}/status?t=${Date.now()}`);
@@ -115,9 +118,7 @@
                     document.getElementById('formato-view').innerText = `MODO: ${total > 1 ? 'TIRINHA' : '10X15'}`;
                     getFrame(ev);
                 }
-            } catch (e) {
-                console.error("Erro sync:", e);
-            }
+            } catch (e) {}
         }
 
         async function getFrame(e) {
@@ -139,9 +140,7 @@
                 document.getElementById('cam-container').style.display = "block";
                 document.getElementById('shutter-placeholder').innerHTML = '<div onclick="iniciarSequencia()" class="shutter-btn"></div>';
                 document.getElementById('counter').innerText = "";
-            } catch (err) {
-                alert("Permita o acesso à câmera.");
-            }
+            } catch (err) { alert("Permita o acesso à câmera."); }
         }
 
         function voltarHome() {
@@ -154,31 +153,19 @@
             go(1);
         }
 
-        // 4. CORREÇÃO TEMPOS: 7s na primeira da tirinha, 5s nas demais
         async function go(n) {
             const cDisplay = document.getElementById('counter');
             document.getElementById('indicator').innerText = `FOTO ${n} / ${total}`;
-            
-            let tempo;
-            if (total > 1) { // Modo Tirinha
-                tempo = (n === 1) ? 7 : 5;
-            } else { // Modo Único
-                tempo = 5;
-            }
+            let tempo = (total > 1 && n === 1) ? 7 : 5;
 
             for (let i = tempo; i > 0; i--) {
                 cDisplay.innerText = i;
                 await new Promise(r => setTimeout(r, 1000));
             }
-            
             cDisplay.innerText = "";
             snap();
-            
-            if (n < total) {
-                setTimeout(() => go(n + 1), 1500);
-            } else {
-                setTimeout(processarMontagem, 1000);
-            }
+            if (n < total) { setTimeout(() => go(n + 1), 1500); } 
+            else { setTimeout(processarMontagem, 1000); }
         }
 
         function snap() {
@@ -198,7 +185,6 @@
             if (stream) stream.getTracks().forEach(t => t.stop());
             document.getElementById('cam-container').style.display = "none";
             document.getElementById('loader').style.display = "flex";
-            document.getElementById('loader-text').innerText = "MONTANDO SUA FOTO...";
 
             const cv = document.getElementById('c-strip');
             const ctx = cv.getContext('2d');
@@ -207,19 +193,26 @@
             m.onload = () => {
                 cv.width = m.width; cv.height = m.height;
                 const hPart = cv.height / total;
+                
                 pics.forEach((img, i) => {
                     const s = Math.max(cv.width / img.width, hPart / img.height);
                     ctx.save();
                     ctx.beginPath(); ctx.rect(0, i * hPart, cv.width, hPart); ctx.clip();
                     ctx.drawImage(img, (cv.width - img.width * s) / 2, (i * hPart) + (hPart - img.height * s) / 2, img.width * s, img.height * s);
                     ctx.restore();
+
+                    // 3. ADICIONA LINHA SEPARADORA (1mm aprox)
+                    if (total > 1 && i < total - 1) {
+                        ctx.fillStyle = "black"; // ou outra cor que combine com sua moldura
+                        ctx.fillRect(0, (i + 1) * hPart - 2, cv.width, 4); // linha de 4px para garantir visibilidade
+                    }
                 });
+                
                 ctx.drawImage(m, 0, 0);
                 const previewUrl = cv.toDataURL('image/jpeg', 0.8);
                 document.getElementById('loader').innerHTML = `
-                    <img src="${previewUrl}" style="height:60vh; border:3px solid white; border-radius:5px;">
-                    <p style="color:var(--neon); font-weight:bold; margin-top:15px;">GOSTOU DO RESULTADO?</p>
-                    <div style="display:flex; gap:15px;">
+                    <img src="${previewUrl}" style="height:60vh; border:3px solid white;">
+                    <div style="display:flex; gap:15px; margin-top:15px;">
                         <button onclick="enviarBlob()" style="padding:15px 30px; background:var(--neon); border:none; font-weight:bold; border-radius:10px;">IMPRIMIR</button>
                         <button onclick="location.reload()" style="padding:15px 30px; background:#444; color:white; border:none; border-radius:10px;">REFAZER</button>
                     </div>
@@ -229,7 +222,7 @@
         }
 
         function enviarBlob() {
-            document.getElementById('loader').innerHTML = '<div class="spin"></div><p style="color:var(--neon); margin-top:20px;">ENVIANDO PARA IMPRESSÃO...</p>';
+            document.getElementById('loader').innerHTML = '<div class="spin"></div><p style="color:var(--neon); margin-top:20px;">ENVIANDO...</p>';
             const cv = document.getElementById('c-strip');
             cv.toBlob(async b => {
                 const fd = new FormData();
@@ -240,7 +233,6 @@
             }, 'image/jpeg', 0.9);
         }
 
-        // Sincroniza a cada 3 segundos para ser mais rápido
         setInterval(sync, 3000);
         sync();
     </script>

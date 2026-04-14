@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PHOTO PRINT - FULL AUTO</title>
     <style>
-        :root { --neon: #39ff14; --dark: #050505; }
+        :root { --neon: #39ff14; --dark: #050505; --error: #ff0000; }
         body { font-family: 'Segoe UI', sans-serif; text-align: center; background: var(--dark); color: white; margin: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
         
         /* Header */
@@ -17,16 +17,24 @@
         #nome-evento { font-size: 22px; font-weight: bold; color: var(--neon); text-transform: uppercase; margin: 5px 0; min-height: 25px; }
         #formato-view { font-size: 12px; color: var(--neon); border: 1px solid var(--neon); padding: 5px 15px; border-radius: 20px; display: inline-block; font-weight: bold; }
 
+        /* Bloqueio de Manutenção */
+        #offline-screen { position: fixed; inset: 0; background: #000; z-index: 9999; display: none; align-items: center; justify-content: center; flex-direction: column; }
+        .mantencao-txt { color: var(--error); font-size: 24px; font-weight: 900; letter-spacing: 3px; animation: pulse-red 1s infinite; }
+        
+        @keyframes pulse-red {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.05); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
         /* Interface da Câmera */
         #cam-container { position: fixed; inset: 0; background: #000; display: none; z-index: 1000; }
         video { width: 100%; height: 100%; object-fit: cover; }
-
         #overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 40px 20px; pointer-events: none; }
         #counter { font-size: 150px; font-weight: 900; color: var(--neon); text-shadow: 0 0 40px #000; display: flex; align-items: center; justify-content: center; flex-grow: 1; }
-        #indicator { font-size: 18px; font-weight: bold; background: rgba(0,0,0,0.6); padding: 8px 20px; border-radius: 50px; border: 1px solid var(--neon); color: var(--neon); }
 
-        /* 1. Botão Olho (Posicionado mais para baixo) */
-        .main-ui { flex-grow: 1; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 80px; }
+        /* Botão Olho (Ajustado 1.5cm para cima) */
+        .main-ui { flex-grow: 1; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 140px; }
         .btn-eye { 
             width: 130px; height: 130px; border-radius: 50%; border: 4px solid #222; background: #000; 
             cursor: pointer; display: flex; align-items: center; justify-content: center;
@@ -40,21 +48,9 @@
             100% { box-shadow: 0 0 0 0 rgba(57, 255, 20, 0); }
         }
 
-        /* 2. Seta Voltar Diferente (Minimalista) */
-        .back-circle {
-            position: absolute; left: 30px; bottom: 45px;
-            width: 50px; height: 50px; background: rgba(255,255,255,0.1);
-            border: 1px solid white; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; pointer-events: auto;
-        }
+        .back-circle { position: absolute; left: 30px; bottom: 45px; width: 50px; height: 50px; background: rgba(255,255,255,0.1); border: 1px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; pointer-events: auto; }
         .back-circle svg { width: 24px; height: 24px; fill: white; }
-
-        .shutter-btn {
-            width: 80px; height: 80px; background: black; border-radius: 50%; 
-            border: 4px solid var(--neon); cursor: pointer; pointer-events: auto;
-            box-shadow: 0 0 15px var(--neon); animation: pulse-border 1.5s infinite;
-        }
+        .shutter-btn { width: 80px; height: 80px; background: black; border-radius: 50%; border: 4px solid var(--neon); cursor: pointer; pointer-events: auto; box-shadow: 0 0 15px var(--neon); animation: pulse-border 1.5s infinite; }
 
         #flash { position: fixed; inset: 0; background: white; display: none; z-index: 2000; }
         #loader { display: none; position: fixed; inset: 0; background: var(--dark); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
@@ -63,6 +59,11 @@
     </style>
 </head>
 <body>
+
+    <div id="offline-screen">
+        <div class="mantencao-txt">SISTEMA EM MANUTENÇÃO</div>
+        <p style="color:white; opacity:0.5; margin-top:10px;">Aguarde o técnico...</p>
+    </div>
 
     <div id="flash"></div>
 
@@ -74,7 +75,7 @@
     <div id="cam-container">
         <video id="v" autoplay playsinline muted></video>
         <div id="overlay">
-            <div id="indicator">FOTO 1 / 1</div>
+            <div id="indicator" style="font-size:18px; color:var(--neon); border:1px solid var(--neon); padding:5px 15px; border-radius:20px;">FOTO 1 / 1</div>
             <div id="counter"></div>
             <div id="cam-controls" style="display:flex; align-items:center; justify-content:center; width:100%; position:relative; min-height:100px;">
                 <div class="back-circle" onclick="voltarHome()">
@@ -89,7 +90,7 @@
         <h1 class="brand-title">PHOTO PRINT</h1>
         <div class="subtitle">colecionando momentos</div>
         <div class="info-container">
-            <div id="nome-evento">Sincronizando...</div>
+            <div id="nome-evento">Buscando evento...</div>
             <div id="formato-view">---</div>
         </div>
     </div>
@@ -110,7 +111,11 @@
         async function sync() {
             try {
                 const r = await fetch(`${API}/status?t=${Date.now()}`);
+                if(!r.ok) throw new Error();
                 const d = await r.json();
+                
+                document.getElementById('offline-screen').style.display = "none";
+                
                 if (ev !== d.evento) {
                     ev = d.evento;
                     document.getElementById('nome-evento').innerText = ev;
@@ -118,7 +123,10 @@
                     document.getElementById('formato-view').innerText = `MODO: ${total > 1 ? 'TIRINHA' : '10X15'}`;
                     getFrame(ev);
                 }
-            } catch (e) {}
+            } catch (e) {
+                // Ativa tela de manutenção se a API falhar
+                document.getElementById('offline-screen').style.display = "flex";
+            }
         }
 
         async function getFrame(e) {
@@ -140,7 +148,7 @@
                 document.getElementById('cam-container').style.display = "block";
                 document.getElementById('shutter-placeholder').innerHTML = '<div onclick="iniciarSequencia()" class="shutter-btn"></div>';
                 document.getElementById('counter').innerText = "";
-            } catch (err) { alert("Permita o acesso à câmera."); }
+            } catch (err) { alert("Acesse via HTTPS/GitHub para usar a câmera."); }
         }
 
         function voltarHome() {
@@ -157,7 +165,6 @@
             const cDisplay = document.getElementById('counter');
             document.getElementById('indicator').innerText = `FOTO ${n} / ${total}`;
             let tempo = (total > 1 && n === 1) ? 7 : 5;
-
             for (let i = tempo; i > 0; i--) {
                 cDisplay.innerText = i;
                 await new Promise(r => setTimeout(r, 1000));
@@ -201,10 +208,10 @@
                     ctx.drawImage(img, (cv.width - img.width * s) / 2, (i * hPart) + (hPart - img.height * s) / 2, img.width * s, img.height * s);
                     ctx.restore();
 
-                    // 3. ADICIONA LINHA SEPARADORA (1mm aprox)
+                    // LINHA BRANCA SEPARADORA
                     if (total > 1 && i < total - 1) {
-                        ctx.fillStyle = "black"; // ou outra cor que combine com sua moldura
-                        ctx.fillRect(0, (i + 1) * hPart - 2, cv.width, 4); // linha de 4px para garantir visibilidade
+                        ctx.fillStyle = "white"; 
+                        ctx.fillRect(0, (i + 1) * hPart - 2, cv.width, 4); 
                     }
                 });
                 

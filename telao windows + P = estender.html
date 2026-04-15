@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>PHOTO PRINT | TV SLIDESHOW PRO</title>
+    <style>
+        /* Importando uma fonte moderna e elegante */
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap');
+
+        body { margin: 0; padding: 0; background: #000; overflow: hidden; font-family: 'Montserrat', sans-serif; }
+        
+        #display {
+            width: 100vw;
+            height: calc(100vh - 120px); 
+            background: #000;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slide-container {
+            position: absolute;
+            inset: 0; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+            overflow: hidden;
+        }
+
+        .active { opacity: 1; }
+
+        /* EFEITO BOKEH / FUNDO DESFOCADO */
+        .slide-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: blur(35px) brightness(0.5);
+            transform: scale(1.2);
+            z-index: 1;
+        }
+
+        /* FOTO PRINCIPAL NÍTIDA */
+        .slide-main {
+            position: relative;
+            max-width: 92%;
+            max-height: 92%;
+            object-fit: contain;
+            z-index: 2;
+            box-shadow: 0 0 80px rgba(0,0,0,0.9);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* BARRA DE PATROCINADORES */
+        #sponsor-bar {
+            width: 100vw;
+            height: 120px;
+            background: rgba(10, 10, 10, 0.98);
+            border-top: 1px solid #333;
+            position: absolute;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-around; 
+            padding: 10px 40px;
+            box-sizing: border-box;
+            z-index: 200;
+        }
+
+        .sponsor-logo {
+            max-height: 85px;
+            max-width: calc(100% / 5 - 20px); 
+            object-fit: contain;
+        }
+
+        .sponsor-label {
+            color: #444;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: absolute;
+            top: 5px;
+            left: 20px;
+        }
+
+        /* NOME DO EVENTO CENTRALIZADO E BRANCO */
+        #info-overlay {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%); /* Centraliza perfeitamente no meio */
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            z-index: 100;
+            /* Sombra pesada para dar contraste total contra qualquer foto */
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.8), 0px 0px 20px rgba(0,0,0,1);
+            text-align: center;
+            width: 90%;
+            pointer-events: none; /* Evita que o texto atrapalhe cliques se necessário */
+        }
+
+        #waiting-msg { color: #222; font-size: 20px; text-transform: uppercase; letter-spacing: 5px; position: absolute; z-index: 10; }
+        #logo-upload { display: none; }
+    </style>
+</head>
+<body>
+
+<input type="file" id="logo-upload" multiple accept="image/*">
+
+<div id="display">
+    <div id="waiting-msg">Aguardando Evento Ativo...</div>
+</div>
+
+<div id="info-overlay" style="display: none;"></div>
+
+<div id="sponsor-bar">
+    <span class="sponsor-label">Parceiros (Aperte L para configurar)</span>
+    <div id="logos-container" style="display:contents;"></div>
+</div>
+
+<script>
+    const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
+    
+    let eventoAtivo = "";
+    let fotos = [];
+    let currentIndex = 0;
+    let slideInterval = null;
+
+    // --- LOGICA DE PATROCINADORES ---
+    const fileInput = document.getElementById('logo-upload');
+    const containerLogos = document.getElementById('logos-container');
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key.toLowerCase() === 'l') fileInput.click();
+    });
+
+    fileInput.addEventListener('change', function() {
+        const files = Array.from(this.files).slice(0, 5); 
+        const logosData = [];
+        containerLogos.innerHTML = "";
+        files.forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const imgBase64 = e.target.result;
+                renderLogo(imgBase64);
+                logosData.push(imgBase64);
+                localStorage.setItem('pp_logos', JSON.stringify(logosData));
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+
+    function renderLogo(src) {
+        const img = document.createElement('img');
+        img.src = src;
+        img.className = 'sponsor-logo';
+        containerLogos.appendChild(img);
+    }
+
+    // --- SINCRONIZAÇÃO ---
+    async function syncEvent() {
+        try {
+            const res = await fetch(`${API_URL}/status?t=${Date.now()}`);
+            const data = await res.json();
+            
+            if (data.evento && data.evento !== eventoAtivo) {
+                eventoAtivo = data.evento;
+                const overlay = document.getElementById('info-overlay');
+                overlay.innerText = eventoAtivo;
+                overlay.style.display = 'block';
+                document.getElementById('waiting-msg').style.display = 'none';
+                
+                fotos = [];
+                currentIndex = 0;
+                updatePhotos();
+            }
+        } catch (e) { console.error("Erro status"); }
+    }
+
+    async function updatePhotos() {
+        if (!eventoAtivo) return;
+        try {
+            const res = await fetch(`${API_URL}/list-photos?evento=${encodeURIComponent(eventoAtivo)}`);
+            const novasFotos = await res.json();
+            
+            if (JSON.stringify(novasFotos) !== JSON.stringify(fotos)) {
+                fotos = novasFotos;
+                if (fotos.length > 0 && !slideInterval) {
+                    renderSlide();
+                    slideInterval = setInterval(renderSlide, 7000); 
+                }
+            }
+        } catch (e) { console.error("Erro fotos"); }
+    }
+
+    function renderSlide() {
+        if (fotos.length === 0) return;
+        
+        const display = document.getElementById('display');
+        const fotoObjeto = fotos[currentIndex];
+        const urlFinal = `${API_URL}/photo/${encodeURIComponent(fotoObjeto.key)}`;
+
+        const slideContainer = document.createElement('div');
+        slideContainer.className = 'slide-container';
+
+        const imgBg = new Image();
+        imgBg.crossOrigin = "anonymous";
+        imgBg.src = urlFinal;
+        imgBg.className = 'slide-bg';
+
+        const imgMain = new Image();
+        imgMain.crossOrigin = "anonymous";
+        imgMain.src = urlFinal;
+        imgMain.className = 'slide-main';
+
+        slideContainer.appendChild(imgBg);
+        slideContainer.appendChild(imgMain);
+
+        imgMain.onload = () => {
+            const oldSlides = display.querySelectorAll('.slide-container');
+            display.appendChild(slideContainer);
+            
+            setTimeout(() => slideContainer.classList.add('active'), 100);
+
+            if (oldSlides.length > 0) {
+                setTimeout(() => {
+                    oldSlides.forEach(s => s.remove());
+                }, 1600);
+            }
+        };
+
+        currentIndex = (currentIndex + 1) % fotos.length;
+    }
+
+    window.onload = () => {
+        const saved = JSON.parse(localStorage.getItem('pp_logos') || "[]");
+        saved.forEach(src => renderLogo(src));
+        syncEvent();
+        setInterval(syncEvent, 5000);
+        setInterval(updatePhotos, 10000);
+    };
+</script>
+</body>
+</html>

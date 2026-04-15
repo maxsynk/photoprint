@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHOTO PRINT - Master Panel</title>
+    <style>
+        :root { --neon: #39ff14; --red: #ff3131; --dark: #000000; --card: rgba(10, 10, 10, 0.98); --border: #1a1a1a; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--dark); background-image: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0) 50%); color: white; margin: 0; padding: 20px; height: 100vh; display: flex; flex-direction: column; box-sizing: border-box; overflow: hidden; }
+        #tela-inicial { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 1000; background: #000; flex-direction: column; }
+        .splash-header { text-align: center; margin-bottom: 60px; }
+        .splash-brand { font-size: 100px; font-weight: 900; color: var(--neon); letter-spacing: 20px; text-transform: uppercase; animation: pulse-neon 2s infinite ease-in-out; margin: 0; }
+        .splash-subtitle { font-size: 16px; letter-spacing: 10px; color: #444; text-transform: uppercase; margin-top: -10px; }
+        @keyframes pulse-neon { 0%, 100% { transform: scale(1); text-shadow: 0 0 20px rgba(57, 255, 20, 0.2); } 50% { transform: scale(1.05); text-shadow: 0 0 50px rgba(57, 255, 20, 0.6); } }
+        #modal-senha { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 2000; align-items: center; justify-content: center; }
+        .pass-box { background: #0a0a0a; padding: 40px; border-radius: 20px; border: 1px solid var(--neon); text-align: center; width: 320px; }
+        .pass-box input { width: 100%; padding: 15px; margin: 20px 0; background: #000; border: 1px solid #222; color: var(--neon); text-align: center; font-size: 28px; border-radius: 10px; outline: none; }
+        .status-container { display: flex; align-items: center; gap: 12px; padding: 8px 18px; border-radius: 50px; border: 1px solid #222; transition: 0.5s; }
+        .status-container.bg-on { background: rgba(57, 255, 20, 0.1); border-color: var(--neon); box-shadow: 0 0 15px rgba(57, 255, 20, 0.2); }
+        .status-container.bg-off { background: rgba(255, 49, 49, 0.1); border-color: var(--red); }
+        #label-status { font-size: 10px; font-weight: 900; letter-spacing: 2px; }
+        .switch-mega { position: relative; display: inline-block; width: 54px; height: 28px; }
+        .switch-mega input { opacity: 0; width: 0; height: 0; }
+        .slider-mega { position: absolute; cursor: pointer; inset: 0; background: #333; transition: .4s; border-radius: 34px; }
+        .slider-mega:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider-mega { background: var(--neon); }
+        input:checked + .slider-mega:before { transform: translateX(26px); }
+        .internal-brand { font-size: 48px; font-weight: 900; color: var(--neon); letter-spacing: 5px; margin: 0; line-height: 1; text-transform: uppercase; }
+        .internal-subtitle { font-size: 11px; letter-spacing: 4px; color: #444; text-transform: uppercase; margin-top: 5px; font-weight: bold; }
+        .btn-neon-style { background: transparent; border: 1px solid var(--neon); color: white; padding: 12px 25px; border-radius: 50px; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; }
+        .btn-neon-style:hover { background: var(--neon); color: black; box-shadow: 0 0 20px var(--neon); }
+        .btn-full { width: 100%; margin-top: 10px; border-radius: 8px; padding: 18px; }
+        .custom-file-upload { border: 1px solid #222; display: inline-block; padding: 12px; cursor: pointer; width: 100%; box-sizing: border-box; text-align: center; border-radius: 6px; background: #050505; color: #555; font-size: 11px; font-weight: bold; }
+        .preview-container { width: 100%; height: 120px; border: 1px dashed #222; margin-top: 10px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: #050505; overflow: hidden; }
+        #img-preview { max-width: 100%; max-height: 100%; display: none; }
+        .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid #111; padding-bottom: 15px; display: none; }
+        .main-layout { display: grid; grid-template-columns: 1fr 1.2fr; gap: 25px; flex: 1; min-height: 0; display: none; }
+        .card { background: var(--card); border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+        .card-header { padding: 15px 20px; background: #080808; border-bottom: 1px solid #111; color: var(--neon); font-size: 11px; font-weight: 900; text-transform: uppercase; }
+        .card-body { padding: 25px; flex: 1; overflow-y: auto; }
+        .evento-item { background: #050505; border: 1px solid #111; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .evento-item.ativo { border-left: 4px solid var(--neon); background: rgba(57, 255, 20, 0.05); }
+    </style>
+</head>
+<body>
+
+    <div id="tela-inicial">
+        <div class="splash-header">
+            <h1 class="splash-brand">PHOTO PRINT</h1>
+            <p class="splash-subtitle">Colecionando Momentos</p>
+        </div>
+        <button class="btn-neon-style" style="padding: 25px 80px;" onclick="abrirModalSenha()">Acessar Painel</button>
+    </div>
+
+    <div id="modal-senha">
+        <div class="pass-box">
+            <div style="font-size: 10px; font-weight: 900; color: var(--neon);">IDENTIFICAÇÃO REQUERIDA</div>
+            <input type="password" id="input-pass" placeholder="****" maxlength="4" onkeydown="if(event.key === 'Enter') confirmarSenha()">
+            <button class="btn-neon-style" style="width:100%" onclick="confirmarSenha()">ENTRAR</button>
+            <div style="margin-top: 20px; color: #333; font-size: 10px; cursor: pointer;" onclick="fecharModalSenha()">CANCELAR</div>
+        </div>
+    </div>
+
+    <div class="top-nav" id="header">
+        <div>
+            <h2 class="internal-brand">PHOTO PRINT</h2>
+            <div class="internal-subtitle">colecionando momentos</div>
+        </div>
+        <div class="status-container bg-off" id="status-box">
+            <span id="label-status" style="color: var(--red);">OFFLINE</span>
+            <label class="switch-mega">
+                <input type="checkbox" id="server-status" onchange="salvarStatusRede()">
+                <span class="slider-mega"></span>
+            </label>
+        </div>
+    </div>
+
+    <div class="main-layout" id="layout">
+        <div class="card">
+            <div class="card-header">Configuração</div>
+            <div class="card-body">
+                <input type="hidden" id="edit-index" value="-1">
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size:10px; color:#555; font-weight:bold; text-transform:uppercase;">Nome do Evento</label>
+                    <input type="text" id="input-evento" style="width:100%; padding:12px; background:#000; border:1px solid #151515; color:white; border-radius:6px; margin-top:5px; outline: none;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size:10px; color:#555; font-weight:bold;">FORMATO</label>
+                    <select id="select-formato" style="width:100%; padding:12px; background:#000; border:1px solid #151515; color:white; border-radius:6px; margin-top:5px; outline: none;"></select>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size:10px; color:#555; font-weight:bold;">MOLDURA PNG</label>
+                    <label for="input-moldura" class="custom-file-upload" style="margin-top:5px;">ESCOLHER ARQUIVO</label>
+                    <input type="file" id="input-moldura" accept="image/png" style="display:none" onchange="previewMoldura(this)">
+                    <div class="preview-container"><img id="img-preview" src=""></div>
+                </div>
+                <button class="btn-neon-style btn-full" onclick="salvarEvento()" id="btn-submit">Sincronizar e Ativar</button>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">Histórico Local</div>
+            <div class="card-body" id="corpo-lista"></div>
+        </div>
+    </div>
+
+<script>
+    const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
+    const SENHA_MESTRA = "1234";
+    let eventos = JSON.parse(localStorage.getItem('eventos_db')) || [];
+    let formatos = ["10x15 Standard", "Tirinha 5x15", "Polaroid"];
+
+    function abrirModalSenha() { document.getElementById('modal-senha').style.display = 'flex'; document.getElementById('input-pass').focus(); }
+    function fecharModalSenha() { document.getElementById('modal-senha').style.display = 'none'; document.getElementById('input-pass').value = ''; }
+    function confirmarSenha() {
+        if(document.getElementById('input-pass').value === SENHA_MESTRA) { fecharModalSenha(); ativarPainel(); }
+        else alert("Senha Incorreta!");
+    }
+
+    function ativarPainel() {
+        document.getElementById('tela-inicial').style.display = 'none';
+        document.getElementById('header').style.display = 'flex';
+        document.getElementById('layout').style.display = 'grid';
+        renderizarFormatos();
+        renderizarLista();
+        checarEventoAtivo(); 
+    }
+
+    function previewMoldura(input) {
+        if(input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => { const img = document.getElementById('img-preview'); img.src = e.target.result; img.style.display = 'block'; };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function renderizarFormatos() {
+        document.getElementById('select-formato').innerHTML = formatos.map(f => `<option value="${f}">${f}</option>`).join('');
+    }
+
+    function checarEventoAtivo() {
+        const temAtivo = eventos.some(e => e.ativo);
+        const switchBtn = document.getElementById('server-status');
+        if(!temAtivo) {
+            switchBtn.checked = false;
+            switchBtn.disabled = true; 
+            atualizarUIStatus(false);
+            enviarStatusParaAPI("Sem evento ativado", "OFFLINE", "");
+        } else {
+            switchBtn.disabled = false;
+        }
+    }
+
+    async function ativarEvento(index) {
+        if(confirm(`Ativar galeria para: ${eventos[index].nome}?`)) {
+            eventos.forEach((e, i) => e.ativo = (i === index));
+            localStorage.setItem('eventos_db', JSON.stringify(eventos));
+            await sincronizar(eventos[index].nome, eventos[index].formato);
+            renderizarLista();
+            checarEventoAtivo();
+        }
+    }
+
+    async function salvarEvento() {
+        const nome = document.getElementById('input-evento').value;
+        const formato = document.getElementById('select-formato').value;
+        const molduraFile = document.getElementById('input-moldura').files[0];
+        const editIdx = parseInt(document.getElementById('edit-index').value);
+        if(!nome) return;
+
+        const novoEv = { nome, formato, ativo: true, data: new Date().toLocaleDateString() };
+        if(editIdx > -1) eventos[editIdx] = novoEv;
+        else { eventos.forEach(e => e.ativo = false); eventos.unshift(novoEv); }
+
+        localStorage.setItem('eventos_db', JSON.stringify(eventos));
+
+        // ENVIO DA MOLDURA SE EXISTIR
+        if (molduraFile) {
+            const formData = new FormData();
+            formData.append('file', molduraFile);
+            formData.append('evento', nome);
+            formData.append('tipo', 'moldura'); // CARIMBO DA MOLDURA
+            try {
+                await fetch(`${API_URL}/upload`, { method: 'POST', body: formData });
+            } catch(e) { console.error("Erro ao subir moldura", e); }
+        }
+
+        await sincronizar(nome, formato);
+        document.getElementById('edit-index').value = "-1";
+        document.getElementById('btn-submit').innerText = "Sincronizar e Ativar";
+        document.getElementById('input-evento').value = "";
+        document.getElementById('input-moldura').value = "";
+        document.getElementById('img-preview').style.display = "none";
+        renderizarLista();
+        checarEventoAtivo();
+    }
+
+    async function sincronizar(nome, formato) {
+        await enviarStatusParaAPI(nome, "ONLINE", formato);
+        document.getElementById('server-status').checked = true;
+        atualizarUIStatus(true);
+    }
+
+    function salvarStatusRede() {
+        const status = document.getElementById('server-status').checked;
+        const ativo = eventos.find(e => e.ativo);
+        const nomeEvento = ativo ? ativo.nome : "Sem evento ativado";
+        const statusTexto = status ? "ONLINE" : "OFFLINE";
+        const formatoEvento = ativo ? ativo.formato : "";
+        atualizarUIStatus(status);
+        enviarStatusParaAPI(nomeEvento, statusTexto, formatoEvento);
+    }
+
+    async function enviarStatusParaAPI(evento, status, formato) {
+        try {
+            await fetch(`${API_URL}/set-config`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ evento, status, formato })
+            });
+        } catch(e) { console.error("Erro na sincronização:", e); }
+    }
+
+    function atualizarUIStatus(on) {
+        const box = document.getElementById('status-box');
+        const lb = document.getElementById('label-status');
+        if(on) {
+            box.className = "status-container bg-on";
+            lb.innerText = "ONLINE";
+            lb.style.color = "var(--neon)";
+        } else {
+            box.className = "status-container bg-off";
+            lb.innerText = "OFFLINE";
+            lb.style.color = "var(--red)";
+        }
+    }
+
+    function renderizarLista() {
+        const corpo = document.getElementById('corpo-lista');
+        corpo.innerHTML = eventos.map((ev, i) => `
+            <div class="evento-item ${ev.ativo ? 'ativo' : ''}">
+                <div>
+                    <div style="font-size:12px; font-weight:bold;">${ev.nome}</div>
+                    <div style="font-size:9px; color:#444;">${ev.data} • ${ev.formato}</div>
+                </div>
+                <div style="display:flex; gap:12px; align-items:center;">
+                    <span style="cursor:pointer;" onclick="editar(${i})">✏️</span>
+                    <button class="btn-neon-style" style="font-size:9px; padding: 5px 12px; border-radius:4px; ${ev.ativo ? 'background:var(--neon); color:black;' : ''}" 
+                            onclick="ativarEvento(${i})">${ev.ativo ? 'ATIVO' : 'ATIVAR'}</button>
+                    <span style="cursor:pointer; opacity:0.3;" onclick="excluir(${i})">🗑️</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function editar(i) {
+        const ev = eventos[i];
+        document.getElementById('input-evento').value = ev.nome;
+        document.getElementById('select-formato').value = ev.formato;
+        document.getElementById('edit-index').value = i;
+        document.getElementById('btn-submit').innerText = "Atualizar Cadastro";
+    }
+
+    function excluir(i) {
+        if(confirm("Excluir evento?")) { 
+            eventos.splice(i, 1); 
+            localStorage.setItem('eventos_db', JSON.stringify(eventos)); 
+            renderizarLista(); 
+            checarEventoAtivo(); 
+        }
+    }
+    document.addEventListener('keydown', e => { if(e.key === "Escape") location.reload(); });
+</script>
+</body>
+</html>

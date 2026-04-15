@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PHOTO PRINT | QUIOSQUE PRO</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root { --bg: #000; --accent: #39ff14; --card: #111; --text: #fff; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; overflow: hidden; }
+        
+        header { background: #0a0a0a; padding: 15px; border-bottom: 1px solid #222; text-align: center; }
+        .event-name { color: var(--accent); font-weight: bold; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; }
+        
+        .search-trigger {
+            background: #1a1a1a; border: 1px solid #333; color: #666; width: 80%; max-width: 300px;
+            padding: 12px; border-radius: 50px; margin: 15px auto; display: flex;
+            align-items: center; justify-content: center; gap: 10px; font-size: 16px; cursor: pointer;
+        }
+
+        #galeria { 
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); 
+            gap: 12px; padding: 15px; height: calc(100vh - 140px); overflow-y: auto; align-items: start;
+        }
+        .foto-item { background: var(--card); border-radius: 10px; overflow: hidden; position: relative; border: 1px solid #222; height: fit-content; cursor: pointer; }
+        .foto-item img { width: 100%; display: block; aspect-ratio: 1/1; object-fit: cover; }
+        .foto-id { position: absolute; top: 8px; left: 8px; background: var(--accent); color: #000; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; z-index: 10; }
+
+        #numpad-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.96); z-index: 2000; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(10px);
+        }
+        .numpad-content { width: 260px; text-align: center; }
+        #input-busca { width: 100%; background: none; border: none; color: var(--accent); font-size: 50px; font-weight: bold; text-align: center; margin-bottom: 20px; outline: none; }
+        .numpad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .num-btn { background: #1a1a1a; border: 1px solid #333; color: #fff; width: 70px; height: 70px; border-radius: 50%; font-size: 26px; font-weight: bold; display: flex; align-items: center; justify-content: center; margin: 0 auto; cursor: pointer; transition: 0.1s; outline: none; }
+        .num-btn:active { background: var(--accent); color: #000; transform: scale(0.9); }
+        .btn-ok { background: var(--accent); color: #000; border: none; }
+        .btn-c { color: #ff4444; border-color: #442222; }
+
+        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 3000; align-items: center; justify-content: center; padding: 20px; }
+        .modal-container { display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%; max-width: 900px; }
+        #full-photo { max-height: 50vh; border-radius: 12px; border: 2px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        .qr-panel { background: #fff; padding: 20px; border-radius: 25px; text-align: center; color: #000; width: 240px; }
+        .instr-text { font-weight: bold; font-size: 12px; color: #000; margin-bottom: 10px; line-height: 1.4; }
+        
+        #qrcode { display: flex; justify-content: center; margin: 10px 0; }
+        #qrcode img { border: 5px solid white; }
+        .close-btn { background: var(--accent); color: #000; border: none; padding: 15px 60px; border-radius: 50px; font-weight: bold; font-size: 18px; cursor: pointer; width: 100%; }
+
+        #screensaver {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 5000; cursor: pointer;
+        }
+        #ss-img { width: 100%; height: 100%; object-fit: contain; animation: fadeIn 1s; }
+        .ss-msg {
+            position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%);
+            background: var(--accent); color: #000; padding: 18px 45px; border-radius: 50px;
+            font-weight: bold; font-size: 1.4rem; text-transform: uppercase;
+            box-shadow: 0 0 25px rgba(57, 255, 20, 0.6); animation: pulse 2s infinite;
+        }
+
+        /* Estilos da Tela de Download do Celular */
+        #mobile-download-screen {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 9999; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; overflow-y: auto;
+        }
+        .btn-baixar {
+            background: var(--accent); color: #000; padding: 20px 40px; border-radius: 50px;
+            text-decoration: none; font-weight: bold; font-size: 1.3rem; margin-top: 25px;
+            box-shadow: 0 0 20px rgba(57, 255, 20, 0.4); display: inline-block;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes pulse { 0% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.05); } 100% { transform: translateX(-50%) scale(1); } }
+
+        @media (min-width: 768px) { .modal-container { flex-direction: row; } #full-photo { max-height: 80vh; max-width: 65%; } }
+    </style>
+</head>
+<body onclick="resetInactivityTimer()" ontouchstart="resetInactivityTimer()">
+
+<div id="mobile-download-screen">
+    <h2 style="color: var(--accent);">SUA FOTO CHEGOU!</h2>
+    <img id="mobile-img" src="" style="max-width: 100%; max-height: 60vh; border-radius: 15px; border: 2px solid #333;">
+    <a id="mobile-link" href="" download="minha-foto.jpg" class="btn-baixar">⬇️ BAIXAR FOTO</a>
+    <p style="color: #666; font-size: 0.8rem; margin-top: 20px;">Dica: Se o download não iniciar,<br>segure na foto e escolha "Salvar".</p>
+</div>
+
+<header id="main-header">
+    <div class="event-name" id="ev-titulo">SINCRONIZANDO...</div>
+    <div class="search-trigger" onclick="toggleNumpad(true)">
+        <span>🔍</span> Procure sua foto aqui
+    </div>
+</header>
+
+<div id="galeria"></div>
+
+<div id="screensaver" onclick="stopScreensaver()">
+    <img id="ss-img" src="">
+    <div class="ss-msg">Toque para buscar sua foto</div>
+</div>
+
+<div id="numpad-overlay">
+    <div class="numpad-content">
+        <input type="text" id="input-busca" placeholder="000" readonly>
+        <div class="numpad-grid">
+            <button class="num-btn" onclick="addNum(1)">1</button>
+            <button class="num-btn" onclick="addNum(2)">2</button>
+            <button class="num-btn" onclick="addNum(3)">3</button>
+            <button class="num-btn" onclick="addNum(4)">4</button>
+            <button class="num-btn" onclick="addNum(5)">5</button>
+            <button class="num-btn" onclick="addNum(6)">6</button>
+            <button class="num-btn" onclick="addNum(7)">7</button>
+            <button class="num-btn" onclick="addNum(8)">8</button>
+            <button class="num-btn" onclick="addNum(9)">9</button>
+            <button class="num-btn btn-c" onclick="limparBusca()">C</button>
+            <button class="num-btn" onclick="addNum(0)">0</button>
+            <button class="num-btn btn-ok" onclick="buscarEAbrirFoto()">OK</button>
+        </div>
+        <button class="close-btn" onclick="toggleNumpad(false)" style="margin-top: 20px; background: #333; color: white; padding: 10px;">FECHAR</button>
+    </div>
+</div>
+
+<div id="modal">
+    <div class="modal-container">
+        <img id="full-photo" src="" crossorigin="anonymous">
+        <div class="qr-panel">
+            <div class="instr-text">
+                ESCANEIE PARA BAIXAR<br>NO SEU CELULAR
+            </div>
+            <div id="qrcode"></div>
+            <div id="photo-id-label" style="font-weight:bold; font-size:32px; color:#000; margin-top: 5px;"></div>
+            <button class="close-btn" onclick="fecharModal()" style="margin-top:15px">VOLTAR</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
+    
+    let eventoAtivo = "";
+    let todasFotos = [];
+    let inactivityTimer;
+    let ssInterval;
+    let ssIndex = 0;
+    let qr = new QRCode(document.getElementById("qrcode"), { width: 180, height: 180 });
+
+    // --- LÓGICA DE DETECÇÃO DE DOWNLOAD NO CELULAR ---
+    window.onload = () => {
+        const params = new URLSearchParams(window.location.search);
+        const fotoParaDownload = params.get('dl');
+
+        if (fotoParaDownload) {
+            // Se houver "?dl=" na URL, mostra a tela de download e esconde o quiosque
+            document.getElementById('mobile-download-screen').style.display = 'flex';
+            document.getElementById('mobile-img').src = decodeURIComponent(fotoParaDownload);
+            document.getElementById('mobile-link').href = decodeURIComponent(fotoParaDownload);
+            document.body.style.overflow = 'auto'; // Permite rolar se necessário
+        } else {
+            // Se não, inicia o quiosque normal
+            syncDados();
+            resetInactivityTimer();
+        }
+    };
+
+    async function syncDados() {
+        try {
+            const resStatus = await fetch(`${API_URL}/status?t=${Date.now()}`);
+            const config = await resStatus.json();
+            
+            if (config.evento !== eventoAtivo) {
+                eventoAtivo = config.evento;
+                document.getElementById('ev-titulo').innerText = eventoAtivo;
+            }
+
+            const resFila = await fetch(`${API_URL}/list-photos?evento=${encodeURIComponent(eventoAtivo)}`);
+            const fotos = await resFila.json();
+            
+            const fotosInvertidas = fotos.reverse();
+
+            if (JSON.stringify(fotosInvertidas) !== JSON.stringify(todasFotos)) {
+                todasFotos = fotosInvertidas;
+                renderizarGaleria();
+            }
+        } catch (e) { console.log("Erro na sincronização"); }
+    }
+
+    function renderizarGaleria() {
+        const container = document.getElementById('galeria');
+        const termo = document.getElementById('input-busca').value;
+        const fotosComId = todasFotos.map((f, i) => ({ ...f, displayId: todasFotos.length - i }));
+        const filtradas = termo === "" ? fotosComId : fotosComId.filter(f => f.displayId.toString().includes(termo));
+
+        container.innerHTML = filtradas.map(f => {
+            const urlImg = `${API_URL}/photo/${encodeURIComponent(f.key)}`;
+            return `
+                <div class="foto-item" onclick="abrirModal('${urlImg}', '${f.displayId}')">
+                    <div class="foto-id">#${f.displayId}</div>
+                    <img src="${urlImg}" loading="lazy" crossorigin="anonymous">
+                </div>
+            `;
+        }).join('');
+    }
+
+    function resetInactivityTimer() {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = setTimeout(startScreensaver, 60000);
+    }
+
+    function startScreensaver() {
+        if (todasFotos.length === 0 || document.getElementById('modal').style.display === 'flex') return;
+        document.getElementById('screensaver').style.display = 'block';
+        runSlideshow();
+        clearInterval(ssInterval);
+        ssInterval = setInterval(runSlideshow, 5000);
+    }
+
+    function runSlideshow() {
+        if (todasFotos.length === 0) return;
+        const img = document.getElementById('ss-img');
+        const f = todasFotos[ssIndex];
+        img.src = `${API_URL}/photo/${encodeURIComponent(f.key)}`;
+        ssIndex = (ssIndex + 1) % todasFotos.length;
+    }
+
+    function stopScreensaver() {
+        document.getElementById('screensaver').style.display = 'none';
+        clearInterval(ssInterval);
+        resetInactivityTimer();
+    }
+
+    function addNum(n) {
+        const input = document.getElementById('input-busca');
+        if(input.value.length < 4) input.value += n;
+        renderizarGaleria();
+    }
+
+    function limparBusca() {
+        document.getElementById('input-busca').value = "";
+        renderizarGaleria();
+    }
+
+    function toggleNumpad(show) {
+        document.getElementById('numpad-overlay').style.display = show ? 'flex' : 'none';
+        if (!show) limparBusca();
+    }
+
+    function buscarEAbrirFoto() {
+        const termo = document.getElementById('input-busca').value;
+        if (termo === "") { toggleNumpad(false); return; }
+        const fotosComId = todasFotos.map((f, i) => ({ ...f, displayId: todasFotos.length - i }));
+        const achada = fotosComId.find(f => f.displayId.toString() === termo);
+        if (achada) {
+            toggleNumpad(false);
+            abrirModal(`${API_URL}/photo/${encodeURIComponent(achada.key)}`, achada.displayId);
+        } else {
+            alert("Foto não encontrada.");
+            limparBusca();
+        }
+    }
+
+    function abrirModal(url, id) {
+    stopScreensaver();
+    document.getElementById('full-photo').src = url;
+    document.getElementById('photo-id-label').innerText = "#" + id;
+    
+    // 1. A URL DA SUA GALERIA NO GITHUB (SEM O FINAL ?download=)
+    const urlGitHub = "https://maxmilianodds.github.io/photoprint/galeria.html"; 
+    
+    // 2. PEGAR O NOME DO ARQUIVO (A KEY)
+    // Se a URL que vem da API for: https://.../photo/evento1/foto01.jpg
+    // O split('/').pop() pega apenas "foto01.jpg"
+    const fotoKey = url.split('/').pop(); 
+    
+    // 3. MONTAR O LINK COM O PARÂMETRO CORRETO
+    const linkParaOCliente = `${urlGitHub}?download=${encodeURIComponent(fotoKey)}`;
+    
+    // 4. GERAR O QR CODE
+    qr.clear();
+    qr.makeCode(linkParaOCliente); 
+    
+    document.getElementById('modal').style.display = 'flex';
+}
+
+    function fecharModal() {
+        document.getElementById('modal').style.display = 'none';
+        limparBusca();
+        resetInactivityTimer();
+    }
+
+    setInterval(syncDados, 5000);
+</script>
+</body>
+</html>

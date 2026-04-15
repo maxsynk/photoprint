@@ -95,7 +95,6 @@
             border-radius: 4px;
         }
 
-        /* --- BARRA DE PATROCINADORES --- */
         #sponsor-bar {
             width: 100vw;
             height: 140px;
@@ -130,7 +129,6 @@
             opacity: 0.5;
         }
 
-        /* --- BOTÃO "L" MINIMALISTA --- */
         .config-trigger {
             position: absolute;
             top: 10px;
@@ -148,12 +146,6 @@
             cursor: pointer;
             opacity: 0.4;
             transition: 0.3s;
-        }
-        .config-trigger:hover {
-            opacity: 1;
-            background: var(--neon);
-            color: #000;
-            box-shadow: 0 0 10px var(--neon);
         }
 
         #waiting-msg { 
@@ -185,9 +177,7 @@
 
 <div id="sponsor-bar">
     <span class="sponsor-label">Parceiros Oficiais</span>
-    
     <div class="config-trigger" onclick="document.getElementById('logo-upload').click()">L</div>
-    
     <div id="logos-container" style="display:contents;"></div>
 </div>
 
@@ -201,11 +191,6 @@
 
     const fileInput = document.getElementById('logo-upload');
     const containerLogos = document.getElementById('logos-container');
-
-    // Mantém o atalho de teclado também por segurança
-    document.addEventListener('keydown', (e) => {
-        if (e.key.toLowerCase() === 'l') fileInput.click();
-    });
 
     fileInput.addEventListener('change', function() {
         const files = Array.from(this.files).slice(0, 5); 
@@ -234,36 +219,59 @@
         try {
             const res = await fetch(`${API_URL}/status?t=${Date.now()}`);
             const data = await res.json();
+            
+            // Se o evento mudou ou foi ativado
             if (data.evento && data.evento !== eventoAtivo) {
                 eventoAtivo = data.evento;
                 document.getElementById('waiting-msg').style.display = 'none';
                 fotos = [];
                 currentIndex = 0;
-                updatePhotos();
+                await updatePhotos(); // Espera a primeira busca
+            } else if (!data.evento) {
+                eventoAtivo = "";
+                document.getElementById('waiting-msg').style.display = 'block';
+                document.getElementById('waiting-msg').innerText = "Aguardando Evento Ativo...";
+                // Limpa o slide atual se o evento for desativado
+                const display = document.getElementById('display');
+                const slides = display.querySelectorAll('.slide-container');
+                slides.forEach(s => s.remove());
+                clearInterval(slideInterval);
+                slideInterval = null;
             }
-        } catch (e) { console.error("Erro status"); }
+        } catch (e) { console.error("Erro ao sincronizar status"); }
     }
 
     async function updatePhotos() {
         if (!eventoAtivo) return;
         try {
-            const res = await fetch(`${API_URL}/list-photos?evento=${encodeURIComponent(eventoAtivo)}`);
+            // Adicionado timestamp para evitar cache do 404
+            const res = await fetch(`${API_URL}/list-photos?evento=${encodeURIComponent(eventoAtivo)}&t=${Date.now()}`);
             const novasFotos = await res.json();
-            if (JSON.stringify(novasFotos) !== JSON.stringify(fotos)) {
-                fotos = novasFotos.reverse();
-                if (fotos.length > 0 && !slideInterval) {
-                    renderSlide();
-                    slideInterval = setInterval(renderSlide, 8000); 
+            
+            if (Array.isArray(novasFotos) && novasFotos.length > 0) {
+                if (JSON.stringify(novasFotos) !== JSON.stringify(fotos)) {
+                    fotos = novasFotos.reverse();
+                    if (!slideInterval) {
+                        renderSlide();
+                        slideInterval = setInterval(renderSlide, 8000); 
+                    }
                 }
+            } else {
+                document.getElementById('waiting-msg').style.display = 'block';
+                document.getElementById('waiting-msg').innerText = "Nenhuma foto neste evento...";
             }
-        } catch (e) { console.error("Erro fotos"); }
+        } catch (e) { console.error("Erro ao carregar fotos"); }
     }
 
     function renderSlide() {
         if (fotos.length === 0) return;
+        
         const display = document.getElementById('display');
         const fotoObjeto = fotos[currentIndex];
+        
+        // Montagem segura da URL
         const urlFinal = `${API_URL}/photo/${encodeURIComponent(fotoObjeto.key)}`;
+        
         const slideContainer = document.createElement('div');
         slideContainer.className = 'slide-container';
 
@@ -277,18 +285,26 @@
         imgMain.src = urlFinal;
         imgMain.className = 'slide-main';
 
-        slideContainer.appendChild(imgBg);
-        slideContainer.appendChild(imgMain);
-
+        // Só exibe o slide após a imagem principal carregar com sucesso
         imgMain.onload = () => {
             const oldSlides = display.querySelectorAll('.slide-container');
+            slideContainer.appendChild(imgBg);
+            slideContainer.appendChild(imgMain);
             display.appendChild(slideContainer);
+            
             setTimeout(() => slideContainer.classList.add('active'), 100);
+            
             if (oldSlides.length > 0) {
                 setTimeout(() => { oldSlides.forEach(s => s.remove()); }, 1600);
             }
+            currentIndex = (currentIndex + 1) % fotos.length;
         };
-        currentIndex = (currentIndex + 1) % fotos.length;
+
+        imgMain.onerror = () => {
+            console.error("Erro ao carregar imagem: " + urlFinal);
+            currentIndex = (currentIndex + 1) % fotos.length;
+            // Pula para a próxima se der erro
+        };
     }
 
     window.onload = () => {
@@ -296,7 +312,7 @@
         saved.forEach(src => renderLogo(src));
         syncEvent();
         setInterval(syncEvent, 5000);
-        setInterval(updatePhotos, 10000);
+        setInterval(updatePhotos, 15000); // Busca fotos novas a cada 15 seg
     };
 </script>
 </body>

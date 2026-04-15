@@ -141,30 +141,33 @@
 
     // --- LOGICA DE DOWNLOAD PARA O CLIENTE ---
     async function checarModoDownload() {
-        const params = new URLSearchParams(window.location.search);
-        const fotoKey = params.get('download'); // Agora pegamos a chave da foto
+    const params = new URLSearchParams(window.location.search);
+    const fotoKey = params.get('download'); // Recebe apenas o nome do arquivo
 
-        if (fotoKey) {
-            // Esconde tudo e mostra a tela de download
-            document.getElementById('conteudo-quiosque').style.display = 'none';
-            document.getElementById('mobile-download-screen').style.display = 'flex';
-            
-            // Precisamos buscar as configs do evento para pegar a moldura
-            const resStatus = await fetch(`${API}/status?t=${Date.now()}`);
-            const config = await resStatus.json();
-            const resF = await fetch(`${API}/list-photos?evento=${encodeURIComponent(config.evento)}`);
-            const dados = await resF.json();
-            
-            const molduraObj = dados.find(f => f.key.toLowerCase().endsWith('.png'));
-            const urlMoldura = molduraObj ? `${API}/photo/${encodeURIComponent(molduraObj.key)}` : "";
-            
-            // Fundir a foto específica para o cliente
-            const imgFundida = await fundirImagem(`${API}/photo/${encodeURIComponent(fotoKey)}`, urlMoldura);
-            
-            document.getElementById('mobile-img').src = imgFundida;
-            document.getElementById('mobile-link').href = imgFundida;
-        }
+    if (fotoKey) {
+        document.getElementById('conteudo-quiosque').style.display = 'none';
+        document.getElementById('mobile-download-screen').style.display = 'flex';
+        
+        // SUA URL PÚBLICA DO R2 (Ajuste se as fotos estiverem em pastas)
+        const baseUrlR2 = "https://pub-8c8c6a073554400ebde1a1027de8ed73.r2.dev/";
+        const urlFotoCompleta = baseUrlR2 + decodeURIComponent(fotoKey);
+        
+        // 1. Busca as configs para tentar pegar a moldura
+        const resStatus = await fetch(`${API}/status?t=${Date.now()}`);
+        const config = await resStatus.json();
+        const resF = await fetch(`${API}/list-photos?evento=${encodeURIComponent(config.evento)}`);
+        const dados = await resF.json();
+        
+        const molduraObj = dados.find(f => f.key.toLowerCase().endsWith('.png'));
+        const urlMoldura = molduraObj ? `${API}/photo/${encodeURIComponent(molduraObj.key)}` : "";
+        
+        // 2. Fundir a foto (Isso faz a mágica da moldura aparecer no celular)
+        const imgFundida = await fundirImagem(urlFotoCompleta, urlMoldura);
+        
+        document.getElementById('mobile-img').src = imgFundida;
+        document.getElementById('mobile-link').href = imgFundida;
     }
+}
 
     function toggleSidebar() {
         document.getElementById('sidebar').classList.toggle('active');

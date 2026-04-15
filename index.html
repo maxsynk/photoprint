@@ -8,6 +8,14 @@
         :root { --neon: #39ff14; --dark: #050505; --error: #ff0000; }
         body { font-family: 'Segoe UI', sans-serif; text-align: center; background: var(--dark); color: white; margin: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
         
+        /* CSS para Impressão - Garante que saia colorido e limpo */
+        @media print {
+            body { background: white; }
+            .header, .main-ui, #cam-container, .cam-btn, .shutter-btn, #loader button { display: none !important; }
+            #loader img { max-height: 100%; border: none; }
+            #loader { display: block !important; position: static; background: white; padding: 0; }
+        }
+
         .header { margin-top: 30px; z-index: 10; }
         .brand-title { font-size: 45px; font-weight: 900; color: var(--neon); text-shadow: 0 0 15px var(--neon); letter-spacing: 6px; margin: 0; }
         .subtitle { color: white; font-size: 20px; letter-spacing: 3px; margin-top: 8px; opacity: 0.9; font-weight: 300; }
@@ -15,7 +23,6 @@
 
         .mirror { transform: scaleX(-1); }
 
-        /* Alerta de Rotação */
         #rotate-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 5000; display: none; align-items: center; justify-content: center; flex-direction: column; }
         .phone-icon { width: 60px; height: 110px; border: 4px solid white; border-radius: 8px; position: relative; animation: rotatePhone 2s infinite ease-in-out; }
         .phone-icon::after { content: ''; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 8px; height: 8px; border: 2px solid white; border-radius: 50%; }
@@ -29,8 +36,6 @@
         .btn-eye { width: 170px; height: 170px; border-radius: 50%; border: 6px solid #222; background: #000; cursor: pointer; display: flex; align-items: center; justify-content: center; animation: pulse-border 2s infinite; }
         .iris { width: 60px; height: 60px; border-radius: 50%; border: 5px solid var(--neon); box-shadow: 0 0 20px var(--neon); }
         
-        @keyframes pulse-border { 0% { box-shadow: 0 0 0 0 rgba(57, 255, 20, 0.7); } 70% { box-shadow: 0 0 0 30px rgba(57, 255, 20, 0); } 100% { box-shadow: 0 0 0 0 rgba(57, 255, 20, 0); } }
-
         #cam-container { position: fixed; inset: 0; background: #000; display: none; z-index: 1000; }
         video { width: 100%; height: 100%; object-fit: cover; }
         #overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 40px 20px; pointer-events: none; }
@@ -105,7 +110,7 @@
                     else configAtual = {...FORMATOS["10X15"], key: "10X15"};
                     total = configAtual.fotos;
                     getFrame(ev);
-                    checkOrientation(); // Re-verifica sempre que o formato muda no sync
+                    checkOrientation();
                 }
             } catch (e) { document.getElementById('offline-screen').style.display = "flex"; }
         }
@@ -154,7 +159,6 @@
             cancelado = true;
             if (stream) stream.getTracks().forEach(t => t.stop());
             document.getElementById('cam-container').style.display = "none";
-            // Força esconder o overlay ao voltar, independente do formato
             document.getElementById('rotate-overlay').style.display = "none";
         }
 
@@ -166,7 +170,6 @@
         async function go(n) {
             if (cancelado) return;
             document.getElementById('indicator').innerText = `FOTO ${n} / ${total}`;
-            // AJUSTE: Agora todos os formatos começam com 5 segundos
             let tempo = 5; 
             for (let i = tempo; i > 0; i--) {
                 if (cancelado) return;
@@ -208,29 +211,23 @@
             m.onload = () => {
                 cv.width = configAtual.w; cv.height = configAtual.h;
                 const hPart = cv.height / total;
-                
                 ctx.fillStyle = "white";
                 ctx.fillRect(0,0, cv.width, cv.height);
 
                 pics.forEach((img, i) => {
                     const drawAreaW = cv.width - (configAtual.padX * 2);
                     const drawAreaH = hPart - (configAtual.padY * 2);
-
                     const s = Math.max(drawAreaW / img.width, drawAreaH / img.height);
                     const w = img.width * s;
                     const h = img.height * s;
-                    
                     const x = (cv.width - w) / 2;
                     const y = (i * hPart) + (hPart - h) / 2;
-
                     ctx.save();
                     ctx.beginPath();
                     ctx.rect(configAtual.padX, (i * hPart) + configAtual.padY, drawAreaW, drawAreaH);
                     ctx.clip();
                     ctx.drawImage(img, x, y, w, h);
                     ctx.restore();
-
-                    // Linha branca fina (2px) entre as fotos
                     if (configAtual.divider && i < total - 1) {
                         ctx.fillStyle = "white";
                         ctx.fillRect(0, (i + 1) * hPart - 1, cv.width, 2);
@@ -239,14 +236,17 @@
                 
                 ctx.drawImage(m, 0, 0, cv.width, cv.height);
 
-                const previewUrl = cv.toDataURL('image/jpeg', 0.8);
+                const previewUrl = cv.toDataURL('image/jpeg', 0.95);
                 document.getElementById('loader').innerHTML = `
-                    <img src="${previewUrl}" style="max-height:60vh; border:3px solid white;">
+                    <img src="${previewUrl}" style="max-height:60vh; border:3px solid white; filter:none !important;">
                     <div style="display:flex; gap:15px; margin-top:15px;">
                         <button onclick="enviarBlob()" style="padding:15px 30px; background:var(--neon); border:none; font-weight:bold; border-radius:10px;">IMPRIMIR</button>
                         <button onclick="location.reload()" style="padding:15px 30px; background:#444; color:white; border:none; border-radius:10px;">REFAZER</button>
                     </div>
                 `;
+                
+                // DISPARO AUTOMÁTICO PARA MODO KIOSQUE
+                setTimeout(() => { window.print(); }, 1000);
             };
             m.src = frame + "?t=" + Date.now();
         }

@@ -115,7 +115,6 @@
 
 <script>
     const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
-    
     let eventoAtivo = "";
     let fotos = [];
     let currentIndex = 0;
@@ -124,7 +123,6 @@
     const containerLogos = document.getElementById('logos-container');
     const fileInput = document.getElementById('logo-upload');
 
-    // Gerenciamento de Logos (Parceiros)
     fileInput.addEventListener('change', function() {
         const files = Array.from(this.files).slice(0, 5); 
         const logosData = [];
@@ -148,31 +146,25 @@
         containerLogos.appendChild(img);
     }
 
-    // SINCRONIZAÇÃO DE EVENTO E FOTOS
     async function sync() {
         try {
-            // 1. Checa Status do Evento
             const resStatus = await fetch(`${API_URL}/status?t=${Date.now()}`);
             const dataStatus = await resStatus.json();
             
             if (dataStatus.evento) {
                 if (dataStatus.evento !== eventoAtivo) {
                     eventoAtivo = dataStatus.evento;
-                    fotos = []; // Reseta fotos para o novo evento
+                    fotos = [];
                     currentIndex = 0;
                 }
 
-                // 2. Busca Fotos do Evento Ativo
                 const resFotos = await fetch(`${API_URL}/list-photos?evento=${encodeURIComponent(eventoAtivo)}&t=${Date.now()}`);
                 const novasFotos = await resFotos.json();
                 
                 if (Array.isArray(novasFotos) && novasFotos.length > 0) {
                     document.getElementById('waiting-msg').style.display = 'none';
-                    
-                    // Só atualiza a lista se houver mudança real
                     if (JSON.stringify(novasFotos) !== JSON.stringify(fotos)) {
-                        fotos = novasFotos.reverse(); // Fotos novas primeiro
-                        
+                        fotos = novasFotos.reverse();
                         if (!slideInterval) {
                             renderNextSlide();
                             slideInterval = setInterval(renderNextSlide, 8000);
@@ -186,9 +178,7 @@
                 mostrarAviso("Aguardando Evento Ativo...");
                 pararSlides();
             }
-        } catch (e) {
-            console.error("Erro na sincronização:", e);
-        }
+        } catch (e) { console.error("Erro na sincronização:", e); }
     }
 
     function mostrarAviso(txt) {
@@ -207,62 +197,43 @@
 
     function renderNextSlide() {
         if (fotos.length === 0) return;
-        
         const display = document.getElementById('display');
         const fotoObjeto = fotos[currentIndex];
-        
-        // CORREÇÃO DO 404: Garante que o caminho da foto está limpo e codificado
-        // Se a key já vier com o nome do evento, não precisa concatenar.
         const keyLimpa = fotoObjeto.key.startsWith('/') ? fotoObjeto.key.substring(1) : fotoObjeto.key;
         const urlFinal = `${API_URL}/photo/${encodeURIComponent(keyLimpa)}?t=${Date.now()}`;
         
         const slideContainer = document.createElement('div');
         slideContainer.className = 'slide-container';
-
         const imgMain = new Image();
         imgMain.crossOrigin = "anonymous";
         imgMain.className = 'slide-main';
-        
         const imgBg = new Image();
         imgBg.className = 'slide-bg';
 
         imgMain.onload = () => {
             const oldSlides = display.querySelectorAll('.slide-container');
-            
             imgBg.src = imgMain.src;
             slideContainer.appendChild(imgBg);
             slideContainer.appendChild(imgMain);
             display.appendChild(slideContainer);
-            
             setTimeout(() => slideContainer.classList.add('active'), 100);
-            
-            // Remove o slide antigo após a transição
             if (oldSlides.length > 0) {
                 setTimeout(() => { oldSlides.forEach(s => s.remove()); }, 1600);
             }
-            
             currentIndex = (currentIndex + 1) % fotos.length;
         };
 
         imgMain.onerror = () => {
-            console.warn("Foto não encontrada (404), pulando...");
             currentIndex = (currentIndex + 1) % fotos.length;
-            // Se falhou, tenta a próxima foto imediatamente
             renderNextSlide(); 
         };
-
         imgMain.src = urlFinal;
     }
 
     window.onload = () => {
-        // Carrega logos salvos
         const saved = JSON.parse(localStorage.getItem('pp_logos') || "[]");
         saved.forEach(src => renderLogo(src));
-        
-        // Inicia Sincronização Única
         sync();
-        
-        // Intervalo de sincronização (Checa se há fotos novas a cada 10s)
         setInterval(sync, 10000);
     };
 </script>

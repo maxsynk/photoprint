@@ -107,15 +107,11 @@
         
         let configAtual = FORMATOS["10X15"];
 
-        // FUNÇÃO DE SINCRONIZAÇÃO TOTALMENTE REESCRITA PARA SER "AGRESSIVA"
         async function sync() {
             try {
-                // Usamos o timestamp para evitar que o navegador use o cache da resposta anterior
                 const r = await fetch(`${API}/status?t=${Date.now()}`);
-                if (!r.ok) throw new Error("Erro na rede");
                 const d = await r.json();
                 
-                // 1. Verifica Status Geral
                 if (d.status === "OFFLINE") {
                     document.getElementById('offline-screen').style.display = "flex";
                     return;
@@ -123,37 +119,61 @@
                     document.getElementById('offline-screen').style.display = "none";
                 }
 
-                // 2. Sincroniza Nome do Evento e Frame
-                if (ev !== d.evento) {
-                    console.log("Novo evento detectado:", d.evento);
-                    ev = d.evento;
-                    document.getElementById('nome-evento').innerText = ev;
-                    await getFrame(ev); // Busca a moldura PNG do novo evento
-                }
-
-                // 3. Sincroniza Formato (Independente se o nome do evento mudou)
+                // Sincroniza Formato primeiro para garantir que a UI se adapte
                 const fStr = String(d.formato || d.layout || "").toUpperCase().trim();
                 let novoTipo = "10X15";
-                
                 if (fStr.includes("TIRINHA")) novoTipo = "TIRINHA";
                 else if (fStr.includes("POLAROID")) novoTipo = "POLAROID";
 
                 if (configAtual.key !== novoTipo) {
-                    console.log("Mudança de layout detectada:", novoTipo);
                     configAtual = FORMATOS[novoTipo];
                     total = configAtual.fotos;
-                    checkOrientation(); // Recalcula se deve mostrar o aviso de girar
+                    checkOrientation();
+                }
+
+                // Sincroniza Evento e busca Moldura
+                if (ev !== d.evento) {
+                    ev = d.evento;
+                    document.getElementById('nome-evento').innerText = ev;
+                    
+                    // IMPORTANTE: Busca a moldura. Se não existir, avisa no console.
+                    const frameEncontrado = await getFrame(ev);
+                    if (!frameEncontrado) {
+                        document.getElementById('nome-evento').innerText = "MOLDURA NÃO ENCONTRADA";
+                    }
                 }
 
             } catch (e) { 
-                console.error("Falha ao sincronizar com o painel:", e);
+                console.error("Erro sync:", e);
+                document.getElementById('offline-screen').style.display = "flex"; 
+            }
+        }
+
+        async function getFrame(e) {
+            try {
+                // Adicionado t=Date.now() para forçar o Worker a não usar cache do R2
+                const r = await fetch(`${API}/list-photos?evento=${encodeURIComponent(e)}&t=${Date.now()}`);
+                const f = await r.json();
+                
+                // Se o evento foi deletado, a lista virá vazia []
+                if (!f || f.length === 0) {
+                    frame = "";
+                    return false;
+                }
+
+                const p = f.find(x => x.key.toLowerCase().endsWith('.png'));
+                if (p) {
+                    frame = `${API}/photo/${encodeURIComponent(p.key)}`;
+                    return true;
+                }
+                return false;
+            } catch (err) {
+                return false;
             }
         }
 
         function checkOrientation() {
             const overlay = document.getElementById('rotate-overlay');
-            // Se for 10x15 (landscape) e o celular estiver em pé, mostra o aviso.
-            // Se for Tirinha ou Polaroid (landscape: false), nunca mostra o aviso.
             if (configAtual.landscape && window.innerWidth < window.innerHeight) {
                 overlay.style.display = "flex";
             } else { 
@@ -162,20 +182,6 @@
         }
         
         window.addEventListener('resize', checkOrientation);
-
-        async function getFrame(e) {
-            try {
-                const r = await fetch(`${API}/list-photos?evento=${encodeURIComponent(e)}&t=${Date.now()}`);
-                const f = await r.json();
-                const p = f.find(x => x.key.toLowerCase().endsWith('.png'));
-                if (p) {
-                    frame = `${API}/photo/${encodeURIComponent(p.key)}`;
-                    console.log("Moldura carregada:", frame);
-                }
-            } catch (e) {
-                console.error("Erro ao buscar moldura:", e);
-            }
-        }
 
         async function startStream(mode) {
             if (stream) { stream.getTracks().forEach(t => t.stop()); }
@@ -189,14 +195,19 @@
                 v.setAttribute('playsinline', true);
                 await v.play();
                 if (mode === "user") v.classList.add('mirror'); else v.classList.remove('mirror');
-            } catch (err) { alert("Câmera bloqueada ou não encontrada."); }
+            } catch (err) { alert("Câmera bloqueada."); }
         }
 
         async function ligar() {
-            pics = []; cancelado = false;
-            // Antes de abrir a câmera, garante que estamos sincronizados
-            await sync();
+            // Verifica moldura antes de abrir
+            if (!frame) {
+                await sync(); // Tenta sincronizar de novo
+                if (!frame) {
+                    alert("Atenção: Nenhuma moldura encontrada para este evento no servidor.");
+                }
+            }
             
+            pics = []; cancelado = false;
             document.getElementById('cam-container').style.display = "block";
             await startStream(currentFacingMode);
             document.getElementById('shutter-placeholder').innerHTML = '<div onclick="iniciarSequencia()" class="shutter-btn"></div>';
@@ -295,7 +306,6 @@
 
         async function enviarBlob() {
             document.getElementById('loader').innerHTML = '<div class="spin"></div><p style="color:var(--neon); margin-top:20px;">ENVIANDO...</p>';
-            
             document.getElementById('c-strip').toBlob(async b => {
                 const fd = new FormData();
                 fd.append('file', b, `foto_${Date.now()}.jpg`); 
@@ -304,22 +314,12 @@
 
                 try {
                     const res = await fetch(`${API}/upload`, { method: 'POST', body: fd });
-                    if(res.ok) {
-                        location.reload();
-                    } else {
-                        alert("Erro ao enviar. Tente novamente.");
-                        location.reload();
-                    }
-                } catch(err) {
-                    alert("Erro de conexão.");
-                    location.reload();
-                }
+                    if(res.ok) { location.reload(); } else { alert("Erro no envio."); location.reload(); }
+                } catch(err) { alert("Erro de conexão."); location.reload(); }
             }, 'image/jpeg', 0.95);
         }
 
-        // Tenta sincronizar a cada 5 segundos
         setInterval(sync, 5000);
-        // Primeira sincronização ao carregar a página
         sync();
     </script>
 </body>

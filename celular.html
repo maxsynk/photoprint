@@ -5,38 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PHOTO PRINT - FULL AUTO</title>
     <style>
-        :root { --neon: #39ff14; --dark: #050505; --error: #ff0000; }
+        :root { --neon: #39ff14; --error: #ff0000; }
         body { 
-            font-family: 'Segoe UI', sans-serif; 
-            text-align: center; 
+            font-family: 'Segoe UI', sans-serif; text-align: center; 
             background: radial-gradient(circle at 50% 0%, #1a3a12 0%, #000 100%);
-            color: white; 
-            margin: 0; 
-            overflow: hidden; 
-            height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
+            color: white; margin: 0; overflow: hidden; height: 100vh; 
+            display: flex; flex-direction: column; 
         }
         
-        /* Estilo para quando o sistema está OFFLINE ou em MANUTENÇÃO */
         #offline-screen { 
             position: fixed; inset: 0; background: #000; z-index: 10000; 
-            display: none; align-items: center; justify-content: center; flex-direction: column; 
+            display: none; align-items: center; justify-content: center; 
         }
         .mantencao-txt { color: var(--error); font-size: 28px; font-weight: 900; text-shadow: 0 0 15px var(--error); }
 
-        /* Restante do CSS mantido conforme original */
         .header { margin-top: 40px; z-index: 10; border-left: 4px solid var(--neon); padding-left: 20px; align-self: flex-start; margin-left: 30px; text-align: left; }
         .brand-title { font-size: 38px; font-weight: 900; color: var(--neon); text-shadow: 0 0 15px var(--neon); letter-spacing: 5px; margin: 0; text-transform: uppercase; }
         .subtitle { color: white; font-size: 14px; letter-spacing: 3px; margin-top: 5px; opacity: 0.7; font-weight: bold; text-transform: uppercase; }
-        #nome-evento { font-size: 22px; font-weight: bold; color: var(--neon); text-transform: uppercase; margin: 20px 0; min-height: 25px; opacity: 0.9; }
+        #nome-evento { font-size: 22px; font-weight: bold; color: var(--neon); text-transform: uppercase; margin: 20px 0; min-height: 25px; }
 
         .mirror { transform: scaleX(-1); }
-
         #rotate-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 5000; display: none; align-items: center; justify-content: center; flex-direction: column; }
         .phone-icon { width: 50px; height: 90px; border: 3px solid white; border-radius: 6px; position: relative; animation: rotatePhone 2s infinite ease-in-out; }
         @keyframes rotatePhone { 0% { transform: rotate(0deg); } 50% { transform: rotate(-90deg); } 100% { transform: rotate(-90deg); } }
-        .rotate-txt { color: var(--neon); font-weight: 900; margin-top: 25px; letter-spacing: 2px; font-size: 14px; }
         
         .main-ui { flex-grow: 1; display: flex; align-items: center; justify-content: center; padding-bottom: 80px; }
         .btn-eye { width: 180px; height: 180px; border-radius: 50%; border: 6px solid #111; background: #000; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 40px rgba(0,0,0,0.5); }
@@ -46,35 +37,34 @@
         #cam-container { position: fixed; inset: 0; background: #000; display: none; z-index: 1000; }
         video { width: 100%; height: 100%; object-fit: cover; }
         #overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 40px 20px; pointer-events: none; }
-        #counter { font-size: 160px; font-weight: 900; color: var(--neon); text-shadow: 0 0 40px #000; display: flex; align-items: center; justify-content: center; flex-grow: 1; }
+        #counter { font-size: 160px; font-weight: 900; color: var(--neon); text-shadow: 0 0 40px #000; flex-grow: 1; display: flex; align-items: center; }
         
         .cam-btn { width: 60px; height: 60px; background: rgba(0,0,0,0.6); border: 1px solid var(--neon); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; pointer-events: auto; }
         .shutter-btn { width: 90px; height: 90px; background: black; border-radius: 50%; border: 5px solid var(--neon); cursor: pointer; pointer-events: auto; box-shadow: 0 0 25px var(--neon); }
 
         #flash { position: fixed; inset: 0; background: white; display: none; z-index: 2000; }
-        #loader { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(10px); }
+        #loader { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
         .spin { width: 60px; height: 60px; border: 5px solid rgba(57, 255, 20, 0.1); border-top-color: var(--neon); border-radius: 50%; animation: s 1s linear infinite; }
         @keyframes s { to { transform: rotate(360deg); } }
-        
-        .btn-action { padding: 15px 35px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-action { padding: 15px 35px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
     <div id="offline-screen"><div class="mantencao-txt">SISTEMA EM MANUTENÇÃO</div></div>
-    <div id="rotate-overlay"><div class="phone-icon"></div><div class="rotate-txt">GIRE O CELULAR</div></div>
+    <div id="rotate-overlay"><div class="phone-icon"></div><p style="color:var(--neon);margin-top:20px;">GIRE O CELULAR</p></div>
     <div id="flash"></div>
-    <div id="loader"><div class="spin"></div><p style="color:var(--neon);margin-top:20px;font-weight:900;letter-spacing:2px;">PROCESSANDO...</p></div>
+    <div id="loader"><div class="spin"></div><p style="color:var(--neon);margin-top:20px;">PROCESSANDO...</p></div>
 
     <div id="cam-container">
         <video id="v" autoplay playsinline muted></video>
         <div id="overlay">
-            <div id="indicator" style="font-size:16px; font-weight:bold; color:var(--neon); border:1px solid var(--neon); padding:8px 20px; border-radius:20px; background:rgba(0,0,0,0.5);">FOTO 1</div>
+            <div id="indicator" style="font-size:16px; color:var(--neon); border:1px solid var(--neon); padding:8px 20px; border-radius:20px; background:rgba(0,0,0,0.5);">FOTO 1</div>
             <div id="counter"></div>
             <div id="cam-controls" style="display:flex; align-items:center; justify-content:space-evenly; width:100%; padding-bottom:30px; pointer-events: auto;">
                 <div class="cam-btn" onclick="voltarHome()"><svg viewBox="0 0 24 24" width="30" fill="var(--neon)"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg></div>
                 <div id="shutter-placeholder"></div>
-                <div class="cam-btn" id="flip-btn" onclick="switchCam()"><svg viewBox="0 0 24 24" width="30" fill="var(--neon)"><path d="M7,15L11,19V16H14A5,5 0 0,1 19,21H21A7,7 0 0,0 14,14H11V11L7,15M17,9L13,5V8H10A5,5 0 0,0 5,3H3A7,7 0 0,1 10,10H13V13L17,9Z" /></svg></div>
+                <div class="cam-btn" onclick="switchCam()"><svg viewBox="0 0 24 24" width="30" fill="var(--neon)"><path d="M7,15L11,19V16H14A5,5 0 0,1 19,21H21A7,7 0 0,0 14,14H11V11L7,15M17,9L13,5V8H10A5,5 0 0,0 5,3H3A7,7 0 0,1 10,10H13V13L17,9Z" /></svg></div>
             </div>
         </div>
     </div>
@@ -98,225 +88,160 @@
         let cancelado = false; let currentFacingMode = "user"; 
         
         const FORMATOS = {
-            "TIRINHA": { w: 600, h: 1800, fotos: 3, landscape: false, padX: 0, padY: 2, divider: true, key: "TIRINHA" },
-            "POLAROID": { w: 1200, h: 1500, fotos: 1, landscape: false, padX: 0, padY: 20, divider: false, key: "POLAROID" },
-            "10X15": { w: 1800, h: 1200, fotos: 1, landscape: true, padX: 0, padY: 0, divider: false, key: "10X15" }
+            "TIRINHA": { w: 600, h: 1800, fotos: 3, landscape: false, key: "TIRINHA" },
+            "POLAROID": { w: 1200, h: 1500, fotos: 1, landscape: false, key: "POLAROID" },
+            "10X15": { w: 1800, h: 1200, fotos: 1, landscape: true, key: "10X15" }
         };
-        
         let configAtual = FORMATOS["10X15"];
 
         async function sync() {
             try {
-                // Força o cache zero com t=Date.now()
                 const r = await fetch(`${API}/status?t=${Date.now()}`);
                 const d = await r.json();
                 
-                // 1. SINCRONIZA STATUS (Manutenção/Ready)
-                // Se d.status for "OFFLINE", "MANUTENÇÃO" ou qualquer coisa diferente de "ONLINE" ou "READY"
-                const statusNormalizado = String(d.status || "").toUpperCase();
-                if (statusNormalizado === "OFFLINE" || statusNormalizado === "MANUTENÇÃO") {
+                // --- DEBUG: Veja no console do navegador o que o Worker está mandando ---
+                console.log("Dados recebidos do Worker:", d);
+
+                // 1. SINCRONIZA STATUS (Testa múltiplos nomes de campos possíveis)
+                const statusVal = (d.status || d.ativo || d.situacao || "").toUpperCase();
+                if (statusVal === "OFFLINE" || statusVal === "MANUTENÇÃO" || statusVal === "0" || statusVal === "FALSE") {
                     document.getElementById('offline-screen').style.display = "flex";
                 } else {
                     document.getElementById('offline-screen').style.display = "none";
                 }
 
-                // 2. SINCRONIZA FORMATO E ROTAÇÃO
-                const fStr = String(d.formato || d.layout || "").toUpperCase().trim();
-                let novoTipo = "10X15";
-                if (fStr.includes("TIRINHA")) novoTipo = "TIRINHA";
-                else if (fStr.includes("POLAROID")) novoTipo = "POLAROID";
-
-                if (configAtual.key !== novoTipo) {
-                    configAtual = FORMATOS[novoTipo];
-                    total = configAtual.fotos;
-                    checkOrientation(); 
-                }
-
-                // 3. SINCRONIZA EVENTO E BUSCA MOLDURA
-                if (ev !== d.evento) {
-                    ev = d.evento;
+                // 2. SINCRONIZA EVENTO E MOLDURA
+                // Se o campo for "evento" ou "nome_evento"
+                const novoEvento = d.evento || d.nome_evento || "";
+                if (ev !== novoEvento && novoEvento !== "") {
+                    ev = novoEvento;
                     document.getElementById('nome-evento').innerText = ev;
-                    await getFrame(ev); 
+                    await getFrame(ev);
                 }
 
-            } catch (e) { 
-                console.error("Erro na sincronização:", e);
-                // Em caso de erro total de rede, mostra tela de manutenção por segurança
-                document.getElementById('offline-screen').style.display = "flex"; 
-            }
+                // 3. SINCRONIZA FORMATO
+                const fStr = (d.formato || d.layout || "").toUpperCase();
+                let tipo = "10X15";
+                if (fStr.includes("TIRINHA")) tipo = "TIRINHA";
+                else if (fStr.includes("POLAROID")) tipo = "POLAROID";
+
+                if (configAtual.key !== tipo) {
+                    configAtual = FORMATOS[tipo];
+                    total = configAtual.fotos;
+                    checkOrientation();
+                }
+
+            } catch (e) { console.error("Erro sync:", e); }
         }
 
-        async function getFrame(e) {
+        async function getFrame(nomeEvento) {
             try {
-                // Busca a lista de arquivos dentro da pasta do evento
-                const r = await fetch(`${API}/list-photos?evento=${encodeURIComponent(e)}&t=${Date.now()}`);
+                const r = await fetch(`${API}/list-photos?evento=${encodeURIComponent(nomeEvento)}&t=${Date.now()}`);
                 const arquivos = await r.json();
-                
-                // Procura por qualquer arquivo que termine com moldura.png ou .png
-                const p = arquivos.find(x => x.key.toLowerCase().includes('moldura.png') || x.key.toLowerCase().endsWith('.png'));
-                
+                // Procura por qualquer .png que seja a moldura
+                const p = arquivos.find(x => x.key.toLowerCase().endsWith('.png'));
                 if (p) {
                     frame = `${API}/photo/${encodeURIComponent(p.key)}`;
-                    console.log("Moldura carregada com sucesso:", frame);
                     return true;
-                } else {
-                    console.error("Nenhuma moldura .png encontrada na pasta:", e);
-                    frame = "";
-                    return false;
                 }
-            } catch (err) {
-                console.error("Erro ao carregar lista de fotos:", err);
-                return false;
-            }
+                frame = ""; return false;
+            } catch (e) { return false; }
         }
 
         function checkOrientation() {
             const overlay = document.getElementById('rotate-overlay');
             if (configAtual.landscape && window.innerWidth < window.innerHeight) {
                 overlay.style.display = "flex";
-            } else { 
-                overlay.style.display = "none"; 
-            }
-        }
-        
-        window.addEventListener('resize', checkOrientation);
-
-        async function startStream(mode) {
-            if (stream) { stream.getTracks().forEach(t => t.stop()); }
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: mode, width: { ideal: 1920 }, height: { ideal: 1080 } },
-                    audio: false
-                });
-                const v = document.getElementById('v');
-                v.srcObject = stream;
-                v.setAttribute('playsinline', true);
-                await v.play();
-                if (mode === "user") v.classList.add('mirror'); else v.classList.remove('mirror');
-            } catch (err) { alert("Câmera bloqueada ou erro de permissão."); }
+            } else { overlay.style.display = "none"; }
         }
 
         async function ligar() {
-            // Re-sincroniza antes de abrir para garantir
             await sync();
+            if (!ev || ev === "Sincronizando...") { alert("Aguarde a sincronização do evento."); return; }
+            if (!frame) { alert("Nenhuma moldura (.png) encontrada para este evento."); return; }
             
-            if (!frame) {
-                alert("Erro: O evento '" + ev + "' ainda não tem uma moldura (.png) pronta.");
-                return;
-            }
-
-            pics = []; cancelado = false;
             document.getElementById('cam-container').style.display = "block";
-            await startStream(currentFacingMode);
+            startStream(currentFacingMode);
             document.getElementById('shutter-placeholder').innerHTML = '<div onclick="iniciarSequencia()" class="shutter-btn"></div>';
             checkOrientation();
         }
 
-        async function switchCam() {
-            currentFacingMode = (currentFacingMode === "environment") ? "user" : "environment";
-            await startStream(currentFacingMode);
+        async function startStream(mode) {
+            if (stream) stream.getTracks().forEach(t => t.stop());
+            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: mode, width: 1920, height: 1080 } });
+            const v = document.getElementById('v');
+            v.srcObject = stream;
+            if (mode === "user") v.classList.add('mirror'); else v.classList.remove('mirror');
         }
 
         function voltarHome() {
-            cancelado = true;
             if (stream) stream.getTracks().forEach(t => t.stop());
             document.getElementById('cam-container').style.display = "none";
-            document.getElementById('rotate-overlay').style.display = "none";
         }
 
         async function iniciarSequencia() {
-            document.getElementById('shutter-placeholder').innerHTML = ""; 
-            go(1);
-        }
-
-        async function go(n) {
-            if (cancelado) return;
-            document.getElementById('indicator').innerText = `FOTO ${n} / ${total}`;
-            for (let i = 5; i > 0; i--) {
-                if (cancelado) return;
-                document.getElementById('counter').innerText = i;
+            document.getElementById('shutter-placeholder').innerHTML = "";
+            pics = [];
+            for(let n=1; n<=total; n++) {
+                document.getElementById('indicator').innerText = `FOTO ${n} / ${total}`;
+                for(let i=5; i>0; i--) {
+                    document.getElementById('counter').innerText = i;
+                    await new Promise(r => setTimeout(r, 1000));
+                }
+                document.getElementById('counter').innerText = "";
+                snap();
                 await new Promise(r => setTimeout(r, 1000));
             }
-            if (cancelado) return;
-            document.getElementById('counter').innerText = "";
-            snap();
-            if (n < total) { setTimeout(() => { if(!cancelado) go(n + 1); }, 1500); } 
-            else { setTimeout(() => { if(!cancelado) processarMontagem(); }, 1000); }
+            processarMontagem();
         }
 
         function snap() {
-            if (cancelado) return;
             const f = document.getElementById('flash');
             f.style.display = "block"; setTimeout(() => f.style.display = "none", 100);
-            const v = document.getElementById('v');
-            const cv = document.getElementById('c-snap');
+            const v = document.getElementById('v'), cv = document.getElementById('c-snap');
             cv.width = v.videoWidth; cv.height = v.videoHeight;
             const ctx = cv.getContext('2d');
             if (currentFacingMode === "user") { ctx.translate(cv.width, 0); ctx.scale(-1, 1); }
             ctx.drawImage(v, 0, 0);
-            const img = new Image();
-            img.src = cv.toDataURL('image/jpeg', 0.95);
+            const img = new Image(); img.src = cv.toDataURL('image/jpeg');
             pics.push(img);
         }
 
-        async function processarMontagem() {
-            if (cancelado) return;
-            if (stream) stream.getTracks().forEach(t => t.stop());
-            document.getElementById('cam-container').style.display = "none";
+        function processarMontagem() {
+            voltarHome();
             document.getElementById('loader').style.display = "flex";
-
-            const cv = document.getElementById('c-strip');
-            const ctx = cv.getContext('2d');
-            const m = new Image();
+            const cv = document.getElementById('c-strip'), ctx = cv.getContext('2d'), m = new Image();
             m.crossOrigin = "anonymous";
             m.onload = () => {
                 cv.width = configAtual.w; cv.height = configAtual.h;
-                ctx.fillStyle = "white";
-                ctx.fillRect(0,0, cv.width, cv.height);
                 const hPart = cv.height / total;
-
                 pics.forEach((img, i) => {
-                    const drawW = cv.width - (configAtual.padX * 2);
-                    const drawH = hPart - (configAtual.padY * 2);
-                    const s = Math.max(drawW / img.width, drawH / img.height);
-                    const w = img.width * s, h = img.height * s;
-                    ctx.save();
-                    ctx.beginPath();
-                    ctx.rect(configAtual.padX, (i * hPart) + configAtual.padY, drawW, drawH);
-                    ctx.clip();
-                    ctx.drawImage(img, (cv.width - w) / 2, (i * hPart) + (hPart - h) / 2, w, h);
-                    ctx.restore();
+                    const s = Math.max(cv.width/img.width, hPart/img.height);
+                    const w = img.width*s, h = img.height*s;
+                    ctx.drawImage(img, (cv.width-w)/2, (i*hPart)+(hPart-h)/2, w, h);
                 });
-                
                 ctx.drawImage(m, 0, 0, cv.width, cv.height);
-                const previewUrl = cv.toDataURL('image/jpeg', 0.95);
-                
                 document.getElementById('loader').innerHTML = `
-                    <img src="${previewUrl}" style="max-height:60vh; border:2px solid var(--neon); box-shadow: 0 0 20px var(--neon);">
-                    <div style="display:flex; gap:15px; margin-top:25px;">
-                        <button class="btn-action" style="background:var(--neon); color:black;" onclick="enviarBlob()">IMPRIMIR</button>
-                        <button class="btn-action" style="background:#333; color:white;" onclick="location.reload()">REFAZER</button>
-                    </div>
-                `;
+                    <img src="${cv.toDataURL('image/jpeg')}" style="max-height:60vh; border:2px solid var(--neon);">
+                    <div style="margin-top:20px;">
+                        <button class="btn-action" style="background:var(--neon);" onclick="enviar()">IMPRIMIR</button>
+                        <button class="btn-action" style="background:#333;color:white;" onclick="location.reload()">REFAZER</button>
+                    </div>`;
             };
             m.src = frame + "?t=" + Date.now();
         }
 
-        async function enviarBlob() {
-            document.getElementById('loader').innerHTML = '<div class="spin"></div><p style="color:var(--neon); margin-top:20px;">ENVIANDO...</p>';
+        async function enviar() {
+            document.getElementById('loader').innerHTML = '<div class="spin"></div><p>ENVIANDO...</p>';
             document.getElementById('c-strip').toBlob(async b => {
                 const fd = new FormData();
-                fd.append('file', b, `foto_${Date.now()}.jpg`); 
-                fd.append('evento', ev);
-                fd.append('tipo', 'foto'); 
-
-                try {
-                    const res = await fetch(`${API}/upload`, { method: 'POST', body: fd });
-                    if(res.ok) { location.reload(); } else { alert("Erro ao enviar para o servidor."); location.reload(); }
-                } catch(err) { alert("Erro de conexão."); location.reload(); }
-            }, 'image/jpeg', 0.95);
+                fd.append('file', b, 'foto.jpg'); fd.append('evento', ev); fd.append('tipo', 'foto');
+                await fetch(`${API}/upload`, { method: 'POST', body: fd });
+                location.reload();
+            }, 'image/jpeg');
         }
 
+        window.addEventListener('resize', checkOrientation);
         setInterval(sync, 5000);
         sync();
     </script>

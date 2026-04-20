@@ -107,49 +107,53 @@
         
         let configAtual = FORMATOS["10X15"];
 
+        // FUNÇÃO DE SINCRONIZAÇÃO TOTALMENTE REESCRITA PARA SER "AGRESSIVA"
         async function sync() {
             try {
+                // Usamos o timestamp para evitar que o navegador use o cache da resposta anterior
                 const r = await fetch(`${API}/status?t=${Date.now()}`);
+                if (!r.ok) throw new Error("Erro na rede");
                 const d = await r.json();
                 
-                // Controle de Offline
+                // 1. Verifica Status Geral
                 if (d.status === "OFFLINE") {
                     document.getElementById('offline-screen').style.display = "flex";
+                    return;
                 } else {
                     document.getElementById('offline-screen').style.display = "none";
                 }
-                
-                // Atualiza o nome do evento se houver mudança
+
+                // 2. Sincroniza Nome do Evento e Frame
                 if (ev !== d.evento) {
+                    console.log("Novo evento detectado:", d.evento);
                     ev = d.evento;
                     document.getElementById('nome-evento').innerText = ev;
-                    getFrame(ev);
+                    await getFrame(ev); // Busca a moldura PNG do novo evento
                 }
 
-                // IDENTIFICAÇÃO DO FORMATO (Ajuste central)
+                // 3. Sincroniza Formato (Independente se o nome do evento mudou)
                 const fStr = String(d.formato || d.layout || "").toUpperCase().trim();
-                let novoTipo = "10X15"; // Default
+                let novoTipo = "10X15";
                 
                 if (fStr.includes("TIRINHA")) novoTipo = "TIRINHA";
                 else if (fStr.includes("POLAROID")) novoTipo = "POLAROID";
 
-                // Se o formato mudou desde a última sincronização
                 if (configAtual.key !== novoTipo) {
+                    console.log("Mudança de layout detectada:", novoTipo);
                     configAtual = FORMATOS[novoTipo];
                     total = configAtual.fotos;
-                    checkOrientation(); // Atualiza o sensor de rotação imediatamente
-                    console.log("Layout atualizado para:", novoTipo);
+                    checkOrientation(); // Recalcula se deve mostrar o aviso de girar
                 }
 
             } catch (e) { 
-                console.error("Erro sync:", e);
-                document.getElementById('offline-screen').style.display = "flex"; 
+                console.error("Falha ao sincronizar com o painel:", e);
             }
         }
 
         function checkOrientation() {
             const overlay = document.getElementById('rotate-overlay');
-            // Só pede para girar se for modo LANDSCAPE e o celular estiver em pé
+            // Se for 10x15 (landscape) e o celular estiver em pé, mostra o aviso.
+            // Se for Tirinha ou Polaroid (landscape: false), nunca mostra o aviso.
             if (configAtual.landscape && window.innerWidth < window.innerHeight) {
                 overlay.style.display = "flex";
             } else { 
@@ -161,11 +165,16 @@
 
         async function getFrame(e) {
             try {
-                const r = await fetch(`${API}/list-photos?evento=${encodeURIComponent(e)}`);
+                const r = await fetch(`${API}/list-photos?evento=${encodeURIComponent(e)}&t=${Date.now()}`);
                 const f = await r.json();
                 const p = f.find(x => x.key.toLowerCase().endsWith('.png'));
-                if (p) frame = `${API}/photo/${encodeURIComponent(p.key)}`;
-            } catch (e) {}
+                if (p) {
+                    frame = `${API}/photo/${encodeURIComponent(p.key)}`;
+                    console.log("Moldura carregada:", frame);
+                }
+            } catch (e) {
+                console.error("Erro ao buscar moldura:", e);
+            }
         }
 
         async function startStream(mode) {
@@ -185,6 +194,9 @@
 
         async function ligar() {
             pics = []; cancelado = false;
+            // Antes de abrir a câmera, garante que estamos sincronizados
+            await sync();
+            
             document.getElementById('cam-container').style.display = "block";
             await startStream(currentFacingMode);
             document.getElementById('shutter-placeholder').innerHTML = '<div onclick="iniciarSequencia()" class="shutter-btn"></div>';
@@ -305,7 +317,9 @@
             }, 'image/jpeg', 0.95);
         }
 
+        // Tenta sincronizar a cada 5 segundos
         setInterval(sync, 5000);
+        // Primeira sincronização ao carregar a página
         sync();
     </script>
 </body>

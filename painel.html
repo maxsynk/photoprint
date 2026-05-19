@@ -255,6 +255,7 @@
         lb.style.color = on ? "var(--neon)" : "var(--red)";
     }
 
+    // LISTA DE EVENTOS COM O VISUAL ORIGINAL
     function renderizarLista() {
         document.getElementById('corpo-lista').innerHTML = eventos.map((ev, i) => `
             <div class="evento-item ${ev.ativo ? 'ativo' : ''}">
@@ -285,10 +286,22 @@
         document.getElementById('card-form-title').innerText = "EDITANDO EVENTO";
     }
 
-    async function activarEvento(index) {
-        eventos.forEach((e, i) => e.ativo = (i === index));
+    // FUNÇÃO QUE MANTÉM A LÓGICA DE LIGAR/DESLIGAR
+    async function ativarEvento(index) {
+        const evento = eventos[index];
+        
+        if (evento.ativo) {
+            // Se o evento já está ativo, desativamos ele
+            evento.ativo = false;
+            await sincronizar(evento.nome, evento.formato, "OFFLINE", evento.livro || false);
+        } else {
+            // Se não está ativo, desativamos todos os outros e ativamos este
+            eventos.forEach((e, i) => e.ativo = (i === index));
+            await sincronizar(evento.nome, evento.formato, "ONLINE", evento.livro || false);
+        }
+        
+        // Salva a alteração no banco e atualiza a tela
         localStorage.setItem('eventos_db', JSON.stringify(eventos));
-        await sincronizar(eventos[index].nome, eventos[index].formato, "ONLINE", eventos[index].livro || false);
         renderizarLista();
         checarEventoAtivo();
     }

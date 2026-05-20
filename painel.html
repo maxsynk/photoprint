@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT - Master Panel v1.2</title>
+    <title>PHOTO PRINT - Master Panel v1.1</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { 
@@ -24,6 +24,7 @@
         /* TELA INICIAL (SPLASH) */
         #tela-inicial { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 1000; background: #000; flex-direction: column; text-align: center; }
         .splash-brand { font-size: clamp(40px, 10vw, 90px); font-weight: 900; color: var(--neon); letter-spacing: 15px; text-transform: uppercase; margin: 0; text-shadow: 0 0 20px var(--neon); }
+        /* Centralização do subtítulo conforme solicitado */
         .splash-subtitle { font-size: 14px; letter-spacing: 8px; color: #666; text-transform: uppercase; margin-top: 10px; width: 100%; display: block; }
 
         /* MODAL SENHA */
@@ -43,9 +44,7 @@
 
         /* FORMULÁRIO */
         .form-group { margin-bottom: 20px; }
-        .form-group-inline { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; border: 1px solid #222; margin-bottom: 20px; }
         label { font-size: 10px; color: var(--neon); font-weight: 900; text-transform: uppercase; display: block; margin-bottom: 8px; }
-        .form-group-inline label { margin-bottom: 0; }
         input[type="text"], input[type="date"], select { width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid #222; color: white; border-radius: 6px; outline: none; box-sizing: border-box; }
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
 
@@ -60,7 +59,7 @@
         .evento-item { background: rgba(255,255,255,0.02); border: 1px solid #1a1a1a; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .evento-item.ativo { border-left: 4px solid var(--neon); background: rgba(57, 255, 20, 0.05); }
 
-        /* STATUS REDE / SWITCHES */
+        /* STATUS REDE */
         .status-container { display: flex; align-items: center; gap: 12px; padding: 6px 15px; border-radius: 30px; border: 1px solid #333; }
         .switch-mega { position: relative; display: inline-block; width: 50px; height: 26px; }
         .switch-mega input { opacity: 0; width: 0; height: 0; }
@@ -76,7 +75,7 @@
 </head>
 <body>
 
-    <div class="version-tag">v1.2</div>
+    <div class="version-tag">v1.1</div>
 
     <div id="tela-inicial">
         <div class="splash-header">
@@ -97,7 +96,7 @@
 
     <div class="top-nav" id="header">
         <div>
-            <h2 class="internal-brand">PROTO PRINT</h2>
+            <h2 class="internal-brand">PHOTO PRINT</h2>
             <div class="internal-subtitle">colecionando momentos</div>
         </div>
         <div class="status-container" id="status-box">
@@ -117,18 +116,9 @@
                 <div class="form-group"><label>Nome do Evento</label><input type="text" id="input-evento" placeholder="Ex: Casamento João e Maria"></div>
                 <div class="form-group"><label>Data do Evento</label><input type="date" id="input-data"></div>
                 <div class="form-group"><label>Configuração de Saída</label><select id="select-formato"></select></div>
-                
-                <div class="form-group-inline">
-                    <label>Modo Guestbook (+1 Cópia)</label>
-                    <label class="switch-mega">
-                        <input type="checkbox" id="input-livro">
-                        <span class="slider-mega"></span>
-                    </label>
-                </div>
-
                 <div class="form-group">
                     <label>Moldura (.PNG)</label>
-                    <label for="input-moldura" class="custom-file-upload" id="label-file">CARREGAR MOLDURA PNG</label>
+                    <label for="input-moldura" class="custom-file-upload" id="label-file">CARREGAR LAYER PNG</label>
                     <input type="file" id="input-moldura" accept="image/png" style="display:none" onchange="previewMoldura(this)">
                     <center><img id="img-preview" class="preview-img"></center>
                 </div>
@@ -184,14 +174,13 @@
         const nome = document.getElementById('input-evento').value;
         const data = document.getElementById('input-data').value;
         const formato = document.getElementById('select-formato').value;
-        const livro = document.getElementById('input-livro').checked;
         const molduraFile = document.getElementById('input-moldura').files[0];
         const editIdx = parseInt(document.getElementById('edit-index').value);
         if(!nome || !data) return alert("Por favor, preencha o nome e selecione uma data.");
 
         const btn = document.getElementById('btn-submit');
         const btnTxt = document.getElementById('btn-text');
-        const novoEv = { nome, formato, livro, data: data.split('-').reverse().join('/'), dataRaw: data, ativo: true };
+        const novoEv = { nome, formato, data: data.split('-').reverse().join('/'), dataRaw: data, ativo: true };
 
         if(editIdx > -1) eventos[editIdx] = novoEv;
         else { eventos.forEach(e => e.ativo = false); eventos.unshift(novoEv); }
@@ -206,7 +195,7 @@
             try { await fetch(`${API_URL}/upload`, { method: 'POST', body: formData }); } catch(e){}
         }
 
-        await sincronizar(nome, formato, "ONLINE", livro);
+        await sincronizar(nome, formato, "ONLINE");
         
         btn.classList.add('success');
         btnTxt.innerHTML = '<i class="fas fa-check-circle"></i> EVENTO SALVO';
@@ -225,18 +214,17 @@
         document.getElementById('card-form-title').innerText = "NOVO EVENTO";
         document.getElementById('input-evento').value = "";
         document.getElementById('input-data').value = "";
-        document.getElementById('input-livro').checked = false;
         document.getElementById('input-moldura').value = "";
         document.getElementById('img-preview').style.display = "none";
         document.getElementById('label-file').innerText = "CARREGAR LAYER PNG";
     }
 
-    async function sincronizar(nome, formato, status, livro) {
+    async function sincronizar(nome, formato, status) {
         try {
             await fetch(`${API_URL}/set-config`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ evento: nome, status: status, formato: formato, livro: livro })
+                body: JSON.stringify({ evento: nome, status: status, formato: formato })
             });
             document.getElementById('server-status').checked = (status === "ONLINE");
             atualizarUIStatus(status === "ONLINE");
@@ -246,7 +234,7 @@
     function salvarStatusRede() {
         const on = document.getElementById('server-status').checked;
         const ativo = eventos.find(e => e.ativo);
-        if(ativo) sincronizar(ativo.nome, ativo.formato, on ? "ONLINE" : "OFFLINE", ativo.livro || false);
+        if(ativo) sincronizar(ativo.nome, ativo.formato, on ? "ONLINE" : "OFFLINE");
     }
 
     function atualizarUIStatus(on) {
@@ -255,15 +243,12 @@
         lb.style.color = on ? "var(--neon)" : "var(--red)";
     }
 
-    // LISTA DE EVENTOS COM O VISUAL ORIGINAL
     function renderizarLista() {
         document.getElementById('corpo-lista').innerHTML = eventos.map((ev, i) => `
             <div class="evento-item ${ev.ativo ? 'ativo' : ''}">
                 <div>
                     <div style="font-size:12px; font-weight:900;">${ev.nome}</div>
-                    <div style="font-size:9px; color:#555; text-transform:uppercase;">
-                        ${ev.data} • ${ev.formato} ${ev.livro ? '• <span style="color:var(--neon)">+LIVRO</span>' : ''}
-                    </div>
+                    <div style="font-size:9px; color:#555; text-transform:uppercase;">${ev.data} • ${ev.formato}</div>
                 </div>
                 <div style="display:flex; gap:15px; align-items:center;">
                     <i class="fas fa-edit" style="cursor:pointer; font-size:14px; color:#555;" onclick="editar(${i})"></i>
@@ -280,28 +265,15 @@
         document.getElementById('input-evento').value = ev.nome;
         document.getElementById('input-data').value = ev.dataRaw || "";
         document.getElementById('select-formato').value = ev.formato;
-        document.getElementById('input-livro').checked = ev.livro || false;
         document.getElementById('edit-index').value = i;
         document.getElementById('btn-text').innerText = "SALVAR EVENTO";
         document.getElementById('card-form-title').innerText = "EDITANDO EVENTO";
     }
 
-    // FUNÇÃO QUE MANTÉM A LÓGICA DE LIGAR/DESLIGAR
     async function ativarEvento(index) {
-        const evento = eventos[index];
-        
-        if (evento.ativo) {
-            // Se o evento já está ativo, desativamos ele
-            evento.ativo = false;
-            await sincronizar(evento.nome, evento.formato, "OFFLINE", evento.livro || false);
-        } else {
-            // Se não está ativo, desativamos todos os outros e ativamos este
-            eventos.forEach((e, i) => e.ativo = (i === index));
-            await sincronizar(evento.nome, evento.formato, "ONLINE", evento.livro || false);
-        }
-        
-        // Salva a alteração no banco e atualiza a tela
+        eventos.forEach((e, i) => e.ativo = (i === index));
         localStorage.setItem('eventos_db', JSON.stringify(eventos));
+        await sincronizar(eventos[index].nome, eventos[index].formato, "ONLINE");
         renderizarLista();
         checarEventoAtivo();
     }

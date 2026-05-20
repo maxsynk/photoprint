@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BOTOEIRA - PHOTO PRINT</title>
+    <style>
+        :root { --neon: #39ff14; --dark: #0a0a0a; --danger: #ff3131; --info-blue: #00e5ff; }
+        body { 
+            margin: 0; background: var(--dark); color: white; 
+            font-family: 'Segoe UI', sans-serif; overflow: hidden; 
+            display: flex; flex-direction: column; height: 100vh;
+            touch-action: manipulation; /* Evita zoom no double tap no mobile */
+        }
+
+        .system-info { 
+            position: absolute; top: 20px; left: 20px; text-align: left; 
+            border-left: 4px solid var(--neon); padding-left: 15px; z-index: 100;
+        }
+        .sys-title { font-size: 24px; font-weight: 900; color: var(--neon); text-transform: uppercase; margin: 0; }
+        .sys-sub { font-size: 10px; letter-spacing: 3px; opacity: 0.7; text-transform: uppercase; }
+        .event-label { margin-top: 10px; font-weight: bold; color: #fff; font-size: 16px; }
+
+        .screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; background: var(--dark); }
+
+        /* Botão Iniciar */
+        .btn-start {
+            width: 280px; height: 280px; border-radius: 50%;
+            background: rgba(0,0,0,0.75); border: 10px solid var(--neon);
+            color: white; cursor: pointer; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; text-align: center;
+            transition: 0.3s; pointer-events: auto;
+            animation: pulseBtn 2s infinite ease-in-out;
+            margin-top: 50px;
+        }
+        .btn-start b { font-size: 26px; color: var(--neon); animation: blinkText 1.5s infinite alternate; }
+        .btn-start span { font-size: 16px; margin-top: 15px; opacity: 0.8; letter-spacing: 1px; }
+        .btn-start:active { transform: scale(0.9) !important; background: var(--neon); color: #000; }
+
+        @keyframes pulseBtn {
+            0% { transform: scale(1); box-shadow: 0 0 30px rgba(57, 255, 20, 0.4); }
+            50% { transform: scale(1.06); box-shadow: 0 0 60px rgba(57, 255, 20, 0.8), inset 0 0 20px rgba(57, 255, 20, 0.3); }
+            100% { transform: scale(1); box-shadow: 0 0 30px rgba(57, 255, 20, 0.4); }
+        }
+        @keyframes blinkText {
+            from { opacity: 0.6; text-shadow: 0 0 5px var(--neon); }
+            to { opacity: 1; text-shadow: 0 0 20px var(--neon); }
+        }
+
+        /* Opções de Impressão */
+        .copies-label { font-size: 14px; color: var(--neon); font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; text-align: center; }
+        
+        .print-grid { 
+            display: grid; 
+            grid-template-columns: 1fr; /* Coluna única para celular */
+            gap: 15px; 
+            width: 80%;
+            max-width: 300px;
+            margin-bottom: 30px;
+        }
+        
+        .btn-print-mobile {
+            padding: 15px;
+            background: transparent;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-neon-style { border: 2px solid var(--neon); }
+        .btn-neon-style:active, .btn-neon-style.selected { background: var(--neon); color: black; box-shadow: 0 0 15px var(--neon); }
+
+        .btn-blue-style { border: 2px solid var(--info-blue); }
+        .btn-blue-style:active, .btn-blue-style.selected { background: var(--info-blue); color: black; box-shadow: 0 0 15px var(--info-blue); }
+
+        /* Botão de Disparo */
+        .submit-container { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .btn-submit-circle {
+            width: 70px; height: 70px; border-radius: 50%;
+            border: 2px solid var(--neon); display: flex; align-items: center; justify-content: center;
+            background: transparent; transition: 0.3s; box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
+        }
+        .btn-submit-circle svg { width: 30px; height: 30px; fill: var(--neon); transition: 0.3s; transform: translate(-1px, 1px); }
+        .submit-container:active .btn-submit-circle { background: var(--neon); box-shadow: 0 0 20px var(--neon); }
+        .submit-container:active .btn-submit-circle svg { fill: black; }
+        .submit-text { font-size: 13px; color: var(--neon); font-weight: bold; text-transform: uppercase; letter-spacing: 2px; margin-top: 10px; }
+
+        /* Telas de aviso */
+        #screen-triggered { background: rgba(0,0,0,0.95); text-align: center; padding: 20px; }
+        .triggered-text { font-size: 40px; color: var(--neon); font-weight: 900; line-height: 1.2; }
+        .triggered-sub { font-size: 20px; color: white; margin-top: 20px; display: block; opacity: 0.8; }
+
+        #screen-maintenance {
+            position: fixed; inset: 0; background: #000000; z-index: 9999;
+            display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px;
+        }
+        .maintenance-msg { font-size: 40px; font-weight: 900; color: var(--danger); text-shadow: 0 0 30px rgba(255, 49, 49, 0.6); letter-spacing: 2px; }
+
+    </style>
+</head>
+<body>
+
+    <div id="screen-maintenance">
+        <div class="maintenance-msg">SISTEMA EM<br>MANUTENÇÃO</div>
+    </div>
+
+    <!-- Info Topo -->
+    <div class="system-info">
+        <div class="sys-title">BOTOEIRA</div>
+        <div class="sys-sub">Controle Remoto</div>
+        <div id="event-display" class="event-label">CARREGANDO...</div>
+    </div>
+
+    <!-- TELA 1: Botão de Iniciar -->
+    <div id="screen-start" class="screen">
+        <div class="btn-start" onclick="showOptions()">
+            <b>TIRAR FOTO</b>
+            <span>TOQUE AQUI</span>
+        </div>
+    </div>
+
+    <!-- TELA 2: Opções de Impressão -->
+    <div id="screen-options" class="screen" style="display:none">
+        <div class="copies-label">Como deseja imprimir?</div>
+        
+        <div class="print-grid">
+            <button class="btn-print-mobile btn-neon-style selected" onclick="selectOption(this, 1)">🖨️ 1 Cópia</button>
+            <button class="btn-print-mobile btn-neon-style" onclick="selectOption(this, 2)">🖨️ 2 Cópias</button>
+            <button class="btn-print-mobile btn-blue-style" onclick="selectOption(this, 3)">📖 1 Cópia + Guestbook</button>
+            <button class="btn-print-mobile btn-blue-style" onclick="selectOption(this, 4)">📖 2 Cópias + Guestbook</button>
+        </div>
+
+        <div class="submit-container" onclick="triggerCamera()">
+            <div class="btn-submit-circle">
+                <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </div>
+            <div class="submit-text">Iniciar Contagem</div>
+        </div>
+    </div>
+
+    <!-- TELA 3: Aviso de Disparo -->
+    <div id="screen-triggered" class="screen" style="display:none">
+        <div class="triggered-text">
+            OLHE PARA A<br>CÂMERA! 📸
+            <span class="triggered-sub">Sua foto vai começar em instantes no computador.</span>
+        </div>
+    </div>
+
+    <script>
+        const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
+        let config = { evento: "", formato: "10X15V" };
+        let selectedCopiesValue = 1; 
+
+        // 1. Sincroniza o Evento (Idêntico ao sistema principal)
+        async function sync() {
+            try {
+                const r = await fetch(`${API}/status?t=${Date.now()}`);
+                const d = await r.json();
+                
+                if (d.status === "OFFLINE" || !d.evento || d.evento.trim() === "" || d.evento.toUpperCase() === "GERAL") {
+                    showMaintenance();
+                    return;
+                }
+
+                document.getElementById('screen-maintenance').style.display = "none";
+                config.evento = d.evento;
+                document.getElementById('event-display').innerText = config.evento;
+
+            } catch(e) { 
+                console.error("Erro sync API");
+                showMaintenance();
+            }
+        }
+
+        function showMaintenance() {
+            document.getElementById('screen-maintenance').style.display = "flex";
+        }
+
+        // 2. Navegação de Telas
+        function showOptions() {
+            document.getElementById('screen-start').style.display = "none";
+            document.getElementById('screen-options').style.display = "flex";
+        }
+
+        function selectOption(buttonElement, val) {
+            const buttons = document.querySelectorAll('.btn-print-mobile');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            buttonElement.classList.add('selected');
+            selectedCopiesValue = val;
+        }
+
+        // 3. Disparar Câmera Remota
+        async function triggerCamera() {
+            document.getElementById('screen-options').style.display = "none";
+            document.getElementById('screen-triggered').style.display = "flex";
+
+            // Calcula cópias fisicas baseado na sua regra
+            let copiasFisicas = 1;
+            if (selectedCopiesValue === 2) copiasFisicas = 2;
+            if (selectedCopiesValue === 3) copiasFisicas = 2; // 1 + livro
+            if (selectedCopiesValue === 4) copiasFisicas = 3; // 2 + livro
+
+            try {
+                // ENVIA O COMANDO PARA A API
+                // Nota: Substitua '/trigger' pela rota correta que você criou no seu Worker
+                await fetch(`${API}/trigger`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        comando: "INICIAR_FOTO",
+                        evento: config.evento,
+                        copias: copiasFisicas,
+                        tipo_selecao: selectedCopiesValue
+                    })
+                });
+
+            } catch (e) {
+                console.error("Erro ao enviar comando de disparo:", e);
+            }
+
+            // Retorna para a tela inicial após 8 segundos (tempo da pessoa tirar a foto)
+            setTimeout(() => {
+                document.getElementById('screen-triggered').style.display = "none";
+                document.getElementById('screen-start').style.display = "flex";
+                selectOption(document.querySelector('.btn-print-mobile'), 1); // reseta para 1 cópia
+            }, 8000);
+        }
+
+        // Inicia o polling de status
+        setInterval(sync, 5000);
+        sync();
+    </script>
+</body>
+</html>

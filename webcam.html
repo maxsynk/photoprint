@@ -99,15 +99,12 @@
             gap: 8px;
         }
 
-        /* Cores Verdes (1 e 2 Cópias) */
         .btn-neon-style { border: 2px solid var(--neon); }
         .btn-neon-style:hover, .btn-neon-style.selected { background: var(--neon); color: black; box-shadow: 0 0 15px var(--neon); }
 
-        /* Cores Azuis (Com Guestbook) */
         .btn-blue-style { border: 2px solid var(--info-blue); }
         .btn-blue-style:hover, .btn-blue-style.selected { background: var(--info-blue); color: black; box-shadow: 0 0 15px var(--info-blue); }
 
-        /* Botão Enviar e Imprimir */
         .submit-container {
             display: flex;
             flex-direction: column;
@@ -205,22 +202,29 @@
         <h2 style="color:var(--neon); margin-bottom: 5px;">FICOU ÓTIMA!</h2>
         <img id="img-review" src="">
         
-        <div class="copies-label">Quantas cópias deseja imprimir?</div>
-        
-        <div class="print-grid">
-            <button class="btn-print-mobile btn-neon-style selected" onclick="selectOption(this, 1)">🖨️ 1 Cópia</button>
-            <button class="btn-print-mobile btn-neon-style" onclick="selectOption(this, 2)">🖨️ 2 Cópias</button>
-            <button class="btn-print-mobile btn-blue-style" onclick="selectOption(this, 3)">📖 1 Cópia + Guestbook</button>
-            <button class="btn-print-mobile btn-blue-style" onclick="selectOption(this, 4)">📖 2 Cópias + Guestbook</button>
+        <div id="touch-controls" style="display: none; flex-direction: column; align-items: center;">
+            <div class="copies-label">Quantas cópias deseja imprimir?</div>
+            <div class="print-grid">
+                <button class="btn-print-mobile btn-neon-style selected" onclick="selectOption(this, 1)">🖨️ 1 Cópia</button>
+                <button class="btn-print-mobile btn-neon-style" onclick="selectOption(this, 2)">🖨️ 2 Cópias</button>
+                <button class="btn-print-mobile btn-blue-style" onclick="selectOption(this, 3)">📖 1 Cópia + Guestbook</button>
+                <button class="btn-print-mobile btn-blue-style" onclick="selectOption(this, 4)">📖 2 Cópias + Guestbook</button>
+            </div>
+
+            <div class="submit-container" onclick="submitSelection()">
+                <div class="btn-submit-circle">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                </div>
+                <div class="submit-text">Enviar e Imprimir</div>
+            </div>
         </div>
 
-        <div class="submit-container" onclick="submitSelection()">
-            <div class="btn-submit-circle">
-                <svg viewBox="0 0 24 24">
-                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-                </svg>
+        <div id="botoeira-controls" style="display: none; flex-direction: column; align-items: center; margin-top: 30px;">
+            <div style="font-size: 26px; color: var(--neon); font-weight: 900; animation: blinkText 1.5s infinite alternate; text-align: center; text-transform: uppercase; letter-spacing: 2px;">
+                ESCOLHA A QUANTIDADE<br>NA BOTOEIRA 📱
             </div>
-            <div class="submit-text">Enviar e Imprimir</div>
         </div>
     </div>
 
@@ -237,10 +241,15 @@
 
     <script>
         const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
+        
+        // --- CHAVE PARA CONTROLAR SE EXIBE BOTÕES NA TELA OU SE ESPERA A BOTOEIRA ---
+        const MODO_TOUCHSCREEN = false; // Deixe false para o controle ser feito pelo celular
+        
         let config = { evento: "", formato: "10X15V", molduraUrl: "" };
         let finalBlob = null;
         let fotosCapturadas = [];
         let selectedCopiesValue = 1; 
+        let printPollInterval; // Variável para controlar o loop de escuta de impressão
         const video = document.getElementById('cam-preview');
 
         async function sync() {
@@ -331,6 +340,7 @@
 
                 for(let i = segundos; i > 0; i--) {
                     counterEl.innerText = i;
+                    counterEl.style.display = "block";
                     counterEl.style.display = "block";
                     await new Promise(r => setTimeout(r, 1000));
                 }
@@ -482,9 +492,41 @@
             } catch(e) {
                 console.error("Erro no preview src:", e);
             }
+            
             document.getElementById('loader').style.display = "none";
             document.getElementById('final-preview-container').style.display = "flex";
+            
+            // Controle de visibilidade baseado na variável
+            if (MODO_TOUCHSCREEN) {
+                document.getElementById('touch-controls').style.display = "flex";
+                document.getElementById('botoeira-controls').style.display = "none";
+            } else {
+                document.getElementById('touch-controls').style.display = "none";
+                document.getElementById('botoeira-controls').style.display = "flex";
+                // Inicia o escutador para aguardar a seleção via API
+                startPrintPolling(); 
+            }
+
             canvas.toBlob(b => { finalBlob = b; }, 'image/jpeg', 0.9);
+        }
+
+        // --- NOVA ROTINA PARA OUVIR A IMPRESSÃO DA BOTOEIRA ---
+        async function startPrintPolling() {
+            printPollInterval = setInterval(async () => {
+                try {
+                    // Esta rota será adicionada no worker no próximo passo
+                    const res = await fetch(`${API}/check-print?t=${Date.now()}`);
+                    const data = await res.json();
+
+                    if (data.printTriggered) {
+                        clearInterval(printPollInterval);
+                        await fetch(`${API}/clear-print`, { method: 'POST' }); // Limpa o comando
+                        finishPrint(data.copias); // Usa a quantidade recebida da Botoeira
+                    }
+                } catch (error) {
+                    // Mantém silencioso para não poluir o console
+                }
+            }, 1000);
         }
 
         function selectOption(buttonElement, val) {
@@ -541,9 +583,7 @@
             setTimeout(() => { location.reload(); }, 5000);
         }
 
-        // --- NOVA ROTINA PARA LER O DISPARO REMOTO ---
         async function checkRemoteTrigger() {
-            // Só executa se estiver aguardando na tela inicial (evita disparos no meio de uma foto)
             const screenStart = document.getElementById('screen-start');
             if (!screenStart || screenStart.style.display === "none") return;
 
@@ -552,20 +592,13 @@
                 const data = await res.json();
 
                 if (data.triggered) {
-                    // Limpa o disparo no servidor para não repetir
                     await fetch(`${API}/clear-trigger`, { method: 'POST' });
-                    // Dispara o clique no botão
                     initSession();
                 }
-            } catch (error) {
-                // Silencioso para não poluir o console do navegador
-            }
+            } catch (error) {}
         }
 
-        // Checa a rota de disparo a cada 1 segundo (não impacta a CPU)
         setInterval(checkRemoteTrigger, 1000);
-
-        // Rotina existente que busca o status a cada 5 segundos
         setInterval(sync, 5000);
         sync();
     </script>

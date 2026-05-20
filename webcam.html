@@ -2,9 +2,9 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>WEBCAM - PHOTO PRINT v3.5</title>
+    <title>WEBCAM - Terminal Totem v3.0</title>
     <style>
-        :root { --neon: #39ff14; --dark: #0a0a0a; --danger: #ff3131; --info-blue: #00e5ff; }
+        :root { --neon: #39ff14; --dark: #0a0a0a; --danger: #ff3131; }
         body { 
             margin: 0; background: var(--dark); color: white; 
             font-family: 'Segoe UI', sans-serif; overflow: hidden; 
@@ -20,7 +20,7 @@
             position: fixed; inset: 0; background: #000; z-index: 150;
             display: none; flex-direction: column; align-items: center; justify-content: center;
         }
-        #img-review { max-width: 80%; max-height: 50%; border: 5px solid var(--neon); border-radius: 10px; box-shadow: 0 0 30px var(--neon); }
+        #img-review { max-width: 80%; max-height: 60%; border: 5px solid var(--neon); border-radius: 10px; box-shadow: 0 0 30px var(--neon); }
 
         .btn-exit-preview {
             position: absolute; top: 30px; right: 30px;
@@ -73,83 +73,13 @@
         }
         #img-mid-review { max-width: 75%; max-height: 75%; border: 4px solid #fff; border-radius: 8px; }
 
-        /* Grid de Opções */
-        .copies-label { font-size: 12px; color: var(--neon); font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-top: 15px; margin-bottom: 8px; }
-        
-        .print-grid { 
-            display: grid; 
-            grid-template-columns: repeat(2, 180px); 
-            gap: 12px; 
-            margin-bottom: 20px;
-            pointer-events: auto; 
+        .print-options { display: flex; gap: 30px; margin-top: 30px; pointer-events: auto; }
+        .btn-print {
+            padding: 20px 40px; background: transparent; border: 3px solid var(--neon);
+            color: white; font-size: 24px; font-weight: bold; border-radius: 10px;
+            cursor: pointer; transition: 0.3s;
         }
-        
-        .btn-print-mobile {
-            padding: 10px 15px;
-            background: transparent;
-            color: white;
-            font-size: 15px;
-            font-weight: bold;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        /* Cores Verdes (1 e 2 Cópias) */
-        .btn-neon-style { border: 2px solid var(--neon); }
-        .btn-neon-style:hover, .btn-neon-style.selected { background: var(--neon); color: black; box-shadow: 0 0 15px var(--neon); }
-
-        /* Cores Azuis (Com Guestbook) */
-        .btn-blue-style { border: 2px solid var(--info-blue); }
-        .btn-blue-style:hover, .btn-blue-style.selected { background: var(--info-blue); color: black; box-shadow: 0 0 15px var(--info-blue); }
-
-        /* Botão Enviar e Imprimir */
-        .submit-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            pointer-events: auto;
-            margin-top: 10px;
-        }
-        .btn-submit-circle {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            border: 2px solid var(--neon);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: transparent;
-            transition: 0.3s;
-            box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
-        }
-        .btn-submit-circle svg {
-            width: 24px;
-            height: 24px;
-            fill: var(--neon);
-            transition: 0.3s;
-            transform: translate(-1px, 1px);
-        }
-        .submit-container:hover .btn-submit-circle {
-            background: var(--neon);
-            box-shadow: 0 0 20px var(--neon);
-        }
-        .submit-container:hover .btn-submit-circle svg {
-            fill: black;
-        }
-        .submit-text {
-            font-size: 11px;
-            color: var(--neon);
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-top: 8px;
-        }
+        .btn-print:hover { background: var(--neon); color: black; }
 
         .farewell-text { font-size: 50px; text-align: center; color: var(--neon); font-weight: 900; }
         #flash { position: fixed; inset: 0; background: white; display: none; z-index: 200; }
@@ -178,7 +108,7 @@
     <video id="cam-preview" autoplay playsinline></video>
 
     <div class="system-info">
-        <div class="sys-title">PHOTO PRINT</div>
+        <div class="sys-title">WEBCAM</div>
         <div class="sys-sub">Colecionando Momentos</div>
         <div id="event-display" class="event-label">CARREGANDO...</div>
     </div>
@@ -202,25 +132,12 @@
 
     <div id="final-preview-container" class="screen">
         <button class="btn-exit-preview" onclick="location.reload()">X</button>
-        <h2 style="color:var(--neon); margin-bottom: 5px;">FICOU ÓTIMA!</h2>
+        <h2 style="color:var(--neon)">FICOU ÓTIMA!</h2>
         <img id="img-review" src="">
-        
-        <div class="copies-label">Quantas cópias deseja imprimir?</div>
-        
-        <div class="print-grid">
-            <button class="btn-print-mobile btn-neon-style selected" onclick="selectOption(this, 1)">🖨️ 1 Cópia</button>
-            <button class="btn-print-mobile btn-neon-style" onclick="selectOption(this, 2)">🖨️ 2 Cópias</button>
-            <button class="btn-print-mobile btn-blue-style" onclick="selectOption(this, 3)">📖 1 Cópia + Guestbook</button>
-            <button class="btn-print-mobile btn-blue-style" onclick="selectOption(this, 4)">📖 2 Cópias + Guestbook</button>
-        </div>
-
-        <div class="submit-container" onclick="submitSelection()">
-            <div class="btn-submit-circle">
-                <svg viewBox="0 0 24 24">
-                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-                </svg>
-            </div>
-            <div class="submit-text">Enviar e Imprimir</div>
+        <p>Quantas cópias deseja imprimir?</p>
+        <div class="print-options">
+            <button class="btn-print" onclick="finishPrint(1)">1 IMPRESSÃO</button>
+            <button class="btn-print" onclick="finishPrint(2)">2 IMPRESSÕES</button>
         </div>
     </div>
 
@@ -240,7 +157,6 @@
         let config = { evento: "", formato: "10X15V", molduraUrl: "" };
         let finalBlob = null;
         let fotosCapturadas = [];
-        let selectedCopiesValue = 1; 
         const video = document.getElementById('cam-preview');
 
         async function sync() {
@@ -376,6 +292,7 @@
             });
         }
 
+        // MOTOR DE RENDERIZAÇÃO SEGURO V3.1 (VIA FETCH BLOB SEGURO E OBRIGATÓRIO)
         async function processFinalImage() {
             document.getElementById('loader').style.display = "flex";
             
@@ -390,6 +307,7 @@
             }
             
             try {
+                // Força o download da moldura via Fetch para resolver o CORS diretamente pelo Worker
                 const responseMoldura = await fetch(config.molduraUrl + "?t=" + Date.now());
                 if (!responseMoldura.ok) throw new Error("Falha na resposta HTTP ao buscar a moldura.");
                 
@@ -399,6 +317,7 @@
                 const imgFrame = new Image();
                 imgFrame.src = localFrameURL;
 
+                // Garante que o motor do navegador decodificou a imagem antes de mexer nas dimensões
                 await new Promise((resolve, reject) => {
                     imgFrame.onload = resolve;
                     imgFrame.onerror = reject;
@@ -407,6 +326,7 @@
                 finalCanvas.width = imgFrame.width; 
                 finalCanvas.height = imgFrame.height;
 
+                // Fundo limpo do tamanho exato da moldura carregada
                 ctx.fillStyle = "white"; 
                 ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
 
@@ -415,6 +335,7 @@
                 if (isTirinha && fotosCapturadas.length >= 3) {
                     const slots = [{y:0.030, h:0.254}, {y:0.296, h:0.254}, {y:0.559, h:0.254}];
                     
+                    // Renderização estrita síncrona um por um
                     for (let i = 0; i < 3; i++) {
                         const photoData = fotosCapturadas[i];
                         
@@ -450,6 +371,7 @@
                     }
 
                 } else if (fotosCapturadas.length > 0) {
+                    // Modo Tradicional 1 Foto
                     await new Promise((res) => {
                         const imgPhoto = new Image();
                         imgPhoto.onload = () => {
@@ -464,8 +386,10 @@
                     });
                 }
 
+                // Desenha a moldura por cima das fotos perfeitamente renderizadas
                 ctx.drawImage(imgFrame, 0, 0, finalCanvas.width, finalCanvas.height);
                 
+                // Limpa o link temporário da memória do navegador
                 URL.revokeObjectURL(localFrameURL);
                 concluirReview(finalCanvas);
 
@@ -487,52 +411,19 @@
             canvas.toBlob(b => { finalBlob = b; }, 'image/jpeg', 0.9);
         }
 
-        function selectOption(buttonElement, val) {
-            const buttons = document.querySelectorAll('.btn-print-mobile');
-            buttons.forEach(btn => btn.classList.remove('selected'));
-            buttonElement.classList.add('selected');
-            selectedCopiesValue = val;
-        }
-
-        function submitSelection() {
-            finishPrint(selectedCopiesValue);
-        }
-
         async function finishPrint(qtd) {
             document.getElementById('final-preview-container').style.display = "none";
             document.getElementById('loader').style.display = "flex";
 
             const fd = new FormData();
-            
-            let nomeArquivo = 'webcam.jpg';
-            let copiasFisicas = 1; 
-
-            // Nova regra de soma baseada no comportamento real do motor Python
-            if (qtd === 1) {
-                nomeArquivo = 'webcam.jpg';
-                copiasFisicas = 1;
-            } else if (qtd === 2) {
-                nomeArquivo = 'webcam_2c.jpg';
-                copiasFisicas = 2;
-            } else if (qtd === 3) {
-                nomeArquivo = 'webcam_2c_guestbook.jpg'; // Soma: 1 p/ convidado + 1 p/ livro = 2 cópias
-                copiasFisicas = 2; 
-            } else if (qtd === 4) {
-                nomeArquivo = 'webcam_3c_guestbook.jpg'; // Soma: 2 p/ convidado + 1 p/ livro = 3 cópias no selo verde!
-                copiasFisicas = 3; 
-            }
-
-            fd.append('file', finalBlob, nomeArquivo);
+            fd.append('file', finalBlob, 'webcam.jpg');
             fd.append('evento', config.evento);
-            fd.append('copias', copiasFisicas); 
+            fd.append('copias', qtd);
 
             try {
                 await fetch(`${API}/upload`, { method: 'POST', body: fd });
                 showFarewell();
-            } catch(e) { 
-                console.error("Erro ao enviar arquivo:", e);
-                location.reload(); 
-            }
+            } catch(e) { location.reload(); }
         }
 
         function showFarewell() {

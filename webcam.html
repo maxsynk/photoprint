@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>WEBCAM - PHOTO PRINT v3.5</title>
+    <title>WEBCAM - PHOTO PRINT v3.6</title>
     <style>
         :root { --neon: #39ff14; --dark: #0a0a0a; --danger: #ff3131; --info-blue: #00e5ff; }
         body { 
@@ -507,7 +507,6 @@
             let nomeArquivo = 'webcam.jpg';
             let copiasFisicas = 1; 
 
-            // Nova regra de soma baseada no comportamento real do motor Python
             if (qtd === 1) {
                 nomeArquivo = 'webcam.jpg';
                 copiasFisicas = 1;
@@ -515,10 +514,10 @@
                 nomeArquivo = 'webcam_2c.jpg';
                 copiasFisicas = 2;
             } else if (qtd === 3) {
-                nomeArquivo = 'webcam_2c_guestbook.jpg'; // Soma: 1 p/ convidado + 1 p/ livro = 2 cópias
+                nomeArquivo = 'webcam_2c_guestbook.jpg'; 
                 copiasFisicas = 2; 
             } else if (qtd === 4) {
-                nomeArquivo = 'webcam_3c_guestbook.jpg'; // Soma: 2 p/ convidado + 1 p/ livro = 3 cópias no selo verde!
+                nomeArquivo = 'webcam_3c_guestbook.jpg'; 
                 copiasFisicas = 3; 
             }
 
@@ -542,6 +541,31 @@
             setTimeout(() => { location.reload(); }, 5000);
         }
 
+        // --- NOVA ROTINA PARA LER O DISPARO REMOTO ---
+        async function checkRemoteTrigger() {
+            // Só executa se estiver aguardando na tela inicial (evita disparos no meio de uma foto)
+            const screenStart = document.getElementById('screen-start');
+            if (!screenStart || screenStart.style.display === "none") return;
+
+            try {
+                const res = await fetch(`${API}/check-trigger?t=${Date.now()}`);
+                const data = await res.json();
+
+                if (data.triggered) {
+                    // Limpa o disparo no servidor para não repetir
+                    await fetch(`${API}/clear-trigger`, { method: 'POST' });
+                    // Dispara o clique no botão
+                    initSession();
+                }
+            } catch (error) {
+                // Silencioso para não poluir o console do navegador
+            }
+        }
+
+        // Checa a rota de disparo a cada 1 segundo (não impacta a CPU)
+        setInterval(checkRemoteTrigger, 1000);
+
+        // Rotina existente que busca o status a cada 5 segundos
         setInterval(sync, 5000);
         sync();
     </script>

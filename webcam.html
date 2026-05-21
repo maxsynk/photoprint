@@ -27,9 +27,7 @@
         body {
 
             margin: 0;
-
             background: var(--dark);
-
             color: white;
 
             font-family: Arial, Helvetica, sans-serif;
@@ -44,7 +42,6 @@
         #cam-preview {
 
             position: fixed;
-
             inset: 0;
 
             width: 100%;
@@ -63,7 +60,6 @@
         .screen {
 
             position: fixed;
-
             inset: 0;
 
             display: flex;
@@ -80,7 +76,6 @@
         #loader {
 
             position: fixed;
-
             inset: 0;
 
             background: rgba(0,0,0,0.92);
@@ -97,7 +92,6 @@
             color: var(--neon);
 
             font-size: 28px;
-
             font-weight: bold;
 
             text-shadow: 0 0 20px var(--neon);
@@ -134,8 +128,8 @@
 
             position: relative;
 
-            width: 560px;
-            height: 560px;
+            width: 550px;
+            height: 550px;
 
             border-radius: 50%;
 
@@ -143,8 +137,8 @@
 
             background:
                 radial-gradient(circle at center,
-                rgba(57,255,20,0.20),
-                rgba(0,0,0,0.92));
+                rgba(57,255,20,0.15),
+                rgba(0,0,0,0.9));
 
             cursor: pointer;
 
@@ -159,33 +153,11 @@
             align-items: center;
             justify-content: center;
 
+            padding: 40px;
+
             box-shadow:
-                0 0 35px rgba(57,255,20,0.4),
-                inset 0 0 30px rgba(57,255,20,0.15);
-
-            animation: pulseStart 2s infinite;
-
-        }
-
-        @keyframes pulseStart {
-
-            0% {
-
-                transform: scale(1);
-
-            }
-
-            50% {
-
-                transform: scale(1.02);
-
-            }
-
-            100% {
-
-                transform: scale(1);
-
-            }
+                0 0 30px rgba(57,255,20,0.5),
+                inset 0 0 35px rgba(57,255,20,0.15);
 
         }
 
@@ -195,7 +167,7 @@
 
             box-shadow:
                 0 0 60px rgba(57,255,20,0.9),
-                inset 0 0 40px rgba(57,255,20,0.3);
+                inset 0 0 40px rgba(57,255,20,0.25);
 
         }
 
@@ -205,20 +177,30 @@
 
             position: absolute;
 
-            top: -50%;
-            left: -50%;
-
             width: 200%;
             height: 200%;
 
-            background: linear-gradient(
-                45deg,
+            background: conic-gradient(
                 transparent,
-                rgba(57,255,20,0.18),
+                rgba(57,255,20,0.4),
                 transparent
             );
 
-            animation: rotateGlow 5s linear infinite;
+            animation: rotateGlow 4s linear infinite;
+
+        }
+
+        .btn-start::after {
+
+            content: '';
+
+            position: absolute;
+
+            inset: 8px;
+
+            border-radius: 50%;
+
+            background: rgba(0,0,0,0.92);
 
         }
 
@@ -236,11 +218,9 @@
 
             position: relative;
 
-            z-index: 2;
+            z-index: 5;
 
             text-align: center;
-
-            padding: 40px;
 
         }
 
@@ -248,17 +228,13 @@
 
             color: var(--neon);
 
-            font-size: 48px;
+            font-size: 42px;
 
             font-weight: 900;
 
-            text-align: center;
+            text-shadow: 0 0 20px var(--neon);
 
-            margin-bottom: 20px;
-
-            text-shadow: 0 0 25px var(--neon);
-
-            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 18px;
 
             text-transform: uppercase;
 
@@ -266,11 +242,7 @@
 
         .start-subtitle {
 
-            text-align: center;
-
-            font-size: 24px;
-
-            color: white;
+            font-size: 22px;
 
             line-height: 1.6;
 
@@ -291,7 +263,6 @@
         #camera-overlay {
 
             position: fixed;
-
             inset: 0;
 
             z-index: 50;
@@ -321,7 +292,7 @@
 
             width: 6px;
 
-            height: 170px;
+            height: 160px;
 
             background: var(--neon);
 
@@ -351,15 +322,15 @@
 
             text-shadow: 0 0 15px var(--neon);
 
-            font-family: 'Orbitron', sans-serif;
-
         }
 
         .camera-event {
 
-            font-size: 28px;
+            font-size: 24px;
 
             font-weight: bold;
+
+            text-transform: uppercase;
 
         }
 
@@ -367,70 +338,9 @@
 
             font-size: 18px;
 
-            opacity: 0.9;
+            opacity: 0.8;
 
             letter-spacing: 2px;
-
-        }
-
-        /* =========================================
-           PREPARE-SE
-        ========================================= */
-
-        #prepare-screen {
-
-            position: absolute;
-
-            inset: 0;
-
-            display: flex;
-
-            align-items: center;
-            justify-content: center;
-
-            z-index: 90;
-
-            background: rgba(0,0,0,0.25);
-
-        }
-
-        #prepare-text {
-
-            font-family: 'Orbitron', sans-serif;
-
-            font-size: 90px;
-
-            font-weight: 900;
-
-            color: var(--neon);
-
-            text-shadow:
-                0 0 15px var(--neon),
-                0 0 40px var(--neon);
-
-            animation: prepareAnim 1s infinite alternate;
-
-            letter-spacing: 8px;
-
-        }
-
-        @keyframes prepareAnim {
-
-            from {
-
-                transform: scale(1);
-
-                opacity: 0.7;
-
-            }
-
-            to {
-
-                transform: scale(1.08);
-
-                opacity: 1;
-
-            }
 
         }
 
@@ -444,34 +354,77 @@
 
             inset: 0;
 
-            display: none;
+            display: flex;
+
+            flex-direction: column;
 
             align-items: center;
             justify-content: center;
 
             z-index: 80;
 
-            background: rgba(0,0,0,0.15);
+            background: rgba(0,0,0,0.18);
+
+        }
+
+        #prepare-text {
+
+            font-family: 'Orbitron', sans-serif;
+
+            color: var(--neon);
+
+            font-size: 72px;
+
+            font-weight: 900;
+
+            letter-spacing: 6px;
+
+            text-shadow:
+                0 0 10px var(--neon),
+                0 0 25px var(--neon),
+                0 0 40px var(--neon);
+
+            animation: preparePulse 1s infinite alternate;
+
+        }
+
+        @keyframes preparePulse {
+
+            from {
+
+                transform: scale(1);
+                opacity: 0.7;
+
+            }
+
+            to {
+
+                transform: scale(1.08);
+                opacity: 1;
+
+            }
 
         }
 
         #countdown {
 
-            color: var(--neon);
+            display: none;
+
+            color: white;
 
             font-size: 220px;
 
             font-weight: bold;
 
-            text-shadow: 0 0 35px var(--neon);
+            text-shadow:
+                0 0 20px var(--neon),
+                0 0 40px var(--neon);
 
-            animation: pulse 1s infinite;
-
-            font-family: 'Orbitron', sans-serif;
+            animation: countdownPulse 1s infinite;
 
         }
 
-        @keyframes pulse {
+        @keyframes countdownPulse {
 
             0% {
 
@@ -518,7 +471,6 @@
             from {
 
                 opacity: 0.6;
-
                 text-shadow: 0 0 5px var(--neon);
 
             }
@@ -526,7 +478,6 @@
             to {
 
                 opacity: 1;
-
                 text-shadow: 0 0 20px var(--neon);
 
             }
@@ -551,11 +502,9 @@
 
     <video id="cam-preview" autoplay playsinline></video>
 
-    <!-- OVERLAY -->
+    <!-- OVERLAY CAMERA -->
 
     <div id="camera-overlay">
-
-        <!-- INFO -->
 
         <div class="camera-info">
 
@@ -575,9 +524,9 @@
 
                 </div>
 
-                <div class="camera-type" id="photo-type">
+                <div class="camera-type" id="event-type">
 
-                    FOTO DIGITAL • MOLDURA DINÂMICA
+                    FOTO DIGITAL • TOTEM INTERATIVO
 
                 </div>
 
@@ -585,21 +534,15 @@
 
         </div>
 
-        <!-- PREPARE -->
+        <!-- CONTADOR -->
 
-        <div id="prepare-screen">
+        <div id="countdown-container">
 
             <div id="prepare-text">
 
-                📸 PREPARE-SE
+                😎 PREPARE-SE
 
             </div>
-
-        </div>
-
-        <!-- COUNTDOWN -->
-
-        <div id="countdown-container">
 
             <div id="countdown">
 
@@ -611,7 +554,7 @@
 
     </div>
 
-    <!-- START -->
+    <!-- TELA INICIAL -->
 
     <div id="screen-start" class="screen">
 
@@ -621,14 +564,14 @@
 
                 <div class="start-title" id="start-event-name">
 
-                    EVENTO
+                    CARREGANDO...
 
                 </div>
 
                 <div class="start-subtitle">
 
                     Clique na <span>BOTOEIRA DO TOTEM</span><br>
-                    para iniciar sua experiência 📸
+                    para começar sua experiência 📸
 
                 </div>
 
@@ -638,7 +581,7 @@
 
     </div>
 
-    <!-- PREVIEW -->
+    <!-- PREVIEW FINAL -->
 
     <div id="final-preview-container" class="screen">
 
@@ -662,42 +605,42 @@
 
         let finalBlob = null;
 
-        let currentEvent = "EVENTO";
-        let currentPhotoType = "FOTO DIGITAL";
+        let eventoAtivo = "EVENTO";
+        let tipoFoto = "FOTO DIGITAL";
 
         // =========================================
-        // BUSCA EVENTO ATIVO
+        // CARREGA EVENTO ATIVO
         // =========================================
 
-        async function loadSystemConfig() {
+        async function loadSystemStatus() {
 
             try {
 
                 const res =
                     await fetch(`${API}/status?t=${Date.now()}`);
 
-                const config =
+                const data =
                     await res.json();
 
-                currentEvent =
-                    config.evento || "EVENTO";
+                eventoAtivo =
+                    data.evento || "EVENTO";
 
-                currentPhotoType =
-                    config.tipo || "MOLDURA PADRÃO";
+                tipoFoto =
+                    data.tipo || "FOTO DIGITAL";
 
                 document.getElementById('event-name')
-                    .innerText = currentEvent;
+                    .innerText = eventoAtivo;
+
+                document.getElementById('event-type')
+                    .innerText =
+                        `${tipoFoto} • TOTEM INTERATIVO`;
 
                 document.getElementById('start-event-name')
-                    .innerText = currentEvent;
-
-                document.getElementById('photo-type')
-                    .innerText =
-                        `FOTO DIGITAL • ${currentPhotoType}`;
+                    .innerText = eventoAtivo;
 
             } catch(e) {
 
-                console.log("Erro ao carregar evento");
+                console.log(e);
 
             }
 
@@ -739,15 +682,10 @@
                 document.getElementById('camera-overlay')
                     .style.display = "block";
 
-                // TELA PREPARE-SE
+                // ETAPA 1
+                // PREPARE-SE POR 3 SEGUNDOS
 
                 setTimeout(() => {
-
-                    document.getElementById('prepare-screen')
-                        .style.display = "none";
-
-                    document.getElementById('countdown-container')
-                        .style.display = "flex";
 
                     startCountdown();
 
@@ -769,10 +707,15 @@
 
         function startCountdown() {
 
-            let time = 5;
+            document.getElementById('prepare-text')
+                .style.display = "none";
 
             const countdown =
                 document.getElementById('countdown');
+
+            countdown.style.display = "block";
+
+            let time = 5;
 
             countdown.innerText = time;
 
@@ -914,7 +857,11 @@
 
             fd.append('copias', qtd);
 
-            fd.append('evento', currentEvent);
+            // ENVIA EVENTO ATIVO
+
+            fd.append('evento', eventoAtivo);
+
+            fd.append('tipo', tipoFoto);
 
             try {
 
@@ -939,7 +886,7 @@
         }
 
         // =========================================
-        // ESCUTA GATILHO
+        // ESCUTA GATILHO REMOTO
         // =========================================
 
         async function checkRemoteTrigger() {
@@ -976,10 +923,10 @@
         }
 
         // =========================================
-        // INIT
+        // INICIALIZA
         // =========================================
 
-        loadSystemConfig();
+        loadSystemStatus();
 
         setInterval(checkRemoteTrigger, 1000);
 

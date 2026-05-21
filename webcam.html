@@ -4,7 +4,7 @@
 
     <meta charset="UTF-8">
 
-    <title>WEBCAM - PHOTO PRINT v5.2</title>
+    <title>WEBCAM - PHOTO PRINT v5.3</title>
 
     <style>
 
@@ -609,31 +609,49 @@
 
         let eventoAtivo = "EVENTO";
         let tipoFoto = "FOTO DIGITAL";
-
         let formatoAtivo = "10X15H";
+
         let molduraAtual = null;
 
         let pollingTrigger = false;
         let sessaoIniciada = false;
+
+        let ultimoEventoCarregado = "";
 
         async function loadSystemStatus() {
 
             try {
 
                 const res =
-                    await fetch(`${API}/status?t=${Date.now()}`);
+                    await fetch(`${API}/status?t=${Date.now()}`, {
+
+                        cache: "no-store"
+
+                    });
+
+                if (!res.ok) {
+
+                    throw new Error("Erro status");
+
+                }
 
                 const data =
                     await res.json();
 
+                console.log("STATUS RECEBIDO:", data);
+
                 eventoAtivo =
-                    data.evento || "EVENTO";
+                    data.evento ||
+                    data.nome ||
+                    "EVENTO";
 
                 tipoFoto =
-                    data.tipo || "FOTO DIGITAL";
+                    data.tipo ||
+                    "FOTO DIGITAL";
 
                 formatoAtivo =
-                    data.formato || "10X15H";
+                    data.formato ||
+                    "10X15H";
 
                 document.getElementById('event-name')
                     .innerText = eventoAtivo;
@@ -645,11 +663,20 @@
                 document.getElementById('start-event-name')
                     .innerText = eventoAtivo;
 
-                await carregarMoldura();
+                if (
+                    ultimoEventoCarregado !== eventoAtivo ||
+                    !molduraAtual
+                ) {
+
+                    ultimoEventoCarregado = eventoAtivo;
+
+                    await carregarMoldura();
+
+                }
 
             } catch(e) {
 
-                console.log(e);
+                console.log("Erro status:", e);
 
             }
 
@@ -659,68 +686,72 @@
 
             molduraAtual = null;
 
-            const tentativas = [
+            try {
 
-                `${API}/molduras/${encodeURIComponent(eventoAtivo)}.png?t=${Date.now()}`,
-                `${API}/uploads/molduras/${encodeURIComponent(eventoAtivo)}.png?t=${Date.now()}`,
-                `${API}/uploads/${encodeURIComponent(eventoAtivo)}.png?t=${Date.now()}`
-            ];
+                const nomeArquivo =
+                    encodeURIComponent(eventoAtivo.trim());
 
-            for (const url of tentativas) {
+                const url =
+                    `${API}/molduras/${nomeArquivo}.png?t=${Date.now()}`;
 
-                try {
+                console.log("BUSCANDO MOLDURA:", url);
 
-                    console.log("Tentando moldura:", url);
+                const response =
+                    await fetch(url, {
 
-                    const response =
-                        await fetch(url, {
-
-                            cache: "no-store"
-
-                        });
-
-                    if (!response.ok) {
-
-                        continue;
-
-                    }
-
-                    const blob =
-                        await response.blob();
-
-                    const img =
-                        new Image();
-
-                    img.crossOrigin = "anonymous";
-
-                    const objectURL =
-                        URL.createObjectURL(blob);
-
-                    img.src = objectURL;
-
-                    await new Promise((resolve, reject) => {
-
-                        img.onload = resolve;
-
-                        img.onerror = reject;
+                        cache: "no-store"
 
                     });
 
-                    molduraAtual = img;
+                if (!response.ok) {
 
-                    console.log("MOLDURA OK");
-
-                    return;
-
-                } catch(e) {
-
-                    console.log("Falhou:", e);
+                    throw new Error(
+                        "Moldura não encontrada"
+                    );
 
                 }
 
-            }
+                const blob =
+                    await response.blob();
 
-            console.log("NENHUMA MOLDURA ENCONTRADA");
+                const imageUrl =
+                    URL.createObjectURL(blob);
+
+                const img =
+                    new Image();
+
+                img.crossOrigin = "anonymous";
+
+                await new Promise((resolve, reject) => {
+
+                    img.onload = () => {
+
+                        console.log(
+                            "MOLDURA CARREGADA"
+                        );
+
+                        resolve();
+
+                    };
+
+                    img.onerror = reject;
+
+                    img.src = imageUrl;
+
+                });
+
+                molduraAtual = img;
+
+            } catch(e) {
+
+                console.log(
+                    "ERRO AO CARREGAR MOLDURA:",
+                    e
+                );
+
+                molduraAtual = null;
+
+            }
 
         }
 
@@ -841,6 +872,18 @@
 
             await new Promise(r => setTimeout(r, 300));
 
+            await loadSystemStatus();
+
+            if (!molduraAtual) {
+
+                console.log(
+                    "Tentando carregar moldura novamente..."
+                );
+
+                await carregarMoldura();
+
+            }
+
             const canvas =
                 document.createElement('canvas');
 
@@ -925,11 +968,11 @@
 
             ctx.restore();
 
-            // FORÇA A APLICAÇÃO DA MOLDURA
-
             if (molduraAtual) {
 
-                console.log("APLICANDO MOLDURA");
+                console.log(
+                    "APLICANDO MOLDURA..."
+                );
 
                 ctx.drawImage(
                     molduraAtual,
@@ -941,7 +984,9 @@
 
             } else {
 
-                console.log("SEM MOLDURA APLICADA");
+                console.log(
+                    "SEM MOLDURA!"
+                );
 
             }
 
@@ -1065,6 +1110,8 @@
 
             } catch(e) {
 
+                console.log(e);
+
                 alert("Erro ao enviar impressão");
 
                 location.reload();
@@ -1082,8 +1129,10 @@
             const screenStart =
                 document.getElementById('screen-start');
 
-            if (!screenStart ||
-                screenStart.style.display === "none") {
+            if (
+                !screenStart ||
+                screenStart.style.display === "none"
+            ) {
 
                 pollingTrigger = false;
 
@@ -1127,7 +1176,7 @@
 
         loadSystemStatus();
 
-        setInterval(loadSystemStatus, 5000);
+        setInterval(loadSystemStatus, 3000);
 
         setInterval(checkRemoteTrigger, 400);
 

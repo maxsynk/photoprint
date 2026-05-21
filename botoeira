@@ -4,100 +4,377 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BOTOEIRA - PHOTO PRINT</title>
+
     <style>
-        :root { --neon: #39ff14; --dark: #0a0a0a; --danger: #ff3131; --info-blue: #00e5ff; }
-        body { margin: 0; background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; display: flex; flex-direction: column; height: 100vh; touch-action: manipulation; }
 
-        .screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; background: var(--dark); }
+        :root {
+            --neon: #39ff14;
+            --dark: #0a0a0a;
+            --danger: #ff3131;
+            --info-blue: #00e5ff;
+        }
 
-        /* Botão Inicial */
+        body {
+            margin: 0;
+            background: var(--dark);
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            touch-action: manipulation;
+        }
+
+        .screen {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            background: var(--dark);
+        }
+
+        /* BOTÃO INICIAL */
+
         .btn-start {
-            width: 280px; height: 280px; border-radius: 50%;
-            background: rgba(0,0,0,0.75); border: 10px solid var(--neon);
-            color: white; cursor: pointer; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; text-align: center;
+
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.75);
+            border: 10px solid var(--neon);
+
+            color: white;
+            cursor: pointer;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            text-align: center;
+
             animation: pulseBtn 2s infinite ease-in-out;
+
         }
-        .btn-start:active { transform: scale(0.95); background: var(--neon); color: #000; }
-        .btn-start b { font-size: 26px; color: var(--neon); }
 
-        /* Tela de Disparo */
-        .triggered-text { font-size: 30px; color: var(--neon); font-weight: 900; text-align: center; }
+        .btn-start b {
+            font-size: 26px;
+            color: var(--neon);
+        }
 
-        /* Opções de Impressão */
-        .copies-label { font-size: 16px; color: var(--neon); font-weight: bold; margin-bottom: 20px; text-transform: uppercase; }
-        .print-grid { display: grid; grid-template-columns: 1fr; gap: 15px; width: 85%; max-width: 320px; margin-bottom: 30px; }
-        .btn-print-mobile { padding: 15px; border-radius: 10px; cursor: pointer; border: 2px solid var(--neon); background: transparent; color: white; font-weight: bold; }
-        .btn-print-mobile.selected { background: var(--neon); color: #000; }
+        .btn-start:active {
+            transform: scale(0.95);
+            background: var(--neon);
+            color: #000;
+        }
 
-        /* Botão Enviar com Avião */
+        /* TEXTO */
+
+        .triggered-text {
+            font-size: 30px;
+            color: var(--neon);
+            font-weight: 900;
+            text-align: center;
+        }
+
+        /* IMPRESSÃO */
+
+        .copies-label {
+
+            font-size: 16px;
+            color: var(--neon);
+            font-weight: bold;
+
+            margin-bottom: 20px;
+
+            text-transform: uppercase;
+
+        }
+
+        .print-grid {
+
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+
+            width: 85%;
+            max-width: 320px;
+
+            margin-bottom: 30px;
+
+        }
+
+        .btn-print-mobile {
+
+            padding: 15px;
+
+            border-radius: 12px;
+
+            cursor: pointer;
+
+            background: transparent;
+
+            color: white;
+
+            font-weight: bold;
+
+            font-size: 16px;
+
+        }
+
+        .btn-neon-style {
+            border: 2px solid var(--neon);
+        }
+
+        .btn-neon-style.selected {
+
+            background: var(--neon);
+            color: black;
+            box-shadow: 0 0 15px var(--neon);
+
+        }
+
+        .btn-blue-style {
+            border: 2px solid var(--info-blue);
+        }
+
+        .btn-blue-style.selected {
+
+            background: var(--info-blue);
+            color: black;
+            box-shadow: 0 0 15px var(--info-blue);
+
+        }
+
+        /* BOTÃO ENVIAR */
+
         .btn-send {
-            padding: 20px 40px; border-radius: 50px; border: none; background: var(--neon);
-            color: #000; font-size: 20px; font-weight: 900; cursor: pointer;
-            display: flex; align-items: center; gap: 10px; text-transform: uppercase;
+
+            padding: 20px 40px;
+
+            border-radius: 50px;
+
+            border: none;
+
+            background: var(--neon);
+
+            color: #000;
+
+            font-size: 20px;
+            font-weight: 900;
+
+            cursor: pointer;
+
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            text-transform: uppercase;
+
             animation: bounce 1.5s infinite;
+
         }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        
-        @keyframes pulseBtn { 0% { box-shadow: 0 0 30px rgba(57, 255, 20, 0.4); } 50% { box-shadow: 0 0 60px rgba(57, 255, 20, 0.8); } 100% { box-shadow: 0 0 30px rgba(57, 255, 20, 0.4); } }
+
+        @keyframes bounce {
+
+            0%, 100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+        }
+
+        @keyframes pulseBtn {
+
+            0% {
+                box-shadow: 0 0 30px rgba(57,255,20,0.4);
+            }
+
+            50% {
+                box-shadow: 0 0 60px rgba(57,255,20,0.8);
+            }
+
+            100% {
+                box-shadow: 0 0 30px rgba(57,255,20,0.4);
+            }
+
+        }
+
     </style>
 </head>
 <body>
 
+    <!-- INÍCIO -->
+
     <div id="screen-start" class="screen">
-        <div class="btn-start" onclick="triggerPhoto()"><b>TIRAR FOTO</b></div>
+
+        <div class="btn-start" onclick="triggerPhoto()">
+
+            <b>TIRAR FOTO</b>
+
+        </div>
+
     </div>
+
+    <!-- AGUARDANDO -->
 
     <div id="screen-triggered" class="screen" style="display:none">
-        <div class="triggered-text">CAPTURANDO... 📸</div>
+
+        <div class="triggered-text">
+
+            CAPTURANDO... 📸
+
+        </div>
+
     </div>
 
+    <!-- IMPRESSÃO -->
+
     <div id="screen-options" class="screen" style="display:none">
-        <div class="copies-label">Como deseja imprimir?</div>
-        <div class="print-grid">
-            <button class="btn-print-mobile selected" onclick="selectOption(this, 1)">1 Cópia</button>
-            <button class="btn-print-mobile" onclick="selectOption(this, 2)">2 Cópias</button>
-            <button class="btn-print-mobile" onclick="selectOption(this, 3)">1 Cópia + Guestbook</button>
-            <button class="btn-print-mobile" onclick="selectOption(this, 4)">2 Cópias + Guestbook</button>
+
+        <div class="copies-label">
+
+            COMO DESEJA IMPRIMIR?
+
         </div>
+
+        <div class="print-grid">
+
+            <button class="btn-print-mobile btn-neon-style selected"
+                onclick="selectOption(this,1)">
+                🖨️ 1 Cópia
+            </button>
+
+            <button class="btn-print-mobile btn-neon-style"
+                onclick="selectOption(this,2)">
+                🖨️ 2 Cópias
+            </button>
+
+            <button class="btn-print-mobile btn-blue-style"
+                onclick="selectOption(this,3)">
+                📖 1 Cópia + Guestbook
+            </button>
+
+            <button class="btn-print-mobile btn-blue-style"
+                onclick="selectOption(this,4)">
+                📖 2 Cópias + Guestbook
+            </button>
+
+        </div>
+
         <button class="btn-send" onclick="sendPrint()">
+
             ENVIAR ✈️
+
         </button>
+
     </div>
 
     <script>
+
         const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
-        let config = { evento: "EVENTO_TESTE" };
+
         let selectedCopiesValue = 1;
 
-        function triggerPhoto() {
+        async function triggerPhoto() {
+
             document.getElementById('screen-start').style.display = "none";
+
             document.getElementById('screen-triggered').style.display = "flex";
-            
-            // Simula o disparo da câmera
-            setTimeout(() => {
-                document.getElementById('screen-triggered').style.display = "none";
-                document.getElementById('screen-options').style.display = "flex";
-            }, 3000);
+
+            try {
+
+                await fetch(`${API}/trigger`, {
+                    method: 'POST'
+                });
+
+                waitPhotoFinish();
+
+            } catch(e) {
+
+                alert("Erro ao disparar câmera");
+
+                location.reload();
+
+            }
+
+        }
+
+        async function waitPhotoFinish() {
+
+            const interval = setInterval(async () => {
+
+                try {
+
+                    const res = await fetch(`${API}/check-photo-ready?t=${Date.now()}`);
+
+                    const data = await res.json();
+
+                    if (data.ready) {
+
+                        clearInterval(interval);
+
+                        document.getElementById('screen-triggered').style.display = "none";
+
+                        document.getElementById('screen-options').style.display = "flex";
+
+                    }
+
+                } catch(e) {}
+
+            }, 1000);
+
         }
 
         function selectOption(btn, val) {
-            document.querySelectorAll('.btn-print-mobile').forEach(b => b.classList.remove('selected'));
+
+            document.querySelectorAll('.btn-print-mobile')
+                .forEach(b => b.classList.remove('selected'));
+
             btn.classList.add('selected');
+
             selectedCopiesValue = val;
+
         }
 
         async function sendPrint() {
-            // Lógica de envio (aqui você chama seu Worker)
-            await fetch(`${API}/trigger`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ comando: "IMPRIMIR", tipo: selectedCopiesValue })
-            });
-            
-            alert("Enviado com sucesso!");
-            location.reload(); // Reinicia o ciclo
+
+            try {
+
+                await fetch(`${API}/trigger-print`, {
+
+                    method: 'POST',
+
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+
+                    body: JSON.stringify({
+                        copias: selectedCopiesValue
+                    })
+
+                });
+
+                alert("Impressão enviada!");
+
+                location.reload();
+
+            } catch(e) {
+
+                alert("Erro ao enviar impressão");
+
+            }
+
         }
+
     </script>
+
 </body>
 </html>

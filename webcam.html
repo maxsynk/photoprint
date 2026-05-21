@@ -4,7 +4,7 @@
 
     <meta charset="UTF-8">
 
-    <title>WEBCAM - PHOTO PRINT v4.0</title>
+    <title>WEBCAM - PHOTO PRINT v4.1</title>
 
     <style>
 
@@ -128,8 +128,8 @@
 
             position: relative;
 
-            width: 550px;
-            height: 550px;
+            width: 560px;
+            height: 560px;
 
             border-radius: 50%;
 
@@ -137,8 +137,8 @@
 
             background:
                 radial-gradient(circle at center,
-                rgba(57,255,20,0.15),
-                rgba(0,0,0,0.9));
+                rgba(57,255,20,0.20),
+                rgba(0,0,0,0.96));
 
             cursor: pointer;
 
@@ -156,8 +156,8 @@
             padding: 40px;
 
             box-shadow:
-                0 0 30px rgba(57,255,20,0.5),
-                inset 0 0 35px rgba(57,255,20,0.15);
+                0 0 40px rgba(57,255,20,0.8),
+                inset 0 0 60px rgba(57,255,20,0.25);
 
         }
 
@@ -166,10 +166,12 @@
             transform: scale(1.04);
 
             box-shadow:
-                0 0 60px rgba(57,255,20,0.9),
-                inset 0 0 40px rgba(57,255,20,0.25);
+                0 0 80px rgba(57,255,20,1),
+                inset 0 0 90px rgba(57,255,20,0.45);
 
         }
+
+        /* GLOW MAIS FORTE */
 
         .btn-start::before {
 
@@ -177,16 +179,21 @@
 
             position: absolute;
 
-            width: 200%;
-            height: 200%;
+            width: 260%;
+            height: 260%;
 
             background: conic-gradient(
                 transparent,
+                rgba(57,255,20,1),
                 rgba(57,255,20,0.4),
                 transparent
             );
 
-            animation: rotateGlow 4s linear infinite;
+            animation: rotateGlow 2.5s linear infinite;
+
+            filter: blur(25px);
+
+            opacity: 1;
 
         }
 
@@ -196,11 +203,14 @@
 
             position: absolute;
 
-            inset: 8px;
+            inset: 10px;
 
             border-radius: 50%;
 
-            background: rgba(0,0,0,0.92);
+            background: rgba(0,0,0,0.93);
+
+            box-shadow:
+                inset 0 0 60px rgba(57,255,20,0.18);
 
         }
 
@@ -222,6 +232,8 @@
 
             text-align: center;
 
+            width: 100%;
+
         }
 
         .start-title {
@@ -232,7 +244,9 @@
 
             font-weight: 900;
 
-            text-shadow: 0 0 20px var(--neon);
+            text-shadow:
+                0 0 15px var(--neon),
+                0 0 35px var(--neon);
 
             margin-bottom: 18px;
 
@@ -242,7 +256,7 @@
 
         .start-subtitle {
 
-            font-size: 22px;
+            font-size: 23px;
 
             line-height: 1.6;
 
@@ -253,6 +267,8 @@
             color: var(--neon);
 
             font-weight: bold;
+
+            text-shadow: 0 0 15px var(--neon);
 
         }
 
@@ -373,18 +389,18 @@
 
             color: var(--neon);
 
-            font-size: 72px;
+            font-size: 76px;
 
             font-weight: 900;
 
-            letter-spacing: 6px;
+            letter-spacing: 8px;
 
             text-shadow:
-                0 0 10px var(--neon),
-                0 0 25px var(--neon),
-                0 0 40px var(--neon);
+                0 0 15px var(--neon),
+                0 0 35px var(--neon),
+                0 0 60px var(--neon);
 
-            animation: preparePulse 1s infinite alternate;
+            animation: preparePulse 0.8s infinite alternate;
 
         }
 
@@ -558,20 +574,20 @@
 
     <div id="screen-start" class="screen">
 
-        <div class="btn-start" onclick="initSession()">
+        <div class="btn-start" onclick="manualStart()">
 
             <div class="start-content">
 
                 <div class="start-title" id="start-event-name">
 
-                    CARREGANDO...
+                    CARREGANDO EVENTO...
 
                 </div>
 
                 <div class="start-subtitle">
 
-                    Clique na <span>BOTOEIRA DO TOTEM</span><br>
-                    para começar sua experiência 📸
+                    Aperte a <span>BOTOEIRA DO TOTEM</span><br>
+                    para iniciar sua foto 📸
 
                 </div>
 
@@ -608,8 +624,11 @@
         let eventoAtivo = "EVENTO";
         let tipoFoto = "FOTO DIGITAL";
 
+        let pollingTrigger = false;
+        let sessaoIniciada = false;
+
         // =========================================
-        // CARREGA EVENTO ATIVO
+        // CARREGA STATUS
         // =========================================
 
         async function loadSystemStatus() {
@@ -628,12 +647,18 @@
                 tipoFoto =
                     data.tipo || "FOTO DIGITAL";
 
+                // EVENTO NO OVERLAY
+
                 document.getElementById('event-name')
                     .innerText = eventoAtivo;
+
+                // TIPO FOTO
 
                 document.getElementById('event-type')
                     .innerText =
                         `${tipoFoto} • TOTEM INTERATIVO`;
+
+                // BOTÃO PRINCIPAL AGORA MOSTRA EVENTO
 
                 document.getElementById('start-event-name')
                     .innerText = eventoAtivo;
@@ -647,10 +672,26 @@
         }
 
         // =========================================
+        // START MANUAL
+        // =========================================
+
+        function manualStart() {
+
+            if (sessaoIniciada) return;
+
+            initSession();
+
+        }
+
+        // =========================================
         // INICIA SESSÃO
         // =========================================
 
         async function initSession() {
+
+            if (sessaoIniciada) return;
+
+            sessaoIniciada = true;
 
             document.getElementById('screen-start')
                 .style.display = "none";
@@ -660,6 +701,11 @@
 
             try {
 
+                // RECARREGA EVENTO ATIVO
+                // ANTES DE CAPTURAR
+
+                await loadSystemStatus();
+
                 const stream =
                     await navigator.mediaDevices.getUserMedia({
 
@@ -668,11 +714,28 @@
                             width: 1920,
                             height: 1080
 
-                        }
+                        },
+
+                        audio: false
 
                     });
 
                 video.srcObject = stream;
+
+                // AGUARDA VIDEO REALMENTE INICIAR
+                // EVITA FALHA NA PRIMEIRA TENTATIVA
+
+                await new Promise(resolve => {
+
+                    video.onloadedmetadata = () => {
+
+                        video.play();
+
+                        resolve();
+
+                    };
+
+                });
 
                 video.style.display = "block";
 
@@ -682,8 +745,7 @@
                 document.getElementById('camera-overlay')
                     .style.display = "block";
 
-                // ETAPA 1
-                // PREPARE-SE POR 3 SEGUNDOS
+                // PREPARE-SE 3 SEGUNDOS
 
                 setTimeout(() => {
 
@@ -692,6 +754,8 @@
                 }, 3000);
 
             } catch(e) {
+
+                console.log(e);
 
                 alert("Erro ao acessar câmera");
 
@@ -746,6 +810,8 @@
             document.getElementById('countdown')
                 .innerText = "📸";
 
+            await new Promise(r => setTimeout(r, 300));
+
             const canvas =
                 document.createElement('canvas');
 
@@ -769,13 +835,17 @@
                 canvas.height
             );
 
-            // BLOB
+            // GERA BLOB
 
-            canvas.toBlob(b => {
+            finalBlob = await new Promise(resolve => {
 
-                finalBlob = b;
+                canvas.toBlob(blob => {
 
-            }, 'image/jpeg', 0.92);
+                    resolve(blob);
+
+                }, 'image/jpeg', 0.92);
+
+            });
 
             // PREVIEW
 
@@ -788,12 +858,9 @@
                 .style.display = "none";
 
             // AVISA BOTOEIRA
+            // COM RETRY AUTOMÁTICO
 
-            fetch(`${API}/photo-ready`, {
-
-                method: 'POST'
-
-            });
+            await notifyPhotoReady();
 
             // MOSTRA PREVIEW
 
@@ -803,6 +870,42 @@
             // ESCUTA IMPRESSÃO
 
             startPrintPolling();
+
+        }
+
+        // =========================================
+        // GARANTE SINCRONIA BOTOEIRA
+        // =========================================
+
+        async function notifyPhotoReady() {
+
+            let enviado = false;
+
+            while (!enviado) {
+
+                try {
+
+                    const res = await fetch(`${API}/photo-ready`, {
+
+                        method: 'POST'
+
+                    });
+
+                    if (res.ok) {
+
+                        enviado = true;
+
+                    }
+
+                } catch(e) {}
+
+                if (!enviado) {
+
+                    await new Promise(r => setTimeout(r, 700));
+
+                }
+
+            }
 
         }
 
@@ -838,7 +941,7 @@
 
                 } catch(e) {}
 
-            }, 1000);
+            }, 700);
 
         }
 
@@ -856,8 +959,6 @@
             fd.append('file', finalBlob, 'webcam.jpg');
 
             fd.append('copias', qtd);
-
-            // ENVIA EVENTO ATIVO
 
             fd.append('evento', eventoAtivo);
 
@@ -891,22 +992,38 @@
 
         async function checkRemoteTrigger() {
 
+            if (pollingTrigger) return;
+
+            pollingTrigger = true;
+
             const screenStart =
                 document.getElementById('screen-start');
 
             if (!screenStart ||
-                screenStart.style.display === "none")
+                screenStart.style.display === "none") {
+
+                pollingTrigger = false;
+
                 return;
+
+            }
 
             try {
 
                 const res =
-                    await fetch(`${API}/check-trigger?t=${Date.now()}`);
+                    await fetch(`${API}/check-trigger?t=${Date.now()}`, {
+
+                        cache: "no-store"
+
+                    });
 
                 const data =
                     await res.json();
 
                 if (data.triggered) {
+
+                    // LIMPA IMEDIATAMENTE
+                    // PARA NÃO DUPLICAR
 
                     await fetch(`${API}/clear-trigger`, {
 
@@ -918,17 +1035,29 @@
 
                 }
 
-            } catch(e) {}
+            } catch(e) {
+
+                console.log(e);
+
+            }
+
+            pollingTrigger = false;
 
         }
 
         // =========================================
-        // INICIALIZA
+        // INIT
         // =========================================
 
         loadSystemStatus();
 
-        setInterval(checkRemoteTrigger, 1000);
+        // ATUALIZA EVENTO A CADA 5 SEGUNDOS
+
+        setInterval(loadSystemStatus, 5000);
+
+        // LOOP BOTOEIRA MAIS RÁPIDO
+
+        setInterval(checkRemoteTrigger, 400);
 
     </script>
 

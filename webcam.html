@@ -4,7 +4,7 @@
 
     <meta charset="UTF-8">
 
-    <title>WEBCAM - PHOTO PRINT v4.1</title>
+    <title>WEBCAM - PHOTO PRINT v5.0</title>
 
     <style>
 
@@ -120,10 +120,6 @@
 
         }
 
-        /* =========================================
-           BOTÃO INICIAL
-        ========================================= */
-
         .btn-start {
 
             position: relative;
@@ -170,8 +166,6 @@
                 inset 0 0 90px rgba(57,255,20,0.45);
 
         }
-
-        /* GLOW MAIS FORTE */
 
         .btn-start::before {
 
@@ -272,10 +266,6 @@
 
         }
 
-        /* =========================================
-           OVERLAY CAMERA
-        ========================================= */
-
         #camera-overlay {
 
             position: fixed;
@@ -359,10 +349,6 @@
             letter-spacing: 2px;
 
         }
-
-        /* =========================================
-           CONTADOR
-        ========================================= */
 
         #countdown-container {
 
@@ -462,10 +448,6 @@
 
         }
 
-        /* =========================================
-           PREVIEW FINAL
-        ========================================= */
-
         #botoeira-controls {
 
             margin-top: 25px;
@@ -506,19 +488,13 @@
 
 <body>
 
-    <!-- LOADER -->
-
     <div id="loader">
 
         <div>PROCESSANDO...</div>
 
     </div>
 
-    <!-- CAMERA -->
-
     <video id="cam-preview" autoplay playsinline></video>
-
-    <!-- OVERLAY CAMERA -->
 
     <div id="camera-overlay">
 
@@ -550,8 +526,6 @@
 
         </div>
 
-        <!-- CONTADOR -->
-
         <div id="countdown-container">
 
             <div id="prepare-text">
@@ -569,8 +543,6 @@
         </div>
 
     </div>
-
-    <!-- TELA INICIAL -->
 
     <div id="screen-start" class="screen">
 
@@ -597,8 +569,6 @@
 
     </div>
 
-    <!-- PREVIEW FINAL -->
-
     <div id="final-preview-container" class="screen">
 
         <img id="img-review" src="">
@@ -624,12 +594,11 @@
         let eventoAtivo = "EVENTO";
         let tipoFoto = "FOTO DIGITAL";
 
+        let formatoAtivo = "10X15H";
+        let molduraAtual = null;
+
         let pollingTrigger = false;
         let sessaoIniciada = false;
-
-        // =========================================
-        // CARREGA STATUS
-        // =========================================
 
         async function loadSystemStatus() {
 
@@ -647,21 +616,20 @@
                 tipoFoto =
                     data.tipo || "FOTO DIGITAL";
 
-                // EVENTO NO OVERLAY
+                formatoAtivo =
+                    data.formato || "10X15H";
 
                 document.getElementById('event-name')
                     .innerText = eventoAtivo;
 
-                // TIPO FOTO
-
                 document.getElementById('event-type')
                     .innerText =
-                        `${tipoFoto} • TOTEM INTERATIVO`;
-
-                // BOTÃO PRINCIPAL AGORA MOSTRA EVENTO
+                        `${tipoFoto} • ${formatoAtivo}`;
 
                 document.getElementById('start-event-name')
                     .innerText = eventoAtivo;
+
+                await carregarMoldura();
 
             } catch(e) {
 
@@ -671,9 +639,37 @@
 
         }
 
-        // =========================================
-        // START MANUAL
-        // =========================================
+        async function carregarMoldura() {
+
+            try {
+
+                const img = new Image();
+
+                img.crossOrigin = "anonymous";
+
+                img.src =
+                    `${API}/molduras/${encodeURIComponent(eventoAtivo)}.png?t=${Date.now()}`;
+
+                await new Promise((resolve, reject) => {
+
+                    img.onload = resolve;
+                    img.onerror = reject;
+
+                });
+
+                molduraAtual = img;
+
+                console.log("Moldura carregada");
+
+            } catch(e) {
+
+                console.log("Sem moldura");
+
+                molduraAtual = null;
+
+            }
+
+        }
 
         function manualStart() {
 
@@ -682,10 +678,6 @@
             initSession();
 
         }
-
-        // =========================================
-        // INICIA SESSÃO
-        // =========================================
 
         async function initSession() {
 
@@ -700,9 +692,6 @@
                 .style.display = "flex";
 
             try {
-
-                // RECARREGA EVENTO ATIVO
-                // ANTES DE CAPTURAR
 
                 await loadSystemStatus();
 
@@ -721,9 +710,6 @@
                     });
 
                 video.srcObject = stream;
-
-                // AGUARDA VIDEO REALMENTE INICIAR
-                // EVITA FALHA NA PRIMEIRA TENTATIVA
 
                 await new Promise(resolve => {
 
@@ -745,8 +731,6 @@
                 document.getElementById('camera-overlay')
                     .style.display = "block";
 
-                // PREPARE-SE 3 SEGUNDOS
-
                 setTimeout(() => {
 
                     startCountdown();
@@ -764,10 +748,6 @@
             }
 
         }
-
-        // =========================================
-        // CONTADOR
-        // =========================================
 
         function startCountdown() {
 
@@ -801,10 +781,6 @@
 
         }
 
-        // =========================================
-        // PROCESSA FOTO
-        // =========================================
-
         async function processFinalImage() {
 
             document.getElementById('countdown')
@@ -815,27 +791,98 @@
             const canvas =
                 document.createElement('canvas');
 
-            canvas.width = 1920;
-            canvas.height = 1080;
+            if (formatoAtivo === "10X15V") {
+
+                canvas.width = 1080;
+                canvas.height = 1620;
+
+            } else if (formatoAtivo === "TIRINHA") {
+
+                canvas.width = 1080;
+                canvas.height = 3240;
+
+            } else if (formatoAtivo === "POLAROID") {
+
+                canvas.width = 1080;
+                canvas.height = 1350;
+
+            } else {
+
+                canvas.width = 1620;
+                canvas.height = 1080;
+
+            }
 
             const ctx =
                 canvas.getContext('2d');
 
-            // FOTO ESPELHADA
+            ctx.fillStyle = "#000";
 
-            ctx.translate(canvas.width, 0);
-
-            ctx.scale(-1, 1);
-
-            ctx.drawImage(
-                video,
+            ctx.fillRect(
                 0,
                 0,
                 canvas.width,
                 canvas.height
             );
 
-            // GERA BLOB
+            ctx.save();
+
+            ctx.translate(canvas.width, 0);
+
+            ctx.scale(-1, 1);
+
+            const videoRatio =
+                video.videoWidth / video.videoHeight;
+
+            const canvasRatio =
+                canvas.width / canvas.height;
+
+            let drawWidth;
+            let drawHeight;
+
+            if (videoRatio > canvasRatio) {
+
+                drawHeight = canvas.height;
+
+                drawWidth =
+                    drawHeight * videoRatio;
+
+            } else {
+
+                drawWidth = canvas.width;
+
+                drawHeight =
+                    drawWidth / videoRatio;
+
+            }
+
+            const x =
+                (canvas.width - drawWidth) / 2;
+
+            const y =
+                (canvas.height - drawHeight) / 2;
+
+            ctx.drawImage(
+                video,
+                x,
+                y,
+                drawWidth,
+                drawHeight
+            );
+
+            ctx.restore();
+
+            if (molduraAtual) {
+
+                ctx.drawImage(
+                    molduraAtual,
+                    0,
+                    0,
+                    canvas.width,
+                    canvas.height
+                );
+
+            }
 
             finalBlob = await new Promise(resolve => {
 
@@ -843,39 +890,24 @@
 
                     resolve(blob);
 
-                }, 'image/jpeg', 0.92);
+                }, 'image/jpeg', 0.95);
 
             });
 
-            // PREVIEW
-
             document.getElementById('img-review').src =
-                canvas.toDataURL('image/jpeg', 0.92);
-
-            // ESCONDE OVERLAY
+                canvas.toDataURL('image/jpeg', 0.95);
 
             document.getElementById('camera-overlay')
                 .style.display = "none";
 
-            // AVISA BOTOEIRA
-            // COM RETRY AUTOMÁTICO
-
             await notifyPhotoReady();
-
-            // MOSTRA PREVIEW
 
             document.getElementById('final-preview-container')
                 .style.display = "flex";
 
-            // ESCUTA IMPRESSÃO
-
             startPrintPolling();
 
         }
-
-        // =========================================
-        // GARANTE SINCRONIA BOTOEIRA
-        // =========================================
 
         async function notifyPhotoReady() {
 
@@ -909,10 +941,6 @@
 
         }
 
-        // =========================================
-        // ESCUTA IMPRESSÃO
-        // =========================================
-
         async function startPrintPolling() {
 
             const interval = setInterval(async () => {
@@ -945,10 +973,6 @@
 
         }
 
-        // =========================================
-        // FINALIZA
-        // =========================================
-
         async function finalizar(qtd) {
 
             document.getElementById('loader')
@@ -963,6 +987,8 @@
             fd.append('evento', eventoAtivo);
 
             fd.append('tipo', tipoFoto);
+
+            fd.append('formato', formatoAtivo);
 
             try {
 
@@ -985,10 +1011,6 @@
             }
 
         }
-
-        // =========================================
-        // ESCUTA GATILHO REMOTO
-        // =========================================
 
         async function checkRemoteTrigger() {
 
@@ -1022,9 +1044,6 @@
 
                 if (data.triggered) {
 
-                    // LIMPA IMEDIATAMENTE
-                    // PARA NÃO DUPLICAR
-
                     await fetch(`${API}/clear-trigger`, {
 
                         method: 'POST'
@@ -1045,17 +1064,9 @@
 
         }
 
-        // =========================================
-        // INIT
-        // =========================================
-
         loadSystemStatus();
 
-        // ATUALIZA EVENTO A CADA 5 SEGUNDOS
-
         setInterval(loadSystemStatus, 5000);
-
-        // LOOP BOTOEIRA MAIS RÁPIDO
 
         setInterval(checkRemoteTrigger, 400);
 

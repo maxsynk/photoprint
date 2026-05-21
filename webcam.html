@@ -2,91 +2,413 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>WEBCAM - PHOTO PRINT v3.7</title>
+    <title>WEBCAM - PHOTO PRINT v3.8</title>
+
     <style>
-        :root { --neon: #39ff14; --dark: #0a0a0a; --danger: #ff3131; }
-        body { margin: 0; background: var(--dark); color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-        #cam-preview { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: none; }
-        .screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; }
-        #loader { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 300; display: none; align-items: center; justify-content: center; }
-        #final-preview-container { z-index: 150; background: #000; display: none; }
-        #img-review { max-width: 80%; border: 5px solid var(--neon); }
+
+        :root {
+            --neon: #39ff14;
+            --dark: #0a0a0a;
+            --danger: #ff3131;
+        }
+
+        body {
+
+            margin: 0;
+            background: var(--dark);
+            color: white;
+
+            font-family: sans-serif;
+
+            display: flex;
+            flex-direction: column;
+
+            align-items: center;
+            justify-content: center;
+
+            height: 100vh;
+
+            overflow: hidden;
+
+        }
+
+        #cam-preview {
+
+            position: absolute;
+            inset: 0;
+
+            width: 100%;
+            height: 100%;
+
+            object-fit: cover;
+
+            transform: scaleX(-1);
+
+            display: none;
+
+        }
+
+        .screen {
+
+            position: fixed;
+            inset: 0;
+
+            display: flex;
+            flex-direction: column;
+
+            align-items: center;
+            justify-content: center;
+
+            z-index: 20;
+
+        }
+
+        #loader {
+
+            position: fixed;
+            inset: 0;
+
+            background: rgba(0,0,0,0.9);
+
+            z-index: 300;
+
+            display: none;
+
+            align-items: center;
+            justify-content: center;
+
+        }
+
+        #final-preview-container {
+
+            z-index: 150;
+            background: #000;
+
+            display: none;
+
+        }
+
+        #img-review {
+
+            max-width: 80%;
+
+            border: 5px solid var(--neon);
+
+            box-shadow: 0 0 30px var(--neon);
+
+        }
+
+        .btn-start {
+
+            padding: 50px;
+
+            border: 5px solid var(--neon);
+
+            cursor: pointer;
+
+            color: var(--neon);
+
+            font-size: 28px;
+            font-weight: bold;
+
+            border-radius: 20px;
+
+            box-shadow: 0 0 25px rgba(57,255,20,0.5);
+
+            transition: 0.3s;
+
+        }
+
+        .btn-start:hover {
+
+            background: var(--neon);
+
+            color: black;
+
+        }
+
+        #botoeira-controls {
+
+            margin-top: 20px;
+
+            color: var(--neon);
+
+            font-size: 24px;
+
+            font-weight: bold;
+
+            text-align: center;
+
+            animation: pulseText 1.5s infinite alternate;
+
+        }
+
+        @keyframes pulseText {
+
+            from {
+                opacity: 0.6;
+                text-shadow: 0 0 5px var(--neon);
+            }
+
+            to {
+                opacity: 1;
+                text-shadow: 0 0 20px var(--neon);
+            }
+
+        }
+
     </style>
+
 </head>
 <body>
-    <div id="loader"><h2>PROCESSANDO...</h2></div>
-    <video id="cam-preview" autoplay playsinline></video>
-    
-    <div id="screen-start" class="screen">
-        <div onclick="initSession()" style="padding:50px; border: 5px solid var(--neon); cursor:pointer">VAMOS COMEÇAR?</div>
+
+    <!-- LOADER -->
+
+    <div id="loader">
+
+        <h2>PROCESSANDO...</h2>
+
     </div>
 
-    <div id="final-preview-container" class="screen">
-        <img id="img-review" src="">
-        <div id="botoeira-controls" style="margin-top: 20px; color: var(--neon); font-size: 24px;">
-            AGUARDANDO ESCOLHA NA BOTOEIRA...
+    <!-- CAMERA -->
+
+    <video id="cam-preview" autoplay playsinline></video>
+
+    <!-- TELA INICIAL -->
+
+    <div id="screen-start" class="screen">
+
+        <div class="btn-start" onclick="initSession()">
+
+            VAMOS COMEÇAR?
+
         </div>
+
+    </div>
+
+    <!-- PREVIEW FINAL -->
+
+    <div id="final-preview-container" class="screen">
+
+        <img id="img-review" src="">
+
+        <div id="botoeira-controls">
+
+            AGUARDANDO ESCOLHA NA BOTOEIRA... 📱
+
+        </div>
+
     </div>
 
     <script>
+
         const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
+
         const video = document.getElementById('cam-preview');
+
         let finalBlob = null;
 
+        // =========================
+        // INICIA SESSÃO
+        // =========================
+
         async function initSession() {
+
             document.getElementById('screen-start').style.display = "none";
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            video.srcObject = stream;
-            video.style.display = "block";
-            // Inicia sequência após carregar
-            setTimeout(processFinalImage, 2000); 
+
+            document.getElementById('loader').style.display = "flex";
+
+            try {
+
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: 1920,
+                        height: 1080
+                    }
+                });
+
+                video.srcObject = stream;
+
+                video.style.display = "block";
+
+                setTimeout(() => {
+
+                    document.getElementById('loader').style.display = "none";
+
+                    processFinalImage();
+
+                }, 2000);
+
+            } catch(e) {
+
+                alert("Erro ao acessar câmera");
+
+                location.reload();
+
+            }
+
         }
+
+        // =========================
+        // PROCESSA FOTO
+        // =========================
 
         async function processFinalImage() {
-            // Lógica de captura simplificada
+
+            document.getElementById('loader').style.display = "flex";
+
             const canvas = document.createElement('canvas');
-            canvas.width = 1920; canvas.height = 1080;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            canvas.toBlob(b => { finalBlob = b; }, 'image/jpeg');
-            
+
+            canvas.width = 1920;
+            canvas.height = 1080;
+
+            const ctx = canvas.getContext('2d');
+
+            // ESPELHA A FOTO
+
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // GERA BLOB
+
+            canvas.toBlob(b => {
+
+                finalBlob = b;
+
+            }, 'image/jpeg', 0.9);
+
+            // PREVIEW
+
+            document.getElementById('img-review').src =
+                canvas.toDataURL('image/jpeg', 0.9);
+
+            // AVISA A BOTOEIRA
+
+            fetch(`${API}/photo-ready`, {
+                method: 'POST'
+            });
+
+            // MOSTRA PREVIEW
+
+            document.getElementById('loader').style.display = "none";
+
             document.getElementById('final-preview-container').style.display = "flex";
-            document.getElementById('img-review').src = canvas.toDataURL();
-            
-            // Inicia o escutador de impressão
+
+            // COMEÇA A ESCUTAR IMPRESSÃO
+
             startPrintPolling();
+
         }
+
+        // =========================
+        // ESCUTA IMPRESSÃO
+        // =========================
 
         async function startPrintPolling() {
+
             const interval = setInterval(async () => {
-                const res = await fetch(`${API}/check-print`);
-                const data = await res.json();
-                if (data.printTriggered) {
-                    clearInterval(interval);
-                    await fetch(`${API}/clear-print`, { method: 'POST' });
-                    finalizar(data.copias);
-                }
+
+                try {
+
+                    const res = await fetch(`${API}/check-print?t=${Date.now()}`);
+
+                    const data = await res.json();
+
+                    if (data.printTriggered) {
+
+                        clearInterval(interval);
+
+                        await fetch(`${API}/clear-print`, {
+                            method: 'POST'
+                        });
+
+                        finalizar(data.copias);
+
+                    }
+
+                } catch(e) {}
+
             }, 1000);
+
         }
+
+        // =========================
+        // FINALIZA
+        // =========================
 
         async function finalizar(qtd) {
+
+            document.getElementById('loader').style.display = "flex";
+
             const fd = new FormData();
-            fd.append('file', finalBlob);
+
+            fd.append('file', finalBlob, 'webcam.jpg');
+
             fd.append('copias', qtd);
-            await fetch(`${API}/upload`, { method: 'POST', body: fd });
-            location.reload();
+
+            try {
+
+                await fetch(`${API}/upload`, {
+
+                    method: 'POST',
+
+                    body: fd
+
+                });
+
+                location.reload();
+
+            } catch(e) {
+
+                alert("Erro ao enviar impressão");
+
+                location.reload();
+
+            }
+
         }
 
+        // =========================
+        // ESCUTA DISPARO REMOTO
+        // =========================
+
         async function checkRemoteTrigger() {
-            if (document.getElementById('screen-start').style.display !== "none") {
-                const res = await fetch(`${API}/check-trigger`);
+
+            const screenStart =
+                document.getElementById('screen-start');
+
+            if (!screenStart ||
+                screenStart.style.display === "none")
+                return;
+
+            try {
+
+                const res =
+                    await fetch(`${API}/check-trigger?t=${Date.now()}`);
+
                 const data = await res.json();
+
                 if (data.triggered) {
-                    await fetch(`${API}/clear-trigger`, { method: 'POST' });
+
+                    await fetch(`${API}/clear-trigger`, {
+                        method: 'POST'
+                    });
+
                     initSession();
+
                 }
-            }
+
+            } catch(e) {}
+
         }
+
+        // LOOP
+
         setInterval(checkRemoteTrigger, 1000);
+
     </script>
+
 </body>
 </html>

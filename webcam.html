@@ -1,15 +1,25 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
+
     <meta charset="UTF-8">
-    <title>WEBCAM - PHOTO PRINT v3.8</title>
+
+    <title>WEBCAM - PHOTO PRINT v3.9</title>
 
     <style>
 
         :root {
+
             --neon: #39ff14;
-            --dark: #0a0a0a;
+            --dark: #050505;
             --danger: #ff3131;
+
+        }
+
+        * {
+
+            box-sizing: border-box;
+
         }
 
         body {
@@ -18,14 +28,9 @@
             background: var(--dark);
             color: white;
 
-            font-family: sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
 
-            display: flex;
-            flex-direction: column;
-
-            align-items: center;
-            justify-content: center;
-
+            width: 100vw;
             height: 100vh;
 
             overflow: hidden;
@@ -34,7 +39,7 @@
 
         #cam-preview {
 
-            position: absolute;
+            position: fixed;
             inset: 0;
 
             width: 100%;
@@ -46,6 +51,8 @@
 
             display: none;
 
+            z-index: 1;
+
         }
 
         .screen {
@@ -54,6 +61,7 @@
             inset: 0;
 
             display: flex;
+
             flex-direction: column;
 
             align-items: center;
@@ -68,20 +76,30 @@
             position: fixed;
             inset: 0;
 
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.92);
 
-            z-index: 300;
+            z-index: 999;
 
             display: none;
 
             align-items: center;
             justify-content: center;
 
+            flex-direction: column;
+
+            color: var(--neon);
+
+            font-size: 28px;
+            font-weight: bold;
+
+            text-shadow: 0 0 20px var(--neon);
+
         }
 
         #final-preview-container {
 
             z-index: 150;
+
             background: #000;
 
             display: none;
@@ -94,46 +112,293 @@
 
             border: 5px solid var(--neon);
 
-            box-shadow: 0 0 30px var(--neon);
-
-        }
-
-        .btn-start {
-
-            padding: 50px;
-
-            border: 5px solid var(--neon);
-
-            cursor: pointer;
-
-            color: var(--neon);
-
-            font-size: 28px;
-            font-weight: bold;
+            box-shadow: 0 0 35px rgba(57,255,20,0.8);
 
             border-radius: 20px;
 
-            box-shadow: 0 0 25px rgba(57,255,20,0.5);
+        }
+
+        /* =========================================
+           BOTÃO INICIAL
+        ========================================= */
+
+        .btn-start {
+
+            position: relative;
+
+            width: 520px;
+
+            padding: 45px;
+
+            border-radius: 30px;
+
+            border: 4px solid var(--neon);
+
+            background: rgba(0,0,0,0.75);
+
+            cursor: pointer;
+
+            overflow: hidden;
 
             transition: 0.3s;
+
+            box-shadow:
+                0 0 20px rgba(57,255,20,0.4),
+                inset 0 0 20px rgba(57,255,20,0.15);
 
         }
 
         .btn-start:hover {
 
-            background: var(--neon);
+            transform: scale(1.03);
 
-            color: black;
+            box-shadow:
+                0 0 40px rgba(57,255,20,0.8),
+                inset 0 0 25px rgba(57,255,20,0.25);
 
         }
 
-        #botoeira-controls {
+        .btn-start::before {
 
-            margin-top: 20px;
+            content: '';
+
+            position: absolute;
+
+            top: 0;
+            left: -120%;
+
+            width: 100%;
+            height: 100%;
+
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(57,255,20,0.25),
+                transparent
+            );
+
+            animation: shine 3s infinite;
+
+        }
+
+        @keyframes shine {
+
+            100% {
+
+                left: 120%;
+
+            }
+
+        }
+
+        .start-title {
 
             color: var(--neon);
 
-            font-size: 24px;
+            font-size: 42px;
+
+            font-weight: bold;
+
+            text-align: center;
+
+            margin-bottom: 15px;
+
+            text-shadow: 0 0 20px var(--neon);
+
+        }
+
+        .start-subtitle {
+
+            text-align: center;
+
+            font-size: 22px;
+
+            color: white;
+
+            line-height: 1.5;
+
+        }
+
+        .start-subtitle span {
+
+            color: var(--neon);
+
+            font-weight: bold;
+
+        }
+
+        /* =========================================
+           OVERLAY CAMERA
+        ========================================= */
+
+        #camera-overlay {
+
+            position: fixed;
+            inset: 0;
+
+            z-index: 50;
+
+            pointer-events: none;
+
+            display: none;
+
+        }
+
+        .camera-info {
+
+            position: absolute;
+
+            top: 40px;
+            left: 40px;
+
+            display: flex;
+
+            align-items: flex-start;
+
+            gap: 18px;
+
+        }
+
+        .camera-line {
+
+            width: 6px;
+
+            height: 150px;
+
+            background: var(--neon);
+
+            box-shadow: 0 0 20px var(--neon);
+
+            border-radius: 50px;
+
+        }
+
+        .camera-text {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 10px;
+
+        }
+
+        .camera-system {
+
+            color: var(--neon);
+
+            font-size: 34px;
+
+            font-weight: bold;
+
+            text-shadow: 0 0 15px var(--neon);
+
+        }
+
+        .camera-event {
+
+            font-size: 22px;
+
+            font-weight: bold;
+
+        }
+
+        .camera-type {
+
+            font-size: 18px;
+
+            opacity: 0.8;
+
+            letter-spacing: 2px;
+
+        }
+
+        /* =========================================
+           CONTADOR
+        ========================================= */
+
+        #countdown-container {
+
+            position: absolute;
+
+            inset: 0;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+            justify-content: center;
+
+            z-index: 80;
+
+            background: rgba(0,0,0,0.25);
+
+        }
+
+        #prepare-text {
+
+            color: white;
+
+            font-size: 54px;
+
+            font-weight: bold;
+
+            margin-bottom: 25px;
+
+            text-shadow: 0 0 30px #000;
+
+            letter-spacing: 4px;
+
+        }
+
+        #countdown {
+
+            color: var(--neon);
+
+            font-size: 180px;
+
+            font-weight: bold;
+
+            text-shadow: 0 0 35px var(--neon);
+
+            animation: pulse 1s infinite;
+
+        }
+
+        @keyframes pulse {
+
+            0% {
+
+                transform: scale(1);
+
+            }
+
+            50% {
+
+                transform: scale(1.1);
+
+            }
+
+            100% {
+
+                transform: scale(1);
+
+            }
+
+        }
+
+        /* =========================================
+           PREVIEW FINAL
+        ========================================= */
+
+        #botoeira-controls {
+
+            margin-top: 25px;
+
+            color: var(--neon);
+
+            font-size: 28px;
 
             font-weight: bold;
 
@@ -146,13 +411,19 @@
         @keyframes pulseText {
 
             from {
+
                 opacity: 0.6;
+
                 text-shadow: 0 0 5px var(--neon);
+
             }
 
             to {
+
                 opacity: 1;
+
                 text-shadow: 0 0 20px var(--neon);
+
             }
 
         }
@@ -160,13 +431,14 @@
     </style>
 
 </head>
+
 <body>
 
     <!-- LOADER -->
 
     <div id="loader">
 
-        <h2>PROCESSANDO...</h2>
+        <div>PROCESSANDO...</div>
 
     </div>
 
@@ -174,13 +446,76 @@
 
     <video id="cam-preview" autoplay playsinline></video>
 
+    <!-- OVERLAY CAMERA -->
+
+    <div id="camera-overlay">
+
+        <div class="camera-info">
+
+            <div class="camera-line"></div>
+
+            <div class="camera-text">
+
+                <div class="camera-system">
+
+                    PHOTO PRINT
+
+                </div>
+
+                <div class="camera-event">
+
+                    EVENTO EXPERIENCE 2026
+
+                </div>
+
+                <div class="camera-type">
+
+                    FOTO DIGITAL • TOTEM INTERATIVO
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- CONTADOR -->
+
+        <div id="countdown-container">
+
+            <div id="prepare-text">
+
+                PREPARE-SE PARA A FOTO
+
+            </div>
+
+            <div id="countdown">
+
+                5
+
+            </div>
+
+        </div>
+
+    </div>
+
     <!-- TELA INICIAL -->
 
     <div id="screen-start" class="screen">
 
         <div class="btn-start" onclick="initSession()">
 
-            VAMOS COMEÇAR?
+            <div class="start-title">
+
+                PHOTO EXPERIENCE
+
+            </div>
+
+            <div class="start-subtitle">
+
+                Clique na <span>BOTOEIRA DO TOTEM</span><br>
+                para iniciar sua experiência 📸
+
+            </div>
 
         </div>
 
@@ -202,42 +537,55 @@
 
     <script>
 
-        const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
+        const API =
+            "https://photoprint-api.maxprimefotovideo.workers.dev";
 
-        const video = document.getElementById('cam-preview');
+        const video =
+            document.getElementById('cam-preview');
 
         let finalBlob = null;
 
-        // =========================
+        // =========================================
         // INICIA SESSÃO
-        // =========================
+        // =========================================
 
         async function initSession() {
 
-            document.getElementById('screen-start').style.display = "none";
+            document.getElementById('screen-start')
+                .style.display = "none";
 
-            document.getElementById('loader').style.display = "flex";
+            document.getElementById('loader')
+                .style.display = "flex";
 
             try {
 
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        width: 1920,
-                        height: 1080
-                    }
-                });
+                const stream =
+                    await navigator.mediaDevices.getUserMedia({
+
+                        video: {
+
+                            width: 1920,
+                            height: 1080
+
+                        }
+
+                    });
 
                 video.srcObject = stream;
 
                 video.style.display = "block";
 
-                setTimeout(() => {
+                document.getElementById('loader')
+                    .style.display = "none";
 
-                    document.getElementById('loader').style.display = "none";
+                // MOSTRA OVERLAY
 
-                    processFinalImage();
+                document.getElementById('camera-overlay')
+                    .style.display = "block";
 
-                }, 2000);
+                // INICIA CONTADOR
+
+                startCountdown();
 
             } catch(e) {
 
@@ -249,62 +597,109 @@
 
         }
 
-        // =========================
+        // =========================================
+        // CONTADOR
+        // =========================================
+
+        function startCountdown() {
+
+            let time = 5;
+
+            const countdown =
+                document.getElementById('countdown');
+
+            countdown.innerText = time;
+
+            const interval = setInterval(() => {
+
+                time--;
+
+                countdown.innerText = time;
+
+                if (time <= 0) {
+
+                    clearInterval(interval);
+
+                    processFinalImage();
+
+                }
+
+            }, 1000);
+
+        }
+
+        // =========================================
         // PROCESSA FOTO
-        // =========================
+        // =========================================
 
         async function processFinalImage() {
 
-            document.getElementById('loader').style.display = "flex";
+            document.getElementById('countdown')
+                .innerText = "📸";
 
-            const canvas = document.createElement('canvas');
+            const canvas =
+                document.createElement('canvas');
 
             canvas.width = 1920;
             canvas.height = 1080;
 
-            const ctx = canvas.getContext('2d');
+            const ctx =
+                canvas.getContext('2d');
 
-            // ESPELHA A FOTO
+            // ESPELHO
 
             ctx.translate(canvas.width, 0);
+
             ctx.scale(-1, 1);
 
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            ctx.drawImage(
+                video,
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
 
-            // GERA BLOB
+            // BLOB
 
             canvas.toBlob(b => {
 
                 finalBlob = b;
 
-            }, 'image/jpeg', 0.9);
+            }, 'image/jpeg', 0.92);
 
             // PREVIEW
 
             document.getElementById('img-review').src =
-                canvas.toDataURL('image/jpeg', 0.9);
+                canvas.toDataURL('image/jpeg', 0.92);
 
-            // AVISA A BOTOEIRA
+            // ESCONDE OVERLAY
+
+            document.getElementById('camera-overlay')
+                .style.display = "none";
+
+            // AVISA BOTOEIRA
 
             fetch(`${API}/photo-ready`, {
+
                 method: 'POST'
+
             });
 
             // MOSTRA PREVIEW
 
-            document.getElementById('loader').style.display = "none";
+            document.getElementById('final-preview-container')
+                .style.display = "flex";
 
-            document.getElementById('final-preview-container').style.display = "flex";
-
-            // COMEÇA A ESCUTAR IMPRESSÃO
+            // ESCUTA IMPRESSÃO
 
             startPrintPolling();
 
         }
 
-        // =========================
+        // =========================================
         // ESCUTA IMPRESSÃO
-        // =========================
+        // =========================================
 
         async function startPrintPolling() {
 
@@ -312,16 +707,20 @@
 
                 try {
 
-                    const res = await fetch(`${API}/check-print?t=${Date.now()}`);
+                    const res =
+                        await fetch(`${API}/check-print?t=${Date.now()}`);
 
-                    const data = await res.json();
+                    const data =
+                        await res.json();
 
                     if (data.printTriggered) {
 
                         clearInterval(interval);
 
                         await fetch(`${API}/clear-print`, {
+
                             method: 'POST'
+
                         });
 
                         finalizar(data.copias);
@@ -334,13 +733,14 @@
 
         }
 
-        // =========================
+        // =========================================
         // FINALIZA
-        // =========================
+        // =========================================
 
         async function finalizar(qtd) {
 
-            document.getElementById('loader').style.display = "flex";
+            document.getElementById('loader')
+                .style.display = "flex";
 
             const fd = new FormData();
 
@@ -370,9 +770,9 @@
 
         }
 
-        // =========================
-        // ESCUTA DISPARO REMOTO
-        // =========================
+        // =========================================
+        // ESCUTA GATILHO REMOTO
+        // =========================================
 
         async function checkRemoteTrigger() {
 
@@ -388,12 +788,15 @@
                 const res =
                     await fetch(`${API}/check-trigger?t=${Date.now()}`);
 
-                const data = await res.json();
+                const data =
+                    await res.json();
 
                 if (data.triggered) {
 
                     await fetch(`${API}/clear-trigger`, {
+
                         method: 'POST'
+
                     });
 
                     initSession();

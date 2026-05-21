@@ -2,605 +2,91 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>WEBCAM - PHOTO PRINT v3.6</title>
+    <title>WEBCAM - PHOTO PRINT v3.7</title>
     <style>
-        :root { --neon: #39ff14; --dark: #0a0a0a; --danger: #ff3131; --info-blue: #00e5ff; }
-        body { 
-            margin: 0; background: var(--dark); color: white; 
-            font-family: 'Segoe UI', sans-serif; overflow: hidden; 
-            display: flex; flex-direction: column; height: 100vh;
-        }
-
-        #cam-preview {
-            position: absolute; inset: 0; width: 100%; height: 100%;
-            object-fit: cover; transform: scaleX(-1); display: none;
-        }
-
-        #final-preview-container {
-            position: fixed; inset: 0; background: #000; z-index: 150;
-            display: none; flex-direction: column; align-items: center; justify-content: center;
-        }
-        #img-review { max-width: 80%; max-height: 50%; border: 5px solid var(--neon); border-radius: 10px; box-shadow: 0 0 30px var(--neon); }
-
-        .btn-exit-preview {
-            position: absolute; top: 30px; right: 30px;
-            background: rgba(0,0,0,0.7); border: 2px solid var(--danger);
-            color: var(--danger); font-size: 24px; font-weight: bold;
-            width: 60px; height: 60px; border-radius: 50%; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            transition: 0.3s; z-index: 200; box-shadow: 0 0 15px rgba(255,49,49,0.4);
-        }
-        .btn-exit-preview:hover { background: var(--danger); color: white; box-shadow: 0 0 25px var(--danger); }
-
-        .system-info { 
-            position: absolute; top: 30px; left: 30px; text-align: left; 
-            border-left: 4px solid var(--neon); padding-left: 15px; z-index: 100;
-        }
-        .sys-title { font-size: 28px; font-weight: 900; color: var(--neon); text-transform: uppercase; margin: 0; }
-        .sys-sub { font-size: 10px; letter-spacing: 3px; opacity: 0.7; text-transform: uppercase; }
-        .event-label { margin-top: 10px; font-weight: bold; color: #fff; font-size: 18px; }
-
+        :root { --neon: #39ff14; --dark: #0a0a0a; --danger: #ff3131; }
+        body { margin: 0; background: var(--dark); color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        #cam-preview { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: none; }
         .screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; }
-
-        .btn-start {
-            width: 320px; height: 320px; border-radius: 50%;
-            background: rgba(0,0,0,0.75); border: 12px solid var(--neon);
-            color: white; cursor: pointer; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; text-align: center;
-            transition: 0.3s; pointer-events: auto;
-            animation: pulseBtn 2s infinite ease-in-out;
-        }
-        .btn-start b { font-size: 30px; color: var(--neon); animation: blinkText 1.5s infinite alternate; }
-        .btn-start span { font-size: 18px; margin-top: 15px; opacity: 0.8; letter-spacing: 1px; }
-        .btn-start:active { transform: scale(0.9) !important; background: var(--neon); color: #000; }
-
-        @keyframes pulseBtn {
-            0% { transform: scale(1); box-shadow: 0 0 30px rgba(57, 255, 20, 0.4); }
-            50% { transform: scale(1.06); box-shadow: 0 0 60px rgba(57, 255, 20, 0.8), inset 0 0 20px rgba(57, 255, 20, 0.3); }
-            100% { transform: scale(1); box-shadow: 0 0 30px rgba(57, 255, 20, 0.4); }
-        }
-        @keyframes blinkText {
-            from { opacity: 0.6; text-shadow: 0 0 5px var(--neon); }
-            to { opacity: 1; text-shadow: 0 0 20px var(--neon); }
-        }
-
-        #counter { font-size: 280px; font-weight: 900; text-shadow: 0 0 60px var(--neon); display: none; }
-        #smile-msg { font-size: 80px; font-weight: 900; color: var(--neon); display: none; text-align: center; line-height: 1.1; text-transform: uppercase; }
-
-        #mid-review-container {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 120;
-            display: none; flex-direction: column; align-items: center; justify-content: center;
-        }
-        #img-mid-review { max-width: 75%; max-height: 75%; border: 4px solid #fff; border-radius: 8px; }
-
-        /* Grid de Opções */
-        .copies-label { font-size: 12px; color: var(--neon); font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-top: 15px; margin-bottom: 8px; }
-        
-        .print-grid { 
-            display: grid; 
-            grid-template-columns: repeat(2, 180px); 
-            gap: 12px; 
-            margin-bottom: 20px;
-            pointer-events: auto; 
-        }
-        
-        .btn-print-mobile {
-            padding: 10px 15px;
-            background: transparent;
-            color: white;
-            font-size: 15px;
-            font-weight: bold;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn-neon-style { border: 2px solid var(--neon); }
-        .btn-neon-style:hover, .btn-neon-style.selected { background: var(--neon); color: black; box-shadow: 0 0 15px var(--neon); }
-
-        .btn-blue-style { border: 2px solid var(--info-blue); }
-        .btn-blue-style:hover, .btn-blue-style.selected { background: var(--info-blue); color: black; box-shadow: 0 0 15px var(--info-blue); }
-
-        .submit-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            pointer-events: auto;
-            margin-top: 10px;
-        }
-        .btn-submit-circle {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            border: 2px solid var(--neon);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: transparent;
-            transition: 0.3s;
-            box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
-        }
-        .btn-submit-circle svg {
-            width: 24px;
-            height: 24px;
-            fill: var(--neon);
-            transition: 0.3s;
-            transform: translate(-1px, 1px);
-        }
-        .submit-container:hover .btn-submit-circle {
-            background: var(--neon);
-            box-shadow: 0 0 20px var(--neon);
-        }
-        .submit-container:hover .btn-submit-circle svg {
-            fill: black;
-        }
-        .submit-text {
-            font-size: 11px;
-            color: var(--neon);
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-top: 8px;
-        }
-
-        .farewell-text { font-size: 50px; text-align: center; color: var(--neon); font-weight: 900; }
-        #flash { position: fixed; inset: 0; background: white; display: none; z-index: 200; }
-        #loader { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 300; display: none; flex-direction: column; align-items: center; justify-content: center; }
-
-        #screen-maintenance {
-            position: fixed; inset: 0; background: #000000; z-index: 9999;
-            display: none; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .maintenance-msg {
-            font-size: 60px; font-weight: 900; color: var(--danger);
-            text-shadow: 0 0 30px rgba(255, 49, 49, 0.6);
-            letter-spacing: 2px; text-align: center;
-        }
+        #loader { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 300; display: none; align-items: center; justify-content: center; }
+        #final-preview-container { z-index: 150; background: #000; display: none; }
+        #img-review { max-width: 80%; border: 5px solid var(--neon); }
     </style>
 </head>
 <body>
-
-    <div id="flash"></div>
-    <div id="loader"><h2 id="load-msg" style="color:var(--neon)">PROCESSANDO...</h2></div>
-
-    <div id="screen-maintenance">
-        <div class="maintenance-msg">SISTEMA EM MANUTENÇÃO</div>
-    </div>
-
+    <div id="loader"><h2>PROCESSANDO...</h2></div>
     <video id="cam-preview" autoplay playsinline></video>
-
-    <div class="system-info">
-        <div class="sys-title">PHOTO PRINT</div>
-        <div class="sys-sub">Colecionando Momentos</div>
-        <div id="event-display" class="event-label">CARREGANDO...</div>
-    </div>
-
+    
     <div id="screen-start" class="screen">
-        <div class="btn-start" onclick="initSession()">
-            <b>VAMOS COMEÇAR?</b>
-            <span>TOQUE AQUI</span>
-        </div>
-    </div>
-
-    <div id="screen-capture" class="screen" style="display:none">
-        <div id="counter">8</div>
-        <div id="smile-msg">SORRIA! 📸</div>
-    </div>
-
-    <div id="mid-review-container">
-        <h2 id="mid-review-title" style="color:var(--neon); margin-bottom:15px; font-size:40px;">OLHA ELE(A)!</h2>
-        <img id="img-mid-review" src="">
+        <div onclick="initSession()" style="padding:50px; border: 5px solid var(--neon); cursor:pointer">VAMOS COMEÇAR?</div>
     </div>
 
     <div id="final-preview-container" class="screen">
-        <button class="btn-exit-preview" onclick="location.reload()">X</button>
-        <h2 style="color:var(--neon); margin-bottom: 5px;">FICOU ÓTIMA!</h2>
         <img id="img-review" src="">
-        
-        <div id="touch-controls" style="display: none; flex-direction: column; align-items: center;">
-            <div class="copies-label">Quantas cópias deseja imprimir?</div>
-            <div class="print-grid">
-                <button class="btn-print-mobile btn-neon-style selected" onclick="selectOption(this, 1)">🖨️ 1 Cópia</button>
-                <button class="btn-print-mobile btn-neon-style" onclick="selectOption(this, 2)">🖨️ 2 Cópias</button>
-                <button class="btn-print-mobile btn-blue-style" onclick="selectOption(this, 3)">📖 1 Cópia + Guestbook</button>
-                <button class="btn-print-mobile btn-blue-style" onclick="selectOption(this, 4)">📖 2 Cópias + Guestbook</button>
-            </div>
-
-            <div class="submit-container" onclick="submitSelection()">
-                <div class="btn-submit-circle">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-                    </svg>
-                </div>
-                <div class="submit-text">Enviar e Imprimir</div>
-            </div>
-        </div>
-
-        <div id="botoeira-controls" style="display: none; flex-direction: column; align-items: center; margin-top: 30px;">
-            <div style="font-size: 26px; color: var(--neon); font-weight: 900; animation: blinkText 1.5s infinite alternate; text-align: center; text-transform: uppercase; letter-spacing: 2px;">
-                ESCOLHA A QUANTIDADE<br>NA BOTOEIRA 📱
-            </div>
+        <div id="botoeira-controls" style="margin-top: 20px; color: var(--neon); font-size: 24px;">
+            AGUARDANDO ESCOLHA NA BOTOEIRA...
         </div>
     </div>
-
-    <div id="screen-farewell" class="screen" style="display:none; background:rgba(0,0,0,0.95)">
-        <div class="farewell-text">
-            MUITO OBRIGADO! <br>
-            <span style="font-size:25px; color:white; opacity:0.8">SUA FOTO ESTÁ SENDO GERADA.</span><br>
-            <small style="font-size:20px; display:block; margin-top:20px">APROVEITE O EVENTO!</small>
-        </div>
-    </div>
-
-    <canvas id="c-snap" style="display:none"></canvas>
-    <canvas id="c-final" style="display:none"></canvas>
 
     <script>
         const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
-        
-        // --- CHAVE PARA CONTROLAR SE EXIBE BOTÕES NA TELA OU SE ESPERA A BOTOEIRA ---
-        const MODO_TOUCHSCREEN = false; // Deixe false para o controle ser feito pelo celular
-        
-        let config = { evento: "", formato: "10X15V", molduraUrl: "" };
-        let finalBlob = null;
-        let fotosCapturadas = [];
-        let selectedCopiesValue = 1; 
-        let printPollInterval; // Variável para controlar o loop de escuta de impressão
         const video = document.getElementById('cam-preview');
-
-        async function sync() {
-            try {
-                const r = await fetch(`${API}/status?t=${Date.now()}`);
-                const d = await r.json();
-                
-                if (d.status === "OFFLINE" || !d.evento || d.evento.trim() === "" || d.evento.toUpperCase() === "GERAL") {
-                    showMaintenance();
-                    return;
-                }
-
-                document.getElementById('screen-maintenance').style.display = "none";
-                
-                config.evento = d.evento;
-                config.formato = d.formato ? d.formato.toUpperCase() : "10X15V";
-                document.getElementById('event-display').innerText = config.evento;
-
-                const r2 = await fetch(`${API}/list-photos?evento=${encodeURIComponent(config.evento)}`);
-                const files = await r2.json();
-                const frame = files.find(f => f.key.toLowerCase().endsWith('.png'));
-                if(frame) config.molduraUrl = `${API}/photo/${encodeURIComponent(frame.key)}`;
-            } catch(e) { 
-                console.error("Erro sync API");
-                showMaintenance();
-            }
-        }
-
-        function showMaintenance() {
-            document.getElementById('screen-maintenance').style.display = "flex";
-            if (video.srcObject) {
-                video.srcObject.getTracks().forEach(t => t.stop());
-                video.style.display = "none";
-            }
-        }
+        let finalBlob = null;
 
         async function initSession() {
             document.getElementById('screen-start').style.display = "none";
-            document.getElementById('loader').style.display = "flex";
-            fotosCapturadas = [];
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1920, height: 1080 } });
-                video.srcObject = stream;
-                video.style.display = "block";
-                setTimeout(() => {
-                    document.getElementById('loader').style.display = "none";
-                    startSequence();
-                }, 1000);
-            } catch (err) { alert("Câmera não permitida."); location.reload(); }
-        }
-
-        async function startSequence() {
-            const isTirinha = config.formato.includes("STRIP") || config.formato.includes("TIRINHA");
-            
-            if (isTirinha) {
-                const rotinas = [
-                    { tempo: 8, msgAviso: "PREPARE-SE! 🚀", msgFim: "FOTO 1 DE 3", tAviso: 3000 },
-                    { tempo: 4, msgAviso: "MUDE A POSE! 😜", msgFim: "FOTO 2 DE 3", tAviso: 2000 },
-                    { tempo: 4, msgAviso: "CAPRICHA NA ÚLTIMA! 🔥", msgFim: "FOTO 3 DE 3", tAviso: 2000 }
-                ];
-
-                for (let i = 0; i < 3; i++) {
-                    await runCountdown(rotinas[i].tempo, rotinas[i].msgAviso, rotinas[i].msgFim, rotinas[i].tAviso);
-                    let snapData = takeSnap();
-                    fotosCapturadas.push(snapData);
-                    await showMidReview(snapData, `FOTO ${i+1} DE 3 SALVA!`);
-                }
-            } else {
-                await runCountdown(8, "PREPARE-SE! 🚀", "SORRIA! 📸", 3000);
-                let snapData = takeSnap();
-                fotosCapturadas.push(snapData);
-                await showMidReview(snapData, "CAPTURADO!");
-            }
-
-            processFinalImage();
-        }
-
-        function runCountdown(segundos, msgInicial, subtexto, tempoDeAviso) {
-            return new Promise(async (resolve) => {
-                const counterEl = document.getElementById('counter');
-                const smileEl = document.getElementById('smile-msg');
-                
-                smileEl.innerHTML = `${msgInicial}`;
-                smileEl.style.display = "block";
-                document.getElementById('screen-capture').style.display = "flex";
-                await new Promise(r => setTimeout(r, tempoDeAviso)); 
-                smileEl.style.display = "none";
-
-                for(let i = segundos; i > 0; i--) {
-                    counterEl.innerText = i;
-                    counterEl.style.display = "block";
-                    counterEl.style.display = "block";
-                    await new Promise(r => setTimeout(r, 1000));
-                }
-
-                counterEl.style.display = "none";
-                smileEl.innerHTML = `SORRIA!<br><span style="font-size:35px; color: #fff;">${subtexto}</span>`;
-                smileEl.style.display = "block";
-                
-                setTimeout(() => {
-                    smileEl.style.display = "none";
-                    resolve();
-                }, 1000);
-            });
-        }
-
-        function takeSnap() {
-            const flash = document.getElementById('flash');
-            flash.style.display = "block";
-            setTimeout(() => flash.style.display = "none", 100);
-
-            const canvas = document.getElementById('c-snap');
-            const ctx = canvas.getContext('2d');
-            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-            
-            ctx.translate(canvas.width, 0); 
-            ctx.scale(-1, 1);
-            ctx.drawImage(video, 0, 0);
-            
-            return canvas.toDataURL('image/jpeg', 0.9);
-        }
-
-        function showMidReview(photoData, titleText) {
-            return new Promise((resolve) => {
-                document.getElementById('screen-capture').style.display = "none";
-                document.getElementById('mid-review-title').innerText = titleText;
-                document.getElementById('img-mid-review').src = photoData;
-                document.getElementById('mid-review-container').style.display = "flex";
-                
-                setTimeout(() => {
-                    document.getElementById('mid-review-container').style.display = "none";
-                    resolve();
-                }, 3000);
-            });
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            video.style.display = "block";
+            // Inicia sequência após carregar
+            setTimeout(processFinalImage, 2000); 
         }
 
         async function processFinalImage() {
-            document.getElementById('loader').style.display = "flex";
+            // Lógica de captura simplificada
+            const canvas = document.createElement('canvas');
+            canvas.width = 1920; canvas.height = 1080;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            canvas.toBlob(b => { finalBlob = b; }, 'image/jpeg');
             
-            const finalCanvas = document.getElementById('c-final');
-            const ctx = finalCanvas.getContext('2d');
-
-            if (!config.molduraUrl || config.molduraUrl.trim() === "") {
-                console.error("Erro crítico: Nenhuma URL de moldura definida no sistema.");
-                document.getElementById('loader').style.display = "none";
-                alert("Erro: A moldura do evento não foi encontrada.");
-                return;
-            }
-            
-            try {
-                const responseMoldura = await fetch(config.molduraUrl + "?t=" + Date.now());
-                if (!responseMoldura.ok) throw new Error("Falha na resposta HTTP ao buscar a moldura.");
-                
-                const blobMoldura = await responseMoldura.blob();
-                const localFrameURL = URL.createObjectURL(blobMoldura);
-
-                const imgFrame = new Image();
-                imgFrame.src = localFrameURL;
-
-                await new Promise((resolve, reject) => {
-                    imgFrame.onload = resolve;
-                    imgFrame.onerror = reject;
-                });
-
-                finalCanvas.width = imgFrame.width; 
-                finalCanvas.height = imgFrame.height;
-
-                ctx.fillStyle = "white"; 
-                ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
-
-                const isTirinha = config.formato.includes("STRIP") || config.formato.includes("TIRINHA");
-
-                if (isTirinha && fotosCapturadas.length >= 3) {
-                    const slots = [{y:0.030, h:0.254}, {y:0.296, h:0.254}, {y:0.559, h:0.254}];
-                    
-                    for (let i = 0; i < 3; i++) {
-                        const photoData = fotosCapturadas[i];
-                        
-                        const imgPhoto = await new Promise((res) => {
-                            const img = new Image();
-                            img.onload = () => res(img);
-                            img.onerror = () => res(null);
-                            img.src = photoData;
-                        });
-
-                        if (imgPhoto) {
-                            const s = slots[i];
-                            const dx = finalCanvas.width * 0.06;
-                            const dw = finalCanvas.width * 0.88;
-                            const dy = finalCanvas.height * s.y;
-                            const dh = finalCanvas.height * s.h;
-
-                            ctx.save(); 
-                            ctx.beginPath(); 
-                            ctx.rect(dx, dy, dw, dh); 
-                            ctx.clip();
-
-                            const r = Math.max(dw / imgPhoto.width, dh / imgPhoto.height);
-                            ctx.drawImage(
-                                imgPhoto, 
-                                dx + (dw - imgPhoto.width * r) / 2, 
-                                dy + (dh - imgPhoto.height * r) / 2, 
-                                imgPhoto.width * r, 
-                                imgPhoto.height * r
-                            );
-                            ctx.restore();
-                        }
-                    }
-
-                } else if (fotosCapturadas.length > 0) {
-                    await new Promise((res) => {
-                        const imgPhoto = new Image();
-                        imgPhoto.onload = () => {
-                            const r = Math.max(finalCanvas.width / imgPhoto.width, finalCanvas.height / imgPhoto.height);
-                            const x = (finalCanvas.width - imgPhoto.width * r) / 2;
-                            const y = (finalCanvas.height - imgPhoto.height * r) / 2;
-                            ctx.drawImage(imgPhoto, x, y, imgPhoto.width * r, imgPhoto.height * r);
-                            res();
-                        };
-                        imgPhoto.onerror = () => res();
-                        imgPhoto.src = fotosCapturadas[0];
-                    });
-                }
-
-                ctx.drawImage(imgFrame, 0, 0, finalCanvas.width, finalCanvas.height);
-                
-                URL.revokeObjectURL(localFrameURL);
-                concluirReview(finalCanvas);
-
-            } catch (error) {
-                console.error("Falha fatal ao processar e mesclar as imagens:", error);
-                document.getElementById('loader').style.display = "none";
-                alert("Erro ao processar imagem final. Verifique a conexão com o servidor de molduras.");
-            }
-        }
-
-        function concluirReview(canvas) {
-            try {
-                document.getElementById('img-review').src = canvas.toDataURL('image/jpeg', 0.9);
-            } catch(e) {
-                console.error("Erro no preview src:", e);
-            }
-            
-            document.getElementById('loader').style.display = "none";
             document.getElementById('final-preview-container').style.display = "flex";
+            document.getElementById('img-review').src = canvas.toDataURL();
             
-            // Controle de visibilidade baseado na variável
-            if (MODO_TOUCHSCREEN) {
-                document.getElementById('touch-controls').style.display = "flex";
-                document.getElementById('botoeira-controls').style.display = "none";
-            } else {
-                document.getElementById('touch-controls').style.display = "none";
-                document.getElementById('botoeira-controls').style.display = "flex";
-                // Inicia o escutador para aguardar a seleção via API
-                startPrintPolling(); 
-            }
-
-            canvas.toBlob(b => { finalBlob = b; }, 'image/jpeg', 0.9);
+            // Inicia o escutador de impressão
+            startPrintPolling();
         }
 
-        // --- NOVA ROTINA PARA OUVIR A IMPRESSÃO DA BOTOEIRA ---
         async function startPrintPolling() {
-            printPollInterval = setInterval(async () => {
-                try {
-                    // Esta rota será adicionada no worker no próximo passo
-                    const res = await fetch(`${API}/check-print?t=${Date.now()}`);
-                    const data = await res.json();
-
-                    if (data.printTriggered) {
-                        clearInterval(printPollInterval);
-                        await fetch(`${API}/clear-print`, { method: 'POST' }); // Limpa o comando
-                        finishPrint(data.copias); // Usa a quantidade recebida da Botoeira
-                    }
-                } catch (error) {
-                    // Mantém silencioso para não poluir o console
+            const interval = setInterval(async () => {
+                const res = await fetch(`${API}/check-print`);
+                const data = await res.json();
+                if (data.printTriggered) {
+                    clearInterval(interval);
+                    await fetch(`${API}/clear-print`, { method: 'POST' });
+                    finalizar(data.copias);
                 }
             }, 1000);
         }
 
-        function selectOption(buttonElement, val) {
-            const buttons = document.querySelectorAll('.btn-print-mobile');
-            buttons.forEach(btn => btn.classList.remove('selected'));
-            buttonElement.classList.add('selected');
-            selectedCopiesValue = val;
-        }
-
-        function submitSelection() {
-            finishPrint(selectedCopiesValue);
-        }
-
-        async function finishPrint(qtd) {
-            document.getElementById('final-preview-container').style.display = "none";
-            document.getElementById('loader').style.display = "flex";
-
+        async function finalizar(qtd) {
             const fd = new FormData();
-            
-            let nomeArquivo = 'webcam.jpg';
-            let copiasFisicas = 1; 
-
-            if (qtd === 1) {
-                nomeArquivo = 'webcam.jpg';
-                copiasFisicas = 1;
-            } else if (qtd === 2) {
-                nomeArquivo = 'webcam_2c.jpg';
-                copiasFisicas = 2;
-            } else if (qtd === 3) {
-                nomeArquivo = 'webcam_2c_guestbook.jpg'; 
-                copiasFisicas = 2; 
-            } else if (qtd === 4) {
-                nomeArquivo = 'webcam_3c_guestbook.jpg'; 
-                copiasFisicas = 3; 
-            }
-
-            fd.append('file', finalBlob, nomeArquivo);
-            fd.append('evento', config.evento);
-            fd.append('copias', copiasFisicas); 
-
-            try {
-                await fetch(`${API}/upload`, { method: 'POST', body: fd });
-                showFarewell();
-            } catch(e) { 
-                console.error("Erro ao enviar arquivo:", e);
-                location.reload(); 
-            }
-        }
-
-        function showFarewell() {
-            document.getElementById('loader').style.display = "none";
-            document.getElementById('screen-farewell').style.display = "flex";
-            if(video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
-            setTimeout(() => { location.reload(); }, 5000);
+            fd.append('file', finalBlob);
+            fd.append('copias', qtd);
+            await fetch(`${API}/upload`, { method: 'POST', body: fd });
+            location.reload();
         }
 
         async function checkRemoteTrigger() {
-            const screenStart = document.getElementById('screen-start');
-            if (!screenStart || screenStart.style.display === "none") return;
-
-            try {
-                const res = await fetch(`${API}/check-trigger?t=${Date.now()}`);
+            if (document.getElementById('screen-start').style.display !== "none") {
+                const res = await fetch(`${API}/check-trigger`);
                 const data = await res.json();
-
                 if (data.triggered) {
                     await fetch(`${API}/clear-trigger`, { method: 'POST' });
                     initSession();
                 }
-            } catch (error) {}
+            }
         }
-
         setInterval(checkRemoteTrigger, 1000);
-        setInterval(sync, 5000);
-        sync();
     </script>
 </body>
 </html>

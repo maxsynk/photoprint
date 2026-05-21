@@ -4,7 +4,7 @@
 
     <meta charset="UTF-8">
 
-    <title>WEBCAM - PHOTO PRINT v5.1</title>
+    <title>WEBCAM - PHOTO PRINT v5.2</title>
 
     <style>
 
@@ -657,54 +657,70 @@
 
         async function carregarMoldura() {
 
-            try {
+            molduraAtual = null;
 
-                const url =
-                    `${API}/molduras/${encodeURIComponent(eventoAtivo)}.png?t=${Date.now()}`;
+            const tentativas = [
 
-                console.log("Buscando moldura:", url);
+                `${API}/molduras/${encodeURIComponent(eventoAtivo)}.png?t=${Date.now()}`,
+                `${API}/uploads/molduras/${encodeURIComponent(eventoAtivo)}.png?t=${Date.now()}`,
+                `${API}/uploads/${encodeURIComponent(eventoAtivo)}.png?t=${Date.now()}`
+            ];
 
-                const response =
-                    await fetch(url);
+            for (const url of tentativas) {
 
-                if (!response.ok) {
+                try {
 
-                    throw new Error("Moldura não encontrada");
+                    console.log("Tentando moldura:", url);
+
+                    const response =
+                        await fetch(url, {
+
+                            cache: "no-store"
+
+                        });
+
+                    if (!response.ok) {
+
+                        continue;
+
+                    }
+
+                    const blob =
+                        await response.blob();
+
+                    const img =
+                        new Image();
+
+                    img.crossOrigin = "anonymous";
+
+                    const objectURL =
+                        URL.createObjectURL(blob);
+
+                    img.src = objectURL;
+
+                    await new Promise((resolve, reject) => {
+
+                        img.onload = resolve;
+
+                        img.onerror = reject;
+
+                    });
+
+                    molduraAtual = img;
+
+                    console.log("MOLDURA OK");
+
+                    return;
+
+                } catch(e) {
+
+                    console.log("Falhou:", e);
 
                 }
 
-                const blob =
-                    await response.blob();
-
-                const img =
-                    new Image();
-
-                img.crossOrigin = "anonymous";
-
-                const objectURL =
-                    URL.createObjectURL(blob);
-
-                img.src = objectURL;
-
-                await new Promise((resolve, reject) => {
-
-                    img.onload = resolve;
-
-                    img.onerror = reject;
-
-                });
-
-                molduraAtual = img;
-
-                console.log("Moldura carregada com sucesso");
-
-            } catch(e) {
-
-                console.log("Erro moldura:", e);
-
-                molduraAtual = null;
-
             }
+
+            console.log("NENHUMA MOLDURA ENCONTRADA");
 
         }
 
@@ -909,7 +925,11 @@
 
             ctx.restore();
 
+            // FORÇA A APLICAÇÃO DA MOLDURA
+
             if (molduraAtual) {
+
+                console.log("APLICANDO MOLDURA");
 
                 ctx.drawImage(
                     molduraAtual,
@@ -918,6 +938,10 @@
                     canvas.width,
                     canvas.height
                 );
+
+            } else {
+
+                console.log("SEM MOLDURA APLICADA");
 
             }
 

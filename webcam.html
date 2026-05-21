@@ -4,7 +4,7 @@
 
     <meta charset="UTF-8">
 
-    <title>WEBCAM - PHOTO PRINT v5.0</title>
+    <title>WEBCAM - PHOTO PRINT v5.1</title>
 
     <style>
 
@@ -102,21 +102,37 @@
 
             z-index: 150;
 
-            background: #000;
+            background: rgba(0,0,0,0.96);
 
             display: none;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 20px;
 
         }
 
         #img-review {
 
-            max-width: 80%;
+            max-width: 78vw;
+            max-height: 78vh;
+
+            width: auto;
+            height: auto;
+
+            object-fit: contain;
 
             border: 5px solid var(--neon);
 
             box-shadow: 0 0 35px rgba(57,255,20,0.8);
 
             border-radius: 25px;
+
+            background: #000;
 
         }
 
@@ -643,27 +659,48 @@
 
             try {
 
-                const img = new Image();
+                const url =
+                    `${API}/molduras/${encodeURIComponent(eventoAtivo)}.png?t=${Date.now()}`;
+
+                console.log("Buscando moldura:", url);
+
+                const response =
+                    await fetch(url);
+
+                if (!response.ok) {
+
+                    throw new Error("Moldura não encontrada");
+
+                }
+
+                const blob =
+                    await response.blob();
+
+                const img =
+                    new Image();
 
                 img.crossOrigin = "anonymous";
 
-                img.src =
-                    `${API}/molduras/${encodeURIComponent(eventoAtivo)}.png?t=${Date.now()}`;
+                const objectURL =
+                    URL.createObjectURL(blob);
+
+                img.src = objectURL;
 
                 await new Promise((resolve, reject) => {
 
                     img.onload = resolve;
+
                     img.onerror = reject;
 
                 });
 
                 molduraAtual = img;
 
-                console.log("Moldura carregada");
+                console.log("Moldura carregada com sucesso");
 
             } catch(e) {
 
-                console.log("Sem moldura");
+                console.log("Erro moldura:", e);
 
                 molduraAtual = null;
 

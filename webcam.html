@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-
 <meta charset="UTF-8">
-
 <title>WEBCAM - PHOTO PRINT v6.2</title>
 
 <style>
-
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
 :root{
@@ -308,9 +305,7 @@ body{
         text-shadow:0 0 20px var(--neon);
     }
 }
-
 </style>
-
 </head>
 
 <body>
@@ -322,639 +317,360 @@ body{
 <video id="cam-preview" autoplay playsinline></video>
 
 <div id="camera-overlay">
-
     <div class="camera-info">
-
         <div class="camera-line"></div>
-
         <div class="camera-text">
-
-            <div class="camera-system">
-                PHOTO PRINT
-            </div>
-
-            <div class="camera-event" id="event-name">
-                CARREGANDO EVENTO...
-            </div>
-
-            <div class="camera-type" id="event-type">
-                FOTO DIGITAL • TOTEM INTERATIVO
-            </div>
-
+            <div class="camera-system">PHOTO PRINT</div>
+            <div class="camera-event" id="event-name">CARREGANDO EVENTO...</div>
+            <div class="camera-type" id="event-type">FOTO DIGITAL • TOTEM INTERATIVO</div>
         </div>
-
     </div>
-
     <div id="countdown-container">
-
-        <div id="prepare-text">
-            😎 PREPARE-SE
-        </div>
-
-        <div id="countdown">
-            5
-        </div>
-
+        <div id="prepare-text">😎 PREPARE-SE</div>
+        <div id="countdown">5</div>
     </div>
-
 </div>
 
 <div id="screen-start" class="screen">
-
     <div class="btn-start" onclick="manualStart()">
-
         <div class="start-content">
-
-            <div class="start-title" id="start-event-name">
-                CARREGANDO EVENTO...
-            </div>
-
+            <div class="start-title" id="start-event-name">CARREGANDO EVENTO...</div>
             <div class="start-subtitle">
                 Aperte a <span>BOTOEIRA DO TOTEM</span><br>
                 para iniciar sua foto 📸
             </div>
-
         </div>
-
     </div>
-
 </div>
 
 <div id="final-preview-container" class="screen">
-
     <img id="img-review" src="">
-
-    <div id="botoeira-controls">
-        AGUARDANDO ESCOLHA NA BOTOEIRA... 📱
-    </div>
-
+    <div id="botoeira-controls">AGUARDANDO ESCOLHA NA BOTOEIRA... 📱</div>
 </div>
 
 <script>
-
-const API =
-"https://photoprint-api.maxprimefotovideo.workers.dev";
-
-const video =
-document.getElementById('cam-preview');
+const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
+const video = document.getElementById('cam-preview');
 
 let finalBlob = null;
-
 let eventoAtivo = "EVENTO";
 let tipoFoto = "FOTO DIGITAL";
 let formatoAtivo = "10X15H";
 
 let molduraAtual = null;
-
 let pollingTrigger = false;
 let sessaoIniciada = false;
-
+let isFetchingStatus = false;
 let ultimoEventoCarregado = "";
 
 async function loadSystemStatus(){
+    // Trava para evitar sobreposição de requisições se a internet estiver lenta
+    if(isFetchingStatus) return;
+    isFetchingStatus = true;
 
     try{
+        const res = await fetch(`${API}/status?t=${Date.now()}`, { cache:"no-store" });
+        const data = await res.json();
+        
+        let activeData = data;
 
-        const res =
-        await fetch(`${API}/status?t=${Date.now()}`,{
-            cache:"no-store"
-        });
-
-        const data =
-        await res.json();
-
-        console.log("STATUS:",data);
-
-        eventoAtivo =
-        data.evento || "EVENTO";
-
-        formatoAtivo =
-        data.formato || "10X15H";
-
-        tipoFoto =
-        data.tipo || "FOTO DIGITAL";
-
-        // TEXTO CAMERA
-        document.getElementById('event-name')
-        .innerText = eventoAtivo;
-
-        // TEXTO TIPO
-        document.getElementById('event-type')
-        .innerText =
-        `${tipoFoto} • ${formatoAtivo}`;
-
-        // TEXTO BOTÃO CENTRAL
-        const tituloBotao =
-        document.getElementById('start-event-name');
-
-        if(tituloBotao){
-
-            tituloBotao.innerText =
-            eventoAtivo.toUpperCase();
-
+        // Busca o evento ativo independentemente da estrutura de resposta da API (Array ou Objeto)
+        if (data) {
+            if (Array.isArray(data)) {
+                activeData = data.find(e => e.ativo === true) || data[0];
+            } else if (data.eventos && Array.isArray(data.eventos)) {
+                activeData = data.eventos.find(e => e.ativo === true) || data;
+            } else if (data.activeEvent) {
+                activeData = data.activeEvent;
+            }
         }
 
-        // RECARREGA MOLDURA
-        if(
-            ultimoEventoCarregado !== eventoAtivo ||
-            !molduraAtual
-        ){
+        if (activeData) {
+            // Prioriza o campo 'nome' sobre 'evento' caso tenham sido mapeados diferentemente no backend
+            eventoAtivo = activeData.nome || activeData.evento || "EVENTO";
 
+            // Normalização inteligente do formato para evitar erros de leitura
+            let rawFormato = (activeData.formato || activeData.configuracao_saida || "10X15H").toString().toUpperCase();
+            if(rawFormato.includes("TIRINHA")) {
+                formatoAtivo = "TIRINHA";
+            } else if(rawFormato.includes("POLAROID")) {
+                formatoAtivo = "POLAROID";
+            } else if(rawFormato.includes("10X15V") || rawFormato.includes("VERTICAL")) {
+                formatoAtivo = "10X15V";
+            } else {
+                formatoAtivo = "10X15H";
+            }
+
+            tipoFoto = activeData.tipo || "FOTO DIGITAL";
+        }
+
+        // Atualização Visual (DOM)
+        document.getElementById('event-name').innerText = eventoAtivo;
+        document.getElementById('event-type').innerText = `${tipoFoto} • ${formatoAtivo}`;
+
+        const tituloBotao = document.getElementById('start-event-name');
+        if(tituloBotao){
+            tituloBotao.innerText = eventoAtivo.toUpperCase();
+        }
+
+        // Só tenta carregar a moldura se o evento mudou, evitando loops de erro na API
+        if(ultimoEventoCarregado !== eventoAtivo){
             ultimoEventoCarregado = eventoAtivo;
-
             await carregarMoldura();
-
         }
 
     }catch(e){
-
-        console.log("ERRO STATUS:",e);
-
+        console.log("ERRO STATUS:", e);
+    }finally{
+        isFetchingStatus = false;
     }
-
 }
 
 async function carregarMoldura(){
-
     molduraAtual = null;
-
     try{
+        const res = await fetch(`${API}/list-photos?evento=${encodeURIComponent(eventoAtivo)}&t=${Date.now()}`, { cache:"no-store" });
+        const arquivos = await res.json();
 
-        const res =
-        await fetch(
-            `${API}/list-photos?evento=${encodeURIComponent(eventoAtivo)}&t=${Date.now()}`,
-            {
-                cache:"no-store"
-            }
-        );
-
-        const arquivos =
-        await res.json();
-
-        console.log("ARQUIVOS EVENTO:",arquivos);
-
-        const moldura =
-        arquivos.find(a =>
-            a.key.toLowerCase().includes(".png")
-        );
-
+        const moldura = arquivos.find(a => a.key.toLowerCase().includes(".png"));
         if(!moldura){
-
             console.log("SEM MOLDURA PNG");
-
             return;
-
         }
 
-        const molduraUrl =
-        `${API}/photo/${encodeURIComponent(moldura.key)}?t=${Date.now()}`;
-
-        console.log("URL MOLDURA:",molduraUrl);
-
-        const img =
-        new Image();
-
+        const molduraUrl = `${API}/photo/${encodeURIComponent(moldura.key)}?t=${Date.now()}`;
+        
+        const img = new Image();
         img.crossOrigin = "anonymous";
 
         await new Promise((resolve,reject)=>{
-
             img.onload = ()=>resolve();
-
             img.onerror = reject;
-
             img.src = molduraUrl;
-
         });
 
         molduraAtual = img;
-
         console.log("MOLDURA OK");
-
     }catch(e){
-
-        console.log("ERRO MOLDURA:",e);
-
+        console.log("ERRO MOLDURA:", e);
         molduraAtual = null;
-
     }
-
 }
 
 function manualStart(){
-
     if(sessaoIniciada) return;
-
     initSession();
-
 }
 
 async function initSession(){
-
     if(sessaoIniciada) return;
-
     sessaoIniciada = true;
 
-    document.getElementById('screen-start')
-    .style.display = "none";
-
-    document.getElementById('loader')
-    .style.display = "flex";
+    document.getElementById('screen-start').style.display = "none";
+    document.getElementById('loader').style.display = "flex";
 
     try{
-
         await loadSystemStatus();
-
-        const stream =
-        await navigator.mediaDevices.getUserMedia({
-
-            video:{
-                width:1920,
-                height:1080
-            },
-
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video:{ width:1920, height:1080 },
             audio:false
-
         });
 
         video.srcObject = stream;
-
         await new Promise(resolve=>{
-
             video.onloadedmetadata = ()=>{
-
                 video.play();
-
                 resolve();
-
             };
-
         });
 
         video.style.display = "block";
-
-        document.getElementById('loader')
-        .style.display = "none";
-
-        document.getElementById('camera-overlay')
-        .style.display = "block";
+        document.getElementById('loader').style.display = "none";
+        document.getElementById('camera-overlay').style.display = "block";
 
         setTimeout(()=>{
-
             startCountdown();
-
         },3000);
 
     }catch(e){
-
         console.log(e);
-
         alert("Erro ao acessar câmera");
-
         location.reload();
-
     }
-
 }
 
 function startCountdown(){
-
-    document.getElementById('prepare-text')
-    .style.display = "none";
-
-    const countdown =
-    document.getElementById('countdown');
-
+    document.getElementById('prepare-text').style.display = "none";
+    const countdown = document.getElementById('countdown');
+    
     countdown.style.display = "block";
-
     let time = 5;
-
     countdown.innerText = time;
 
-    const interval =
-    setInterval(()=>{
-
+    const interval = setInterval(()=>{
         time--;
-
         countdown.innerText = time;
 
         if(time <= 0){
-
             clearInterval(interval);
-
             processFinalImage();
-
         }
-
     },1000);
-
 }
 
 async function processFinalImage(){
-
-    document.getElementById('countdown')
-    .innerText = "📸";
-
+    document.getElementById('countdown').innerText = "📸";
     await new Promise(r=>setTimeout(r,300));
 
     await loadSystemStatus();
 
     if(!molduraAtual){
-
         console.log("RECARREGANDO MOLDURA...");
-
         await carregarMoldura();
-
     }
 
-    const canvas =
-    document.createElement('canvas');
+    const canvas = document.createElement('canvas');
 
     if(formatoAtivo === "10X15V"){
-
         canvas.width = 1080;
         canvas.height = 1620;
-
     }else if(formatoAtivo === "TIRINHA"){
-
         canvas.width = 1080;
         canvas.height = 3240;
-
     }else if(formatoAtivo === "POLAROID"){
-
         canvas.width = 1080;
         canvas.height = 1350;
-
     }else{
-
         canvas.width = 1620;
         canvas.height = 1080;
-
     }
 
-    const ctx =
-    canvas.getContext('2d');
-
+    const ctx = canvas.getContext('2d');
     ctx.fillStyle = "#000";
-
-    ctx.fillRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     ctx.save();
-
     ctx.translate(canvas.width,0);
-
     ctx.scale(-1,1);
 
-    const videoRatio =
-    video.videoWidth / video.videoHeight;
-
-    const canvasRatio =
-    canvas.width / canvas.height;
+    const videoRatio = video.videoWidth / video.videoHeight;
+    const canvasRatio = canvas.width / canvas.height;
 
     let drawWidth;
     let drawHeight;
 
     if(videoRatio > canvasRatio){
-
         drawHeight = canvas.height;
-
-        drawWidth =
-        drawHeight * videoRatio;
-
+        drawWidth = drawHeight * videoRatio;
     }else{
-
         drawWidth = canvas.width;
-
-        drawHeight =
-        drawWidth / videoRatio;
-
+        drawHeight = drawWidth / videoRatio;
     }
 
-    const x =
-    (canvas.width - drawWidth) / 2;
+    const x = (canvas.width - drawWidth) / 2;
+    const y = (canvas.height - drawHeight) / 2;
 
-    const y =
-    (canvas.height - drawHeight) / 2;
-
-    ctx.drawImage(
-        video,
-        x,
-        y,
-        drawWidth,
-        drawHeight
-    );
-
+    ctx.drawImage(video, x, y, drawWidth, drawHeight);
     ctx.restore();
 
     if(molduraAtual){
-
         console.log("APLICANDO PNG...");
-
-        ctx.drawImage(
-            molduraAtual,
-            0,
-            0,
-            canvas.width,
-            canvas.height
-        );
-
+        ctx.drawImage(molduraAtual, 0, 0, canvas.width, canvas.height);
     }else{
-
         console.log("SEM PNG");
-
     }
 
-    finalBlob =
-    await new Promise(resolve=>{
-
+    finalBlob = await new Promise(resolve=>{
         canvas.toBlob(blob=>{
-
             resolve(blob);
-
         },"image/jpeg",0.96);
-
     });
 
-    document.getElementById('img-review').src =
-    canvas.toDataURL("image/jpeg",0.96);
-
-    document.getElementById('camera-overlay')
-    .style.display = "none";
-
+    document.getElementById('img-review').src = canvas.toDataURL("image/jpeg",0.96);
+    document.getElementById('camera-overlay').style.display = "none";
+    
     await notifyPhotoReady();
-
-    document.getElementById('final-preview-container')
-    .style.display = "flex";
-
+    
+    document.getElementById('final-preview-container').style.display = "flex";
     startPrintPolling();
-
 }
 
 async function notifyPhotoReady(){
-
     let enviado = false;
-
     while(!enviado){
-
         try{
-
-            const res =
-            await fetch(`${API}/photo-ready`,{
-                method:'POST'
-            });
-
-            if(res.ok){
-
-                enviado = true;
-
-            }
-
+            const res = await fetch(`${API}/photo-ready`,{ method:'POST' });
+            if(res.ok) enviado = true;
         }catch(e){}
 
         if(!enviado){
-
             await new Promise(r=>setTimeout(r,700));
-
         }
-
     }
-
 }
 
 async function startPrintPolling(){
-
-    const interval =
-    setInterval(async()=>{
-
+    const interval = setInterval(async()=>{
         try{
-
-            const res =
-            await fetch(`${API}/check-print?t=${Date.now()}`);
-
-            const data =
-            await res.json();
-
+            const res = await fetch(`${API}/check-print?t=${Date.now()}`);
+            const data = await res.json();
+            
             if(data.printTriggered){
-
                 clearInterval(interval);
-
-                await fetch(`${API}/clear-print`,{
-                    method:'POST'
-                });
-
+                await fetch(`${API}/clear-print`,{ method:'POST' });
                 finalizar(data.copias);
-
             }
-
         }catch(e){}
-
     },700);
-
 }
 
 async function finalizar(qtd){
+    document.getElementById('loader').style.display = "flex";
 
-    document.getElementById('loader')
-    .style.display = "flex";
-
-    const fd =
-    new FormData();
-
+    const fd = new FormData();
     fd.append('file',finalBlob,'webcam.jpg');
-
     fd.append('copias',qtd);
-
     fd.append('evento',eventoAtivo);
-
     fd.append('tipo',tipoFoto);
-
     fd.append('formato',formatoAtivo);
 
     try{
-
-        await fetch(`${API}/upload`,{
-
-            method:'POST',
-
-            body:fd
-
-        });
-
+        await fetch(`${API}/upload`,{ method:'POST', body:fd });
         location.reload();
-
     }catch(e){
-
         console.log(e);
-
         alert("Erro ao enviar impressão");
-
         location.reload();
-
     }
-
 }
 
 async function checkRemoteTrigger(){
-
     if(pollingTrigger) return;
-
     pollingTrigger = true;
 
-    const screenStart =
-    document.getElementById('screen-start');
-
-    if(
-        !screenStart ||
-        screenStart.style.display === "none"
-    ){
-
+    const screenStart = document.getElementById('screen-start');
+    if(!screenStart || screenStart.style.display === "none"){
         pollingTrigger = false;
-
         return;
-
     }
 
     try{
-
-        const res =
-        await fetch(`${API}/check-trigger?t=${Date.now()}`,{
-            cache:"no-store"
-        });
-
-        const data =
-        await res.json();
-
+        const res = await fetch(`${API}/check-trigger?t=${Date.now()}`,{ cache:"no-store" });
+        const data = await res.json();
+        
         if(data.triggered){
-
-            await fetch(`${API}/clear-trigger`,{
-                method:'POST'
-            });
-
+            await fetch(`${API}/clear-trigger`,{ method:'POST' });
             initSession();
-
         }
-
-    }catch(e){
-
-        console.log(e);
-
-    }
-
+    }catch(e){}
+    
     pollingTrigger = false;
-
 }
 
 loadSystemStatus();
-
 setInterval(loadSystemStatus,3000);
-
 setInterval(checkRemoteTrigger,400);
 
 </script>
-
 </body>
 </html>

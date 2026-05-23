@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>WEBCAM - PHOTO PRINT v7.3</title>
+<title>WEBCAM - PHOTO PRINT v7.4</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
@@ -280,20 +280,76 @@ const API_BASE = 'https://photoprint-api.maxprimefotovideo.workers.dev';
 // Variável para evitar múltiplos disparos da mesma captura
 let captureInProgress = false;
 
-// Exibe o nome do evento ativo na tela e retorna o nome
+// =================================================
+// CONTROLE DO STREAM DA CÂMERA (ABRE/FECHA SOB DEMANDA)
+// =================================================
+async function startCameraStream() {
+    if (stream) {
+        // Stream já ativo, apenas reatribui se necessário
+        if (videoFeed.srcObject !== stream) {
+            videoFeed.srcObject = stream;
+        }
+        return true;
+    }
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: 'user', width: 1920, height: 1080 } 
+        });
+        videoFeed.srcObject = stream;
+        console.log('Webcam iniciada com sucesso.');
+        return true;
+    } catch (err) {
+        console.warn("Permissão de câmera negada ou dispositivo sem webcam.");
+        return false;
+    }
+}
+
+function stopCameraStream() {
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+        videoFeed.srcObject = null;
+        console.log('Webcam desligada.');
+    }
+}
+
+// =================================================
+// SINCRONIZAÇÃO DO EVENTO ATIVO
+// =================================================
 async function atualizarEventoAtivo() {
+    // Tenta primeiro a API (Worker)
     try {
         const res = await fetch(`${API_BASE}/status?t=${Date.now()}`);
-        const data = await res.json();
-        if (data.evento) {
-            const el = document.getElementById('active-event-name');
-            el.style.display = 'block';
-            el.innerText = `📸 ${data.evento}`;
-            return data.evento;
+        if (res.ok) {
+            const data = await res.json();
+            if (data.evento) {
+                const el = document.getElementById('active-event-name');
+                el.style.display = 'block';
+                el.innerText = `📸 ${data.evento}`;
+                return data.evento;
+            }
         }
     } catch(e) {
-        console.warn('Não foi possível obter o evento ativo:', e);
+        console.warn('Não foi possível obter o evento ativo da API.');
     }
+
+    // Fallback: se Painel e Webcam estiverem no mesmo navegador/dispositivo,
+    // tenta ler do localStorage (caso o Painel tenha salvo)
+    try {
+        const eventosDB = localStorage.getItem('eventos_db');
+        if (eventosDB) {
+            const eventos = JSON.parse(eventosDB);
+            const ativo = eventos.find(e => e.ativo);
+            if (ativo) {
+                const el = document.getElementById('active-event-name');
+                el.style.display = 'block';
+                el.innerText = `📸 ${ativo.nome}`;
+                return ativo.nome;
+            }
+        }
+    } catch (e) {}
+
+    // Se nada funcionar, esconde o nome
     document.getElementById('active-event-name').style.display = 'none';
     return null;
 }
@@ -303,7 +359,6 @@ async function uploadCapturedPhoto() {
     const evento = await atualizarEventoAtivo(); // também atualiza o nome na tela
     if (!evento) {
         console.warn('Nenhum evento ativo, foto não enviada.');
-        // Mesmo sem evento, avisa que a foto está pronta
         await fetch(`${API_BASE}/photo-ready`, { method: 'POST' }).catch(()=>{});
         return;
     }
@@ -324,41 +379,158 @@ async function uploadCapturedPhoto() {
             console.error('Falha no upload:', erro);
         }
         
-        // Após upload (com sucesso ou falha), sinaliza que a foto está pronta
-        // Assim a Botoeira pode continuar o fluxo
+        // Sinaliza que a foto está pronta
         try {
             await fetch(`${API_BASE}/photo-ready`, { method: 'POST' });
             console.log('Sinal photo-ready enviado.');
-        } catch(e) {
-            console.warn('Falha ao enviar photo-ready:', e);
-        }
+        } catch(e) {}
     }, 'image/jpeg', 0.92);
 }
 
-// Consulta o estado atual no servidor (polling para sincronização cross-device)
+// =================================================
+// POLLING DO ESTADO NO SERVIDOR
+// =================================================
 async function pollServerState() {
     try {
         const res = await fetch(`${API_BASE}/get-state?t=${Date.now()}`);
-        const data = await res.json();
-        if (data.state && data.state !== lastState) {
-            console.log(`Estado recebido do servidor: ${lastState} -> ${data.state}`);
-            updateScreenState(data.state);
+        if (res.ok) {
+            const data = await res.json();
+            if (data.state && data.state !== lastState) {
+                console.log(`Estado recebido: ${lastState} -> ${data.state}`);
+                updateScreenState(data.state);
+            }
         }
-    } catch(e) {
-        // Falha silenciosa, o polling continua
-    }
+    } catch(e) {}
 }
 
-/* INICIA CÂMERA (PREVIEW) */
-async function initWebcam() {
-    try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 1920, height: 1080 } });
-        videoFeed.srcObject = stream;
-        console.log('Webcam iniciada com sucesso.');
-    } catch (err) {
-        console.warn("Permissão de câmera negada ou dispositivo sem webcam.");
+// =================================================
+// LÓGICA DE CAPTURA E ANIMAÇÃO
+// =================================================
+function startCaptureSequence() {
+    if (captureInProgress) {
+        console.log('Captura já em andamento, ignorando.');
+        return;
     }
+    captureInProgress = true;
+    
+    // Reseta visual da câmera
+    videoFeed.style.display = 'block';
+    canvasCapture.style.display = 'none';
+    optionsOverlay.style.display = 'none';
+    
+    // Inicia "PREPARE-SE" (Dura 4 Segundos)
+    funText.style.display = 'block';
+    funText.innerHTML = "✨ PREPARE-SE! ✨<br>😜🕺💃";
+    
+    setTimeout(() => {
+        let countdown = 3;
+        funText.innerHTML = `😁 SORRIA! 😁<br>⏳ ${countdown}`;
+        
+        const timerInterval = setInterval(() => {
+            countdown--;
+            if (countdown > 0) {
+                funText.innerHTML = `😁 SORRIA! 😁<br>⏳ ${countdown}`;
+            } else if (countdown === 0) {
+                funText.style.display = 'none';
+                clearInterval(timerInterval);
+                
+                canvasCapture.width = videoFeed.videoWidth;
+                canvasCapture.height = videoFeed.videoHeight;
+                ctx.drawImage(videoFeed, 0, 0, canvasCapture.width, canvasCapture.height);
+                
+                videoFeed.style.display = 'none';
+                canvasCapture.style.display = 'block';
+                
+                uploadCapturedPhoto();
+                captureInProgress = false;
+            }
+        }, 1000);
+    }, 4000);
 }
+
+// =================================================
+// SINCRONIZAÇÃO COM A BOTOEIRA
+// =================================================
+function updateScreenState(state) {
+    if (state === lastState && state !== 'capturing') {
+        return;
+    }
+    
+    // Transição especial: voltando de options para start (fim do ciclo)
+    if (state === 'start' && lastState === 'options') {
+        document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
+        document.getElementById('screen-thanks').style.display = 'flex';
+        
+        const msgThanks = document.getElementById('thanks-text');
+        msgThanks.innerHTML = "🖨️ AGUARDE A IMPRESSÃO...";
+        
+        setTimeout(() => {
+            msgThanks.innerHTML = "💖 OBRIGADO! 💖<br>APROVEITE SUA FOTO!";
+            setTimeout(() => {
+                document.getElementById('screen-thanks').style.display = 'none';
+                document.getElementById('screen-start').style.display = 'flex';
+                ctx.clearRect(0, 0, canvasCapture.width, canvasCapture.height);
+                captureInProgress = false;
+                // Desliga a câmera ao voltar para o início
+                stopCameraStream();
+            }, 2500);
+        }, 2500);
+        
+        lastState = state;
+        return;
+    }
+
+    // Se já estamos em 'options' e chega 'capturing', ignoramos
+    if (state === 'capturing' && lastState === 'options') {
+        console.log('Ignorando capturing pois já estamos em options.');
+        return;
+    }
+
+    document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
+
+    if (state === 'capturing') {
+        // Liga a câmera antes de mostrar a tela
+        startCameraStream().then(success => {
+            if (success) {
+                document.getElementById('screen-camera').style.display = 'flex';
+                startCaptureSequence();
+            } else {
+                alert('Não foi possível acessar a câmera. Verifique as permissões.');
+                captureInProgress = false;
+                // Volta ao estado start se falhar
+                updateScreenState('start');
+            }
+        });
+    } 
+    else if (state === 'options') {
+        document.getElementById('screen-camera').style.display = 'flex';
+        videoFeed.style.display = 'none';
+        canvasCapture.style.display = 'block';
+        funText.style.display = 'none';
+        optionsOverlay.style.display = 'block';
+        // Mantém a câmera ligada? Não, a foto já foi tirada, podemos desligar.
+        stopCameraStream();
+    } 
+    else {
+        // Estado 'start'
+        document.getElementById('screen-start').style.display = 'flex';
+        captureInProgress = false;
+        stopCameraStream();
+    }
+    
+    lastState = state;
+}
+
+// =================================================
+// EVENTOS E INICIALIZAÇÃO
+// =================================================
+
+// Escuta mudanças no localStorage (mesmo dispositivo)
+window.addEventListener('storage', (e) => {
+    if (e.key === 'booth_state') {
+        updateScreenState(e.newValue);
+    }
+});
 
 /* MENU SECRETO */
 let clickCount = 0; let clickTimer = null;
@@ -408,152 +580,19 @@ function loadSavedBackground(){
     updateVisualMode();
 }
 
-/* =========================================
-   LÓGICA DE CAPTURA E ANIMAÇÃO
-========================================= */
-function startCaptureSequence() {
-    // Evita múltiplos disparos simultâneos
-    if (captureInProgress) {
-        console.log('Captura já em andamento, ignorando.');
-        return;
-    }
-    captureInProgress = true;
-    
-    // Reseta visual da câmera
-    videoFeed.style.display = 'block';
-    canvasCapture.style.display = 'none';
-    optionsOverlay.style.display = 'none';
-    
-    // Inicia "PREPARE-SE" (Dura 4 Segundos)
-    funText.style.display = 'block';
-    funText.innerHTML = "✨ PREPARE-SE! ✨<br>😜🕺💃";
-    
-    setTimeout(() => {
-        // Inicia "SORRIA" + Contagem (Dura 3 Segundos)
-        let countdown = 3;
-        funText.innerHTML = `😁 SORRIA! 😁<br>⏳ ${countdown}`;
-        
-        const timerInterval = setInterval(() => {
-            countdown--;
-            if (countdown > 0) {
-                funText.innerHTML = `😁 SORRIA! 😁<br>⏳ ${countdown}`;
-            } else if (countdown === 0) {
-                
-                // 1. Limpa a tela antes de capturar para ficar perfeitamente nítido
-                funText.style.display = 'none';
-                clearInterval(timerInterval);
-                
-                // 2. Tira a foto virtual (Congela a tela)
-                canvasCapture.width = videoFeed.videoWidth;
-                canvasCapture.height = videoFeed.videoHeight;
-                
-                // Desenha a imagem exatamente como sai da câmera (sem inverter o data via ctx.scale). 
-                // O CSS já manterá a foto "do mesmo lado" visual que a prévia.
-                ctx.drawImage(videoFeed, 0, 0, canvasCapture.width, canvasCapture.height);
-                
-                // 3. Troca o vídeo pela foto congelada
-                videoFeed.style.display = 'none';
-                canvasCapture.style.display = 'block';
-                
-                // 4. Upload da foto e sinalização de "photo-ready"
-                uploadCapturedPhoto();
-                
-                // Libera o bloqueio de captura
-                captureInProgress = false;
-            }
-        }, 1000);
-        
-    }, 4000);
-}
-
-/* =========================================
-   SINCRONIZAÇÃO COM A BOTOEIRA
-========================================= */
-function updateScreenState(state) {
-    // Se o estado é o mesmo, não faz nada (evita loops)
-    if (state === lastState && state !== 'capturing') {
-        return;
-    }
-    
-    // INTERCEPTADOR DE FINALIZAÇÃO (Agradecimento antes de voltar pro início)
-    if (state === 'start' && lastState === 'options') {
-        document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
-        document.getElementById('screen-thanks').style.display = 'flex';
-        
-        const msgThanks = document.getElementById('thanks-text');
-        msgThanks.innerHTML = "🖨️ AGUARDE A IMPRESSÃO...";
-        
-        // Exibe tela de impressão/obrigado por 5 segundos antes de resetar para valer
-        setTimeout(() => {
-            msgThanks.innerHTML = "💖 OBRIGADO! 💖<br>APROVEITE SUA FOTO!";
-            setTimeout(() => {
-                document.getElementById('screen-thanks').style.display = 'none';
-                document.getElementById('screen-start').style.display = 'flex';
-                // Limpa o canvas para a próxima
-                ctx.clearRect(0, 0, canvasCapture.width, canvasCapture.height);
-                captureInProgress = false;
-            }, 2500);
-        }, 2500);
-        
-        lastState = state;
-        return;
-    }
-
-    // Se já estamos em 'options' e recebemos 'capturing', ignoramos
-    // (a foto já foi tirada, não reiniciar captura)
-    if (state === 'capturing' && lastState === 'options') {
-        console.log('Ignorando capturing pois já estamos em options.');
-        return;
-    }
-
-    // FLUXO NORMAL
-    document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
-
-    if (state === 'capturing') {
-        document.getElementById('screen-camera').style.display = 'flex';
-        startCaptureSequence();
-    } 
-    else if (state === 'options') {
-        document.getElementById('screen-camera').style.display = 'flex';
-        // Garante que o canvas (foto congelada) está visível e o vídeo não
-        videoFeed.style.display = 'none';
-        canvasCapture.style.display = 'block';
-        funText.style.display = 'none';
-        // Exibe a orientação no rodapé da foto que já está congelada
-        optionsOverlay.style.display = 'block';
-    } 
-    else {
-        // Estado 'start' ou qualquer outro
-        document.getElementById('screen-start').style.display = 'flex';
-        captureInProgress = false;
-    }
-    
-    lastState = state;
-}
-
-// Escuta mudanças feitas pela Botoeira no LocalStorage (mesmo dispositivo)
-window.addEventListener('storage', (e) => {
-    if (e.key === 'booth_state') {
-        updateScreenState(e.newValue);
-    }
-});
-
-// INIT
-initWebcam();
-localStorage.setItem('booth_state', 'start');
-updateScreenState('start');
+// INICIALIZAÇÃO
+// Não liga a câmera automaticamente!
 loadSavedBackground();
+localStorage.setItem('booth_state', 'start');
+updateScreenState('start');  // isso garante que a câmera fique desligada
 
-// Já busca o evento ativo ao carregar
+// Polling do estado no servidor a cada 800ms
+setInterval(pollServerState, 800);
+// Atualiza o nome do evento a cada 10 segundos
+setInterval(atualizarEventoAtivo, 10000);
 atualizarEventoAtivo();
 
-// Atualiza o nome do evento periodicamente (caso mude no painel)
-setInterval(atualizarEventoAtivo, 15000);
-
-// Polling do estado no servidor a cada 800ms (sincronização cross-device com a Botoeira)
-setInterval(pollServerState, 800);
-
-console.log('WEBCAM PHOTO PRINT v7.3 inicializada.');
+console.log('WEBCAM PHOTO PRINT v7.4 inicializada.');
 </script>
 
 </body>

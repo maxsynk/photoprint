@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>WEBCAM - PHOTO PRINT v8.2</title>
+<title>WEBCAM - PHOTO PRINT v8.3</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
@@ -189,7 +189,6 @@ let initialLoad = true;
 
 const API_BASE = 'https://photoprint-api.maxprimefotovideo.workers.dev';
 
-// Configuração sincronizada com o Painel
 let eventoAtual = null;
 let formatoAtual = null;
 let molduraUrl = null;
@@ -202,7 +201,7 @@ const FORMATOS = {
 };
 
 // =================================================
-// CONTROLE DO STREAM DA CÂMERA
+// CONTROLE DO STREAM
 // =================================================
 async function startCameraStream() {
     if (stream) {
@@ -214,10 +213,10 @@ async function startCameraStream() {
             video: { facingMode: 'user', width: 1920, height: 1080 } 
         });
         videoFeed.srcObject = stream;
-        console.log('✅ Webcam iniciada com sucesso.');
+        console.log('✅ Webcam iniciada.');
         return true;
     } catch (err) {
-        console.warn("❌ Permissão de câmera negada ou dispositivo sem webcam.");
+        console.warn("❌ Permissão de câmera negada.");
         return false;
     }
 }
@@ -232,7 +231,7 @@ function stopCameraStream() {
 }
 
 // =================================================
-// SINCRONIZAÇÃO COM O PAINEL (EVENTO, MOLDURA, FORMATO)
+// SINCRONIZAÇÃO COM O PAINEL
 // =================================================
 async function atualizarEventoAtivo() {
     try {
@@ -250,11 +249,9 @@ async function atualizarEventoAtivo() {
                 return eventoAtual;
             }
         }
-    } catch(e) {
-        console.warn('⚠️ Falha ao obter evento ativo da API.');
-    }
+    } catch(e) {}
 
-    // Fallback localStorage (mesmo dispositivo)
+    // Fallback localStorage
     try {
         const eventosDB = localStorage.getItem('eventos_db');
         if (eventosDB) {
@@ -267,7 +264,6 @@ async function atualizarEventoAtivo() {
                 el.style.display = 'block';
                 el.innerText = `📸 ${eventoAtual}`;
                 await carregarMoldura(eventoAtual);
-                console.log(`📋 Evento ativo (localStorage): ${eventoAtual}`);
                 return eventoAtual;
             }
         }
@@ -288,7 +284,6 @@ async function carregarMoldura(evento) {
                 console.log('🖼️ Moldura carregada:', molduraUrl);
             } else {
                 molduraUrl = null;
-                console.log('ℹ️ Nenhuma moldura encontrada para o evento.');
             }
         }
     } catch(e) {
@@ -297,7 +292,7 @@ async function carregarMoldura(evento) {
 }
 
 // =================================================
-// COMPOSIÇÃO DA FOTO COM MOLDURA E UPLOAD
+// COMPOSIÇÃO E UPLOAD
 // =================================================
 async function composeAndUpload(quantidadeCopias) {
     if (!molduraUrl) {
@@ -311,13 +306,11 @@ async function composeAndUpload(quantidadeCopias) {
     outCanvas.height = formatoConfig.h;
     const outCtx = outCanvas.getContext('2d');
 
-    // Fundo branco
     outCtx.fillStyle = 'white';
     outCtx.fillRect(0, 0, outCanvas.width, outCanvas.height);
 
     try {
         const fotoImg = await loadImageFromCanvas(canvasCapture);
-        // Ajuste de escala para cobrir o canvas
         const scale = Math.max(outCanvas.width / fotoImg.width, outCanvas.height / fotoImg.height);
         const w = fotoImg.width * scale;
         const h = fotoImg.height * scale;
@@ -375,7 +368,6 @@ async function fazerUpload(blob, quantidadeCopias) {
     let nomeArquivo = 'foto.jpg';
     let copiasFisicas = 1;
 
-    // Mapeamento de acordo com o Mobile
     if (quantidadeCopias === 1) {
         nomeArquivo = 'foto.jpg';
         copiasFisicas = 1;
@@ -409,16 +401,14 @@ async function fazerUpload(blob, quantidadeCopias) {
 }
 
 // =================================================
-// AGUARDA DECISÃO DO TOTEM E FINALIZA
+// AGUARDA TOTEM
 // =================================================
 async function aguardarPrintEEnviar() {
-    // Exibe overlay convidando a usar o totem
     optionsOverlay.style.display = 'block';
     optionsOverlay.querySelector('.options-text').innerText = 'ACESSE O TOTEM PARA IMPRIMIR SUA FOTO';
 
     let printData = null;
-    const maxTentativas = 60; // ~30 segundos
-    for (let i = 0; i < maxTentativas; i++) {
+    for (let i = 0; i < 60; i++) {
         try {
             const res = await fetch(`${API_BASE}/check-print?t=${Date.now()}`);
             if (res.ok) {
@@ -433,15 +423,13 @@ async function aguardarPrintEEnviar() {
     }
 
     if (!printData) {
-        console.warn('⏰ Timeout aguardando decisão da botoeira.');
+        console.warn('⏰ Timeout aguardando totem.');
         await fetch(`${API_BASE}/clear-print`, { method: 'POST' }).catch(()=>{});
         updateScreenState('start');
         return;
     }
 
     const copias = printData.copias || 1;
-    console.log(`🖨️ Decisão recebida: ${copias} cópia(s).`);
-
     optionsOverlay.querySelector('.options-text').innerText = 'Compondo foto...';
 
     try {
@@ -450,7 +438,6 @@ async function aguardarPrintEEnviar() {
         console.error('❌ Falha na composição/upload:', e);
     }
 
-    // Limpa estados no servidor
     await fetch(`${API_BASE}/clear-print`, { method: 'POST' }).catch(()=>{});
     await fetch(`${API_BASE}/photo-ready`, { method: 'POST' }).catch(()=>{});
 
@@ -482,13 +469,10 @@ function mostrarTelaAgradecimento() {
 }
 
 // =================================================
-// LÓGICA DE CAPTURA (PREPARE-SE → SORRIA → 3,2,1)
+// CAPTURA
 // =================================================
 function startCaptureSequence() {
-    if (captureInProgress) {
-        console.log('⏳ Captura já em andamento, ignorando.');
-        return;
-    }
+    if (captureInProgress) return;
     captureInProgress = true;
     
     videoFeed.style.display = 'block';
@@ -517,31 +501,30 @@ function startCaptureSequence() {
                 videoFeed.style.display = 'none';
                 canvasCapture.style.display = 'block';
                 
-                // Sinaliza que a foto está pronta
                 fetch(`${API_BASE}/photo-ready`, { method: 'POST' }).catch(()=>{});
                 captureInProgress = false;
+
+                // Já podemos mostrar o overlay de espera pelo totem
+                optionsOverlay.style.display = 'block';
+                optionsOverlay.querySelector('.options-text').innerText = 'ACESSE O TOTEM PARA IMPRIMIR SUA FOTO';
             }
         }, 1000);
     }, 4000);
 }
 
 // =================================================
-// SINCRONIZAÇÃO DE ESTADOS COM A BOTOEIRA
+// SINCRONIZAÇÃO DE ESTADOS
 // =================================================
 function updateScreenState(state) {
     if (state === lastState && state !== 'capturing') return;
     
-    // Transição options → start (fim do ciclo)
     if (state === 'start' && lastState === 'options') {
         aguardarPrintEEnviar();
         lastState = state;
         return;
     }
 
-    if (state === 'capturing' && lastState === 'options') {
-        console.log('ℹ️ Ignorando capturing pois já estamos em options.');
-        return;
-    }
+    if (state === 'capturing' && lastState === 'options') return;
 
     document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
 
@@ -551,7 +534,7 @@ function updateScreenState(state) {
                 document.getElementById('screen-camera').style.display = 'flex';
                 startCaptureSequence();
             } else {
-                alert('Não foi possível acessar a câmera. Verifique as permissões.');
+                alert('Não foi possível acessar a câmera.');
                 captureInProgress = false;
                 updateScreenState('start');
             }
@@ -576,7 +559,7 @@ function updateScreenState(state) {
 }
 
 // =================================================
-// POLLING DO ESTADO NO SERVIDOR (cross-device)
+// POLLING
 // =================================================
 async function pollServerState() {
     try {
@@ -588,7 +571,6 @@ async function pollServerState() {
         if (initialLoad) {
             initialLoad = false;
             if (data.state !== 'start') {
-                console.warn(`🔄 Estado residual: ${data.state}. Forçando start.`);
                 await fetch(`${API_BASE}/set-state`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -599,31 +581,26 @@ async function pollServerState() {
             }
         }
 
-        console.log(`🔁 Estado recebido: ${lastState} -> ${data.state}`);
+        console.log(`🔁 Estado: ${lastState} -> ${data.state}`);
         updateScreenState(data.state);
     } catch(e) {}
 }
 
 // =================================================
-// EVENTOS E INICIALIZAÇÃO
+// INICIALIZAÇÃO
 // =================================================
-
 window.addEventListener('storage', (e) => {
-    if (e.key === 'booth_state') {
-        updateScreenState(e.newValue);
-    }
+    if (e.key === 'booth_state') updateScreenState(e.newValue);
 });
 
-/* MENU SECRETO */
-let clickCount = 0, clickTimer = null;
 secretLogo.addEventListener('click',()=>{
     clickCount++;
     clearTimeout(clickTimer);
     clickTimer = setTimeout(()=>{ clickCount = 0; },2000);
     if(clickCount >= 7){ bgMenu.classList.toggle('active'); clickCount = 0; }
 });
+let clickCount = 0, clickTimer = null;
 
-/* FUNDO */
 function updateVisualMode(){
     const savedBg = localStorage.getItem('photoprint_bg');
     if(savedBg){ document.body.classList.add('bg-active'); }
@@ -662,7 +639,6 @@ function loadSavedBackground(){
     updateVisualMode();
 }
 
-// INICIALIZAÇÃO SEGURA
 loadSavedBackground();
 localStorage.setItem('booth_state', 'start');
 updateScreenState('start');
@@ -671,7 +647,7 @@ setInterval(pollServerState, 800);
 setInterval(atualizarEventoAtivo, 10000);
 atualizarEventoAtivo();
 
-console.log('🚀 WEBCAM PHOTO PRINT v8.2 inicializada – aguardando botoeira.');
+console.log('🚀 WEBCAM PHOTO PRINT v8.3 pronta.');
 </script>
 
 </body>

@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>WEBCAM - PHOTO PRINT v7.2</title>
+<title>WEBCAM - PHOTO PRINT v7.3</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
@@ -68,7 +68,7 @@ body.bg-active .bg-brand{ display:none; }
 .logo-title{ font-family:'Orbitron',sans-serif; color:var(--neon); font-size:46px; font-weight:900; letter-spacing:8px; text-shadow: 0 0 15px var(--neon), 0 0 35px rgba(57,255,20,0.8); cursor:pointer; user-select:none; }
 .logo-sub{ margin-top:4px; color:white; opacity:0.7; letter-spacing:5px; font-size:13px; text-transform:uppercase; }
 
-/* Novo: nome do evento ativo */
+/* Nome do evento ativo */
 #active-event-name {
     position: fixed;
     top: 130px;
@@ -249,7 +249,7 @@ body.bg-active .corner-glow{ display:none; }
         
         <!-- Orientação pós‑foto (só aparece depois da foto) -->
         <div id="options-overlay" style="display:none;">
-            <div class="options-text">Vá até o totem para imprimir sua foto!</div>
+            <div class="options-text">Toque no totem para imprimir sua foto</div>
         </div>
     </div>
 </div>
@@ -274,10 +274,13 @@ const optionsOverlay = document.getElementById('options-overlay');
 let stream = null;
 let lastState = 'start';
 
-// ---- NOVO: API e sincronização do evento ativo ----
+// ---- API e sincronização do evento ativo ----
 const API_BASE = 'https://photoprint-api.maxprimefotovideo.workers.dev';
 
-// Exibe o nome do evento ativo na tela
+// Variável para evitar múltiplos disparos da mesma captura
+let captureInProgress = false;
+
+// Exibe o nome do evento ativo na tela e retorna o nome
 async function atualizarEventoAtivo() {
     try {
         const res = await fetch(`${API_BASE}/status?t=${Date.now()}`);
@@ -288,7 +291,9 @@ async function atualizarEventoAtivo() {
             el.innerText = `📸 ${data.evento}`;
             return data.evento;
         }
-    } catch(e) {}
+    } catch(e) {
+        console.warn('Não foi possível obter o evento ativo:', e);
+    }
     document.getElementById('active-event-name').style.display = 'none';
     return null;
 }
@@ -298,28 +303,58 @@ async function uploadCapturedPhoto() {
     const evento = await atualizarEventoAtivo(); // também atualiza o nome na tela
     if (!evento) {
         console.warn('Nenhum evento ativo, foto não enviada.');
+        // Mesmo sem evento, avisa que a foto está pronta
+        await fetch(`${API_BASE}/photo-ready`, { method: 'POST' }).catch(()=>{});
         return;
     }
+    
     canvasCapture.toBlob(async (blob) => {
         const form = new FormData();
         form.append('file', blob, 'capture.jpg');
         form.append('evento', evento);
         form.append('tipo', 'photo');
         try {
-            await fetch(`${API_BASE}/upload`, { method: 'POST', body: form });
-            console.log('Foto enviada com sucesso para o evento:', evento);
+            const uploadRes = await fetch(`${API_BASE}/upload`, { method: 'POST', body: form });
+            if (uploadRes.ok) {
+                console.log('Foto enviada com sucesso para o evento:', evento);
+            } else {
+                console.error('Falha no upload da foto.');
+            }
         } catch (erro) {
             console.error('Falha no upload:', erro);
         }
+        
+        // Após upload (com sucesso ou falha), sinaliza que a foto está pronta
+        // Assim a Botoeira pode continuar o fluxo
+        try {
+            await fetch(`${API_BASE}/photo-ready`, { method: 'POST' });
+            console.log('Sinal photo-ready enviado.');
+        } catch(e) {
+            console.warn('Falha ao enviar photo-ready:', e);
+        }
     }, 'image/jpeg', 0.92);
 }
-// ---- FIM NOVAS FUNÇÕES ----
+
+// Consulta o estado atual no servidor (polling para sincronização cross-device)
+async function pollServerState() {
+    try {
+        const res = await fetch(`${API_BASE}/get-state?t=${Date.now()}`);
+        const data = await res.json();
+        if (data.state && data.state !== lastState) {
+            console.log(`Estado recebido do servidor: ${lastState} -> ${data.state}`);
+            updateScreenState(data.state);
+        }
+    } catch(e) {
+        // Falha silenciosa, o polling continua
+    }
+}
 
 /* INICIA CÂMERA (PREVIEW) */
 async function initWebcam() {
     try {
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 1920, height: 1080 } });
         videoFeed.srcObject = stream;
+        console.log('Webcam iniciada com sucesso.');
     } catch (err) {
         console.warn("Permissão de câmera negada ou dispositivo sem webcam.");
     }
@@ -377,6 +412,13 @@ function loadSavedBackground(){
    LÓGICA DE CAPTURA E ANIMAÇÃO
 ========================================= */
 function startCaptureSequence() {
+    // Evita múltiplos disparos simultâneos
+    if (captureInProgress) {
+        console.log('Captura já em andamento, ignorando.');
+        return;
+    }
+    captureInProgress = true;
+    
     // Reseta visual da câmera
     videoFeed.style.display = 'block';
     canvasCapture.style.display = 'none';
@@ -413,8 +455,11 @@ function startCaptureSequence() {
                 videoFeed.style.display = 'none';
                 canvasCapture.style.display = 'block';
                 
-                // --- NOVO: upload da foto logo após captura ---
+                // 4. Upload da foto e sinalização de "photo-ready"
                 uploadCapturedPhoto();
+                
+                // Libera o bloqueio de captura
+                captureInProgress = false;
             }
         }, 1000);
         
@@ -425,6 +470,10 @@ function startCaptureSequence() {
    SINCRONIZAÇÃO COM A BOTOEIRA
 ========================================= */
 function updateScreenState(state) {
+    // Se o estado é o mesmo, não faz nada (evita loops)
+    if (state === lastState && state !== 'capturing') {
+        return;
+    }
     
     // INTERCEPTADOR DE FINALIZAÇÃO (Agradecimento antes de voltar pro início)
     if (state === 'start' && lastState === 'options') {
@@ -442,10 +491,18 @@ function updateScreenState(state) {
                 document.getElementById('screen-start').style.display = 'flex';
                 // Limpa o canvas para a próxima
                 ctx.clearRect(0, 0, canvasCapture.width, canvasCapture.height);
+                captureInProgress = false;
             }, 2500);
         }, 2500);
         
         lastState = state;
+        return;
+    }
+
+    // Se já estamos em 'options' e recebemos 'capturing', ignoramos
+    // (a foto já foi tirada, não reiniciar captura)
+    if (state === 'capturing' && lastState === 'options') {
+        console.log('Ignorando capturing pois já estamos em options.');
         return;
     }
 
@@ -458,17 +515,23 @@ function updateScreenState(state) {
     } 
     else if (state === 'options') {
         document.getElementById('screen-camera').style.display = 'flex';
+        // Garante que o canvas (foto congelada) está visível e o vídeo não
+        videoFeed.style.display = 'none';
+        canvasCapture.style.display = 'block';
+        funText.style.display = 'none';
         // Exibe a orientação no rodapé da foto que já está congelada
         optionsOverlay.style.display = 'block';
     } 
     else {
+        // Estado 'start' ou qualquer outro
         document.getElementById('screen-start').style.display = 'flex';
+        captureInProgress = false;
     }
     
     lastState = state;
 }
 
-// Escuta mudanças feitas pela Botoeira no LocalStorage
+// Escuta mudanças feitas pela Botoeira no LocalStorage (mesmo dispositivo)
 window.addEventListener('storage', (e) => {
     if (e.key === 'booth_state') {
         updateScreenState(e.newValue);
@@ -480,12 +543,17 @@ initWebcam();
 localStorage.setItem('booth_state', 'start');
 updateScreenState('start');
 loadSavedBackground();
+
 // Já busca o evento ativo ao carregar
 atualizarEventoAtivo();
 
 // Atualiza o nome do evento periodicamente (caso mude no painel)
 setInterval(atualizarEventoAtivo, 15000);
 
+// Polling do estado no servidor a cada 800ms (sincronização cross-device com a Botoeira)
+setInterval(pollServerState, 800);
+
+console.log('WEBCAM PHOTO PRINT v7.3 inicializada.');
 </script>
 
 </body>

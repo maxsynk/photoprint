@@ -2,133 +2,543 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>WEBCAM - PHOTO PRINT v8.3</title>
+<title>WEBCAM - PHOTO PRINT v7.1</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
-:root{ --neon:#39ff14; --dark:#050505; --danger:#ff3131; }
+
+:root{
+    --neon:#39ff14;
+    --dark:#050505;
+    --danger:#ff3131;
+}
+
 *{ box-sizing:border-box; }
-body{ margin:0; background: radial-gradient(circle at top, rgba(57,255,20,0.10), transparent 35%), linear-gradient(135deg, #020202 0%, #050505 40%, #071107 100%); color:white; font-family:Arial,Helvetica,sans-serif; width:100vw; height:100vh; overflow:hidden; position:relative; }
 
-/* ... (Estilos mantidos para não quebrar seu layout) ... */
-#dynamic-bg{ position:fixed; inset:0; z-index:0; background-size:cover; background-position:center; background-repeat:no-repeat; opacity:0; transition:opacity 0.6s ease; }
+body{
+    margin:0;
+    background: radial-gradient(circle at top, rgba(57,255,20,0.10), transparent 35%),
+                radial-gradient(circle at bottom right, rgba(57,255,20,0.08), transparent 30%),
+                linear-gradient(135deg, #020202 0%, #050505 40%, #071107 100%);
+    color:white;
+    font-family:Arial,Helvetica,sans-serif;
+    width:100vw; height:100vh;
+    overflow:hidden; position:relative;
+}
+
+#dynamic-bg{
+    position:fixed; inset:0; z-index:0;
+    background-size:cover; background-position:center; background-repeat:no-repeat;
+    opacity:0; transition:opacity 0.6s ease;
+}
+
 #dynamic-bg.active{ opacity:0.45; }
-.screen { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:20; flex-direction:column; }
-#camera-wrapper { position: absolute; inset: 0; width: 100vw; height: 100vh; background: #000; overflow: hidden; z-index: 40; }
-#camera-feed, #camera-canvas { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 
-/* TEXTOS E FLASH */
-.fun-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Orbitron', sans-serif; font-size: 80px; font-weight: 900; color: var(--neon); text-shadow: 0 0 20px black; z-index: 100; text-align: center; }
-#flash-effect { position: fixed; inset: 0; background: white; z-index: 999; opacity: 0; pointer-events: none; }
-.flash-animate { animation: flashPhoto 0.5s ease-out; }
-@keyframes flashPhoto { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
-#options-overlay { position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.95); padding: 20px 45px; border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 60; text-align: center; }
-.options-text { font-family: 'Arial', sans-serif; font-size: 28px; color: #222; font-weight: bold; }
+#dynamic-bg::after{
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.65));
+}
+
+body::before{
+    content:''; position:fixed; inset:0;
+    background-image: linear-gradient(rgba(57,255,20,0.03) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(57,255,20,0.03) 1px, transparent 1px);
+    background-size:40px 40px; z-index:0;
+    animation:gridMove 12s linear infinite;
+}
+
+body.bg-active::before{ display:none; }
+
+@keyframes gridMove{
+    from{ transform:translateY(0px); }
+    to{ transform:translateY(40px); }
+}
+
+.bg-brand{
+    position:fixed; inset:0; z-index:1; pointer-events:none;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    opacity:0.07;
+}
+
+body.bg-active .bg-brand{ display:none; }
+
+.bg-brand-title{ font-family:'Orbitron',sans-serif; font-size:140px; font-weight:900; color:var(--neon); letter-spacing:14px; text-transform:uppercase; }
+.bg-brand-sub{ margin-top:20px; font-size:42px; letter-spacing:12px; text-transform:uppercase; color:white; }
+
+.top-logo{ position:fixed; top:40px; left:50px; z-index:25; }
+.logo-title{ font-family:'Orbitron',sans-serif; color:var(--neon); font-size:46px; font-weight:900; letter-spacing:8px; text-shadow: 0 0 15px var(--neon), 0 0 35px rgba(57,255,20,0.8); cursor:pointer; user-select:none; }
+.logo-sub{ margin-top:4px; color:white; opacity:0.7; letter-spacing:5px; font-size:13px; text-transform:uppercase; }
+
+.corner-glow{ position:fixed; width:420px; height:420px; border-radius:50%; background:rgba(57,255,20,0.08); filter:blur(90px); z-index:0; }
+body.bg-active .corner-glow{ display:none; }
+.corner-1{ top:-150px; left:-100px; }
+.corner-2{ bottom:-180px; right:-100px; }
+
+#bg-menu{ position:fixed; top:40px; right:40px; z-index:100; display:none; flex-direction:column; gap:12px; }
+#bg-menu.active{ display:flex; }
+.bg-btn{ padding:12px 20px; border-radius:14px; border:1px solid rgba(57,255,20,0.45); background:rgba(0,0,0,0.55); color:white; font-size:14px; font-weight:bold; letter-spacing:1px; cursor:pointer; backdrop-filter:blur(10px); transition:0.25s; box-shadow: 0 0 20px rgba(57,255,20,0.12); text-align:center; }
+.bg-btn:hover{ transform:translateY(-2px); border-color:var(--neon); color:var(--neon); box-shadow: 0 0 25px rgba(57,255,20,0.35); }
+#bg-input{ display:none; }
+
+/* TELAS (SCREENS) */
+.screen { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:20; flex-direction:column; }
+
+/* BOTAO START */
+.btn-start{ position:relative; width:380px; height:380px; border-radius:50%; border:4px solid var(--neon); background: radial-gradient(circle at center, rgba(57,255,20,0.18), rgba(0,0,0,0.96)); overflow:hidden; transition:0.3s; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:35px; box-shadow: 0 0 30px rgba(57,255,20,0.8), inset 0 0 60px rgba(57,255,20,0.15); backdrop-filter:blur(4px); z-index:30; }
+.btn-start::before{ content:''; position:absolute; width:250%; height:250%; background:conic-gradient( transparent, rgba(57,255,20,1), rgba(57,255,20,0.25), transparent ); animation:rotateGlow 3s linear infinite; filter:blur(20px); opacity:1; }
+.btn-start::after{ content:''; position:absolute; inset:8px; border-radius:50%; background:rgba(0,0,0,0.92); box-shadow: inset 0 0 60px rgba(57,255,20,0.15); }
+@keyframes rotateGlow{ 100%{ transform:rotate(360deg); } }
+
+.start-content{ position:relative; z-index:5; text-align:center; width:100%; }
+.start-icon{ font-size:58px; margin-bottom:18px; filter:drop-shadow(0 0 15px var(--neon)); }
+.start-title{ color:var(--neon); font-family:'Orbitron',sans-serif; font-size:22px; font-weight:900; letter-spacing:4px; text-shadow: 0 0 15px var(--neon), 0 0 35px var(--neon); margin-bottom:18px; text-transform:uppercase; line-height:1.4; min-height:40px; }
+.start-subtitle{ font-size:22px; line-height:1.6; }
+
+/* LAYOUT DA CÂMERA (PREVIEW) - AGORA FULLSCREEN */
+#camera-wrapper {
+    position: absolute;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+    overflow: hidden;
+    z-index: 40;
+}
+
+#camera-feed, #camera-canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Faz preencher toda a tela */
+    transform: scaleX(-1); /* Efeito espelho visual (o mesmo para vídeo e foto) */
+}
+
+/* TEXTOS ANIMADOS - MOVIDOS PARA BAIXO (75%) */
+.fun-text {
+    position: absolute;
+    top: 75%; /* Abaixado para não tampar o rosto */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif;
+    font-size: 90px;
+    font-weight: 900;
+    text-align: center;
+    color: #fff;
+    white-space: nowrap;
+    text-transform: uppercase;
+    text-shadow: 
+        0px 0px 15px #ff0080,
+        0px 0px 30px #ff8c00,
+        0px 0px 45px #ffff00;
+    animation: funPulse 0.6s infinite alternate, hueShift 3s linear infinite;
+    z-index: 50;
+    pointer-events: none;
+}
+
+@keyframes funPulse {
+    0% { transform: translate(-50%, -50%) scale(0.9); }
+    100% { transform: translate(-50%, -50%) scale(1.15); }
+}
+@keyframes hueShift {
+    0% { filter: hue-rotate(0deg); }
+    100% { filter: hue-rotate(360deg); }
+}
+
+/* OVERLAY DE ESCOLHA NO TOTEM (NOVO DESIGN CLEAN E INTUITIVO) */
+#options-overlay {
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 15, 15, 0.85);
+    padding: 25px 60px;
+    border-radius: 20px;
+    border: 1px solid rgba(57,255,20,0.3);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7), inset 0 0 20px rgba(57,255,20,0.05);
+    backdrop-filter: blur(15px);
+    z-index: 60;
+    text-align: center;
+    animation: slideUpFade 0.6s ease-out forwards;
+}
+
+@keyframes slideUpFade {
+    0% { opacity: 0; transform: translate(-50%, 40px); }
+    100% { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.options-text {
+    font-family: 'Arial', sans-serif;
+    font-size: 26px;
+    color: #ffffff;
+    font-weight: 400;
+    letter-spacing: 1.5px;
+    line-height: 1.4;
+}
+
+.options-text strong {
+    color: var(--neon);
+    font-size: 32px;
+    font-weight: 900;
+    display: block;
+    margin-top: 8px;
+    text-shadow: 0 0 15px rgba(57,255,20,0.4);
+}
+
+/* NOVO: ETIQUETA DO EVENTO ATIVO NA TELA */
+.event-badge {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--neon);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 15px;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 0 20px rgba(57,255,20,0.15);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+.event-badge span { color: var(--neon); font-weight: 900; }
+
+/* TEXTOS DE STATUS (NEON PADRÃO PARA IMPRESSÃO/OBRIGADO) */
+.status-text { 
+    font-family:'Orbitron',sans-serif; 
+    font-size:40px; 
+    color:var(--neon); 
+    font-weight:900; 
+    letter-spacing:4px; 
+    text-shadow: 0 0 20px var(--neon); 
+    text-align:center; 
+    animation:pulseText 1.5s infinite; 
+    background: rgba(0,0,0,0.8); 
+    padding: 40px 80px; 
+    border-radius: 20px; 
+    border: 2px solid var(--neon); 
+    backdrop-filter: blur(10px); 
+}
+@keyframes pulseText { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+
 </style>
 </head>
 <body>
 
 <div id="dynamic-bg"></div>
-<div id="flash-effect"></div>
+<div class="corner-glow corner-1"></div>
+<div class="corner-glow corner-2"></div>
 
-<div id="screen-start" class="screen">
-    <div style="text-align:center;"><h1>PHOTO PRINT</h1><p>Aguardando comando...</p></div>
+<div class="bg-brand">
+    <div class="bg-brand-title">PHOTO PRINT</div>
+    <div class="bg-brand-sub">Colecionando momentos</div>
 </div>
 
-<div id="screen-camera" class="screen" style="display:none;">
-    <div id="camera-wrapper">
-        <video id="camera-feed" autoplay playsinline muted></video>
-        <canvas id="camera-canvas" style="display:none;"></canvas>
-        <div id="fun-text" class="fun-text" style="display:none;"></div>
-        <div id="options-overlay" style="display:none;">
-            <div class="options-text">👇 ESCOLHA A IMPRESSÃO NO CELULAR 👇</div>
+<div class="top-logo">
+    <div class="logo-title" id="secret-logo">PHOTO PRINT</div>
+    <div class="logo-sub">Colecionando momentos</div>
+</div>
+
+<div id="bg-menu">
+    <label class="bg-btn" for="bg-input">🖼 ALTERAR FUNDO</label>
+    <div class="bg-btn" onclick="removeBackground()">✖ SEM FUNDO</div>
+</div>
+<input type="file" id="bg-input" accept="image/*"/>
+
+<!-- NOVO: ETIQUETA DO EVENTO ATIVO -->
+<div class="event-badge" id="event-badge-container">
+    EVENTO: <span id="event-name-display">Aguardando...</span>
+</div>
+
+<!-- TELA 1: INICIAL -->
+<div id="screen-start" class="screen">
+    <div class="btn-start">
+        <div class="start-content">
+            <div class="start-icon">📸</div>
+            <div class="start-title">PHOTO PRINT</div>
+            <div class="start-subtitle">Aguardando comando...</div>
         </div>
     </div>
 </div>
 
+<!-- TELA 2 e 3: CÂMERA FULLSCREEN, CONTAGEM E FOTO CONGELADA -->
+<div id="screen-camera" class="screen" style="display:none; z-index:40;">
+    <div id="camera-wrapper">
+        <video id="camera-feed" autoplay playsinline muted></video>
+        <canvas id="camera-canvas" style="display:none;"></canvas>
+        
+        <!-- Letras animadas e emojis -->
+        <div id="fun-text" class="fun-text" style="display:none;"></div>
+        
+        <!-- Orientação pós-foto clean -->
+        <div id="options-overlay" style="display:none;">
+            <div class="options-text">Sua foto está pronta! 📸<br><strong>Prossiga no painel para imprimir</strong></div>
+        </div>
+    </div>
+</div>
+
+<!-- TELA 4: AGRADECIMENTO E IMPRESSÃO -->
+<div id="screen-thanks" class="screen" style="display:none;">
+    <div class="status-text" id="thanks-text">🖨️ AGUARDE A IMPRESSÃO...</div>
+</div>
+
 <script>
-const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
+const bgInput = document.getElementById('bg-input');
+const dynamicBg = document.getElementById('dynamic-bg');
+const bgMenu = document.getElementById('bg-menu');
+const secretLogo = document.getElementById('secret-logo');
+
+// Elementos da Câmera
 const videoFeed = document.getElementById('camera-feed');
 const canvasCapture = document.getElementById('camera-canvas');
 const ctx = canvasCapture.getContext('2d');
 const funText = document.getElementById('fun-text');
 const optionsOverlay = document.getElementById('options-overlay');
-const flashEffect = document.getElementById('flash-effect');
-
+let stream = null;
 let lastState = 'start';
 
+// URL da sua API (Se usar Cloudflare). Se deixar vazio, ele usa apenas LocalStorage.
+const API_URL = localStorage.getItem('api_url') || ""; 
+
+/* INICIA CÂMERA (PREVIEW) */
 async function initWebcam() {
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 1920, height: 1080 } });
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 1920, height: 1080 } });
         videoFeed.srcObject = stream;
-    } catch (err) { console.warn("Permissão negada"); }
+    } catch (err) {
+        console.warn("Permissão de câmera negada ou dispositivo sem webcam.");
+    }
 }
 
-function wait(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+/* MENU SECRETO */
+let clickCount = 0; let clickTimer = null;
+secretLogo.addEventListener('click',()=>{
+    clickCount++;
+    clearTimeout(clickTimer);
+    clickTimer = setTimeout(()=>{ clickCount = 0; },2000);
+    if(clickCount >= 7){ bgMenu.classList.toggle('active'); clickCount = 0; }
+});
 
-async function startCaptureSequence() {
+/* CONTROLE VISUAL FUNDO */
+function updateVisualMode(){
+    const savedBg = localStorage.getItem('photoprint_bg');
+    if(savedBg){ document.body.classList.add('bg-active'); }
+    else{ document.body.classList.remove('bg-active'); }
+}
+
+bgInput.addEventListener('change',(e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev){
+        const image = ev.target.result;
+        dynamicBg.style.backgroundImage = `url('${image}')`;
+        dynamicBg.classList.add('active');
+        localStorage.setItem('photoprint_bg', image);
+        updateVisualMode();
+        bgMenu.classList.remove('active');
+    };
+    reader.readAsDataURL(file);
+});
+
+function removeBackground(){
+    localStorage.removeItem('photoprint_bg');
+    dynamicBg.style.backgroundImage = "";
+    dynamicBg.classList.remove('active');
+    updateVisualMode();
+    bgMenu.classList.remove('active');
+}
+
+function loadSavedBackground(){
+    const savedBg = localStorage.getItem('photoprint_bg');
+    if(savedBg){
+        dynamicBg.style.backgroundImage = `url('${savedBg}')`;
+        dynamicBg.classList.add('active');
+    }
+    updateVisualMode();
+}
+
+/* =========================================
+   ATUALIZAR NOME DO EVENTO ATIVO (CORRIGIDO PARA LER JSON)
+========================================= */
+function updateActiveEventDisplay() {
+    // Puxa as variáveis possíveis
+    let eventoRaw = localStorage.getItem('eventoAtivo') || localStorage.getItem('evento_ativo') || localStorage.getItem('evento_selecionado');
+    let eventoNome = 'Nenhum Evento';
+
+    if (eventoRaw) {
+        try {
+            // Se o painel estiver salvando como JSON (ex: {"nome":"polaroid junino"})
+            let obj = JSON.parse(eventoRaw);
+            eventoNome = obj.nome || obj.name || obj.id || eventoRaw;
+        } catch(err) {
+            // Se for apenas um texto normal (ex: "polaroid junino")
+            eventoNome = eventoRaw;
+        }
+    }
+    
+    document.getElementById('event-name-display').innerText = eventoNome;
+}
+
+/* =========================================
+   LÓGICA DE CAPTURA, ANIMAÇÃO E SALVAMENTO
+========================================= */
+function startCaptureSequence() {
     videoFeed.style.display = 'block';
     canvasCapture.style.display = 'none';
     optionsOverlay.style.display = 'none';
+    
     funText.style.display = 'block';
-
-    // 1. Prepare-se
-    funText.innerHTML = "PREPARE-SE";
-    await wait(2500);
-
-    // 2. Sorria
-    funText.innerHTML = "SORRIA!";
-    await wait(3000);
-
-    // 3. Contagem
-    for(let i=3; i>0; i--) {
-        funText.innerHTML = i;
-        await wait(1000);
-    }
-
-    // 4. Flash e Foto
-    funText.style.display = 'none';
-    flashEffect.classList.add('flash-animate');
-    await wait(200); // tempo do flash
+    funText.innerHTML = "✨ PREPARE-SE! ✨<br>😜🕺💃";
     
-    canvasCapture.width = videoFeed.videoWidth;
-    canvasCapture.height = videoFeed.videoHeight;
-    ctx.drawImage(videoFeed, 0, 0, canvasCapture.width, canvasCapture.height);
-    
-    videoFeed.style.display = 'none';
-    canvasCapture.style.display = 'block';
-    optionsOverlay.style.display = 'block';
-    
-    setTimeout(() => flashEffect.classList.remove('flash-animate'), 500);
+    setTimeout(() => {
+        let countdown = 3;
+        funText.innerHTML = `😁 SORRIA! 😁<br>⏳ ${countdown}`;
+        
+        const timerInterval = setInterval(() => {
+            countdown--;
+            if (countdown > 0) {
+                funText.innerHTML = `😁 SORRIA! 😁<br>⏳ ${countdown}`;
+            } else if (countdown === 0) {
+                
+                funText.style.display = 'none';
+                clearInterval(timerInterval);
+                
+                canvasCapture.width = videoFeed.videoWidth;
+                canvasCapture.height = videoFeed.videoHeight;
+                ctx.drawImage(videoFeed, 0, 0, canvasCapture.width, canvasCapture.height);
+                
+                videoFeed.style.display = 'none';
+                canvasCapture.style.display = 'block';
+                
+                try {
+                    // Utiliza o mesmo sistema seguro para pegar o nome do evento atual e salvar a foto na pasta correta
+                    let eventoAtivo = document.getElementById('event-name-display').innerText;
+                    if(eventoAtivo === 'Nenhum Evento') eventoAtivo = 'Evento_Geral';
+                    
+                    const imageData = canvasCapture.toDataURL('image/png');
+                    const chaveGaleria = `galeria_${eventoAtivo.trim().replace(/\s+/g, '_')}`;
+                    
+                    let galeria = JSON.parse(localStorage.getItem(chaveGaleria)) || [];
+                    galeria.push({
+                        id: Date.now(),
+                        imagem: imageData,
+                        dataHora: new Date().toLocaleString('pt-BR')
+                    });
+                    
+                    localStorage.setItem(chaveGaleria, JSON.stringify(galeria));
+                    window.dispatchEvent(new Event('novaFotoTirada'));
+                    
+                } catch(err) {
+                    console.error("Erro ao tentar salvar a foto na galeria:", err);
+                }
+
+                optionsOverlay.style.display = 'block';
+            }
+        }, 1000);
+        
+    }, 4000);
 }
 
+/* =========================================
+   SINCRONIZAÇÃO DE TELA (LOCAL E API)
+========================================= */
 function updateScreenState(state) {
-    if (state === lastState && state !== 'capturing') return;
+    if (state === 'start' && lastState === 'options') {
+        document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
+        document.getElementById('screen-thanks').style.display = 'flex';
+        
+        const msgThanks = document.getElementById('thanks-text');
+        msgThanks.innerHTML = "🖨️ AGUARDE A IMPRESSÃO...";
+        
+        setTimeout(() => {
+            msgThanks.innerHTML = "💖 OBRIGADO! 💖<br>APROVEITE SUA FOTO!";
+            setTimeout(() => {
+                document.getElementById('screen-thanks').style.display = 'none';
+                document.getElementById('screen-start').style.display = 'flex';
+                ctx.clearRect(0, 0, canvasCapture.width, canvasCapture.height);
+            }, 2500);
+        }, 2500);
+        
+        lastState = state;
+        return;
+    }
 
     document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
-    
+
     if (state === 'capturing') {
         document.getElementById('screen-camera').style.display = 'flex';
         startCaptureSequence();
-    } else if (state === 'options') {
+    } 
+    else if (state === 'options') {
         document.getElementById('screen-camera').style.display = 'flex';
-        canvasCapture.style.display = 'block';
-        optionsOverlay.style.display = 'block';
-    } else {
+    } 
+    else {
         document.getElementById('screen-start').style.display = 'flex';
     }
+    
     lastState = state;
 }
 
-// Polling da API
-setInterval(async () => {
-    try {
-        const res = await fetch(`${API}/get-state`);
-        const data = await res.json();
-        if(data.state) updateScreenState(data.state);
-    } catch(e) {}
-}, 1000);
+// 1. Escuta mudanças via LocalStorage (Para telas no mesmo Computador/Navegador)
+window.addEventListener('storage', (e) => {
+    if (e.key === 'booth_state') {
+        updateScreenState(e.newValue);
+    }
+    if (e.key === 'eventoAtivo' || e.key === 'evento_ativo' || e.key === 'evento_selecionado') {
+        updateActiveEventDisplay();
+    }
+});
 
+// 2. Escuta mudanças via API / Servidor (TRAVA DE CACHE ADICIONADA AQUI)
+async function syncWithServer() {
+    if (!API_URL) return; // Se não tiver URL, ignora e usa só LocalStorage
+
+    try {
+        // cache: 'no-store' proíbe o navegador de usar dados velhos e força buscar em tempo real
+        const response = await fetch(`${API_URL}/status`, {
+            method: 'GET',
+            cache: 'no-store',
+            headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            // Sincroniza Evento
+            if (data.evento_ativo) {
+                let currentLocal = localStorage.getItem('evento_ativo');
+                if(currentLocal !== data.evento_ativo) {
+                    localStorage.setItem('evento_ativo', data.evento_ativo);
+                    updateActiveEventDisplay();
+                }
+            }
+            
+            // Sincroniza Estado da Câmera
+            if (data.booth_state && data.booth_state !== lastState) {
+                localStorage.setItem('booth_state', data.booth_state);
+                updateScreenState(data.booth_state);
+            }
+        }
+    } catch (error) {
+        // Silencioso para não flodar o console se a internet falhar por 1 segundo
+    }
+}
+
+// Roda a checagem com o servidor a cada 1.5 segundos se existir API
+setInterval(syncWithServer, 1500);
+
+// INIT
 initWebcam();
+updateActiveEventDisplay();
+localStorage.setItem('booth_state', 'start');
+updateScreenState('start');
+loadSavedBackground();
+
 </script>
+
 </body>
 </html>

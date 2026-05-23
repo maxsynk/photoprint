@@ -2,15 +2,11 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>WEBCAM - PHOTO PRINT v8.4</title>
+<title>WEBCAM - PHOTO PRINT v8.6</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
-:root{
-    --neon:#39ff14;
-    --dark:#050505;
-    --danger:#ff3131;
-}
+:root{ --neon:#39ff14; --dark:#050505; --danger:#ff3131; }
 
 *{ box-sizing:border-box; }
 
@@ -25,42 +21,15 @@ body{
     overflow:hidden; position:relative;
 }
 
-#dynamic-bg{
-    position:fixed; inset:0; z-index:0;
-    background-size:cover; background-position:center; background-repeat:no-repeat;
-    opacity:0; transition:opacity 0.6s ease;
-}
-
+#dynamic-bg{ position:fixed; inset:0; z-index:0; background-size:cover; background-position:center; background-repeat:no-repeat; opacity:0; transition:opacity 0.6s ease; }
 #dynamic-bg.active{ opacity:0.45; }
-
-#dynamic-bg::after{
-    content:''; position:absolute; inset:0;
-    background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.65));
-}
-
-body::before{
-    content:''; position:fixed; inset:0;
-    background-image: linear-gradient(rgba(57,255,20,0.03) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(57,255,20,0.03) 1px, transparent 1px);
-    background-size:40px 40px; z-index:0;
-    animation:gridMove 12s linear infinite;
-}
-
+#dynamic-bg::after{ content:''; position:absolute; inset:0; background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.65)); }
+body::before{ content:''; position:fixed; inset:0; background-image: linear-gradient(rgba(57,255,20,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(57,255,20,0.03) 1px, transparent 1px); background-size:40px 40px; z-index:0; animation:gridMove 12s linear infinite; }
 body.bg-active::before{ display:none; }
+@keyframes gridMove{ from{ transform:translateY(0px); } to{ transform:translateY(40px); } }
 
-@keyframes gridMove{
-    from{ transform:translateY(0px); }
-    to{ transform:translateY(40px); }
-}
-
-.bg-brand{
-    position:fixed; inset:0; z-index:1; pointer-events:none;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    opacity:0.07;
-}
-
+.bg-brand{ position:fixed; inset:0; z-index:1; pointer-events:none; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.07; }
 body.bg-active .bg-brand{ display:none; }
-
 .bg-brand-title{ font-family:'Orbitron',sans-serif; font-size:140px; font-weight:900; color:var(--neon); letter-spacing:14px; text-transform:uppercase; }
 .bg-brand-sub{ margin-top:20px; font-size:42px; letter-spacing:12px; text-transform:uppercase; color:white; }
 
@@ -68,12 +37,9 @@ body.bg-active .bg-brand{ display:none; }
 .logo-title{ font-family:'Orbitron',sans-serif; color:var(--neon); font-size:46px; font-weight:900; letter-spacing:8px; text-shadow: 0 0 15px var(--neon), 0 0 35px rgba(57,255,20,0.8); cursor:pointer; user-select:none; }
 .logo-sub{ margin-top:4px; color:white; opacity:0.7; letter-spacing:5px; font-size:13px; text-transform:uppercase; }
 
-#active-event-name {
-    position: fixed; top: 130px; left: 50px; z-index: 26;
-    font-family: 'Orbitron', sans-serif; color: var(--neon); font-size: 16px; font-weight: 700;
-    letter-spacing: 2px; text-shadow: 0 0 10px var(--neon); background: rgba(0,0,0,0.7);
-    padding: 8px 16px; border-radius: 8px; border: 1px solid var(--neon); display: none;
-}
+#active-event-name { position: fixed; top: 130px; left: 50px; z-index: 26; font-family: 'Orbitron', sans-serif; color: var(--neon); font-size: 16px; font-weight: 700; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon); background: rgba(0,0,0,0.7); padding: 8px 16px; border-radius: 8px; border: 1px solid var(--neon); display: none; }
+
+#debug-info { position: fixed; bottom: 10px; right: 10px; z-index: 999; background: rgba(0,0,0,0.8); color: var(--neon); font-size: 10px; padding: 5px 10px; border-radius: 5px; font-family: monospace; max-width: 350px; word-break: break-all; }
 
 .corner-glow{ position:fixed; width:420px; height:420px; border-radius:50%; background:rgba(57,255,20,0.08); filter:blur(90px); z-index:0; }
 body.bg-active .corner-glow{ display:none; }
@@ -100,40 +66,17 @@ body.bg-active .corner-glow{ display:none; }
 
 #camera-wrapper { position: absolute; inset: 0; width: 100vw; height: 100vh; background: #000; overflow: hidden; z-index: 40; }
 #camera-feed { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-#camera-canvas { width: 100%; height: 100%; object-fit: cover; } /* sem scaleX, pois o espelhamento será feito no contexto */
+#camera-canvas { width: 100%; height: 100%; object-fit: cover; }
 
-.fun-text {
-    position: absolute; top: 75%; left: 50%; transform: translate(-50%, -50%);
-    font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif; font-size: 90px; font-weight: 900;
-    text-align: center; color: #fff; white-space: nowrap; text-transform: uppercase;
-    text-shadow: 0px 0px 15px #ff0080, 0px 0px 30px #ff8c00, 0px 0px 45px #ffff00;
-    animation: funPulse 0.6s infinite alternate, hueShift 3s linear infinite; z-index: 50; pointer-events: none;
-}
+.fun-text { position: absolute; top: 75%; left: 50%; transform: translate(-50%, -50%); font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif; font-size: 90px; font-weight: 900; text-align: center; color: #fff; white-space: nowrap; text-transform: uppercase; text-shadow: 0px 0px 15px #ff0080, 0px 0px 30px #ff8c00, 0px 0px 45px #ffff00; animation: funPulse 0.6s infinite alternate, hueShift 3s linear infinite; z-index: 50; pointer-events: none; }
 @keyframes funPulse { 0% { transform: translate(-50%, -50%) scale(0.9); } 100% { transform: translate(-50%, -50%) scale(1.15); } }
 @keyframes hueShift { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
 
-#options-overlay {
-    position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%);
-    background: rgba(255,255,255,0.95); padding: 20px 45px; border-radius: 50px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 60; text-align: center;
-}
+#options-overlay { position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.95); padding: 20px 45px; border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 60; text-align: center; }
 .options-text { font-family: 'Arial', sans-serif; font-size: 28px; color: #222; font-weight: bold; letter-spacing: 1px; }
 
 .status-text { font-family:'Orbitron',sans-serif; font-size:40px; color:var(--neon); font-weight:900; letter-spacing:4px; text-shadow: 0 0 20px var(--neon); text-align:center; animation:pulseText 1.5s infinite; background: rgba(0,0,0,0.8); padding: 40px 80px; border-radius: 20px; border: 2px solid var(--neon); backdrop-filter: blur(10px); }
 @keyframes pulseText { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-
-/* mensagem de erro da câmera */
-.camera-error {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    color: white; font-family: 'Orbitron', sans-serif; text-align: center;
-}
-.camera-error h2 { color: var(--danger); font-size: 36px; margin-bottom: 20px; }
-.camera-error p { font-size: 18px; max-width: 400px; line-height: 1.6; }
-.camera-error button { 
-    margin-top: 30px; padding: 15px 40px; border: 2px solid var(--neon); background: transparent;
-    color: var(--neon); font-size: 20px; font-weight: 900; border-radius: 10px; cursor: pointer;
-}
 </style>
 </head>
 <body>
@@ -153,6 +96,7 @@ body.bg-active .corner-glow{ display:none; }
 </div>
 
 <div id="active-event-name"></div>
+<div id="debug-info">INICIANDO...</div>
 
 <div id="bg-menu">
     <label class="bg-btn" for="bg-input">🖼 ALTERAR FUNDO</label>
@@ -160,20 +104,12 @@ body.bg-active .corner-glow{ display:none; }
 </div>
 <input type="file" id="bg-input" accept="image/*"/>
 
-<!-- Tela de erro de câmera (oculta por padrão) -->
-<div id="camera-error" class="camera-error" style="display:none;">
-    <h2>⚠️ Câmera não autorizada</h2>
-    <p>Para usar o sistema, permita o acesso à câmera quando solicitado pelo navegador.</p>
-    <p>Se a solicitação não aparecer, verifique as configurações do seu navegador.</p>
-    <button onclick="retryCameraPermission()">TENTAR NOVAMENTE</button>
-</div>
-
 <div id="screen-start" class="screen">
-    <div class="btn-start" id="main-start-btn" onclick="handleStartClick()">
+    <div class="btn-start" id="main-start-btn">
         <div class="start-content">
             <div class="start-icon">📸</div>
-            <div class="start-title" id="start-title-text">PHOTO PRINT</div>
-            <div class="start-subtitle" id="start-subtitle-text">Aguardando comando...</div>
+            <div class="start-title">PHOTO PRINT</div>
+            <div class="start-subtitle">Aguardando comando...</div>
         </div>
     </div>
 </div>
@@ -194,222 +130,252 @@ body.bg-active .corner-glow{ display:none; }
 </div>
 
 <script>
+// ==================== DEBUG ====================
+function debug(msg) {
+    console.log('[WEBCAM]', msg);
+    const el = document.getElementById('debug-info');
+    if (el) el.innerText = msg;
+}
+
+// ==================== CONSTANTES ====================
+const API_BASE = 'https://photoprint-api.maxprimefotovideo.workers.dev';
 const bgInput = document.getElementById('bg-input');
 const dynamicBg = document.getElementById('dynamic-bg');
 const bgMenu = document.getElementById('bg-menu');
 const secretLogo = document.getElementById('secret-logo');
-
 const videoFeed = document.getElementById('camera-feed');
 const canvasCapture = document.getElementById('camera-canvas');
 const ctx = canvasCapture.getContext('2d');
 const funText = document.getElementById('fun-text');
 const optionsOverlay = document.getElementById('options-overlay');
+
 let stream = null;
 let lastState = 'start';
 let captureInProgress = false;
-let cameraPermissionGranted = false;
 let initialLoad = true;
-
-const API_BASE = 'https://photoprint-api.maxprimefotovideo.workers.dev';
-
 let eventoAtual = null;
-let formatoAtual = null;
+let formatoAtual = '10X15V';
 let molduraUrl = null;
+let cameraOk = false;
 
 const FORMATOS = {
-    "TIRINHA": { w: 600, h: 1800, fotos: 3, key: "TIRINHA", exigeH: false },
-    "POLAROID": { w: 1200, h: 1500, fotos: 1, key: "POLAROID", exigeH: false },
-    "10X15H": { w: 1800, h: 1200, fotos: 1, key: "10X15H", exigeH: true },
-    "10X15V": { w: 1200, h: 1800, fotos: 1, key: "10X15V", exigeH: false }
+    "TIRINHA": { w: 600, h: 1800, key: "TIRINHA" },
+    "POLAROID": { w: 1200, h: 1500, key: "POLAROID" },
+    "10X15H": { w: 1800, h: 1200, key: "10X15H" },
+    "10X15V": { w: 1200, h: 1800, key: "10X15V" }
 };
 
-// =================================================
-// CONTROLE DO STREAM (COM PERMISSÃO PRÉVIA)
-// =================================================
-async function requestCameraPermission() {
-    try {
-        const tempStream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: 'user', width: 1920, height: 1080 } 
-        });
-        tempStream.getTracks().forEach(track => track.stop());
-        cameraPermissionGranted = true;
-        document.getElementById('camera-error').style.display = 'none';
-        console.log('✅ Permissão de câmera concedida.');
-        return true;
-    } catch (err) {
-        console.warn('❌ Permissão de câmera negada:', err);
-        cameraPermissionGranted = false;
-        document.getElementById('camera-error').style.display = 'flex';
-        return false;
-    }
-}
-
-async function startCameraStream() {
-    if (!cameraPermissionGranted) {
-        console.warn('Permissão ainda não concedida, tentando solicitar...');
-        const granted = await requestCameraPermission();
-        if (!granted) return false;
-    }
-    if (stream) {
-        if (videoFeed.srcObject !== stream) videoFeed.srcObject = stream;
-        return true;
-    }
+// ==================== CÂMERA ====================
+async function initCamera() {
     try {
         stream = await navigator.mediaDevices.getUserMedia({ 
             video: { facingMode: 'user', width: 1920, height: 1080 } 
         });
         videoFeed.srcObject = stream;
-        console.log('✅ Webcam iniciada.');
+        videoFeed.pause(); // pausa para não consumir recursos
+        cameraOk = true;
+        debug('✅ Câmera OK');
         return true;
     } catch (err) {
-        console.warn("❌ Falha ao iniciar a câmera.");
-        cameraPermissionGranted = false;
-        document.getElementById('camera-error').style.display = 'flex';
+        debug('❌ Câmera: ' + err.message);
+        cameraOk = false;
         return false;
     }
 }
 
-function stopCameraStream() {
-    if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-        stream = null;
-        videoFeed.srcObject = null;
-        console.log('⏹️ Webcam desligada.');
+function resumeCamera() {
+    if (stream && videoFeed.paused) {
+        videoFeed.play().catch(e => debug('Erro play: ' + e.message));
     }
 }
 
-// =================================================
-// INTERAÇÃO INICIAL PARA GARANTIR PERMISSÃO
-// =================================================
-function handleStartClick() {
-    // Se a permissão já foi concedida, o botão não precisa fazer nada (a botoeira comanda)
-    // Mas se a câmera ainda não foi permitida, este clique servirá para solicitar
-    if (!cameraPermissionGranted) {
-        requestCameraPermission();
+function pauseCamera() {
+    if (stream && !videoFeed.paused) {
+        videoFeed.pause();
     }
 }
 
-async function retryCameraPermission() {
-    document.getElementById('camera-error').style.display = 'none';
-    await requestCameraPermission();
-}
-
-// Tenta obter a permissão automaticamente ao carregar (sem gesto)
-(async function autoRequestPermission() {
-    // Tenta discretamente; se falhar, mostra tela de erro com botão
-    await requestCameraPermission();
-})();
-
-// =================================================
-// SINCRONIZAÇÃO COM O PAINEL
-// =================================================
-async function atualizarEventoAtivo() {
+// ==================== SINCRONIZAÇÃO COM O WORKER EXISTENTE ====================
+async function syncEvento() {
+    debug('🔄 Sincronizando...');
+    
+    // 1. Tenta API /status (rota que já existe no Worker)
     try {
         const res = await fetch(`${API_BASE}/status?t=${Date.now()}`);
         if (res.ok) {
             const data = await res.json();
-            if (data.evento) {
+            debug(`📡 API: ${JSON.stringify(data)}`);
+            
+            if (data.evento && data.evento !== 'Geral') {
                 eventoAtual = data.evento;
-                formatoAtual = data.formato ? data.formato.toUpperCase().trim() : "10X15V";
-                const el = document.getElementById('active-event-name');
-                el.style.display = 'block';
-                el.innerText = `📸 ${eventoAtual}`;
-                await carregarMoldura(eventoAtual);
-                console.log(`📋 Evento ativo: ${eventoAtual} | Formato: ${formatoAtual}`);
-                return eventoAtual;
-            }
-        }
-    } catch(e) {}
-
-    try {
-        const eventosDB = localStorage.getItem('eventos_db');
-        if (eventosDB) {
-            const eventos = JSON.parse(eventosDB);
-            const ativo = eventos.find(e => e.ativo);
-            if (ativo) {
-                eventoAtual = ativo.nome;
-                formatoAtual = ativo.formato ? ativo.formato.toUpperCase().trim() : "10X15V";
-                const el = document.getElementById('active-event-name');
-                el.style.display = 'block';
-                el.innerText = `📸 ${eventoAtual}`;
-                await carregarMoldura(eventoAtual);
-                return eventoAtual;
-            }
-        }
-    } catch (e) {}
-
-    document.getElementById('active-event-name').style.display = 'none';
-    return null;
-}
-
-async function carregarMoldura(evento) {
-    try {
-        const res = await fetch(`${API_BASE}/list-photos?evento=${encodeURIComponent(evento)}&t=${Date.now()}`);
-        if (res.ok) {
-            const arquivos = await res.json();
-            const moldura = arquivos.find(f => f.key.toLowerCase().endsWith('.png'));
-            if (moldura) {
-                molduraUrl = `${API_BASE}/photo/${encodeURIComponent(moldura.key)}`;
-                console.log('🖼️ Moldura carregada:', molduraUrl);
-            } else {
-                molduraUrl = null;
+                formatoAtual = (data.formato || '10X15V').toUpperCase().trim();
+                updateEventoUI();
+                await loadMoldura();
+                return;
             }
         }
     } catch(e) {
-        molduraUrl = null;
+        debug('⚠️ API offline: ' + e.message);
+    }
+    
+    // 2. Fallback: localStorage (Painel salva eventos_db)
+    try {
+        const db = localStorage.getItem('eventos_db');
+        if (db) {
+            const eventos = JSON.parse(db);
+            const ativo = eventos.find(e => e.ativo);
+            if (ativo) {
+                eventoAtual = ativo.nome;
+                formatoAtual = (ativo.formato || '10X15V').toUpperCase().trim();
+                debug(`💾 Local: ${eventoAtual} | ${formatoAtual}`);
+                updateEventoUI();
+                await loadMoldura();
+                return;
+            }
+        }
+    } catch(e) {}
+    
+    debug('ℹ️ Nenhum evento ativo');
+}
+
+function updateEventoUI() {
+    const el = document.getElementById('active-event-name');
+    if (eventoAtual) {
+        el.style.display = 'block';
+        el.innerText = `📸 ${eventoAtual}`;
+    } else {
+        el.style.display = 'none';
     }
 }
 
-// =================================================
-// COMPOSIÇÃO E UPLOAD (FOTO JÁ ESPELHADA)
-// =================================================
-async function composeAndUpload(quantidadeCopias) {
-    if (!molduraUrl) {
-        console.warn('⚠️ Sem moldura, enviando foto pura.');
-        return uploadSemMoldura(quantidadeCopias);
+// ==================== CARREGAR MOLDURA (COMPATÍVEL COM O WORKER ATUAL) ====================
+async function loadMoldura() {
+    if (!eventoAtual) return;
+    debug(`🖼️ Buscando moldura em: ${eventoAtual}`);
+    
+    try {
+        // Usa a rota /list-photos que já existe no Worker
+        const res = await fetch(`${API_BASE}/list-photos?evento=${encodeURIComponent(eventoAtual)}&t=${Date.now()}`);
+        const arquivos = await res.json();
+        debug(`📋 ${arquivos.length} arquivos na pasta`);
+        
+        // O Worker salva moldura como .png (enviado pelo Painel com tipo=moldura)
+        // Mas o nome pode variar. Vamos procurar qualquer .png
+        let molduraKey = null;
+        
+        // Prioridade 1: arquivo que contém "moldura" no nome
+        molduraKey = arquivos.find(f => 
+            f.key.toLowerCase().includes('moldura') && f.key.toLowerCase().endsWith('.png')
+        );
+        
+        // Prioridade 2: qualquer .png na pasta do evento
+        if (!molduraKey) {
+            molduraKey = arquivos.find(f => f.key.toLowerCase().endsWith('.png'));
+        }
+        
+        if (molduraKey) {
+            molduraUrl = `${API_BASE}/photo/${encodeURIComponent(molduraKey.key)}`;
+            debug(`✅ Moldura: ${molduraKey.key}`);
+        } else {
+            molduraUrl = null;
+            debug('ℹ️ Nenhuma moldura PNG encontrada');
+        }
+    } catch(e) {
+        molduraUrl = null;
+        debug('❌ Erro ao buscar moldura: ' + e.message);
     }
+}
 
-    const formatoConfig = FORMATOS[formatoAtual] || FORMATOS["10X15V"];
+// ==================== CAPTURA DA FOTO ====================
+function capturePhoto() {
+    if (captureInProgress) return;
+    captureInProgress = true;
+    
+    resumeCamera();
+    videoFeed.style.display = 'block';
+    canvasCapture.style.display = 'none';
+    optionsOverlay.style.display = 'none';
+    
+    funText.style.display = 'block';
+    funText.innerHTML = "✨ PREPARE-SE! ✨<br>😜🕺💃";
+    debug('📸 Contagem iniciada');
+    
+    setTimeout(() => {
+        let countdown = 3;
+        funText.innerHTML = `😁 SORRIA! 😁<br>⏳ ${countdown}`;
+        
+        const timer = setInterval(() => {
+            countdown--;
+            if (countdown > 0) {
+                funText.innerHTML = `😁 SORRIA! 😁<br>⏳ ${countdown}`;
+            } else {
+                funText.style.display = 'none';
+                clearInterval(timer);
+                
+                canvasCapture.width = videoFeed.videoWidth || 1920;
+                canvasCapture.height = videoFeed.videoHeight || 1080;
+                
+                // Espelha a captura para ficar igual à visualização
+                ctx.save();
+                ctx.scale(-1, 1);
+                ctx.drawImage(videoFeed, -canvasCapture.width, 0, canvasCapture.width, canvasCapture.height);
+                ctx.restore();
+                
+                videoFeed.style.display = 'none';
+                canvasCapture.style.display = 'block';
+                pauseCamera();
+                
+                debug('✅ Foto capturada');
+                
+                // Avisa o Worker que a foto está pronta (rota existente)
+                fetch(`${API_BASE}/photo-ready`, { method: 'POST' }).catch(()=>{});
+                captureInProgress = false;
+                
+                // Mostra overlay para o usuário
+                optionsOverlay.style.display = 'block';
+                optionsOverlay.querySelector('.options-text').innerText = 'ACESSE O TOTEM PARA IMPRIMIR SUA FOTO';
+            }
+        }, 1000);
+    }, 4000);
+}
+
+// ==================== COMPOSIÇÃO COM MOLDURA E UPLOAD ====================
+async function composeAndUpload(copias) {
+    debug(`🖨️ Composing ${copias} cópias...`);
+    
+    const fmt = FORMATOS[formatoAtual] || FORMATOS['10X15V'];
     const outCanvas = document.createElement('canvas');
-    outCanvas.width = formatoConfig.w;
-    outCanvas.height = formatoConfig.h;
+    outCanvas.width = fmt.w;
+    outCanvas.height = fmt.h;
     const outCtx = outCanvas.getContext('2d');
-
+    
+    // Fundo branco
     outCtx.fillStyle = 'white';
     outCtx.fillRect(0, 0, outCanvas.width, outCanvas.height);
-
-    try {
-        // A foto já está espelhada no canvasCapture (aplicado no momento da captura)
-        const fotoImg = await loadImageFromCanvas(canvasCapture);
-        const scale = Math.max(outCanvas.width / fotoImg.width, outCanvas.height / fotoImg.height);
-        const w = fotoImg.width * scale;
-        const h = fotoImg.height * scale;
-        const x = (outCanvas.width - w) / 2;
-        const y = (outCanvas.height - h) / 2;
-        outCtx.drawImage(fotoImg, x, y, w, h);
-
-        const molduraImg = await loadImage(molduraUrl);
-        outCtx.drawImage(molduraImg, 0, 0, outCanvas.width, outCanvas.height);
-
-        const blob = await canvasToBlob(outCanvas, 'image/jpeg', 0.95);
-        await fazerUpload(blob, quantidadeCopias);
-    } catch (e) {
-        console.error('❌ Erro na composição:', e);
-        await uploadSemMoldura(quantidadeCopias);
+    
+    // Desenha a foto
+    const fotoImg = await imageFromCanvas(canvasCapture);
+    const scale = Math.max(outCanvas.width / fotoImg.width, outCanvas.height / fotoImg.height);
+    const w = fotoImg.width * scale;
+    const h = fotoImg.height * scale;
+    outCtx.drawImage(fotoImg, (outCanvas.width - w) / 2, (outCanvas.height - h) / 2, w, h);
+    
+    // Aplica moldura se existir
+    if (molduraUrl) {
+        try {
+            const molduraImg = await loadImage(molduraUrl);
+            outCtx.drawImage(molduraImg, 0, 0, outCanvas.width, outCanvas.height);
+            debug('✅ Moldura aplicada');
+        } catch(e) {
+            debug('⚠️ Falha ao aplicar moldura: ' + e.message);
+        }
     }
+    
+    const blob = await new Promise(r => outCanvas.toBlob(r, 'image/jpeg', 0.95));
+    await uploadBlob(blob, copias);
 }
 
-function loadImage(src) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => resolve(img);
-        img.onerror = reject;
-        img.src = src;
-    });
-}
-
-function loadImageFromCanvas(canvas) {
+function imageFromCanvas(canvas) {
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.onload = () => resolve(img);
@@ -418,264 +384,213 @@ function loadImageFromCanvas(canvas) {
     });
 }
 
-function canvasToBlob(canvas, type, quality) {
-    return new Promise(resolve => {
-        canvas.toBlob(resolve, type, quality);
+function loadImage(src) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src + '?t=' + Date.now();
     });
 }
 
-async function uploadSemMoldura(quantidadeCopias) {
-    const blob = await canvasToBlob(canvasCapture, 'image/jpeg', 0.92);
-    await fazerUpload(blob, quantidadeCopias);
-}
-
-async function fazerUpload(blob, quantidadeCopias) {
+// ==================== UPLOAD (USANDO ROTA EXISTENTE /upload) ====================
+async function uploadBlob(blob, copias) {
     if (!eventoAtual) {
-        console.warn('❌ Nenhum evento ativo para upload.');
+        debug('❌ Sem evento para upload');
         return;
     }
-
+    
+    // Nomenclatura igual ao Mobile (compatível com a Galeria)
     let nomeArquivo = 'foto.jpg';
     let copiasFisicas = 1;
-    if (quantidadeCopias === 2) { nomeArquivo = 'foto_2c.jpg'; copiasFisicas = 2; }
-    else if (quantidadeCopias === 3) { nomeArquivo = 'foto_2c_guestbook.jpg'; copiasFisicas = 2; }
-    else if (quantidadeCopias === 4) { nomeArquivo = 'foto_3c_guestbook.jpg'; copiasFisicas = 3; }
-
-    const form = new FormData();
-    form.append('file', blob, nomeArquivo);
-    form.append('evento', eventoAtual);
-    form.append('copias', copiasFisicas);
-    form.append('tipo', 'photo');
-
+    
+    if (copias === 1) {
+        nomeArquivo = 'foto.jpg';
+        copiasFisicas = 1;
+    } else if (copias === 2) {
+        nomeArquivo = 'foto_2c.jpg';
+        copiasFisicas = 2;
+    } else if (copias === 3) {
+        nomeArquivo = 'foto_2c_guestbook.jpg';
+        copiasFisicas = 2;
+    } else if (copias === 4) {
+        nomeArquivo = 'foto_3c_guestbook.jpg';
+        copiasFisicas = 3;
+    }
+    
+    const fd = new FormData();
+    fd.append('file', blob, nomeArquivo);
+    fd.append('evento', eventoAtual);
+    fd.append('copias', copiasFisicas.toString());
+    
+    debug(`⬆️ Upload: ${nomeArquivo} (${copiasFisicas} cópias)`);
+    
     try {
-        const uploadRes = await fetch(`${API_BASE}/upload`, { method: 'POST', body: form });
-        if (uploadRes.ok) {
-            console.log(`⬆️ Upload concluído: ${nomeArquivo} (${copiasFisicas} cópia(s))`);
+        const res = await fetch(`${API_BASE}/upload`, { method: 'POST', body: fd });
+        if (res.ok) {
+            debug('✅ Upload OK');
         } else {
-            console.error('❌ Falha no upload.');
+            debug('❌ Upload falhou: ' + res.status);
         }
-    } catch (e) {
-        console.error('❌ Erro no upload:', e);
+    } catch(e) {
+        debug('❌ Upload erro: ' + e.message);
     }
 }
 
-// =================================================
-// AGUARDA TOTEM
-// =================================================
-async function aguardarPrintEEnviar() {
-    optionsOverlay.style.display = 'block';
-    optionsOverlay.querySelector('.options-text').innerText = 'ACESSE O TOTEM PARA IMPRIMIR SUA FOTO';
-
-    let printData = null;
+// ==================== AGUARDAR TOTEM ====================
+async function waitForPrint() {
+    debug('⏳ Aguardando totem...');
+    
     for (let i = 0; i < 60; i++) {
         try {
             const res = await fetch(`${API_BASE}/check-print?t=${Date.now()}`);
-            if (res.ok) {
-                const data = await res.json();
-                if (data.printTriggered) {
-                    printData = data;
-                    break;
-                }
+            const data = await res.json();
+            if (data.printTriggered) {
+                debug(`🖨️ Totem: ${data.copias} cópia(s)`);
+                return data.copias || 1;
             }
         } catch(e) {}
         await new Promise(r => setTimeout(r, 500));
     }
-
-    if (!printData) {
-        console.warn('⏰ Timeout aguardando totem.');
-        await fetch(`${API_BASE}/clear-print`, { method: 'POST' }).catch(()=>{});
-        updateScreenState('start');
-        return;
-    }
-
-    const copias = printData.copias || 1;
-    optionsOverlay.querySelector('.options-text').innerText = 'Compondo foto...';
-
-    try {
-        await composeAndUpload(copias);
-    } catch(e) {
-        console.error('❌ Falha na composição/upload:', e);
-    }
-
-    await fetch(`${API_BASE}/clear-print`, { method: 'POST' }).catch(()=>{});
-    await fetch(`${API_BASE}/photo-ready`, { method: 'POST' }).catch(()=>{});
-
-    mostrarTelaAgradecimento();
+    
+    debug('⏰ Timeout totem');
+    return null;
 }
 
-function mostrarTelaAgradecimento() {
+// ==================== CICLO COMPLETO ====================
+async function finishCycle() {
+    const copias = await waitForPrint();
+    if (!copias) {
+        resetToStart();
+        return;
+    }
+    
+    optionsOverlay.querySelector('.options-text').innerText = 'Compondo foto...';
+    await composeAndUpload(copias);
+    
+    // Limpa estado de print (rotas existentes)
+    await fetch(`${API_BASE}/clear-print`, { method: 'POST' }).catch(()=>{});
+    
+    showThanks();
+}
+
+function showThanks() {
     document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
     document.getElementById('screen-thanks').style.display = 'flex';
-    const msgThanks = document.getElementById('thanks-text');
-    msgThanks.innerHTML = "🖨️ AGUARDE A IMPRESSÃO...";
-
+    document.getElementById('thanks-text').innerHTML = "🖨️ AGUARDE A IMPRESSÃO...";
+    
     setTimeout(() => {
-        msgThanks.innerHTML = "💖 OBRIGADO! 💖<br>APROVEITE SUA FOTO!";
-        setTimeout(() => {
-            document.getElementById('screen-thanks').style.display = 'none';
-            document.getElementById('screen-start').style.display = 'flex';
-            ctx.clearRect(0, 0, canvasCapture.width, canvasCapture.height);
-            captureInProgress = false;
-            stopCameraStream();
-            lastState = 'start';
-            fetch(`${API_BASE}/set-state`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ state: 'start' })
-            }).catch(()=>{});
-        }, 2500);
+        document.getElementById('thanks-text').innerHTML = "💖 OBRIGADO! 💖<br>APROVEITE SUA FOTO!";
+        setTimeout(resetToStart, 2500);
     }, 2500);
 }
 
-// =================================================
-// CAPTURA COM ESPELHAMENTO NO CANVAS
-// =================================================
-function startCaptureSequence() {
-    if (captureInProgress) return;
-    captureInProgress = true;
+function resetToStart() {
+    document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
+    document.getElementById('screen-start').style.display = 'flex';
+    ctx.clearRect(0, 0, canvasCapture.width, canvasCapture.height);
+    captureInProgress = false;
+    pauseCamera();
+    lastState = 'start';
     
-    videoFeed.style.display = 'block';
-    canvasCapture.style.display = 'none';
-    optionsOverlay.style.display = 'none';
+    fetch(`${API_BASE}/set-state`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ state: 'start' })
+    }).catch(()=>{});
     
-    funText.style.display = 'block';
-    funText.innerHTML = "✨ PREPARE-SE! ✨<br>😜🕺💃";
-    
-    setTimeout(() => {
-        let countdown = 3;
-        funText.innerHTML = `😁 SORRIA! 😁<br>⏳ ${countdown}`;
-        
-        const timerInterval = setInterval(() => {
-            countdown--;
-            if (countdown > 0) {
-                funText.innerHTML = `😁 SORRIA! 😁<br>⏳ ${countdown}`;
-            } else if (countdown === 0) {
-                funText.style.display = 'none';
-                clearInterval(timerInterval);
-                
-                canvasCapture.width = videoFeed.videoWidth;
-                canvasCapture.height = videoFeed.videoHeight;
-                
-                // Espelha o contexto para que a imagem fique igual à visualização
-                ctx.save();
-                ctx.scale(-1, 1);
-                ctx.drawImage(videoFeed, -canvasCapture.width, 0, canvasCapture.width, canvasCapture.height);
-                ctx.restore();
-                
-                videoFeed.style.display = 'none';
-                canvasCapture.style.display = 'block';
-                
-                fetch(`${API_BASE}/photo-ready`, { method: 'POST' }).catch(()=>{});
-                captureInProgress = false;
-
-                optionsOverlay.style.display = 'block';
-                optionsOverlay.querySelector('.options-text').innerText = 'ACESSE O TOTEM PARA IMPRIMIR SUA FOTO';
-            }
-        }, 1000);
-    }, 4000);
+    debug('🏁 Reset completo');
 }
 
-// =================================================
-// SINCRONIZAÇÃO DE ESTADOS
-// =================================================
+// ==================== SINCRONIZAÇÃO DE ESTADOS ====================
 function updateScreenState(state) {
+    debug(`🔄 Estado: ${lastState} → ${state}`);
+    
     if (state === lastState && state !== 'capturing') return;
     
     if (state === 'start' && lastState === 'options') {
-        aguardarPrintEEnviar();
+        finishCycle();
         lastState = state;
         return;
     }
-
+    
     if (state === 'capturing' && lastState === 'options') return;
-
+    
     document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
-
+    
     if (state === 'capturing') {
-        startCameraStream().then(success => {
-            if (success) {
-                document.getElementById('screen-camera').style.display = 'flex';
-                startCaptureSequence();
-            } else {
-                alert('Não foi possível acessar a câmera.');
-                captureInProgress = false;
-                updateScreenState('start');
-            }
-        });
-    } 
-    else if (state === 'options') {
+        document.getElementById('screen-camera').style.display = 'flex';
+        capturePhoto();
+    } else if (state === 'options') {
         document.getElementById('screen-camera').style.display = 'flex';
         videoFeed.style.display = 'none';
         canvasCapture.style.display = 'block';
         funText.style.display = 'none';
         optionsOverlay.style.display = 'block';
-        optionsOverlay.querySelector('.options-text').innerText = 'ACESSE O TOTEM PARA IMPRIMIR SUA FOTO';
-        stopCameraStream();
-    } 
-    else {
+        pauseCamera();
+    } else {
         document.getElementById('screen-start').style.display = 'flex';
-        captureInProgress = false;
-        stopCameraStream();
+        pauseCamera();
     }
     
     lastState = state;
 }
 
-// =================================================
-// POLLING
-// =================================================
+// ==================== POLLING ====================
 async function pollServerState() {
     try {
         const res = await fetch(`${API_BASE}/get-state?t=${Date.now()}`);
         if (!res.ok) return;
         const data = await res.json();
-        if (!data.state || data.state === lastState) return;
-
+        
         if (initialLoad) {
             initialLoad = false;
             if (data.state !== 'start') {
+                debug(`🧹 Limpando estado residual: ${data.state}`);
                 await fetch(`${API_BASE}/set-state`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ state: 'start' })
                 });
-                updateScreenState('start');
                 return;
             }
         }
-
-        console.log(`🔁 Estado: ${lastState} -> ${data.state}`);
-        updateScreenState(data.state);
+        
+        if (data.state && data.state !== lastState) {
+            updateScreenState(data.state);
+        }
     } catch(e) {}
 }
 
-// =================================================
-// INICIALIZAÇÃO
-// =================================================
+// ==================== INICIALIZAÇÃO ====================
 window.addEventListener('storage', (e) => {
-    if (e.key === 'booth_state') updateScreenState(e.newValue);
+    if (e.key === 'booth_state') {
+        updateScreenState(e.newValue);
+    }
 });
 
-/* MENU SECRETO */
+// Menu secreto
 let clickCount = 0, clickTimer = null;
-secretLogo.addEventListener('click',()=>{
+secretLogo.addEventListener('click', () => {
     clickCount++;
     clearTimeout(clickTimer);
-    clickTimer = setTimeout(()=>{ clickCount = 0; },2000);
-    if(clickCount >= 7){ bgMenu.classList.toggle('active'); clickCount = 0; }
+    clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
+    if (clickCount >= 7) { bgMenu.classList.toggle('active'); clickCount = 0; }
 });
 
-function updateVisualMode(){
+// Fundo
+function updateVisualMode() {
     const savedBg = localStorage.getItem('photoprint_bg');
-    if(savedBg){ document.body.classList.add('bg-active'); }
-    else{ document.body.classList.remove('bg-active'); }
+    if (savedBg) { document.body.classList.add('bg-active'); }
+    else { document.body.classList.remove('bg-active'); }
 }
 
-bgInput.addEventListener('change',(e)=>{
+bgInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
-    if(!file) return;
+    if (!file) return;
     const reader = new FileReader();
-    reader.onload = function(ev){
+    reader.onload = function(ev) {
         const image = ev.target.result;
         dynamicBg.style.backgroundImage = `url('${image}')`;
         dynamicBg.classList.add('active');
@@ -686,7 +601,7 @@ bgInput.addEventListener('change',(e)=>{
     reader.readAsDataURL(file);
 });
 
-function removeBackground(){
+function removeBackground() {
     localStorage.removeItem('photoprint_bg');
     dynamicBg.style.backgroundImage = "";
     dynamicBg.classList.remove('active');
@@ -694,24 +609,29 @@ function removeBackground(){
     bgMenu.classList.remove('active');
 }
 
-function loadSavedBackground(){
+function loadSavedBackground() {
     const savedBg = localStorage.getItem('photoprint_bg');
-    if(savedBg){
+    if (savedBg) {
         dynamicBg.style.backgroundImage = `url('${savedBg}')`;
         dynamicBg.classList.add('active');
     }
     updateVisualMode();
 }
 
+// START
 loadSavedBackground();
 localStorage.setItem('booth_state', 'start');
 updateScreenState('start');
 
-setInterval(pollServerState, 800);
-setInterval(atualizarEventoAtivo, 10000);
-atualizarEventoAtivo();
+// Inicia câmera (solicita permissão)
+initCamera();
 
-console.log('🚀 WEBCAM PHOTO PRINT v8.4 pronta.');
+// Polling
+setInterval(pollServerState, 800);
+setInterval(syncEvento, 10000);
+syncEvento();
+
+debug('🚀 WEBCAM v8.6 pronta');
 </script>
 </body>
 </html>

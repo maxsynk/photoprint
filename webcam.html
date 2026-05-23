@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>WEBCAM - PHOTO PRINT v7.5</title>
+<title>WEBCAM - PHOTO PRINT v8.0</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
@@ -68,23 +68,11 @@ body.bg-active .bg-brand{ display:none; }
 .logo-title{ font-family:'Orbitron',sans-serif; color:var(--neon); font-size:46px; font-weight:900; letter-spacing:8px; text-shadow: 0 0 15px var(--neon), 0 0 35px rgba(57,255,20,0.8); cursor:pointer; user-select:none; }
 .logo-sub{ margin-top:4px; color:white; opacity:0.7; letter-spacing:5px; font-size:13px; text-transform:uppercase; }
 
-/* Nome do evento ativo */
 #active-event-name {
-    position: fixed;
-    top: 130px;
-    left: 50px;
-    z-index: 26;
-    font-family: 'Orbitron', sans-serif;
-    color: var(--neon);
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-shadow: 0 0 10px var(--neon);
-    background: rgba(0,0,0,0.7);
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: 1px solid var(--neon);
-    display: none;
+    position: fixed; top: 130px; left: 50px; z-index: 26;
+    font-family: 'Orbitron', sans-serif; color: var(--neon); font-size: 16px; font-weight: 700;
+    letter-spacing: 2px; text-shadow: 0 0 10px var(--neon); background: rgba(0,0,0,0.7);
+    padding: 8px 16px; border-radius: 8px; border: 1px solid var(--neon); display: none;
 }
 
 .corner-glow{ position:fixed; width:420px; height:420px; border-radius:50%; background:rgba(57,255,20,0.08); filter:blur(90px); z-index:0; }
@@ -98,10 +86,8 @@ body.bg-active .corner-glow{ display:none; }
 .bg-btn:hover{ transform:translateY(-2px); border-color:var(--neon); color:var(--neon); box-shadow: 0 0 25px rgba(57,255,20,0.35); }
 #bg-input{ display:none; }
 
-/* TELAS (SCREENS) */
 .screen { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:20; flex-direction:column; }
 
-/* BOTAO START */
 .btn-start{ position:relative; width:380px; height:380px; border-radius:50%; border:4px solid var(--neon); background: radial-gradient(circle at center, rgba(57,255,20,0.18), rgba(0,0,0,0.96)); overflow:hidden; transition:0.3s; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:35px; box-shadow: 0 0 30px rgba(57,255,20,0.8), inset 0 0 60px rgba(57,255,20,0.15); backdrop-filter:blur(4px); z-index:30; }
 .btn-start::before{ content:''; position:absolute; width:250%; height:250%; background:conic-gradient( transparent, rgba(57,255,20,1), rgba(57,255,20,0.25), transparent ); animation:rotateGlow 3s linear infinite; filter:blur(20px); opacity:1; }
 .btn-start::after{ content:''; position:absolute; inset:8px; border-radius:50%; background:rgba(0,0,0,0.92); box-shadow: inset 0 0 60px rgba(57,255,20,0.15); }
@@ -112,90 +98,27 @@ body.bg-active .corner-glow{ display:none; }
 .start-title{ color:var(--neon); font-family:'Orbitron',sans-serif; font-size:22px; font-weight:900; letter-spacing:4px; text-shadow: 0 0 15px var(--neon), 0 0 35px var(--neon); margin-bottom:18px; text-transform:uppercase; line-height:1.4; min-height:40px; }
 .start-subtitle{ font-size:22px; line-height:1.6; }
 
-/* LAYOUT DA CÂMERA (PREVIEW) - FULLSCREEN */
-#camera-wrapper {
-    position: absolute;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
-    background: #000;
-    overflow: hidden;
-    z-index: 40;
-}
+#camera-wrapper { position: absolute; inset: 0; width: 100vw; height: 100vh; background: #000; overflow: hidden; z-index: 40; }
+#camera-feed, #camera-canvas { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 
-#camera-feed, #camera-canvas {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transform: scaleX(-1);
-}
-
-/* TEXTOS ANIMADOS */
 .fun-text {
-    position: absolute;
-    top: 75%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif;
-    font-size: 90px;
-    font-weight: 900;
-    text-align: center;
-    color: #fff;
-    white-space: nowrap;
-    text-transform: uppercase;
-    text-shadow: 
-        0px 0px 15px #ff0080,
-        0px 0px 30px #ff8c00,
-        0px 0px 45px #ffff00;
-    animation: funPulse 0.6s infinite alternate, hueShift 3s linear infinite;
-    z-index: 50;
-    pointer-events: none;
+    position: absolute; top: 75%; left: 50%; transform: translate(-50%, -50%);
+    font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif; font-size: 90px; font-weight: 900;
+    text-align: center; color: #fff; white-space: nowrap; text-transform: uppercase;
+    text-shadow: 0px 0px 15px #ff0080, 0px 0px 30px #ff8c00, 0px 0px 45px #ffff00;
+    animation: funPulse 0.6s infinite alternate, hueShift 3s linear infinite; z-index: 50; pointer-events: none;
 }
-
-@keyframes funPulse {
-    0% { transform: translate(-50%, -50%) scale(0.9); }
-    100% { transform: translate(-50%, -50%) scale(1.15); }
-}
-@keyframes hueShift {
-    0% { filter: hue-rotate(0deg); }
-    100% { filter: hue-rotate(360deg); }
-}
+@keyframes funPulse { 0% { transform: translate(-50%, -50%) scale(0.9); } 100% { transform: translate(-50%, -50%) scale(1.15); } }
+@keyframes hueShift { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
 
 #options-overlay {
-    position: absolute;
-    bottom: 50px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(255, 255, 255, 0.95);
-    padding: 20px 45px;
-    border-radius: 50px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    z-index: 60;
-    text-align: center;
+    position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%);
+    background: rgba(255,255,255,0.95); padding: 20px 45px; border-radius: 50px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 60; text-align: center;
 }
-.options-text {
-    font-family: 'Arial', sans-serif;
-    font-size: 28px;
-    color: #222;
-    font-weight: bold;
-    letter-spacing: 1px;
-}
+.options-text { font-family: 'Arial', sans-serif; font-size: 28px; color: #222; font-weight: bold; letter-spacing: 1px; }
 
-.status-text { 
-    font-family:'Orbitron',sans-serif; 
-    font-size:40px; 
-    color:var(--neon); 
-    font-weight:900; 
-    letter-spacing:4px; 
-    text-shadow: 0 0 20px var(--neon); 
-    text-align:center; 
-    animation:pulseText 1.5s infinite; 
-    background: rgba(0,0,0,0.8); 
-    padding: 40px 80px; 
-    border-radius: 20px; 
-    border: 2px solid var(--neon); 
-    backdrop-filter: blur(10px); 
-}
+.status-text { font-family:'Orbitron',sans-serif; font-size:40px; color:var(--neon); font-weight:900; letter-spacing:4px; text-shadow: 0 0 20px var(--neon); text-align:center; animation:pulseText 1.5s infinite; background: rgba(0,0,0,0.8); padding: 40px 80px; border-radius: 20px; border: 2px solid var(--neon); backdrop-filter: blur(10px); }
 @keyframes pulseText { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
 </style>
 </head>
@@ -266,6 +189,18 @@ let initialLoad = true;
 
 const API_BASE = 'https://photoprint-api.maxprimefotovideo.workers.dev';
 
+// Variáveis de configuração do evento e moldura
+let eventoAtual = null;
+let formatoAtual = null;
+let molduraUrl = null;
+
+const FORMATOS = {
+    "TIRINHA": { w: 600, h: 1800, fotos: 3, key: "TIRINHA", exigeH: false },
+    "POLAROID": { w: 1200, h: 1500, fotos: 1, key: "POLAROID", exigeH: false },
+    "10X15H": { w: 1800, h: 1200, fotos: 1, key: "10X15H", exigeH: true },
+    "10X15V": { w: 1200, h: 1800, fotos: 1, key: "10X15V", exigeH: false }
+};
+
 // =================================================
 // CONTROLE DO STREAM DA CÂMERA
 // =================================================
@@ -297,7 +232,7 @@ function stopCameraStream() {
 }
 
 // =================================================
-// SINCRONIZAÇÃO DO EVENTO ATIVO
+// SINCRONIZAÇÃO DO EVENTO ATIVO E MOLDURA
 // =================================================
 async function atualizarEventoAtivo() {
     try {
@@ -305,26 +240,33 @@ async function atualizarEventoAtivo() {
         if (res.ok) {
             const data = await res.json();
             if (data.evento) {
+                eventoAtual = data.evento;
+                formatoAtual = data.formato ? data.formato.toUpperCase().trim() : "10X15V";
                 const el = document.getElementById('active-event-name');
                 el.style.display = 'block';
-                el.innerText = `📸 ${data.evento}`;
-                return data.evento;
+                el.innerText = `📸 ${eventoAtual}`;
+                await carregarMoldura(eventoAtual);
+                return eventoAtual;
             }
         }
     } catch(e) {
         console.warn('Falha ao obter evento ativo da API.');
     }
 
+    // Fallback localStorage
     try {
         const eventosDB = localStorage.getItem('eventos_db');
         if (eventosDB) {
             const eventos = JSON.parse(eventosDB);
             const ativo = eventos.find(e => e.ativo);
             if (ativo) {
+                eventoAtual = ativo.nome;
+                formatoAtual = ativo.formato ? ativo.formato.toUpperCase().trim() : "10X15V";
                 const el = document.getElementById('active-event-name');
                 el.style.display = 'block';
-                el.innerText = `📸 ${ativo.nome}`;
-                return ativo.nome;
+                el.innerText = `📸 ${eventoAtual}`;
+                await carregarMoldura(eventoAtual);
+                return eventoAtual;
             }
         }
     } catch (e) {}
@@ -333,67 +275,214 @@ async function atualizarEventoAtivo() {
     return null;
 }
 
-async function uploadCapturedPhoto() {
-    const evento = await atualizarEventoAtivo();
-    if (!evento) {
-        console.warn('Nenhum evento ativo, foto não enviada.');
-        await fetch(`${API_BASE}/photo-ready`, { method: 'POST' }).catch(()=>{});
-        return;
-    }
-    
-    canvasCapture.toBlob(async (blob) => {
-        const form = new FormData();
-        form.append('file', blob, 'capture.jpg');
-        form.append('evento', evento);
-        form.append('tipo', 'photo');
-        try {
-            const uploadRes = await fetch(`${API_BASE}/upload`, { method: 'POST', body: form });
-            if (uploadRes.ok) {
-                console.log('Foto enviada com sucesso para o evento:', evento);
+async function carregarMoldura(evento) {
+    try {
+        const res = await fetch(`${API_BASE}/list-photos?evento=${encodeURIComponent(evento)}&t=${Date.now()}`);
+        if (res.ok) {
+            const arquivos = await res.json();
+            const moldura = arquivos.find(f => f.key.toLowerCase().endsWith('.png'));
+            if (moldura) {
+                molduraUrl = `${API_BASE}/photo/${encodeURIComponent(moldura.key)}`;
+                console.log('Moldura carregada:', molduraUrl);
             } else {
-                console.error('Falha no upload da foto.');
+                molduraUrl = null;
             }
-        } catch (erro) {
-            console.error('Falha no upload:', erro);
         }
-        
-        try {
-            await fetch(`${API_BASE}/photo-ready`, { method: 'POST' });
-            console.log('Sinal photo-ready enviado.');
-        } catch(e) {}
-    }, 'image/jpeg', 0.92);
+    } catch(e) {
+        molduraUrl = null;
+    }
 }
 
 // =================================================
-// POLLING DO ESTADO NO SERVIDOR
+// COMPOSIÇÃO COM MOLDURA E UPLOAD
 // =================================================
-async function pollServerState() {
+async function composeAndUpload(quantidadeCopias) {
+    if (!molduraUrl) {
+        console.warn('Nenhuma moldura disponível, enviando foto sem moldura.');
+        return uploadSemMoldura(quantidadeCopias);
+    }
+
+    const formatoConfig = FORMATOS[formatoAtual] || FORMATOS["10X15V"];
+    const outCanvas = document.createElement('canvas');
+    outCanvas.width = formatoConfig.w;
+    outCanvas.height = formatoConfig.h;
+    const outCtx = outCanvas.getContext('2d');
+
+    // Fundo branco
+    outCtx.fillStyle = 'white';
+    outCtx.fillRect(0, 0, outCanvas.width, outCanvas.height);
+
     try {
-        const res = await fetch(`${API_BASE}/get-state?t=${Date.now()}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        if (!data.state || data.state === lastState) return;
+        // Carrega a foto do canvas de captura como imagem
+        const fotoImg = await loadImageFromCanvas(canvasCapture);
+        // Desenha a foto cobrindo o canvas (object-fit cover)
+        const scale = Math.max(outCanvas.width / fotoImg.width, outCanvas.height / fotoImg.height);
+        const w = fotoImg.width * scale;
+        const h = fotoImg.height * scale;
+        const x = (outCanvas.width - w) / 2;
+        const y = (outCanvas.height - h) / 2;
+        outCtx.drawImage(fotoImg, x, y, w, h);
 
-        // Se a página acabou de carregar, ignora estados que não sejam 'start'
-        // e força a limpeza de qualquer estado residual do servidor.
-        if (initialLoad) {
-            initialLoad = false;
-            if (data.state !== 'start') {
-                console.warn(`Estado residual encontrado: ${data.state}. Voltando para start.`);
-                await fetch(`${API_BASE}/set-state`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ state: 'start' })
-                });
-                // Mantém a tela inicial
-                updateScreenState('start');
-                return;
-            }
+        // Carrega e desenha a moldura por cima
+        const molduraImg = await loadImage(molduraUrl);
+        outCtx.drawImage(molduraImg, 0, 0, outCanvas.width, outCanvas.height);
+
+        const blob = await canvasToBlob(outCanvas, 'image/jpeg', 0.95);
+        await fazerUpload(blob, quantidadeCopias);
+    } catch (e) {
+        console.error('Erro na composição:', e);
+        // Fallback: envia sem moldura
+        await uploadSemMoldura(quantidadeCopias);
+    }
+}
+
+function loadImage(src) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+    });
+}
+
+function loadImageFromCanvas(canvas) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = canvas.toDataURL('image/jpeg', 0.92);
+    });
+}
+
+function canvasToBlob(canvas, type, quality) {
+    return new Promise(resolve => {
+        canvas.toBlob(resolve, type, quality);
+    });
+}
+
+async function uploadSemMoldura(quantidadeCopias) {
+    const blob = await canvasToBlob(canvasCapture, 'image/jpeg', 0.92);
+    await fazerUpload(blob, quantidadeCopias);
+}
+
+async function fazerUpload(blob, quantidadeCopias) {
+    if (!eventoAtual) {
+        console.warn('Nenhum evento ativo para upload.');
+        return;
+    }
+
+    let nomeArquivo = 'foto.jpg';
+    let copiasFisicas = 1;
+
+    // Mapeamento igual ao Mobile
+    if (quantidadeCopias === 1) {
+        nomeArquivo = 'foto.jpg';
+        copiasFisicas = 1;
+    } else if (quantidadeCopias === 2) {
+        nomeArquivo = 'foto_2c.jpg';
+        copiasFisicas = 2;
+    } else if (quantidadeCopias === 3) {
+        nomeArquivo = 'foto_2c_guestbook.jpg';
+        copiasFisicas = 2;
+    } else if (quantidadeCopias === 4) {
+        nomeArquivo = 'foto_3c_guestbook.jpg';
+        copiasFisicas = 3;
+    }
+
+    const form = new FormData();
+    form.append('file', blob, nomeArquivo);
+    form.append('evento', eventoAtual);
+    form.append('copias', copiasFisicas);
+    form.append('tipo', 'photo');
+
+    try {
+        const uploadRes = await fetch(`${API_BASE}/upload`, { method: 'POST', body: form });
+        if (uploadRes.ok) {
+            console.log(`Upload concluído: ${nomeArquivo} (${copiasFisicas} cópia(s))`);
+        } else {
+            console.error('Falha no upload.');
         }
+    } catch (e) {
+        console.error('Erro no upload:', e);
+    }
+}
 
-        console.log(`Estado recebido: ${lastState} -> ${data.state}`);
-        updateScreenState(data.state);
-    } catch(e) {}
+// =================================================
+// AGUARDAR DECISÃO DA BOTOEIRA E FINALIZAR
+// =================================================
+async function aguardarPrintEEnviar() {
+    // Mostra overlay de aguardando
+    optionsOverlay.style.display = 'block';
+    optionsOverlay.querySelector('.options-text').innerText = 'Aguardando totem...';
+
+    let printData = null;
+    const maxTentativas = 60; // ~30 segundos
+    for (let i = 0; i < maxTentativas; i++) {
+        try {
+            const res = await fetch(`${API_BASE}/check-print?t=${Date.now()}`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.printTriggered) {
+                    printData = data;
+                    break;
+                }
+            }
+        } catch(e) {}
+        await new Promise(r => setTimeout(r, 500));
+    }
+
+    if (!printData) {
+        // Timeout: apenas segue sem upload? Ou cancela? Vamos cancelar e voltar ao início.
+        console.warn('Timeout aguardando decisão da botoeira.');
+        await fetch(`${API_BASE}/clear-print`, { method: 'POST' }).catch(()=>{});
+        updateScreenState('start');
+        return;
+    }
+
+    const copias = printData.copias || 1;
+    console.log(`Decisão recebida: ${copias} cópia(s).`);
+
+    // Atualiza overlay para processando
+    optionsOverlay.querySelector('.options-text').innerText = 'Compondo foto...';
+
+    try {
+        await composeAndUpload(copias);
+    } catch(e) {
+        console.error('Falha na composição/upload:', e);
+    }
+
+    // Limpa estados
+    await fetch(`${API_BASE}/clear-print`, { method: 'POST' }).catch(()=>{});
+    await fetch(`${API_BASE}/photo-ready`, { method: 'POST' }).catch(()=>{});
+
+    // Vai para tela de agradecimento
+    mostrarTelaAgradecimento();
+}
+
+function mostrarTelaAgradecimento() {
+    document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
+    document.getElementById('screen-thanks').style.display = 'flex';
+    const msgThanks = document.getElementById('thanks-text');
+    msgThanks.innerHTML = "🖨️ AGUARDE A IMPRESSÃO...";
+
+    setTimeout(() => {
+        msgThanks.innerHTML = "💖 OBRIGADO! 💖<br>APROVEITE SUA FOTO!";
+        setTimeout(() => {
+            document.getElementById('screen-thanks').style.display = 'none';
+            document.getElementById('screen-start').style.display = 'flex';
+            ctx.clearRect(0, 0, canvasCapture.width, canvasCapture.height);
+            captureInProgress = false;
+            stopCameraStream();
+            lastState = 'start';
+            // Garante que o servidor também volte a start
+            fetch(`${API_BASE}/set-state`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ state: 'start' })
+            }).catch(()=>{});
+        }, 2500);
+    }, 2500);
 }
 
 // =================================================
@@ -432,7 +521,8 @@ function startCaptureSequence() {
                 videoFeed.style.display = 'none';
                 canvasCapture.style.display = 'block';
                 
-                uploadCapturedPhoto();
+                // Não envia ainda, apenas sinaliza que a foto está pronta
+                fetch(`${API_BASE}/photo-ready`, { method: 'POST' }).catch(()=>{});
                 captureInProgress = false;
             }
         }, 1000);
@@ -445,30 +535,14 @@ function startCaptureSequence() {
 function updateScreenState(state) {
     if (state === lastState && state !== 'capturing') return;
     
-    // Transição de options → start (fim do ciclo)
+    // Transição especial: voltando de options para start (fim do ciclo)
     if (state === 'start' && lastState === 'options') {
-        document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
-        document.getElementById('screen-thanks').style.display = 'flex';
-        
-        const msgThanks = document.getElementById('thanks-text');
-        msgThanks.innerHTML = "🖨️ AGUARDE A IMPRESSÃO...";
-        
-        setTimeout(() => {
-            msgThanks.innerHTML = "💖 OBRIGADO! 💖<br>APROVEITE SUA FOTO!";
-            setTimeout(() => {
-                document.getElementById('screen-thanks').style.display = 'none';
-                document.getElementById('screen-start').style.display = 'flex';
-                ctx.clearRect(0, 0, canvasCapture.width, canvasCapture.height);
-                captureInProgress = false;
-                stopCameraStream();
-            }, 2500);
-        }, 2500);
-        
+        // Aqui a botoeira já enviou trigger-print, vamos processar
+        aguardarPrintEEnviar();
         lastState = state;
         return;
     }
 
-    // Se já está em options e chega capturing, ignorar
     if (state === 'capturing' && lastState === 'options') {
         console.log('Ignorando capturing pois já estamos em options.');
         return;
@@ -494,6 +568,7 @@ function updateScreenState(state) {
         canvasCapture.style.display = 'block';
         funText.style.display = 'none';
         optionsOverlay.style.display = 'block';
+        optionsOverlay.querySelector('.options-text').innerText = 'Escolha a impressão no totem';
         stopCameraStream();
     } 
     else {
@@ -503,6 +578,35 @@ function updateScreenState(state) {
     }
     
     lastState = state;
+}
+
+// =================================================
+// POLLING DO ESTADO NO SERVIDOR
+// =================================================
+async function pollServerState() {
+    try {
+        const res = await fetch(`${API_BASE}/get-state?t=${Date.now()}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data.state || data.state === lastState) return;
+
+        if (initialLoad) {
+            initialLoad = false;
+            if (data.state !== 'start') {
+                console.warn(`Estado residual encontrado: ${data.state}. Voltando para start.`);
+                await fetch(`${API_BASE}/set-state`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ state: 'start' })
+                });
+                updateScreenState('start');
+                return;
+            }
+        }
+
+        console.log(`Estado recebido: ${lastState} -> ${data.state}`);
+        updateScreenState(data.state);
+    } catch(e) {}
 }
 
 // =================================================
@@ -568,12 +672,11 @@ loadSavedBackground();
 localStorage.setItem('booth_state', 'start');
 updateScreenState('start');
 
-// Primeira execução do polling forçará limpeza de estado residual
 setInterval(pollServerState, 800);
 setInterval(atualizarEventoAtivo, 10000);
 atualizarEventoAtivo();
 
-console.log('WEBCAM PHOTO PRINT v7.5 inicializada – aguardando botoeira.');
+console.log('WEBCAM PHOTO PRINT v8.0 inicializada – aguardando botoeira.');
 </script>
 
 </body>

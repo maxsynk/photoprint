@@ -3,22 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BOTOEIRA - PHOTO PRINT</title>
-
+    <title>BOTOEIRA - PHOTO PRINT v2.0</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
         :root {
             --neon: #39ff14;
-            --dark: #0a0a0a;
+            --dark: #050505;
             --danger: #ff3131;
             --info-blue: #00e5ff;
         }
 
         body {
             margin: 0;
-            background: var(--dark);
+            background: radial-gradient(circle at top, rgba(57,255,20,0.10), transparent 35%),
+                        radial-gradient(circle at bottom right, rgba(57,255,20,0.08), transparent 30%),
+                        linear-gradient(135deg, #020202 0%, #050505 40%, #071107 100%);
             color: white;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -26,355 +28,205 @@
             touch-action: manipulation;
         }
 
+        /* FUNDO SINCRONIZADO */
+        #dynamic-bg{
+            position:fixed; inset:0; z-index:0;
+            background-size:cover; background-position:center; background-repeat:no-repeat;
+            opacity:0; transition:opacity 0.6s ease;
+        }
+        #dynamic-bg.active{ opacity:0.45; }
+        #dynamic-bg::after{
+            content:''; position:absolute; inset:0;
+            background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.75));
+        }
+
+        body::before{
+            content:''; position:fixed; inset:0;
+            background-image: linear-gradient(rgba(57,255,20,0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(57,255,20,0.03) 1px, transparent 1px);
+            background-size:40px 40px; z-index:0;
+            animation:gridMove 12s linear infinite;
+        }
+        body.bg-active::before{ display:none; }
+
+        @keyframes gridMove{ from{ transform:translateY(0px); } to{ transform:translateY(40px); } }
+
+        /* LOGO BOTOEIRA */
+        .top-logo{ position:fixed; top:20px; left:20px; z-index:25; }
+        .logo-title{ font-family:'Orbitron',sans-serif; color:var(--neon); font-size:24px; font-weight:900; letter-spacing:4px; text-shadow: 0 0 10px var(--neon); }
+        .logo-sub{ margin-top:2px; color:white; opacity:0.7; letter-spacing:3px; font-size:10px; text-transform:uppercase; }
+
         .screen {
-            position: fixed;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 20;
-            background: var(--dark);
+            position: fixed; inset: 0; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 20;
         }
 
-        /* BOTÃO INICIAL */
-
-        .btn-start {
-
-            width: 280px;
-            height: 280px;
-            border-radius: 50%;
-            background: rgba(0,0,0,0.75);
-            border: 10px solid var(--neon);
-
-            color: white;
-            cursor: pointer;
-
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-
-            text-align: center;
-
-            animation: pulseBtn 2s infinite ease-in-out;
-
+        /* BOTAO INICIAL NOVO ESTILO (Igual Webcam) */
+        .btn-start{
+            position:relative; width:280px; height:280px; border-radius:50%;
+            border:4px solid var(--neon);
+            background: radial-gradient(circle at center, rgba(57,255,20,0.18), rgba(0,0,0,0.96));
+            cursor:pointer; overflow:hidden; transition:0.3s;
+            display:flex; flex-direction:column; align-items:center; justify-content:center;
+            box-shadow: 0 0 30px rgba(57,255,20,0.8), inset 0 0 60px rgba(57,255,20,0.15);
+            backdrop-filter:blur(4px); z-index:30;
         }
-
-        .btn-start b {
-            font-size: 26px;
-            color: var(--neon);
+        .btn-start::before{
+            content:''; position:absolute; width:250%; height:250%;
+            background:conic-gradient( transparent, rgba(57,255,20,1), rgba(57,255,20,0.25), transparent );
+            animation:rotateGlow 3s linear infinite; filter:blur(20px); opacity:1;
         }
-
-        .btn-start:active {
-            transform: scale(0.95);
-            background: var(--neon);
-            color: #000;
+        .btn-start::after{
+            content:''; position:absolute; inset:8px; border-radius:50%;
+            background:rgba(0,0,0,0.92); box-shadow: inset 0 0 60px rgba(57,255,20,0.15);
         }
+        .btn-start:active { transform: scale(0.95); }
+        .start-content{ position:relative; z-index:5; text-align:center; width:100%; }
+        .start-icon{ font-size:48px; margin-bottom:10px; filter:drop-shadow(0 0 15px var(--neon)); }
+        .start-title{ color:var(--neon); font-family:'Orbitron',sans-serif; font-size:24px; font-weight:900; letter-spacing:2px; text-shadow: 0 0 15px var(--neon); }
 
-        /* TEXTO */
+        @keyframes rotateGlow{ 100%{ transform:rotate(360deg); } }
 
-        .triggered-text {
-            font-size: 30px;
-            color: var(--neon);
-            font-weight: 900;
-            text-align: center;
-        }
+        /* TEXTO CAPTURANDO */
+        .triggered-text { font-family:'Orbitron',sans-serif; font-size: 26px; color: var(--neon); font-weight: 900; text-align: center; text-shadow: 0 0 15px var(--neon); animation:pulse 1s infinite; background: rgba(0,0,0,0.7); padding: 20px; border-radius: 15px; border: 1px solid var(--neon); backdrop-filter: blur(5px);}
+        @keyframes pulse { 0%,100%{ opacity: 1;} 50%{ opacity: 0.5;} }
 
-        /* IMPRESSÃO */
+        /* IMPRESSÃO LAYOUT */
+        .options-container { background: rgba(0,0,0,0.8); padding: 30px; border-radius: 20px; border: 1px solid var(--neon); box-shadow: 0 0 30px rgba(0,0,0,0.8); display:flex; flex-direction: column; align-items: center; backdrop-filter: blur(10px); }
+        .copies-label { font-family:'Orbitron',sans-serif; font-size: 16px; color: var(--neon); font-weight: bold; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon); }
+        .print-grid { display: grid; grid-template-columns: 1fr; gap: 15px; width: 100%; min-width: 280px; margin-bottom: 30px; }
+        
+        .btn-print-mobile { padding: 15px; border-radius: 12px; cursor: pointer; background: rgba(0,0,0,0.5); color: white; font-weight: bold; font-size: 16px; transition: 0.3s; backdrop-filter: blur(5px); }
+        .btn-neon-style { border: 2px solid var(--neon); }
+        .btn-neon-style.selected { background: var(--neon); color: black; box-shadow: 0 0 20px var(--neon); }
+        .btn-blue-style { border: 2px solid var(--info-blue); }
+        .btn-blue-style.selected { background: var(--info-blue); color: black; box-shadow: 0 0 20px var(--info-blue); }
 
-        .copies-label {
-
-            font-size: 16px;
-            color: var(--neon);
-            font-weight: bold;
-
-            margin-bottom: 20px;
-
-            text-transform: uppercase;
-
-        }
-
-        .print-grid {
-
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-
-            width: 85%;
-            max-width: 320px;
-
-            margin-bottom: 30px;
-
-        }
-
-        .btn-print-mobile {
-
-            padding: 15px;
-
-            border-radius: 12px;
-
-            cursor: pointer;
-
-            background: transparent;
-
-            color: white;
-
-            font-weight: bold;
-
-            font-size: 16px;
-
-        }
-
-        .btn-neon-style {
-            border: 2px solid var(--neon);
-        }
-
-        .btn-neon-style.selected {
-
-            background: var(--neon);
-            color: black;
-            box-shadow: 0 0 15px var(--neon);
-
-        }
-
-        .btn-blue-style {
-            border: 2px solid var(--info-blue);
-        }
-
-        .btn-blue-style.selected {
-
-            background: var(--info-blue);
-            color: black;
-            box-shadow: 0 0 15px var(--info-blue);
-
-        }
-
-        /* BOTÃO ENVIAR */
-
-        .btn-send {
-
-            padding: 20px 40px;
-
-            border-radius: 50px;
-
-            border: none;
-
-            background: var(--neon);
-
-            color: #000;
-
-            font-size: 20px;
-            font-weight: 900;
-
-            cursor: pointer;
-
-            display: flex;
-            align-items: center;
-            gap: 10px;
-
-            text-transform: uppercase;
-
-            animation: bounce 1.5s infinite;
-
-        }
-
-        @keyframes bounce {
-
-            0%, 100% {
-                transform: translateY(0);
-            }
-
-            50% {
-                transform: translateY(-10px);
-            }
-
-        }
-
-        @keyframes pulseBtn {
-
-            0% {
-                box-shadow: 0 0 30px rgba(57,255,20,0.4);
-            }
-
-            50% {
-                box-shadow: 0 0 60px rgba(57,255,20,0.8);
-            }
-
-            100% {
-                box-shadow: 0 0 30px rgba(57,255,20,0.4);
-            }
-
-        }
-
+        .btn-send { font-family:'Orbitron',sans-serif; padding: 18px 40px; border-radius: 50px; border: none; background: var(--neon); color: #000; font-size: 20px; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 10px; text-transform: uppercase; animation: bounce 1.5s infinite; box-shadow: 0 0 20px var(--neon); }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
     </style>
 </head>
 <body>
 
+    <!-- Fundo sincronizado -->
+    <div id="dynamic-bg"></div>
+
+    <div class="top-logo">
+        <div class="logo-title">BOTOEIRA</div>
+        <div class="logo-sub">Controle da Câmera</div>
+    </div>
+
     <!-- INÍCIO -->
-
     <div id="screen-start" class="screen">
-
         <div class="btn-start" onclick="triggerPhoto()">
-
-            <b>TIRAR FOTO</b>
-
+            <div class="start-content">
+                <div class="start-icon">📸</div>
+                <div class="start-title">TIRAR FOTO</div>
+            </div>
         </div>
-
     </div>
 
     <!-- AGUARDANDO -->
-
     <div id="screen-triggered" class="screen" style="display:none">
-
-        <div class="triggered-text">
-
-            CAPTURANDO... 📸
-
-        </div>
-
+        <div class="triggered-text">CAPTURANDO... 📸</div>
     </div>
 
     <!-- IMPRESSÃO -->
-
     <div id="screen-options" class="screen" style="display:none">
-
-        <div class="copies-label">
-
-            COMO DESEJA IMPRIMIR?
-
+        <div class="options-container">
+            <div class="copies-label">COMO DESEJA IMPRIMIR?</div>
+            <div class="print-grid">
+                <button class="btn-print-mobile btn-neon-style selected" onclick="selectOption(this,1)">🖨️ 1 Cópia</button>
+                <button class="btn-print-mobile btn-neon-style" onclick="selectOption(this,2)">🖨️ 2 Cópias</button>
+                <button class="btn-print-mobile btn-blue-style" onclick="selectOption(this,3)">📖 1 Cópia + Guestbook</button>
+                <button class="btn-print-mobile btn-blue-style" onclick="selectOption(this,4)">📖 2 Cópias + Guestbook</button>
+            </div>
+            <button class="btn-send" onclick="sendPrint()">ENVIAR ✈️</button>
         </div>
-
-        <div class="print-grid">
-
-            <button class="btn-print-mobile btn-neon-style selected"
-                onclick="selectOption(this,1)">
-                🖨️ 1 Cópia
-            </button>
-
-            <button class="btn-print-mobile btn-neon-style"
-                onclick="selectOption(this,2)">
-                🖨️ 2 Cópias
-            </button>
-
-            <button class="btn-print-mobile btn-blue-style"
-                onclick="selectOption(this,3)">
-                📖 1 Cópia + Guestbook
-            </button>
-
-            <button class="btn-print-mobile btn-blue-style"
-                onclick="selectOption(this,4)">
-                📖 2 Cópias + Guestbook
-            </button>
-
-        </div>
-
-        <button class="btn-send" onclick="sendPrint()">
-
-            ENVIAR ✈️
-
-        </button>
-
     </div>
 
     <script>
-
         const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
-
         let selectedCopiesValue = 1;
+        const dynamicBg = document.getElementById('dynamic-bg');
 
+        /* Sincronizar Background com a Webcam */
+        function loadSavedBackground(){
+            const savedBg = localStorage.getItem('photoprint_bg');
+            if(savedBg){
+                dynamicBg.style.backgroundImage = `url('${savedBg}')`;
+                dynamicBg.classList.add('active');
+                document.body.classList.add('bg-active');
+            } else {
+                dynamicBg.style.backgroundImage = "";
+                dynamicBg.classList.remove('active');
+                document.body.classList.remove('bg-active');
+            }
+        }
+        
+        // Escuta se o fundo foi trocado na tela da Webcam
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'photoprint_bg') loadSavedBackground();
+        });
+        loadSavedBackground();
+
+        /* Lógica da Câmera */
         async function triggerPhoto() {
-
             document.getElementById('screen-start').style.display = "none";
-
             document.getElementById('screen-triggered').style.display = "flex";
+            
+            // Avisa a Webcam para mudar a tela para "Capturando"
+            localStorage.setItem('booth_state', 'capturing');
 
             try {
-
-                await fetch(`${API}/trigger`, {
-                    method: 'POST'
-                });
-
+                await fetch(`${API}/trigger`, { method: 'POST' });
                 waitPhotoFinish();
-
             } catch(e) {
-
                 alert("Erro ao disparar câmera");
-
+                localStorage.setItem('booth_state', 'start');
                 location.reload();
-
             }
-
         }
 
         async function waitPhotoFinish() {
-
             const interval = setInterval(async () => {
-
                 try {
-
                     const res = await fetch(`${API}/check-photo-ready?t=${Date.now()}`);
-
                     const data = await res.json();
-
                     if (data.ready) {
-
                         clearInterval(interval);
-
                         document.getElementById('screen-triggered').style.display = "none";
-
                         document.getElementById('screen-options').style.display = "flex";
-
+                        
+                        // Avisa a Webcam que agora é a hora de escolher a impressão
+                        localStorage.setItem('booth_state', 'options');
                     }
-
                 } catch(e) {}
-
             }, 1000);
-
         }
 
         function selectOption(btn, val) {
-
-            document.querySelectorAll('.btn-print-mobile')
-                .forEach(b => b.classList.remove('selected'));
-
+            document.querySelectorAll('.btn-print-mobile').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
-
             selectedCopiesValue = val;
-
         }
 
         async function sendPrint() {
-
             try {
-
                 await fetch(`${API}/trigger-print`, {
-
                     method: 'POST',
-
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-
-                    body: JSON.stringify({
-                        copias: selectedCopiesValue
-                    })
-
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ copias: selectedCopiesValue })
                 });
-
                 alert("Impressão enviada!");
-
+                
+                // Reinicia as duas telas
+                localStorage.setItem('booth_state', 'start');
                 location.reload();
-
             } catch(e) {
-
                 alert("Erro ao enviar impressão");
-
             }
-
         }
-
     </script>
-
 </body>
 </html>

@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>WEBCAM - PHOTO PRINT v7.1</title>
+<title>WEBCAM - PHOTO PRINT v7.2</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
@@ -67,6 +67,25 @@ body.bg-active .bg-brand{ display:none; }
 .top-logo{ position:fixed; top:40px; left:50px; z-index:25; }
 .logo-title{ font-family:'Orbitron',sans-serif; color:var(--neon); font-size:46px; font-weight:900; letter-spacing:8px; text-shadow: 0 0 15px var(--neon), 0 0 35px rgba(57,255,20,0.8); cursor:pointer; user-select:none; }
 .logo-sub{ margin-top:4px; color:white; opacity:0.7; letter-spacing:5px; font-size:13px; text-transform:uppercase; }
+
+/* Novo: nome do evento ativo */
+#active-event-name {
+    position: fixed;
+    top: 130px;
+    left: 50px;
+    z-index: 26;
+    font-family: 'Orbitron', sans-serif;
+    color: var(--neon);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px var(--neon);
+    background: rgba(0,0,0,0.7);
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--neon);
+    display: none;
+}
 
 .corner-glow{ position:fixed; width:420px; height:420px; border-radius:50%; background:rgba(57,255,20,0.08); filter:blur(90px); z-index:0; }
 body.bg-active .corner-glow{ display:none; }
@@ -142,65 +161,26 @@ body.bg-active .corner-glow{ display:none; }
     100% { filter: hue-rotate(360deg); }
 }
 
-/* OVERLAY DE ESCOLHA NO TOTEM (NOVO DESIGN CLEAN E INTUITIVO) */
+/* OVERLAY DE ESCOLHA NO TOTEM (DESIGN AGRADÁVEL E CLEAN) */
 #options-overlay {
     position: absolute;
-    bottom: 60px;
+    bottom: 50px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(15, 15, 15, 0.85);
-    padding: 25px 60px;
-    border-radius: 20px;
-    border: 1px solid rgba(57,255,20,0.3);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7), inset 0 0 20px rgba(57,255,20,0.05);
-    backdrop-filter: blur(15px);
+    background: rgba(255, 255, 255, 0.95);
+    padding: 20px 45px;
+    border-radius: 50px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     z-index: 60;
     text-align: center;
-    animation: slideUpFade 0.6s ease-out forwards;
 }
-
-@keyframes slideUpFade {
-    0% { opacity: 0; transform: translate(-50%, 40px); }
-    100% { opacity: 1; transform: translate(-50%, 0); }
-}
-
 .options-text {
     font-family: 'Arial', sans-serif;
-    font-size: 26px;
-    color: #ffffff;
-    font-weight: 400;
-    letter-spacing: 1.5px;
-    line-height: 1.4;
+    font-size: 28px;
+    color: #222;
+    font-weight: bold;
+    letter-spacing: 1px;
 }
-
-.options-text strong {
-    color: var(--neon);
-    font-size: 32px;
-    font-weight: 900;
-    display: block;
-    margin-top: 8px;
-    text-shadow: 0 0 15px rgba(57,255,20,0.4);
-}
-
-/* NOVO: ETIQUETA DO EVENTO ATIVO NA TELA */
-.event-badge {
-    position: fixed;
-    bottom: 40px;
-    right: 40px;
-    background: rgba(0, 0, 0, 0.6);
-    border: 1px solid var(--neon);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 12px;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 15px;
-    z-index: 100;
-    backdrop-filter: blur(8px);
-    box-shadow: 0 0 20px rgba(57,255,20,0.15);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
-.event-badge span { color: var(--neon); font-weight: 900; }
 
 /* TEXTOS DE STATUS (NEON PADRÃO PARA IMPRESSÃO/OBRIGADO) */
 .status-text { 
@@ -238,16 +218,14 @@ body.bg-active .corner-glow{ display:none; }
     <div class="logo-sub">Colecionando momentos</div>
 </div>
 
+<!-- Nome do evento ativo (aparece quando sincronizado) -->
+<div id="active-event-name"></div>
+
 <div id="bg-menu">
     <label class="bg-btn" for="bg-input">🖼 ALTERAR FUNDO</label>
     <div class="bg-btn" onclick="removeBackground()">✖ SEM FUNDO</div>
 </div>
 <input type="file" id="bg-input" accept="image/*"/>
-
-<!-- NOVO: ETIQUETA DO EVENTO ATIVO -->
-<div class="event-badge" id="event-badge-container">
-    EVENTO: <span id="event-name-display">Aguardando...</span>
-</div>
 
 <!-- TELA 1: INICIAL -->
 <div id="screen-start" class="screen">
@@ -269,9 +247,9 @@ body.bg-active .corner-glow{ display:none; }
         <!-- Letras animadas e emojis -->
         <div id="fun-text" class="fun-text" style="display:none;"></div>
         
-        <!-- Orientação pós-foto clean -->
+        <!-- Orientação pós‑foto (só aparece depois da foto) -->
         <div id="options-overlay" style="display:none;">
-            <div class="options-text">Sua foto está pronta! 📸<br><strong>Prossiga no painel para imprimir</strong></div>
+            <div class="options-text">Vá até o totem para imprimir sua foto!</div>
         </div>
     </div>
 </div>
@@ -296,8 +274,46 @@ const optionsOverlay = document.getElementById('options-overlay');
 let stream = null;
 let lastState = 'start';
 
-// URL da sua API (Se usar Cloudflare). Se deixar vazio, ele usa apenas LocalStorage.
-const API_URL = localStorage.getItem('api_url') || ""; 
+// ---- NOVO: API e sincronização do evento ativo ----
+const API_BASE = 'https://photoprint-api.maxprimefotovideo.workers.dev';
+
+// Exibe o nome do evento ativo na tela
+async function atualizarEventoAtivo() {
+    try {
+        const res = await fetch(`${API_BASE}/status?t=${Date.now()}`);
+        const data = await res.json();
+        if (data.evento) {
+            const el = document.getElementById('active-event-name');
+            el.style.display = 'block';
+            el.innerText = `📸 ${data.evento}`;
+            return data.evento;
+        }
+    } catch(e) {}
+    document.getElementById('active-event-name').style.display = 'none';
+    return null;
+}
+
+// Envia a foto capturada para o servidor (galeria)
+async function uploadCapturedPhoto() {
+    const evento = await atualizarEventoAtivo(); // também atualiza o nome na tela
+    if (!evento) {
+        console.warn('Nenhum evento ativo, foto não enviada.');
+        return;
+    }
+    canvasCapture.toBlob(async (blob) => {
+        const form = new FormData();
+        form.append('file', blob, 'capture.jpg');
+        form.append('evento', evento);
+        form.append('tipo', 'photo');
+        try {
+            await fetch(`${API_BASE}/upload`, { method: 'POST', body: form });
+            console.log('Foto enviada com sucesso para o evento:', evento);
+        } catch (erro) {
+            console.error('Falha no upload:', erro);
+        }
+    }, 'image/jpeg', 0.92);
+}
+// ---- FIM NOVAS FUNÇÕES ----
 
 /* INICIA CÂMERA (PREVIEW) */
 async function initWebcam() {
@@ -358,39 +374,20 @@ function loadSavedBackground(){
 }
 
 /* =========================================
-   ATUALIZAR NOME DO EVENTO ATIVO (CORRIGIDO PARA LER JSON)
-========================================= */
-function updateActiveEventDisplay() {
-    // Puxa as variáveis possíveis
-    let eventoRaw = localStorage.getItem('eventoAtivo') || localStorage.getItem('evento_ativo') || localStorage.getItem('evento_selecionado');
-    let eventoNome = 'Nenhum Evento';
-
-    if (eventoRaw) {
-        try {
-            // Se o painel estiver salvando como JSON (ex: {"nome":"polaroid junino"})
-            let obj = JSON.parse(eventoRaw);
-            eventoNome = obj.nome || obj.name || obj.id || eventoRaw;
-        } catch(err) {
-            // Se for apenas um texto normal (ex: "polaroid junino")
-            eventoNome = eventoRaw;
-        }
-    }
-    
-    document.getElementById('event-name-display').innerText = eventoNome;
-}
-
-/* =========================================
-   LÓGICA DE CAPTURA, ANIMAÇÃO E SALVAMENTO
+   LÓGICA DE CAPTURA E ANIMAÇÃO
 ========================================= */
 function startCaptureSequence() {
+    // Reseta visual da câmera
     videoFeed.style.display = 'block';
     canvasCapture.style.display = 'none';
     optionsOverlay.style.display = 'none';
     
+    // Inicia "PREPARE-SE" (Dura 4 Segundos)
     funText.style.display = 'block';
     funText.innerHTML = "✨ PREPARE-SE! ✨<br>😜🕺💃";
     
     setTimeout(() => {
+        // Inicia "SORRIA" + Contagem (Dura 3 Segundos)
         let countdown = 3;
         funText.innerHTML = `😁 SORRIA! 😁<br>⏳ ${countdown}`;
         
@@ -400,39 +397,24 @@ function startCaptureSequence() {
                 funText.innerHTML = `😁 SORRIA! 😁<br>⏳ ${countdown}`;
             } else if (countdown === 0) {
                 
+                // 1. Limpa a tela antes de capturar para ficar perfeitamente nítido
                 funText.style.display = 'none';
                 clearInterval(timerInterval);
                 
+                // 2. Tira a foto virtual (Congela a tela)
                 canvasCapture.width = videoFeed.videoWidth;
                 canvasCapture.height = videoFeed.videoHeight;
+                
+                // Desenha a imagem exatamente como sai da câmera (sem inverter o data via ctx.scale). 
+                // O CSS já manterá a foto "do mesmo lado" visual que a prévia.
                 ctx.drawImage(videoFeed, 0, 0, canvasCapture.width, canvasCapture.height);
                 
+                // 3. Troca o vídeo pela foto congelada
                 videoFeed.style.display = 'none';
                 canvasCapture.style.display = 'block';
                 
-                try {
-                    // Utiliza o mesmo sistema seguro para pegar o nome do evento atual e salvar a foto na pasta correta
-                    let eventoAtivo = document.getElementById('event-name-display').innerText;
-                    if(eventoAtivo === 'Nenhum Evento') eventoAtivo = 'Evento_Geral';
-                    
-                    const imageData = canvasCapture.toDataURL('image/png');
-                    const chaveGaleria = `galeria_${eventoAtivo.trim().replace(/\s+/g, '_')}`;
-                    
-                    let galeria = JSON.parse(localStorage.getItem(chaveGaleria)) || [];
-                    galeria.push({
-                        id: Date.now(),
-                        imagem: imageData,
-                        dataHora: new Date().toLocaleString('pt-BR')
-                    });
-                    
-                    localStorage.setItem(chaveGaleria, JSON.stringify(galeria));
-                    window.dispatchEvent(new Event('novaFotoTirada'));
-                    
-                } catch(err) {
-                    console.error("Erro ao tentar salvar a foto na galeria:", err);
-                }
-
-                optionsOverlay.style.display = 'block';
+                // --- NOVO: upload da foto logo após captura ---
+                uploadCapturedPhoto();
             }
         }, 1000);
         
@@ -440,9 +422,11 @@ function startCaptureSequence() {
 }
 
 /* =========================================
-   SINCRONIZAÇÃO DE TELA (LOCAL E API)
+   SINCRONIZAÇÃO COM A BOTOEIRA
 ========================================= */
 function updateScreenState(state) {
+    
+    // INTERCEPTADOR DE FINALIZAÇÃO (Agradecimento antes de voltar pro início)
     if (state === 'start' && lastState === 'options') {
         document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
         document.getElementById('screen-thanks').style.display = 'flex';
@@ -450,11 +434,13 @@ function updateScreenState(state) {
         const msgThanks = document.getElementById('thanks-text');
         msgThanks.innerHTML = "🖨️ AGUARDE A IMPRESSÃO...";
         
+        // Exibe tela de impressão/obrigado por 5 segundos antes de resetar para valer
         setTimeout(() => {
             msgThanks.innerHTML = "💖 OBRIGADO! 💖<br>APROVEITE SUA FOTO!";
             setTimeout(() => {
                 document.getElementById('screen-thanks').style.display = 'none';
                 document.getElementById('screen-start').style.display = 'flex';
+                // Limpa o canvas para a próxima
                 ctx.clearRect(0, 0, canvasCapture.width, canvasCapture.height);
             }, 2500);
         }, 2500);
@@ -463,6 +449,7 @@ function updateScreenState(state) {
         return;
     }
 
+    // FLUXO NORMAL
     document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
 
     if (state === 'capturing') {
@@ -471,6 +458,8 @@ function updateScreenState(state) {
     } 
     else if (state === 'options') {
         document.getElementById('screen-camera').style.display = 'flex';
+        // Exibe a orientação no rodapé da foto que já está congelada
+        optionsOverlay.style.display = 'block';
     } 
     else {
         document.getElementById('screen-start').style.display = 'flex';
@@ -479,64 +468,23 @@ function updateScreenState(state) {
     lastState = state;
 }
 
-// 1. Escuta mudanças via LocalStorage (Para telas no mesmo Computador/Navegador)
+// Escuta mudanças feitas pela Botoeira no LocalStorage
 window.addEventListener('storage', (e) => {
     if (e.key === 'booth_state') {
         updateScreenState(e.newValue);
     }
-    if (e.key === 'eventoAtivo' || e.key === 'evento_ativo' || e.key === 'evento_selecionado') {
-        updateActiveEventDisplay();
-    }
 });
-
-// 2. Escuta mudanças via API / Servidor (TRAVA DE CACHE ADICIONADA AQUI)
-async function syncWithServer() {
-    if (!API_URL) return; // Se não tiver URL, ignora e usa só LocalStorage
-
-    try {
-        // cache: 'no-store' proíbe o navegador de usar dados velhos e força buscar em tempo real
-        const response = await fetch(`${API_URL}/status`, {
-            method: 'GET',
-            cache: 'no-store',
-            headers: {
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache',
-                'Expires': '0'
-            }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            
-            // Sincroniza Evento
-            if (data.evento_ativo) {
-                let currentLocal = localStorage.getItem('evento_ativo');
-                if(currentLocal !== data.evento_ativo) {
-                    localStorage.setItem('evento_ativo', data.evento_ativo);
-                    updateActiveEventDisplay();
-                }
-            }
-            
-            // Sincroniza Estado da Câmera
-            if (data.booth_state && data.booth_state !== lastState) {
-                localStorage.setItem('booth_state', data.booth_state);
-                updateScreenState(data.booth_state);
-            }
-        }
-    } catch (error) {
-        // Silencioso para não flodar o console se a internet falhar por 1 segundo
-    }
-}
-
-// Roda a checagem com o servidor a cada 1.5 segundos se existir API
-setInterval(syncWithServer, 1500);
 
 // INIT
 initWebcam();
-updateActiveEventDisplay();
 localStorage.setItem('booth_state', 'start');
 updateScreenState('start');
 loadSavedBackground();
+// Já busca o evento ativo ao carregar
+atualizarEventoAtivo();
+
+// Atualiza o nome do evento periodicamente (caso mude no painel)
+setInterval(atualizarEventoAtivo, 15000);
 
 </script>
 

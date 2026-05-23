@@ -1,13 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-
 <meta charset="UTF-8">
-
-<title>WEBCAM - PHOTO PRINT v6.8</title>
-
+<title>WEBCAM - PHOTO PRINT v7.0</title>
 <style>
-
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
 :root{
@@ -16,628 +12,408 @@
     --danger:#ff3131;
 }
 
-*{
-    box-sizing:border-box;
-}
+*{ box-sizing:border-box; }
 
 body{
     margin:0;
-
-    background:
-    radial-gradient(circle at top,
-    rgba(57,255,20,0.10),
-    transparent 35%),
-
-    radial-gradient(circle at bottom right,
-    rgba(57,255,20,0.08),
-    transparent 30%),
-
-    linear-gradient(
-        135deg,
-        #020202 0%,
-        #050505 40%,
-        #071107 100%
-    );
-
+    background: radial-gradient(circle at top, rgba(57,255,20,0.10), transparent 35%),
+                radial-gradient(circle at bottom right, rgba(57,255,20,0.08), transparent 30%),
+                linear-gradient(135deg, #020202 0%, #050505 40%, #071107 100%);
     color:white;
     font-family:Arial,Helvetica,sans-serif;
-    width:100vw;
-    height:100vh;
-    overflow:hidden;
-    position:relative;
+    width:100vw; height:100vh;
+    overflow:hidden; position:relative;
 }
-
-/* FOTO DE FUNDO DINÂMICA */
 
 #dynamic-bg{
-    position:fixed;
-    inset:0;
-    z-index:0;
-
-    background-size:cover;
-    background-position:center;
-    background-repeat:no-repeat;
-
-    opacity:0;
-    transition:opacity 0.6s ease;
+    position:fixed; inset:0; z-index:0;
+    background-size:cover; background-position:center; background-repeat:no-repeat;
+    opacity:0; transition:opacity 0.6s ease;
 }
 
-#dynamic-bg.active{
-    opacity:0.45;
-}
+#dynamic-bg.active{ opacity:0.45; }
 
 #dynamic-bg::after{
-    content:'';
-    position:absolute;
-    inset:0;
-
-    background:
-    linear-gradient(
-        rgba(0,0,0,0.45),
-        rgba(0,0,0,0.65)
-    );
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.65));
 }
 
-/* FUNDO TECNOLÓGICO */
-
 body::before{
-    content:'';
-    position:fixed;
-    inset:0;
-
-    background-image:
-    linear-gradient(rgba(57,255,20,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(57,255,20,0.03) 1px, transparent 1px);
-
-    background-size:40px 40px;
-
-    z-index:0;
-
+    content:''; position:fixed; inset:0;
+    background-image: linear-gradient(rgba(57,255,20,0.03) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(57,255,20,0.03) 1px, transparent 1px);
+    background-size:40px 40px; z-index:0;
     animation:gridMove 12s linear infinite;
 }
 
-body.bg-active::before{
-    display:none;
-}
+body.bg-active::before{ display:none; }
 
 @keyframes gridMove{
-    from{
-        transform:translateY(0px);
-    }
-    to{
-        transform:translateY(40px);
-    }
+    from{ transform:translateY(0px); }
+    to{ transform:translateY(40px); }
 }
 
 .bg-brand{
-    position:fixed;
-    inset:0;
-    z-index:1;
-    pointer-events:none;
-
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-
+    position:fixed; inset:0; z-index:1; pointer-events:none;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
     opacity:0.07;
 }
 
-body.bg-active .bg-brand{
-    display:none;
+body.bg-active .bg-brand{ display:none; }
+
+.bg-brand-title{ font-family:'Orbitron',sans-serif; font-size:140px; font-weight:900; color:var(--neon); letter-spacing:14px; text-transform:uppercase; }
+.bg-brand-sub{ margin-top:20px; font-size:42px; letter-spacing:12px; text-transform:uppercase; color:white; }
+
+.top-logo{ position:fixed; top:40px; left:50px; z-index:25; }
+.logo-title{ font-family:'Orbitron',sans-serif; color:var(--neon); font-size:46px; font-weight:900; letter-spacing:8px; text-shadow: 0 0 15px var(--neon), 0 0 35px rgba(57,255,20,0.8); cursor:pointer; user-select:none; }
+.logo-sub{ margin-top:4px; color:white; opacity:0.7; letter-spacing:5px; font-size:13px; text-transform:uppercase; }
+
+.corner-glow{ position:fixed; width:420px; height:420px; border-radius:50%; background:rgba(57,255,20,0.08); filter:blur(90px); z-index:0; }
+body.bg-active .corner-glow{ display:none; }
+.corner-1{ top:-150px; left:-100px; }
+.corner-2{ bottom:-180px; right:-100px; }
+
+#bg-menu{ position:fixed; top:40px; right:40px; z-index:100; display:none; flex-direction:column; gap:12px; }
+#bg-menu.active{ display:flex; }
+.bg-btn{ padding:12px 20px; border-radius:14px; border:1px solid rgba(57,255,20,0.45); background:rgba(0,0,0,0.55); color:white; font-size:14px; font-weight:bold; letter-spacing:1px; cursor:pointer; backdrop-filter:blur(10px); transition:0.25s; box-shadow: 0 0 20px rgba(57,255,20,0.12); text-align:center; }
+.bg-btn:hover{ transform:translateY(-2px); border-color:var(--neon); color:var(--neon); box-shadow: 0 0 25px rgba(57,255,20,0.35); }
+#bg-input{ display:none; }
+
+/* TELAS (SCREENS) */
+.screen { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:20; flex-direction:column; }
+
+/* BOTAO START */
+.btn-start{ position:relative; width:380px; height:380px; border-radius:50%; border:4px solid var(--neon); background: radial-gradient(circle at center, rgba(57,255,20,0.18), rgba(0,0,0,0.96)); overflow:hidden; transition:0.3s; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:35px; box-shadow: 0 0 30px rgba(57,255,20,0.8), inset 0 0 60px rgba(57,255,20,0.15); backdrop-filter:blur(4px); z-index:30; }
+.btn-start::before{ content:''; position:absolute; width:250%; height:250%; background:conic-gradient( transparent, rgba(57,255,20,1), rgba(57,255,20,0.25), transparent ); animation:rotateGlow 3s linear infinite; filter:blur(20px); opacity:1; }
+.btn-start::after{ content:''; position:absolute; inset:8px; border-radius:50%; background:rgba(0,0,0,0.92); box-shadow: inset 0 0 60px rgba(57,255,20,0.15); }
+@keyframes rotateGlow{ 100%{ transform:rotate(360deg); } }
+
+.start-content{ position:relative; z-index:5; text-align:center; width:100%; }
+.start-icon{ font-size:58px; margin-bottom:18px; filter:drop-shadow(0 0 15px var(--neon)); }
+.start-title{ color:var(--neon); font-family:'Orbitron',sans-serif; font-size:22px; font-weight:900; letter-spacing:4px; text-shadow: 0 0 15px var(--neon), 0 0 35px var(--neon); margin-bottom:18px; text-transform:uppercase; line-height:1.4; min-height:40px; }
+.start-subtitle{ font-size:22px; line-height:1.6; }
+
+/* LAYOUT DA CÂMERA (PREVIEW) - AGORA FULLSCREEN */
+#camera-wrapper {
+    position: absolute;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+    overflow: hidden;
+    z-index: 40;
 }
 
-.bg-brand-title{
-    font-family:'Orbitron',sans-serif;
-    font-size:140px;
-    font-weight:900;
-    color:var(--neon);
-    letter-spacing:14px;
-    text-transform:uppercase;
+#camera-feed, #camera-canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Faz preencher toda a tela */
+    transform: scaleX(-1); /* Efeito espelho visual (o mesmo para vídeo e foto) */
 }
 
-.bg-brand-sub{
-    margin-top:20px;
-    font-size:42px;
-    letter-spacing:12px;
-    text-transform:uppercase;
-    color:white;
+/* TEXTOS ANIMADOS - MOVIDOS PARA BAIXO (75%) */
+.fun-text {
+    position: absolute;
+    top: 75%; /* Abaixado para não tampar o rosto */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif;
+    font-size: 90px;
+    font-weight: 900;
+    text-align: center;
+    color: #fff;
+    white-space: nowrap;
+    text-transform: uppercase;
+    text-shadow: 
+        0px 0px 15px #ff0080,
+        0px 0px 30px #ff8c00,
+        0px 0px 45px #ffff00;
+    animation: funPulse 0.6s infinite alternate, hueShift 3s linear infinite;
+    z-index: 50;
+    pointer-events: none;
 }
 
-.top-logo{
-    position:fixed;
-    top:40px;
-    left:50px;
-    z-index:25;
+@keyframes funPulse {
+    0% { transform: translate(-50%, -50%) scale(0.9); }
+    100% { transform: translate(-50%, -50%) scale(1.15); }
+}
+@keyframes hueShift {
+    0% { filter: hue-rotate(0deg); }
+    100% { filter: hue-rotate(360deg); }
 }
 
-.logo-title{
-    font-family:'Orbitron',sans-serif;
-    color:var(--neon);
-    font-size:46px;
-    font-weight:900;
-    letter-spacing:8px;
-
-    text-shadow:
-    0 0 15px var(--neon),
-    0 0 35px rgba(57,255,20,0.8);
-
-    cursor:pointer;
-    user-select:none;
+/* OVERLAY DE ESCOLHA NO TOTEM (DESIGN AGRADÁVEL E CLEAN) */
+#options-overlay {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.95);
+    padding: 20px 45px;
+    border-radius: 50px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    z-index: 60;
+    text-align: center;
+}
+.options-text {
+    font-family: 'Arial', sans-serif;
+    font-size: 28px;
+    color: #222;
+    font-weight: bold;
+    letter-spacing: 1px;
 }
 
-.logo-sub{
-    margin-top:4px;
-    color:white;
-    opacity:0.7;
-    letter-spacing:5px;
-    font-size:13px;
-    text-transform:uppercase;
+/* TEXTOS DE STATUS (NEON PADRÃO PARA IMPRESSÃO/OBRIGADO) */
+.status-text { 
+    font-family:'Orbitron',sans-serif; 
+    font-size:40px; 
+    color:var(--neon); 
+    font-weight:900; 
+    letter-spacing:4px; 
+    text-shadow: 0 0 20px var(--neon); 
+    text-align:center; 
+    animation:pulseText 1.5s infinite; 
+    background: rgba(0,0,0,0.8); 
+    padding: 40px 80px; 
+    border-radius: 20px; 
+    border: 2px solid var(--neon); 
+    backdrop-filter: blur(10px); 
 }
-
-.corner-glow{
-    position:fixed;
-    width:420px;
-    height:420px;
-    border-radius:50%;
-    background:rgba(57,255,20,0.08);
-    filter:blur(90px);
-    z-index:0;
-}
-
-body.bg-active .corner-glow{
-    display:none;
-}
-
-.corner-1{
-    top:-150px;
-    left:-100px;
-}
-
-.corner-2{
-    bottom:-180px;
-    right:-100px;
-}
-
-/* MENU OCULTO */
-
-#bg-menu{
-    position:fixed;
-    top:40px;
-    right:40px;
-
-    z-index:100;
-
-    display:none;
-    flex-direction:column;
-    gap:12px;
-}
-
-#bg-menu.active{
-    display:flex;
-}
-
-.bg-btn{
-    padding:12px 20px;
-
-    border-radius:14px;
-
-    border:1px solid rgba(57,255,20,0.45);
-
-    background:rgba(0,0,0,0.55);
-
-    color:white;
-
-    font-size:14px;
-    font-weight:bold;
-
-    letter-spacing:1px;
-
-    cursor:pointer;
-
-    backdrop-filter:blur(10px);
-
-    transition:0.25s;
-
-    box-shadow:
-    0 0 20px rgba(57,255,20,0.12);
-
-    text-align:center;
-}
-
-.bg-btn:hover{
-    transform:translateY(-2px);
-
-    border-color:var(--neon);
-
-    color:var(--neon);
-
-    box-shadow:
-    0 0 25px rgba(57,255,20,0.35);
-}
-
-#bg-input{
-    display:none;
-}
-
-/* BOTÃO CENTRAL FIXO */
-
-.center-button-wrapper{
-    position:fixed;
-    inset:0;
-
-    display:flex;
-    align-items:center;
-    justify-content:center;
-
-    z-index:20;
-}
-
-.btn-start{
-    position:relative;
-
-    width:380px;
-    height:380px;
-
-    border-radius:50%;
-
-    border:4px solid var(--neon);
-
-    background:
-    radial-gradient(circle at center,
-    rgba(57,255,20,0.18),
-    rgba(0,0,0,0.96));
-
-    cursor:pointer;
-    overflow:hidden;
-
-    transition:0.3s;
-
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-
-    padding:35px;
-
-    box-shadow:
-    0 0 30px rgba(57,255,20,0.8),
-    inset 0 0 60px rgba(57,255,20,0.15);
-
-    backdrop-filter:blur(4px);
-
-    z-index:30;
-}
-
-.btn-start:hover{
-    transform:scale(1.04);
-
-    box-shadow:
-    0 0 70px rgba(57,255,20,1),
-    inset 0 0 80px rgba(57,255,20,0.35);
-}
-
-.btn-start::before{
-    content:'';
-
-    position:absolute;
-
-    width:250%;
-    height:250%;
-
-    background:conic-gradient(
-        transparent,
-        rgba(57,255,20,1),
-        rgba(57,255,20,0.25),
-        transparent
-    );
-
-    animation:rotateGlow 3s linear infinite;
-
-    filter:blur(20px);
-
-    opacity:1;
-}
-
-.btn-start::after{
-    content:'';
-
-    position:absolute;
-
-    inset:8px;
-
-    border-radius:50%;
-
-    background:rgba(0,0,0,0.92);
-
-    box-shadow:
-    inset 0 0 60px rgba(57,255,20,0.15);
-}
-
-@keyframes rotateGlow{
-    100%{
-        transform:rotate(360deg);
-    }
-}
-
-.start-content{
-    position:relative;
-    z-index:5;
-    text-align:center;
-    width:100%;
-}
-
-.start-icon{
-    font-size:58px;
-    margin-bottom:18px;
-    filter:drop-shadow(0 0 15px var(--neon));
-}
-
-.start-title{
-    color:var(--neon);
-
-    font-family:'Orbitron',sans-serif;
-
-    font-size:22px;
-
-    font-weight:900;
-
-    letter-spacing:4px;
-
-    text-shadow:
-    0 0 15px var(--neon),
-    0 0 35px var(--neon);
-
-    margin-bottom:18px;
-
-    text-transform:uppercase;
-
-    line-height:1.4;
-
-    min-height:40px;
-}
-
-.start-subtitle{
-    font-size:22px;
-    line-height:1.6;
-}
-
-.start-subtitle span{
-    color:var(--neon);
-    font-weight:bold;
-    text-shadow:0 0 15px var(--neon);
-}
+@keyframes pulseText { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
 
 </style>
-
 </head>
-
 <body>
 
-<!-- FOTO DE FUNDO -->
 <div id="dynamic-bg"></div>
-
 <div class="corner-glow corner-1"></div>
 <div class="corner-glow corner-2"></div>
 
-<!-- LOGO CENTRAL -->
 <div class="bg-brand">
-
-    <div class="bg-brand-title">
-        PHOTO PRINT
-    </div>
-
-    <div class="bg-brand-sub">
-        Colecionando momentos
-    </div>
-
+    <div class="bg-brand-title">PHOTO PRINT</div>
+    <div class="bg-brand-sub">Colecionando momentos</div>
 </div>
 
-<!-- LOGO SUPERIOR -->
 <div class="top-logo">
-
-    <div
-        class="logo-title"
-        id="secret-logo"
-    >
-        PHOTO PRINT
-    </div>
-
-    <div class="logo-sub">
-        Colecionando momentos
-    </div>
-
+    <div class="logo-title" id="secret-logo">PHOTO PRINT</div>
+    <div class="logo-sub">Colecionando momentos</div>
 </div>
-
-<!-- MENU OCULTO -->
 
 <div id="bg-menu">
+    <label class="bg-btn" for="bg-input">🖼 ALTERAR FUNDO</label>
+    <div class="bg-btn" onclick="removeBackground()">✖ SEM FUNDO</div>
+</div>
+<input type="file" id="bg-input" accept="image/*"/>
 
-    <label
-        class="bg-btn"
-        for="bg-input"
-    >
-        🖼 ALTERAR FUNDO
-    </label>
-
-    <div
-        class="bg-btn"
-        onclick="removeBackground()"
-    >
-        ✖ SEM FUNDO
+<!-- TELA 1: INICIAL -->
+<div id="screen-start" class="screen">
+    <div class="btn-start">
+        <div class="start-content">
+            <div class="start-icon">📸</div>
+            <div class="start-title">PHOTO PRINT</div>
+            <div class="start-subtitle">Aguardando comando...</div>
+        </div>
     </div>
-
 </div>
 
-<input
-    type="file"
-    id="bg-input"
-    accept="image/*"
-/>
-
-<!-- BOTÃO CENTRAL -->
-
-<div class="center-button-wrapper">
-
-    <div class="btn-start">
-
-        <div class="start-content">
-
-            <div class="start-icon">
-                📸
-            </div>
-
-            <div class="start-title">
-                PHOTO PRINT
-            </div>
-
-            <div class="start-subtitle">
-                Aperte para iniciar
-            </div>
-
+<!-- TELA 2 e 3: CÂMERA FULLSCREEN, CONTAGEM E FOTO CONGELADA -->
+<div id="screen-camera" class="screen" style="display:none; z-index:40;">
+    <div id="camera-wrapper">
+        <video id="camera-feed" autoplay playsinline muted></video>
+        <canvas id="camera-canvas" style="display:none;"></canvas>
+        
+        <!-- Letras animadas e emojis -->
+        <div id="fun-text" class="fun-text" style="display:none;"></div>
+        
+        <!-- Orientação pós-foto clean -->
+        <div id="options-overlay" style="display:none;">
+            <div class="options-text">👇 Escolha a impressão no totem 👇</div>
         </div>
-
     </div>
+</div>
 
+<!-- TELA 4: AGRADECIMENTO E IMPRESSÃO -->
+<div id="screen-thanks" class="screen" style="display:none;">
+    <div class="status-text" id="thanks-text">🖨️ AGUARDE A IMPRESSÃO...</div>
 </div>
 
 <script>
+const bgInput = document.getElementById('bg-input');
+const dynamicBg = document.getElementById('dynamic-bg');
+const bgMenu = document.getElementById('bg-menu');
+const secretLogo = document.getElementById('secret-logo');
 
-const bgInput =
-document.getElementById('bg-input');
+// Elementos da Câmera
+const videoFeed = document.getElementById('camera-feed');
+const canvasCapture = document.getElementById('camera-canvas');
+const ctx = canvasCapture.getContext('2d');
+const funText = document.getElementById('fun-text');
+const optionsOverlay = document.getElementById('options-overlay');
+let stream = null;
+let lastState = 'start';
 
-const dynamicBg =
-document.getElementById('dynamic-bg');
-
-const bgMenu =
-document.getElementById('bg-menu');
-
-const secretLogo =
-document.getElementById('secret-logo');
-
-/* =========================
-   MENU SECRETO
-========================= */
-
-let clickCount = 0;
-let clickTimer = null;
-
-secretLogo.addEventListener('click',()=>{
-
-    clickCount++;
-
-    clearTimeout(clickTimer);
-
-    clickTimer = setTimeout(()=>{
-
-        clickCount = 0;
-
-    },2000);
-
-    if(clickCount >= 7){
-
-        bgMenu.classList.toggle('active');
-
-        clickCount = 0;
-
+/* INICIA CÂMERA (PREVIEW) */
+async function initWebcam() {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 1920, height: 1080 } });
+        videoFeed.srcObject = stream;
+    } catch (err) {
+        console.warn("Permissão de câmera negada ou dispositivo sem webcam.");
     }
-
-});
-
-/* =========================
-   CONTROLE VISUAL
-========================= */
-
-function updateVisualMode(){
-
-    const savedBg =
-    localStorage.getItem('photoprint_bg');
-
-    if(savedBg){
-
-        document.body.classList.add('bg-active');
-
-    }else{
-
-        document.body.classList.remove('bg-active');
-
-    }
-
 }
 
-/* =========================
-   FOTO DE FUNDO
-========================= */
+/* MENU SECRETO */
+let clickCount = 0; let clickTimer = null;
+secretLogo.addEventListener('click',()=>{
+    clickCount++;
+    clearTimeout(clickTimer);
+    clickTimer = setTimeout(()=>{ clickCount = 0; },2000);
+    if(clickCount >= 7){ bgMenu.classList.toggle('active'); clickCount = 0; }
+});
+
+/* CONTROLE VISUAL FUNDO */
+function updateVisualMode(){
+    const savedBg = localStorage.getItem('photoprint_bg');
+    if(savedBg){ document.body.classList.add('bg-active'); }
+    else{ document.body.classList.remove('bg-active'); }
+}
 
 bgInput.addEventListener('change',(e)=>{
-
-    const file =
-    e.target.files[0];
-
+    const file = e.target.files[0];
     if(!file) return;
-
-    const reader =
-    new FileReader();
-
+    const reader = new FileReader();
     reader.onload = function(ev){
-
-        const image =
-        ev.target.result;
-
-        dynamicBg.style.backgroundImage =
-        `url('${image}')`;
-
+        const image = ev.target.result;
+        dynamicBg.style.backgroundImage = `url('${image}')`;
         dynamicBg.classList.add('active');
-
-        localStorage.setItem(
-            'photoprint_bg',
-            image
-        );
-
+        localStorage.setItem('photoprint_bg', image);
         updateVisualMode();
-
         bgMenu.classList.remove('active');
-
     };
-
     reader.readAsDataURL(file);
-
 });
 
 function removeBackground(){
-
     localStorage.removeItem('photoprint_bg');
-
     dynamicBg.style.backgroundImage = "";
-
     dynamicBg.classList.remove('active');
-
     updateVisualMode();
-
     bgMenu.classList.remove('active');
-
 }
 
 function loadSavedBackground(){
-
-    const savedBg =
-    localStorage.getItem('photoprint_bg');
-
+    const savedBg = localStorage.getItem('photoprint_bg');
     if(savedBg){
-
-        dynamicBg.style.backgroundImage =
-        `url('${savedBg}')`;
-
+        dynamicBg.style.backgroundImage = `url('${savedBg}')`;
         dynamicBg.classList.add('active');
-
     }
-
     updateVisualMode();
-
 }
 
-/* INIT */
+/* =========================================
+   LÓGICA DE CAPTURA E ANIMAÇÃO
+========================================= */
+function startCaptureSequence() {
+    // Reseta visual da câmera
+    videoFeed.style.display = 'block';
+    canvasCapture.style.display = 'none';
+    optionsOverlay.style.display = 'none';
+    
+    // Inicia "PREPARE-SE" (Dura 4 Segundos)
+    funText.style.display = 'block';
+    funText.innerHTML = "✨ PREPARE-SE! ✨<br>😜🕺💃";
+    
+    setTimeout(() => {
+        // Inicia "SORRIA" + Contagem (Dura 3 Segundos)
+        let countdown = 3;
+        funText.innerHTML = `😁 SORRIA! 😁<br>⏳ ${countdown}`;
+        
+        const timerInterval = setInterval(() => {
+            countdown--;
+            if (countdown > 0) {
+                funText.innerHTML = `😁 SORRIA! 😁<br>⏳ ${countdown}`;
+            } else if (countdown === 0) {
+                
+                // 1. Limpa a tela antes de capturar para ficar perfeitamente nítido
+                funText.style.display = 'none';
+                clearInterval(timerInterval);
+                
+                // 2. Tira a foto virtual (Congela a tela)
+                canvasCapture.width = videoFeed.videoWidth;
+                canvasCapture.height = videoFeed.videoHeight;
+                
+                // Desenha a imagem exatamente como sai da câmera (sem inverter o data via ctx.scale). 
+                // O CSS já manterá a foto "do mesmo lado" visual que a prévia.
+                ctx.drawImage(videoFeed, 0, 0, canvasCapture.width, canvasCapture.height);
+                
+                // 3. Troca o vídeo pela foto congelada
+                videoFeed.style.display = 'none';
+                canvasCapture.style.display = 'block';
+                
+            }
+        }, 1000);
+        
+    }, 4000);
+}
 
+/* =========================================
+   SINCRONIZAÇÃO COM A BOTOEIRA
+========================================= */
+function updateScreenState(state) {
+    
+    // INTERCEPTADOR DE FINALIZAÇÃO (Agradecimento antes de voltar pro início)
+    if (state === 'start' && lastState === 'options') {
+        document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
+        document.getElementById('screen-thanks').style.display = 'flex';
+        
+        const msgThanks = document.getElementById('thanks-text');
+        msgThanks.innerHTML = "🖨️ AGUARDE A IMPRESSÃO...";
+        
+        // Exibe tela de impressão/obrigado por 5 segundos antes de resetar para valer
+        setTimeout(() => {
+            msgThanks.innerHTML = "💖 OBRIGADO! 💖<br>APROVEITE SUA FOTO!";
+            setTimeout(() => {
+                document.getElementById('screen-thanks').style.display = 'none';
+                document.getElementById('screen-start').style.display = 'flex';
+                // Limpa o canvas para a próxima
+                ctx.clearRect(0, 0, canvasCapture.width, canvasCapture.height);
+            }, 2500);
+        }, 2500);
+        
+        lastState = state;
+        return;
+    }
+
+    // FLUXO NORMAL
+    document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
+
+    if (state === 'capturing') {
+        document.getElementById('screen-camera').style.display = 'flex';
+        startCaptureSequence();
+    } 
+    else if (state === 'options') {
+        document.getElementById('screen-camera').style.display = 'flex';
+        // Exibe a orientação no rodapé da foto que já está congelada
+        optionsOverlay.style.display = 'block';
+    } 
+    else {
+        document.getElementById('screen-start').style.display = 'flex';
+    }
+    
+    lastState = state;
+}
+
+// Escuta mudanças feitas pela Botoeira no LocalStorage
+window.addEventListener('storage', (e) => {
+    if (e.key === 'booth_state') {
+        updateScreenState(e.newValue);
+    }
+});
+
+// INIT
+initWebcam();
+localStorage.setItem('booth_state', 'start');
+updateScreenState('start');
 loadSavedBackground();
 
 </script>

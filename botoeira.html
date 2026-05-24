@@ -3,74 +3,447 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
     <!-- Meta tags para rodar como App no Celular (PWA) -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>BOTOEIRA - PHOTO PRINT v3.1</title>
+
+    <title>BOTOEIRA - PHOTO PRINT v3.2</title>
+
     <style>
+
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
-        :root { --neon: #39ff14; --dark: #050505; --danger: #ff3131; --info-blue: #00e5ff; }
+        :root {
+            --neon: #39ff14;
+            --dark: #050505;
+            --danger: #ff3131;
+            --info-blue: #00e5ff;
+        }
 
         html, body {
-            margin: 0; padding: 0;
-            background: radial-gradient(circle at top, rgba(57,255,20,0.10), transparent 35%),
-                        radial-gradient(circle at bottom right, rgba(57,255,20,0.08), transparent 30%),
-                        linear-gradient(135deg, #020202 0%, #050505 40%, #071107 100%);
-            color: white; font-family: Arial, Helvetica, sans-serif;
-            overflow: hidden; display: flex; flex-direction: column; height: 100vh;
+            margin: 0;
+            padding: 0;
+
+            background:
+                radial-gradient(circle at top, rgba(57,255,20,0.10), transparent 35%),
+                radial-gradient(circle at bottom right, rgba(57,255,20,0.08), transparent 30%),
+                linear-gradient(135deg, #020202 0%, #050505 40%, #071107 100%);
+
+            color: white;
+            font-family: Arial, Helvetica, sans-serif;
+
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+
             touch-action: manipulation;
             overscroll-behavior: none;
             -webkit-tap-highlight-color: transparent;
         }
 
-        #dynamic-bg { position:fixed; inset:0; z-index:0; background-size:cover; background-position:center; background-repeat:no-repeat; opacity:0; transition:opacity 0.6s ease; }
-        #dynamic-bg.active { opacity:0.45; }
-        #dynamic-bg::after { content:''; position:absolute; inset:0; background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.75)); }
-        body::before { content:''; position:fixed; inset:0; background-image: linear-gradient(rgba(57,255,20,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(57,255,20,0.03) 1px, transparent 1px); background-size:40px 40px; z-index:0; animation:gridMove 12s linear infinite; }
-        body.bg-active::before { display:none; }
-        @keyframes gridMove{ from{ transform:translateY(0px); } to{ transform:translateY(40px); } }
+        #dynamic-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
 
-        .top-logo { position:fixed; top:20px; left:20px; z-index:25; cursor:pointer; user-select:none; }
-        .logo-title { font-family:'Orbitron',sans-serif; color:var(--neon); font-size:24px; font-weight:900; letter-spacing:4px; text-shadow: 0 0 10px var(--neon); }
-        .logo-sub { margin-top:2px; color:white; opacity:0.7; letter-spacing:3px; font-size:10px; text-transform:uppercase; }
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+
+        #dynamic-bg.active {
+            opacity: 0.45;
+        }
+
+        #dynamic-bg::after {
+            content:'';
+            position:absolute;
+            inset:0;
+
+            background: linear-gradient(
+                rgba(0,0,0,0.55),
+                rgba(0,0,0,0.75)
+            );
+        }
+
+        body::before {
+            content:'';
+            position:fixed;
+            inset:0;
+
+            background-image:
+                linear-gradient(rgba(57,255,20,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(57,255,20,0.03) 1px, transparent 1px);
+
+            background-size:40px 40px;
+            z-index:0;
+
+            animation:gridMove 12s linear infinite;
+        }
+
+        body.bg-active::before {
+            display:none;
+        }
+
+        @keyframes gridMove {
+            from {
+                transform:translateY(0px);
+            }
+            to {
+                transform:translateY(40px);
+            }
+        }
+
+        .top-logo {
+            position:fixed;
+            top:20px;
+            left:20px;
+            z-index:25;
+
+            cursor:pointer;
+            user-select:none;
+        }
+
+        .logo-title {
+            font-family:'Orbitron',sans-serif;
+            color:var(--neon);
+            font-size:24px;
+            font-weight:900;
+            letter-spacing:4px;
+
+            text-shadow: 0 0 10px var(--neon);
+        }
+
+        .logo-sub {
+            margin-top:2px;
+            color:white;
+            opacity:0.7;
+
+            letter-spacing:3px;
+            font-size:10px;
+            text-transform:uppercase;
+        }
 
         /* Menu Secreto de Fundo */
-        #bg-menu { position:fixed; top:80px; left:20px; z-index:100; display:none; flex-direction:column; gap:12px; }
-        #bg-menu.active { display:flex; }
-        .bg-btn { padding:12px 20px; border-radius:14px; border:1px solid rgba(57,255,20,0.45); background:rgba(0,0,0,0.85); color:white; font-size:14px; font-weight:bold; letter-spacing:1px; cursor:pointer; backdrop-filter:blur(10px); text-align:center; }
-        #bg-input { display:none; }
 
-        .screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; }
+        #bg-menu {
+            position:fixed;
+            top:80px;
+            left:20px;
+            z-index:100;
 
-        .btn-start { position:relative; width:280px; height:280px; border-radius:50%; border:4px solid var(--neon); background: radial-gradient(circle at center, rgba(57,255,20,0.18), rgba(0,0,0,0.96)); cursor:pointer; overflow:hidden; transition:0.1s; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow: 0 0 30px rgba(57,255,20,0.8), inset 0 0 60px rgba(57,255,20,0.15); backdrop-filter:blur(4px); z-index:30; }
-        .btn-start::before { content:''; position:absolute; width:250%; height:250%; background:conic-gradient( transparent, rgba(57,255,20,1), rgba(57,255,20,0.25), transparent ); animation:rotateGlow 3s linear infinite; filter:blur(20px); opacity:1; }
-        .btn-start::after { content:''; position:absolute; inset:8px; border-radius:50%; background:rgba(0,0,0,0.92); box-shadow: inset 0 0 60px rgba(57,255,20,0.15); }
-        .btn-start:active { transform: scale(0.92); }
-        .start-content { position:relative; z-index:5; text-align:center; width:100%; }
-        .start-icon { font-size:48px; margin-bottom:10px; filter:drop-shadow(0 0 15px var(--neon)); }
-        .start-title { color:var(--neon); font-family:'Orbitron',sans-serif; font-size:24px; font-weight:900; letter-spacing:2px; text-shadow: 0 0 15px var(--neon); }
+            display:none;
+            flex-direction:column;
+            gap:12px;
+        }
 
-        @keyframes rotateGlow{ 100%{ transform:rotate(360deg); } }
+        #bg-menu.active {
+            display:flex;
+        }
 
-        .triggered-text { font-family:'Orbitron',sans-serif; font-size: 26px; color: var(--neon); font-weight: 900; text-align: center; text-shadow: 0 0 15px var(--neon); animation:pulse 1s infinite; background: rgba(0,0,0,0.7); padding: 20px; border-radius: 15px; border: 1px solid var(--neon); backdrop-filter: blur(5px);}
-        @keyframes pulse { 0%,100%{ opacity: 1;} 50%{ opacity: 0.5;} }
+        .bg-btn {
+            padding:12px 20px;
+            border-radius:14px;
 
-        .options-container { background: rgba(0,0,0,0.8); padding: 30px; border-radius: 20px; border: 1px solid var(--neon); box-shadow: 0 0 30px rgba(0,0,0,0.8); display:flex; flex-direction: column; align-items: center; backdrop-filter: blur(10px); }
-        .copies-label { font-family:'Orbitron',sans-serif; font-size: 16px; color: var(--neon); font-weight: bold; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon); text-align: center; }
-        .print-grid { display: grid; grid-template-columns: 1fr; gap: 15px; width: 100%; min-width: 280px; margin-bottom: 30px; }
-        
-        .btn-print-mobile { padding: 15px; border-radius: 12px; cursor: pointer; background: rgba(0,0,0,0.5); color: white; font-weight: bold; font-size: 16px; transition: 0.3s; backdrop-filter: blur(5px); }
-        .btn-neon-style { border: 2px solid var(--neon); }
-        .btn-neon-style.selected { background: var(--neon); color: black; box-shadow: 0 0 20px var(--neon); }
-        .btn-blue-style { border: 2px solid var(--info-blue); }
-        .btn-blue-style.selected { background: var(--info-blue); color: black; box-shadow: 0 0 20px var(--info-blue); }
+            border:1px solid rgba(57,255,20,0.45);
 
-        .btn-send { font-family:'Orbitron',sans-serif; padding: 18px 40px; border-radius: 50px; border: none; background: var(--neon); color: #000; font-size: 20px; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 10px; text-transform: uppercase; animation: bounce 1.5s infinite; box-shadow: 0 0 20px var(--neon); }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+            background:rgba(0,0,0,0.85);
+
+            color:white;
+            font-size:14px;
+            font-weight:bold;
+            letter-spacing:1px;
+
+            cursor:pointer;
+
+            backdrop-filter:blur(10px);
+
+            text-align:center;
+        }
+
+        #bg-input {
+            display:none;
+        }
+
+        .screen {
+            position: fixed;
+            inset: 0;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            z-index: 20;
+        }
+
+        .btn-start {
+            position:relative;
+
+            width:280px;
+            height:280px;
+
+            border-radius:50%;
+            border:4px solid var(--neon);
+
+            background:
+                radial-gradient(
+                    circle at center,
+                    rgba(57,255,20,0.18),
+                    rgba(0,0,0,0.96)
+                );
+
+            cursor:pointer;
+            overflow:hidden;
+
+            transition:0.1s;
+
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+
+            box-shadow:
+                0 0 30px rgba(57,255,20,0.8),
+                inset 0 0 60px rgba(57,255,20,0.15);
+
+            backdrop-filter:blur(4px);
+
+            z-index:30;
+        }
+
+        .btn-start::before {
+            content:'';
+            position:absolute;
+
+            width:250%;
+            height:250%;
+
+            background:
+                conic-gradient(
+                    transparent,
+                    rgba(57,255,20,1),
+                    rgba(57,255,20,0.25),
+                    transparent
+                );
+
+            animation:rotateGlow 3s linear infinite;
+
+            filter:blur(20px);
+            opacity:1;
+        }
+
+        .btn-start::after {
+            content:'';
+            position:absolute;
+            inset:8px;
+
+            border-radius:50%;
+
+            background:rgba(0,0,0,0.92);
+
+            box-shadow:
+                inset 0 0 60px rgba(57,255,20,0.15);
+        }
+
+        .btn-start:active {
+            transform: scale(0.92);
+        }
+
+        .start-content {
+            position:relative;
+            z-index:5;
+
+            text-align:center;
+            width:100%;
+        }
+
+        .start-icon {
+            font-size:48px;
+            margin-bottom:10px;
+
+            filter:drop-shadow(0 0 15px var(--neon));
+        }
+
+        .start-title {
+            color:var(--neon);
+            font-family:'Orbitron',sans-serif;
+            font-size:24px;
+            font-weight:900;
+            letter-spacing:2px;
+
+            text-shadow: 0 0 15px var(--neon);
+        }
+
+        @keyframes rotateGlow {
+            100% {
+                transform:rotate(360deg);
+            }
+        }
+
+        .triggered-text {
+            font-family:'Orbitron',sans-serif;
+            font-size: 26px;
+
+            color: var(--neon);
+            font-weight: 900;
+            text-align: center;
+
+            text-shadow: 0 0 15px var(--neon);
+
+            animation:pulse 1s infinite;
+
+            background: rgba(0,0,0,0.7);
+
+            padding: 20px;
+
+            border-radius: 15px;
+            border: 1px solid var(--neon);
+
+            backdrop-filter: blur(5px);
+        }
+
+        @keyframes pulse {
+            0%,100%{
+                opacity: 1;
+            }
+            50%{
+                opacity: 0.5;
+            }
+        }
+
+        .options-container {
+            background: rgba(0,0,0,0.8);
+
+            padding: 30px;
+
+            border-radius: 20px;
+            border: 1px solid var(--neon);
+
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+
+            display:flex;
+            flex-direction: column;
+            align-items: center;
+
+            backdrop-filter: blur(10px);
+        }
+
+        .copies-label {
+            font-family:'Orbitron',sans-serif;
+            font-size: 16px;
+
+            color: var(--neon);
+            font-weight: bold;
+
+            margin-bottom: 25px;
+
+            text-transform: uppercase;
+            letter-spacing: 2px;
+
+            text-shadow: 0 0 10px var(--neon);
+
+            text-align: center;
+        }
+
+        .print-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+
+            gap: 15px;
+
+            width: 100%;
+            min-width: 280px;
+
+            margin-bottom: 30px;
+        }
+
+        .btn-print-mobile {
+            padding: 15px;
+
+            border-radius: 12px;
+
+            cursor: pointer;
+
+            background: rgba(0,0,0,0.5);
+
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+
+            transition: 0.3s;
+
+            backdrop-filter: blur(5px);
+        }
+
+        .btn-neon-style {
+            border: 2px solid var(--neon);
+        }
+
+        .btn-neon-style.selected {
+            background: var(--neon);
+            color: black;
+
+            box-shadow: 0 0 20px var(--neon);
+        }
+
+        .btn-blue-style {
+            border: 2px solid var(--info-blue);
+        }
+
+        .btn-blue-style.selected {
+            background: var(--info-blue);
+            color: black;
+
+            box-shadow: 0 0 20px var(--info-blue);
+        }
+
+        .btn-send {
+            font-family:'Orbitron',sans-serif;
+
+            padding: 18px 40px;
+
+            border-radius: 50px;
+            border: none;
+
+            background: var(--neon);
+
+            color: #000;
+            font-size: 20px;
+            font-weight: 900;
+
+            cursor: pointer;
+
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            text-transform: uppercase;
+
+            animation: bounce 1.5s infinite;
+
+            box-shadow: 0 0 20px var(--neon);
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
     </style>
 </head>
+
 <body>
 
     <div id="dynamic-bg"></div>
@@ -81,156 +454,363 @@
     </div>
 
     <div id="bg-menu">
-        <label class="bg-btn" for="bg-input">🖼 ALTERAR FUNDO</label>
-        <div class="bg-btn" onclick="removeBackground()">✖ SEM FUNDO</div>
+        <label class="bg-btn" for="bg-input">
+            🖼 ALTERAR FUNDO
+        </label>
+
+        <div class="bg-btn" onclick="removeBackground()">
+            ✖ SEM FUNDO
+        </div>
     </div>
+
     <input type="file" id="bg-input" accept="image/*"/>
 
     <div id="screen-start" class="screen">
+
         <div class="btn-start" onclick="triggerPhoto()">
+
             <div class="start-content">
+
                 <div class="start-icon">📸</div>
-                <div class="start-title">TIRAR FOTO</div>
+
+                <div class="start-title">
+                    TIRAR FOTO
+                </div>
+
             </div>
+
         </div>
+
     </div>
 
     <div id="screen-triggered" class="screen" style="display:none">
-        <div class="triggered-text">CAPTURANDO... 📸</div>
+
+        <div class="triggered-text">
+            CAPTURANDO... 📸
+        </div>
+
     </div>
 
     <div id="screen-options" class="screen" style="display:none">
+
         <div class="options-container">
-            <div class="copies-label">COMO DESEJA IMPRIMIR?</div>
-            <div class="print-grid">
-                <button class="btn-print-mobile btn-neon-style selected" onclick="selectOption(this,1)">🖨️ 1 Cópia</button>
-                <button class="btn-print-mobile btn-neon-style" onclick="selectOption(this,2)">🖨️ 2 Cópias</button>
-                <button class="btn-print-mobile btn-blue-style" onclick="selectOption(this,3)">📖 1 Cópia + Guestbook</button>
-                <button class="btn-print-mobile btn-blue-style" onclick="selectOption(this,4)">📖 2 Cópias + Guestbook</button>
+
+            <div class="copies-label">
+                COMO DESEJA IMPRIMIR?
             </div>
-            <button class="btn-send" onclick="sendPrint()">ENVIAR ✈️</button>
+
+            <div class="print-grid">
+
+                <button
+                    class="btn-print-mobile btn-neon-style selected"
+                    onclick="selectOption(this,1)"
+                >
+                    🖨️ 1 Cópia
+                </button>
+
+                <button
+                    class="btn-print-mobile btn-neon-style"
+                    onclick="selectOption(this,2)"
+                >
+                    🖨️ 2 Cópias
+                </button>
+
+                <button
+                    class="btn-print-mobile btn-blue-style"
+                    onclick="selectOption(this,3)"
+                >
+                    📖 1 Cópia + Guestbook
+                </button>
+
+                <button
+                    class="btn-print-mobile btn-blue-style"
+                    onclick="selectOption(this,4)"
+                >
+                    📖 2 Cópias + Guestbook
+                </button>
+
+            </div>
+
+            <button class="btn-send" onclick="sendPrint()">
+                ENVIAR ✈️
+            </button>
+
         </div>
+
     </div>
 
-    <script>
-        const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
-        let selectedCopiesValue = 1;
-        const dynamicBg = document.getElementById('dynamic-bg');
-        const bgMenu = document.getElementById('bg-menu');
-        const secretLogo = document.getElementById('secret-logo');
+<script>
 
-        /* MENU SECRETO */
-        let clickCount = 0; let clickTimer = null;
-        secretLogo.addEventListener('click',()=>{
-            clickCount++; clearTimeout(clickTimer); 
-            clickTimer = setTimeout(()=>{ clickCount = 0; }, 2000);
-            if(clickCount >= 7){ bgMenu.classList.toggle('active'); clickCount = 0; }
-        });
+    const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
 
-        /* LÓGICA DE BACKGROUND */
-        document.getElementById('bg-input').addEventListener('change', (e) => {
-            const file = e.target.files[0]; if(!file) return;
-            const reader = new FileReader();
-            reader.onload = function(ev){
-                const image = ev.target.result;
-                dynamicBg.style.backgroundImage = `url('${image}')`;
-                dynamicBg.classList.add('active');
-                document.body.classList.add('bg-active');
-                localStorage.setItem('photoprint_bg_mobile', image);
-                bgMenu.classList.remove('active');
-            };
-            reader.readAsDataURL(file);
-        });
+    let selectedCopiesValue = 1;
 
-        function removeBackground() {
-            localStorage.removeItem('photoprint_bg_mobile');
-            dynamicBg.style.backgroundImage = "";
-            dynamicBg.classList.remove('active');
-            document.body.classList.remove('bg-active');
+    const dynamicBg = document.getElementById('dynamic-bg');
+    const bgMenu = document.getElementById('bg-menu');
+    const secretLogo = document.getElementById('secret-logo');
+
+    // ================================
+    // VERIFICA STATUS GLOBAL
+    // ================================
+
+    async function verificarStatus() {
+
+        try {
+
+            const res = await fetch(`${API}/system-status?t=${Date.now()}`);
+
+            const data = await res.json();
+
+            if (data.status === "OFFLINE") {
+
+                document.body.innerHTML = `
+                    <div style="
+                        height:100vh;
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        color:red;
+                        font-size:40px;
+                        font-weight:900;
+                        animation:pulse 1s infinite;
+                        background:black;
+                        text-align:center;
+                        padding:20px;
+                    ">
+                        SISTEMA EM MANUTENÇÃO
+                    </div>
+                `;
+            }
+
+        } catch(e) {
+            console.log("Erro ao verificar status:", e);
+        }
+    }
+
+    // Verifica imediatamente
+    verificarStatus();
+
+    // Verifica a cada 3 segundos
+    setInterval(verificarStatus, 3000);
+
+    /* MENU SECRETO */
+
+    let clickCount = 0;
+    let clickTimer = null;
+
+    secretLogo.addEventListener('click',()=>{
+
+        clickCount++;
+
+        clearTimeout(clickTimer);
+
+        clickTimer = setTimeout(()=>{
+            clickCount = 0;
+        }, 2000);
+
+        if(clickCount >= 7){
+
+            bgMenu.classList.toggle('active');
+
+            clickCount = 0;
+        }
+    });
+
+    /* LÓGICA DE BACKGROUND */
+
+    document.getElementById('bg-input').addEventListener('change', (e) => {
+
+        const file = e.target.files[0];
+
+        if(!file) return;
+
+        const reader = new FileReader();
+
+        reader.onload = function(ev){
+
+            const image = ev.target.result;
+
+            dynamicBg.style.backgroundImage = `url('${image}')`;
+
+            dynamicBg.classList.add('active');
+
+            document.body.classList.add('bg-active');
+
+            localStorage.setItem('photoprint_bg_mobile', image);
+
             bgMenu.classList.remove('active');
-        }
+        };
 
-        function loadSavedBackground() {
-            const savedBg = localStorage.getItem('photoprint_bg_mobile');
-            if(savedBg){
-                dynamicBg.style.backgroundImage = `url('${savedBg}')`;
-                dynamicBg.classList.add('active');
-                document.body.classList.add('bg-active');
-            }
-        }
-        loadSavedBackground();
+        reader.readAsDataURL(file);
+    });
 
-        /* Lógica da Câmera / API */
-        async function triggerPhoto() {
-            document.getElementById('screen-start').style.display = "none";
-            document.getElementById('screen-triggered').style.display = "flex";
-            
-            localStorage.setItem('booth_state', 'capturing');
+    function removeBackground() {
+
+        localStorage.removeItem('photoprint_bg_mobile');
+
+        dynamicBg.style.backgroundImage = "";
+
+        dynamicBg.classList.remove('active');
+
+        document.body.classList.remove('bg-active');
+
+        bgMenu.classList.remove('active');
+    }
+
+    function loadSavedBackground() {
+
+        const savedBg = localStorage.getItem('photoprint_bg_mobile');
+
+        if(savedBg){
+
+            dynamicBg.style.backgroundImage = `url('${savedBg}')`;
+
+            dynamicBg.classList.add('active');
+
+            document.body.classList.add('bg-active');
+        }
+    }
+
+    loadSavedBackground();
+
+    /* Lógica da Câmera / API */
+
+    async function triggerPhoto() {
+
+        document.getElementById('screen-start').style.display = "none";
+
+        document.getElementById('screen-triggered').style.display = "flex";
+
+        localStorage.setItem('booth_state', 'capturing');
+
+        try {
+
+            await fetch(`${API}/trigger`, {
+                method: 'POST'
+            });
+
+            await fetch(`${API}/set-state`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    state: 'capturing'
+                })
+            }).catch(e=>e);
+
+            waitPhotoFinish();
+
+        } catch(e) {
+
+            alert("Erro de conexão com o servidor.");
+
+            localStorage.setItem('booth_state', 'start');
+
+            location.reload();
+        }
+    }
+
+    async function waitPhotoFinish() {
+
+        const interval = setInterval(async () => {
 
             try {
-                await fetch(`${API}/trigger`, { method: 'POST' });
-                await fetch(`${API}/set-state`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ state: 'capturing' })
-                }).catch(e=>e);
 
-                waitPhotoFinish();
-            } catch(e) {
-                alert("Erro de conexão com o servidor.");
-                localStorage.setItem('booth_state', 'start');
-                location.reload();
-            }
+                const res = await fetch(
+                    `${API}/check-photo-ready?t=${Date.now()}`
+                );
+
+                const data = await res.json();
+
+                if (data.ready) {
+
+                    clearInterval(interval);
+
+                    document.getElementById('screen-triggered').style.display = "none";
+
+                    document.getElementById('screen-options').style.display = "flex";
+
+                    localStorage.setItem('booth_state', 'options');
+
+                    await fetch(`${API}/set-state`, {
+
+                        method: 'POST',
+
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+
+                        body: JSON.stringify({
+                            state: 'options'
+                        })
+
+                    }).catch(e=>e);
+                }
+
+            } catch(e) {}
+
+        }, 1000);
+    }
+
+    function selectOption(btn, val) {
+
+        document.querySelectorAll('.btn-print-mobile')
+            .forEach(b => b.classList.remove('selected'));
+
+        btn.classList.add('selected');
+
+        selectedCopiesValue = val;
+    }
+
+    async function sendPrint() {
+
+        try {
+
+            await fetch(`${API}/trigger-print`, {
+
+                method: 'POST',
+
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+
+                body: JSON.stringify({
+                    copias: selectedCopiesValue
+                })
+            });
+
+            await fetch(`${API}/set-state`, {
+
+                method: 'POST',
+
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+
+                body: JSON.stringify({
+                    state: 'start'
+                })
+
+            }).catch(e=>e);
+
+            localStorage.setItem('booth_state', 'start');
+
+            document.getElementById('screen-options').innerHTML = `
+                <div class="triggered-text">
+                    ENVIADO! ✅
+                </div>
+            `;
+
+            setTimeout(() => location.reload(), 1500);
+
+        } catch(e) {
+
+            alert("Erro ao enviar impressão");
         }
+    }
 
-        async function waitPhotoFinish() {
-            const interval = setInterval(async () => {
-                try {
-                    const res = await fetch(`${API}/check-photo-ready?t=${Date.now()}`);
-                    const data = await res.json();
-                    if (data.ready) {
-                        clearInterval(interval);
-                        document.getElementById('screen-triggered').style.display = "none";
-                        document.getElementById('screen-options').style.display = "flex";
-                        
-                        localStorage.setItem('booth_state', 'options');
+</script>
 
-                        await fetch(`${API}/set-state`, {
-                            method: 'POST', headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ state: 'options' })
-                        }).catch(e=>e);
-                    }
-                } catch(e) {}
-            }, 1000);
-        }
-
-        function selectOption(btn, val) {
-            document.querySelectorAll('.btn-print-mobile').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-            selectedCopiesValue = val;
-        }
-
-        async function sendPrint() {
-            try {
-                await fetch(`${API}/trigger-print`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ copias: selectedCopiesValue })
-                });
-                
-                await fetch(`${API}/set-state`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ state: 'start' })
-                }).catch(e=>e);
-
-                localStorage.setItem('booth_state', 'start');
-                
-                document.getElementById('screen-options').innerHTML = '<div class="triggered-text">ENVIADO! ✅</div>';
-                setTimeout(() => location.reload(), 1500);
-            } catch(e) {
-                alert("Erro ao enviar impressão");
-            }
-        }
-    </script>
 </body>
 </html>

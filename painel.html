@@ -2,39 +2,46 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>PHOTO PRINT - Master Panel v1.4</title>
-    </head>
+    <title>PAINEL MASTER - PHOTO PRINT v1.5</title>
+    <style>
+        #manutencao { display:none; position:fixed; inset:0; background:#000; color:red; font-size:40px; font-weight:900; align-items:center; justify-content:center; z-index:99999; animation:pulse 1s infinite; text-align:center; }
+        @keyframes pulse { 0%,100%{ opacity: 1;} 50%{ opacity: 0.5;} }
+    </style>
+</head>
 <body>
+    <div id="manutencao">SISTEMA EM MANUTENÇÃO</div>
+
+    <!-- Mantenha todo o seu layout original aqui -->
+    <!-- ... -->
+
     <script>
-        const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
-        
-        // Função para atualizar o Worker com a configuração do evento
-        async function sincronizarConfig(evento, status, formato, livro) {
+        const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
+
+        // Carrega o status do sistema ao abrir a página
+        window.onload = async () => {
             try {
-                await fetch(`${API_URL}/set-config`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ evento, status, formato, livro })
-                });
-            } catch(e) { console.error("Erro na sincronização:", e); }
-        }
+                const res = await fetch(`${API}/get-all-states`);
+                const data = await res.json();
+                document.getElementById('server-status').checked = (data.config.status === "ONLINE");
+                document.getElementById('manutencao').style.display = (data.config.status === "OFFLINE") ? "flex" : "none";
+            } catch(e) {}
+        };
 
-        // Integrar no seu salvarEvento:
-        async function salvarEvento() {
-            // ... sua lógica de salvar ...
-            const statusAtual = document.getElementById('server-status').checked ? "ONLINE" : "OFFLINE";
-            await sincronizarConfig(nome, statusAtual, formato, livro);
-            // ... resto do seu código ...
-        }
-
-        // Integrar no seu salvarStatusRede:
         async function salvarStatusRede() {
             const on = document.getElementById('server-status').checked;
-            const ativo = eventos.find(e => e.ativo);
-            if(ativo) {
-                await sincronizarConfig(ativo.nome, on ? "ONLINE" : "OFFLINE", ativo.formato, ativo.livro || false);
-                atualizarUIStatus(on);
-            }
+            const status = on ? "ONLINE" : "OFFLINE";
+            
+            // Atualiza a tela localmente
+            document.getElementById('manutencao').style.display = on ? "none" : "flex";
+
+            await fetch(`${API}/set-config`, {
+                method: 'POST',
+                body: JSON.stringify({ 
+                    status: status,
+                    evento: "Evento Atual", // Ajuste para pegar o valor do seu campo de texto
+                    formato: "10X15V" 
+                })
+            });
         }
     </script>
 </body>

@@ -2,47 +2,220 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>PAINEL MASTER - PHOTO PRINT v1.6</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHOTO PRINT - Master Panel v1.6</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        #manutencao { display:none; position:fixed; inset:0; background:#000; color:red; font-size:40px; font-weight:900; align-items:center; justify-content:center; z-index:99999; animation:pulse 1s infinite; text-align:center; }
-        @keyframes pulse { 0%,100%{ opacity: 1;} 50%{ opacity: 0.5;} }
+        :root { --neon: #39ff14; --red: #ff3131; --dark: #000000; --card: rgba(255, 255, 255, 0.03); --border: rgba(57, 255, 20, 0.2); }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--dark); background: radial-gradient(circle at 50% -20%, #1a3a12 0%, #000 65%); color: white; margin: 0; height: 100vh; display: flex; flex-direction: column; box-sizing: border-box; overflow: hidden; }
+        #tela-inicial { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 1000; background: #000; flex-direction: column; text-align: center; }
+        .splash-brand { font-size: clamp(40px, 10vw, 90px); font-weight: 900; color: var(--neon); letter-spacing: 15px; text-transform: uppercase; margin: 0; text-shadow: 0 0 20px var(--neon); }
+        .splash-subtitle { font-size: 14px; letter-spacing: 8px; color: #666; text-transform: uppercase; margin-top: 10px; width: 100%; display: block; }
+        #modal-senha { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+        .pass-box { background: #0a0a0a; padding: 40px; border-radius: 24px; border: 1px solid var(--neon); text-align: center; width: 320px; }
+        .pass-box input { width: 100%; padding: 15px; margin: 20px 0; background: #000; border: 1px solid #222; color: var(--neon); text-align: center; font-size: 32px; border-radius: 12px; outline: none; box-sizing: border-box; font-weight: 900; }
+        .top-nav { display: none; justify-content: space-between; align-items: center; padding: 15px 40px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.7); backdrop-filter: blur(15px); }
+        .internal-brand { font-size: 24px; font-weight: 900; color: var(--neon); letter-spacing: 4px; margin: 0; text-transform: uppercase; }
+        .internal-subtitle { font-size: 10px; letter-spacing: 3px; color: #555; text-transform: uppercase; font-weight: bold; margin-top: -2px; }
+        .main-layout { display: none; grid-template-columns: 1fr 1.3fr; gap: 25px; flex: 1; padding: 25px; min-height: 0; }
+        .card { background: var(--card); backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; overflow: hidden; }
+        .card-header { padding: 15px 25px; background: rgba(57, 255, 20, 0.08); color: var(--neon); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; }
+        .card-body { padding: 30px; flex: 1; overflow-y: auto; }
+        .form-group { margin-bottom: 20px; }
+        .form-group-inline { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; border: 1px solid #222; margin-bottom: 20px; }
+        label { font-size: 10px; color: var(--neon); font-weight: 900; text-transform: uppercase; display: block; margin-bottom: 8px; }
+        .form-group-inline label { margin-bottom: 0; }
+        input[type="text"], input[type="date"], select { width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid #222; color: white; border-radius: 6px; outline: none; box-sizing: border-box; }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+        .btn-neon-style { background: transparent; border: 1px solid var(--neon); color: white; padding: 14px; border-radius: 6px; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; border-left: 5px solid var(--neon); display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-neon-style:hover { background: rgba(57, 255, 20, 0.1); transform: translateX(5px); }
+        .btn-neon-style.success { background: var(--neon); color: black; border-left: 5px solid white; }
+        .evento-item { background: rgba(255,255,255,0.02); border: 1px solid #1a1a1a; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .evento-item.ativo { border-left: 4px solid var(--neon); background: rgba(57, 255, 20, 0.05); }
+        .status-container { display: flex; align-items: center; gap: 12px; padding: 6px 15px; border-radius: 30px; border: 1px solid #333; }
+        .switch-mega { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch-mega input { opacity: 0; width: 0; height: 0; }
+        .slider-mega { position: absolute; cursor: pointer; inset: 0; background: #222; transition: .4s; border-radius: 30px; }
+        .slider-mega:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background: #555; transition: .4s; border-radius: 50%; }
+        input:checked + .slider-mega { background: var(--neon); }
+        input:checked + .slider-mega:before { transform: translateX(24px); background: #000; }
+        .custom-file-upload { border: 1px dashed var(--border); display: block; padding: 12px; cursor: pointer; text-align: center; border-radius: 6px; color: #555; font-size: 11px; font-weight: bold; }
+        .preview-img { max-width: 100%; max-height: 80px; margin-top: 10px; display: none; border: 1px solid #222; }
+        .version-tag { position: fixed; bottom: 15px; right: 20px; font-size: 10px; color: #333; font-weight: 900; }
     </style>
 </head>
 <body>
-    <div id="manutencao">SISTEMA EM MANUTENÇÃO</div>
 
-    <!-- Mantenha todo o seu layout original aqui -->
-    <!-- ... -->
+    <div class="version-tag">v1.2</div>
 
-    <script>
-        const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
+    <div id="tela-inicial">
+        <div class="splash-header">
+            <h1 class="splash-brand">PHOTO PRINT</h1>
+            <p class="splash-subtitle">Colecionando Momentos</p>
+        </div>
+        <button class="btn-neon-style" style="padding: 20px 60px; margin-top: 30px;" onclick="abrirModalSenha()">Acessar Terminal</button>
+    </div>
 
-        // Carrega o status do sistema ao abrir a página
-        window.onload = async () => {
-            try {
-                const res = await fetch(`${API}/get-all-states`);
-                const data = await res.json();
+    <div id="modal-senha">
+        <div class="pass-box">
+            <div style="font-size: 9px; color: var(--neon); letter-spacing: 2px;">SECURITY PROTOCOL</div>
+            <input type="password" id="input-pass" placeholder="••••" maxlength="4" onkeydown="if(event.key === 'Enter') confirmarSenha()">
+            <button class="btn-neon-style" style="width:100%" onclick="confirmarSenha()">Autenticar</button>
+            <div style="margin-top: 20px; color: #333; font-size: 9px; cursor: pointer;" onclick="fecharModalSenha()">ABORTAR</div>
+        </div>
+    </div>
+
+    <div class="top-nav" id="header">
+        <div>
+            <h2 class="internal-brand">PROTO PRINT</h2>
+            <div class="internal-subtitle">colecionando momentos</div>
+        </div>
+        <div class="status-container" id="status-box">
+            <span id="label-status" style="font-size: 9px; font-weight: 900; color: var(--red);">OFFLINE</span>
+            <label class="switch-mega">
+                <input type="checkbox" id="server-status" onchange="salvarStatusRede()">
+                <span class="slider-mega"></span>
+            </label>
+        </div>
+    </div>
+
+    <div class="main-layout" id="layout">
+        <div class="card">
+            <div class="card-header" id="card-form-title">NOVO EVENTO</div>
+            <div class="card-body">
+                <input type="hidden" id="edit-index" value="-1">
+                <div class="form-group"><label>Nome do Evento</label><input type="text" id="input-evento" placeholder="Ex: Casamento João e Maria"></div>
+                <div class="form-group"><label>Data do Evento</label><input type="date" id="input-data"></div>
+                <div class="form-group"><label>Configuração de Saída</label><select id="select-formato"></select></div>
+                
+                <div class="form-group-inline">
+                    <label>Modo Guestbook (+1 Cópia)</label>
+                    <label class="switch-mega">
+                        <input type="checkbox" id="input-livro">
+                        <span class="slider-mega"></span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label>Moldura (.PNG)</label>
+                    <label for="input-moldura" class="custom-file-upload" id="label-file">CARREGAR MOLDURA PNG</label>
+                    <input type="file" id="input-moldura" accept="image/png" style="display:none" onchange="previewMoldura(this)">
+                    <center><img id="img-preview" class="preview-img"></center>
+                </div>
+                <button class="btn-neon-style" style="width:100%" onclick="salvarEvento()" id="btn-submit">
+                    <span id="btn-text">CRIAR EVENTO</span>
+                </button>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">Logs de Atividade</div>
+            <div class="card-body" id="corpo-lista"></div>
+        </div>
+    </div>
+
+<script>
+    const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
+    const SENHA_MESTRA = "1234";
+    let eventos = JSON.parse(localStorage.getItem('eventos_db')) || [];
+    let formatos = [{label: "10x15 Vertical", value: "10X15V"}, {label: "10x15 Horizontal", value: "10X15H"}, {label: "Tirinha 5x15", value: "TIRINHA"}, {label: "Polaroid", value: "POLAROID"}];
+
+    window.onload = async () => {
+        try {
+            const resp = await fetch(`${API_URL}/get-all-states`);
+            const data = await resp.json();
+            // Sincroniza o status global do servidor com a UI
+            if(data.config) {
+                atualizarUIStatus(data.config.status === "ONLINE");
                 document.getElementById('server-status').checked = (data.config.status === "ONLINE");
-                document.getElementById('manutencao').style.display = (data.config.status === "OFFLINE") ? "flex" : "none";
-            } catch(e) {}
-        };
+            }
+        } catch(e) { console.log("Servidor offline, operando local."); }
+    };
 
-        async function salvarStatusRede() {
-            const on = document.getElementById('server-status').checked;
-            const status = on ? "ONLINE" : "OFFLINE";
-            
-            // Atualiza a tela localmente
-            document.getElementById('manutencao').style.display = on ? "none" : "flex";
+    function abrirModalSenha() { document.getElementById('modal-senha').style.display = 'flex'; document.getElementById('input-pass').focus(); }
+    function fecharModalSenha() { document.getElementById('modal-senha').style.display = 'none'; }
+    function confirmarSenha() { if(document.getElementById('input-pass').value === SENHA_MESTRA) { fecharModalSenha(); ativarPainel(); } else alert("Senha Incorreta!"); }
 
-            await fetch(`${API}/set-config`, {
-                method: 'POST',
-                body: JSON.stringify({ 
-                    status: status,
-                    evento: "Evento Atual", // Ajuste para pegar o valor do seu campo de texto
-                    formato: "10X15V" 
-                })
-            });
+    function ativarPainel() {
+        document.getElementById('tela-inicial').style.display = 'none';
+        document.getElementById('header').style.display = 'flex';
+        document.getElementById('layout').style.display = 'grid';
+        renderizarFormatos(); renderizarLista(); checarEventoAtivo(); 
+    }
+
+    function renderizarFormatos() { document.getElementById('select-formato').innerHTML = formatos.map(f => `<option value="${f.value}">${f.label}</option>`).join(''); }
+
+    function previewMoldura(input) {
+        if(input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => { const img = document.getElementById('img-preview'); img.src = e.target.result; img.style.display = 'block'; document.getElementById('label-file').innerText = input.files[0].name; };
+            reader.readAsDataURL(input.files[0]);
         }
-    </script>
+    }
+
+    async function salvarEvento() {
+        const nome = document.getElementById('input-evento').value;
+        const data = document.getElementById('input-data').value;
+        const formato = document.getElementById('select-formato').value;
+        const livro = document.getElementById('input-livro').checked;
+        const editIdx = parseInt(document.getElementById('edit-index').value);
+        if(!nome || !data) return alert("Preencha campos obrigatórios.");
+
+        const novoEv = { nome, formato, livro, data: data.split('-').reverse().join('/'), dataRaw: data, ativo: true };
+        if(editIdx > -1) eventos[editIdx] = novoEv;
+        else { eventos.forEach(e => e.ativo = false); eventos.unshift(novoEv); }
+        localStorage.setItem('eventos_db', JSON.stringify(eventos));
+        await sincronizar(nome, formato, "ONLINE", livro);
+        renderizarLista();
+        checarEventoAtivo();
+    }
+
+    async function sincronizar(nome, formato, status, livro) {
+        try {
+            await fetch(`${API_URL}/set-config`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ evento: nome, status: status, formato: formato, livro: livro })
+            });
+            atualizarUIStatus(status === "ONLINE");
+        } catch(e){ alert("Erro ao sincronizar com nuvem."); }
+    }
+
+    function salvarStatusRede() {
+        const on = document.getElementById('server-status').checked;
+        const ativo = eventos.find(e => e.ativo);
+        if(ativo) sincronizar(ativo.nome, ativo.formato, on ? "ONLINE" : "OFFLINE", ativo.livro);
+    }
+
+    function atualizarUIStatus(on) {
+        const lb = document.getElementById('label-status');
+        lb.innerText = on ? "ONLINE" : "OFFLINE";
+        lb.style.color = on ? "var(--neon)" : "var(--red)";
+    }
+
+    function renderizarLista() {
+        document.getElementById('corpo-lista').innerHTML = eventos.map((ev, i) => `
+            <div class="evento-item ${ev.ativo ? 'ativo' : ''}">
+                <div><div style="font-size:12px; font-weight:900;">${ev.nome}</div><div style="font-size:9px; color:#555; text-transform:uppercase;">${ev.data} • ${ev.formato}</div></div>
+                <div style="display:flex; gap:15px; align-items:center;">
+                    <i class="fas fa-edit" style="cursor:pointer;" onclick="editar(${i})"></i>
+                    <button class="btn-neon-style" style="font-size:9px; padding: 6px 12px;" onclick="ativarEvento(${i})">${ev.ativo ? 'ATIVO' : 'ATIVAR'}</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function ativarEvento(index) {
+        eventos.forEach((e, i) => e.ativo = (i === index));
+        const ev = eventos[index];
+        await sincronizar(ev.nome, ev.formato, "ONLINE", ev.livro);
+        localStorage.setItem('eventos_db', JSON.stringify(eventos));
+        renderizarLista();
+    }
+
+    function checarEventoAtivo() {
+        const temAtivo = eventos.some(e => e.ativo);
+        document.getElementById('server-status').disabled = !temAtivo;
+    }
+</script>
 </body>
 </html>

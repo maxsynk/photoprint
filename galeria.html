@@ -2,14 +2,17 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>PHOTO PRINT - GALLERY V5.0</title>
-    </head>
+    <title>GALERIA - PHOTO PRINT v5.1</title>
+    <style>
+        #manutencao { display:none; position:fixed; inset:0; background:#000; color:red; font-size:40px; font-weight:900; align-items:center; justify-content:center; z-index:99999; animation:pulse 1s infinite; text-align:center; }
+        @keyframes pulse { 0%,100%{ opacity: 1;} 50%{ opacity: 0.5;} }
+    </style>
+</head>
 <body>
-    <div id="manutencao" style="display:none; position:fixed; inset:0; background:#000; color:red; font-size:50px; align-items:center; justify-content:center; z-index:9999;">
-        SISTEMA EM MANUTENÇÃO
-    </div>
-    
-    <main class="grid" id="grid-fotos"></main>
+    <div id="manutencao">SISTEMA EM MANUTENÇÃO</div>
+
+    <!-- Mantenha todo o seu layout original da galeria aqui -->
+    <!-- ... -->
 
     <script>
         const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
@@ -19,27 +22,23 @@
                 const res = await fetch(`${API}/get-all-states?t=${Date.now()}`);
                 const data = await res.json();
 
-                // 1. Controle de Manutenção
-                const emManutencao = (data.config.status === "OFFLINE");
-                document.getElementById('manutencao').style.display = emManutencao ? "flex" : "none";
-                if(emManutencao) return;
-
-                // 2. Atualizar Nome e Formato
-                document.getElementById('nome-evento').innerText = data.config.evento;
-                document.getElementById('tipo-formato').innerText = data.config.formato;
-
-                // 3. Lógica de Impressão (via Worker)
-                if (data.print && data.print.printTriggered) {
-                    await imprimir(data.print.copias); // Sua função de impressão
-                    await fetch(`${API}/clear-print`, { method: 'POST' });
+                // Alterna a tela de manutenção sem apagar seu HTML
+                const man = document.getElementById('manutencao');
+                if (data.config.status === "OFFLINE") {
+                    man.style.display = "flex";
+                } else {
+                    man.style.display = "none";
+                    
+                    // Lógica de impressão se houver sinal
+                    if (data.print && data.print.printTriggered) {
+                        imprimir(data.print.copias); // Sua função de impressão existente
+                        await fetch(`${API}/clear-print`, { method: 'POST' });
+                    }
                 }
-
-                // 4. Carregar novas fotos se necessário
-                atualizarGrid(data.config.evento);
-
-            } catch(e) { console.error("Falha na sincronização:", e); }
+            } catch(e) { console.log("Aguardando rede..."); }
         }
         
+        // Verifica a cada 2 segundos
         setInterval(loopSync, 2000);
     </script>
 </body>

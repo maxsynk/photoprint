@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>BOTOEIRA - PHOTO PRINT v3.3</title>
+    <title>BOTOEIRA - PHOTO PRINT v3.4</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
@@ -42,7 +42,6 @@
 
         .screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; }
 
-        /* BOTÃO FIXO - SEM ANIMAÇÃO GIRATÓRIA */
         .btn-start { position:relative; width:280px; height:280px; border-radius:50%; border:4px solid var(--neon); background: radial-gradient(circle at center, rgba(57,255,20,0.18), rgba(0,0,0,0.96)); cursor:pointer; transition:0.1s; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow: 0 0 30px rgba(57,255,20,0.8), inset 0 0 60px rgba(57,255,20,0.15); backdrop-filter:blur(4px); z-index:30; }
         .btn-start::after { content:''; position:absolute; inset:8px; border-radius:50%; background:rgba(0,0,0,0.92); }
         .btn-start:active { transform: scale(0.92); }
@@ -153,14 +152,25 @@
         }
         loadSavedBackground();
 
+        /* ======== LÓGICA CORRIGIDA ======== */
         async function triggerPhoto() {
             document.getElementById('screen-start').style.display = "none";
             document.getElementById('screen-triggered').style.display = "flex";
+            
             try {
-                await fetch(`${API}/trigger`, { method: 'POST' });
-                await fetch(`${API}/set-state`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ state: 'capturing' }) });
+                // AQUI ESTAVA O ERRO: Removida a chamada inútil para "/trigger".
+                // Agora enviamos direto a mudança de estado que a Webcam escuta!
+                await fetch(`${API}/set-state`, { 
+                    method: 'POST', 
+                    headers: {'Content-Type':'application/json'}, 
+                    body: JSON.stringify({ state: 'capturing' }) 
+                });
+                
                 waitPhotoFinish();
-            } catch(e) { alert("Erro ao disparar"); location.reload(); }
+            } catch(e) { 
+                alert("Erro de conexão ao disparar a câmera."); 
+                location.reload(); 
+            }
         }
 
         async function waitPhotoFinish() {
@@ -169,14 +179,20 @@
                 try {
                     const res = await fetch(`${API}/get-all-states?t=${Date.now()}`);
                     const data = await res.json();
+                    
                     if (data.ready === true || (data.ready && data.ready.ready === true)) {
                         clearInterval(interval);
                         document.getElementById('screen-triggered').style.display = "none";
                         document.getElementById('screen-options').style.display = "flex";
                     }
                 } catch(e) {}
+                
                 attempts++;
-                if (attempts > 20) { clearInterval(interval); alert("Tempo esgotado."); location.reload(); }
+                if (attempts > 30) { 
+                    clearInterval(interval); 
+                    alert("Tempo limite de captura esgotado."); 
+                    location.reload(); 
+                }
             }, 1000);
         }
 
@@ -187,9 +203,17 @@
         }
 
         async function sendPrint() {
-            await fetch(`${API}/trigger-print`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ copias: selectedCopiesValue }) });
-            document.getElementById('screen-options').innerHTML = '<div class="triggered-text">ENVIADO! ✅</div>';
-            setTimeout(() => location.reload(), 1500);
+            try {
+                await fetch(`${API}/trigger-print`, { 
+                    method: 'POST', 
+                    headers: {'Content-Type':'application/json'}, 
+                    body: JSON.stringify({ copias: selectedCopiesValue }) 
+                });
+                document.getElementById('screen-options').innerHTML = '<div class="triggered-text">ENVIADO! ✅</div>';
+                setTimeout(() => location.reload(), 1500);
+            } catch(e) {
+                alert("Erro ao enviar comando de impressão.");
+            }
         }
     </script>
 </body>

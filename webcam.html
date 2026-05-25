@@ -1,35 +1,147 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>WEBCAM - PHOTO PRINT v3.5</title>
+    <style>
+        :root { --neon: #39ff14; --dark: #0a0a0a; --danger: #ff3131; --info-blue: #00e5ff; }
+        body { margin: 0; background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
+        #cam-preview { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: none; }
+        #final-preview-container { position: fixed; inset: 0; background: #000; z-index: 150; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        #img-review { max-width: 80%; max-height: 50%; border: 5px solid var(--neon); border-radius: 10px; box-shadow: 0 0 30px var(--neon); }
+        .btn-exit-preview { position: absolute; top: 30px; right: 30px; background: rgba(0,0,0,0.7); border: 2px solid var(--danger); color: var(--danger); font-size: 24px; font-weight: bold; width: 60px; height: 60px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; z-index: 200; box-shadow: 0 0 15px rgba(255,49,49,0.4); }
+        .btn-exit-preview:hover { background: var(--danger); color: white; box-shadow: 0 0 25px var(--danger); }
+        .system-info { position: absolute; top: 30px; left: 30px; text-align: left; border-left: 4px solid var(--neon); padding-left: 15px; z-index: 100; }
+        .sys-title { font-size: 28px; font-weight: 900; color: var(--neon); text-transform: uppercase; margin: 0; }
+        .sys-sub { font-size: 10px; letter-spacing: 3px; opacity: 0.7; text-transform: uppercase; }
+        .event-label { margin-top: 10px; font-weight: bold; color: #fff; font-size: 18px; }
+        .screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; }
+        .btn-start { width: 320px; height: 320px; border-radius: 50%; background: rgba(0,0,0,0.75); border: 12px solid var(--neon); color: white; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; transition: 0.3s; pointer-events: auto; animation: pulseBtn 2s infinite ease-in-out; }
+        .btn-start b { font-size: 30px; color: var(--neon); animation: blinkText 1.5s infinite alternate; }
+        .btn-start span { font-size: 18px; margin-top: 15px; opacity: 0.8; letter-spacing: 1px; }
+        .btn-start:active { transform: scale(0.9) !important; background: var(--neon); color: #000; }
+        @keyframes pulseBtn { 0% { transform: scale(1); box-shadow: 0 0 30px rgba(57, 255, 20, 0.4); } 50% { transform: scale(1.06); box-shadow: 0 0 60px rgba(57, 255, 20, 0.8); } 100% { transform: scale(1); box-shadow: 0 0 30px rgba(57, 255, 20, 0.4); } }
+        @keyframes blinkText { from { opacity: 0.6; } to { opacity: 1; } }
+        #counter { font-size: 280px; font-weight: 900; text-shadow: 0 0 60px var(--neon); display: none; }
+        #smile-msg { font-size: 80px; font-weight: 900; color: var(--neon); display: none; text-align: center; line-height: 1.1; text-transform: uppercase; }
+        #mid-review-container { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 120; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        #img-mid-review { max-width: 75%; max-height: 75%; border: 4px solid #fff; border-radius: 8px; }
+        .copies-label { font-size: 12px; color: var(--neon); font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-top: 15px; margin-bottom: 8px; }
+        .print-grid { display: grid; grid-template-columns: repeat(2, 180px); gap: 12px; margin-bottom: 20px; pointer-events: auto; }
+        .btn-print-mobile { padding: 10px 15px; background: transparent; color: white; font-size: 15px; font-weight: bold; border-radius: 30px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-neon-style { border: 2px solid var(--neon); }
+        .btn-neon-style:hover, .btn-neon-style.selected { background: var(--neon); color: black; box-shadow: 0 0 15px var(--neon); }
+        .btn-blue-style { border: 2px solid var(--info-blue); }
+        .btn-blue-style:hover, .btn-blue-style.selected { background: var(--info-blue); color: black; box-shadow: 0 0 15px var(--info-blue); }
+        .submit-container { display: flex; flex-direction: column; align-items: center; cursor: pointer; pointer-events: auto; margin-top: 10px; }
+        .btn-submit-circle { width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--neon); display: flex; align-items: center; justify-content: center; background: transparent; transition: 0.3s; }
+        .btn-submit-circle svg { width: 24px; height: 24px; fill: var(--neon); }
+        .submit-container:hover .btn-submit-circle { background: var(--neon); }
+        .submit-container:hover .btn-submit-circle svg { fill: black; }
+        .submit-text { font-size: 11px; color: var(--neon); font-weight: bold; text-transform: uppercase; letter-spacing: 2px; margin-top: 8px; }
+        #flash { position: fixed; inset: 0; background: white; display: none; z-index: 200; }
+        #loader { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 300; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        #screen-maintenance { position: fixed; inset: 0; background: #000000; z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        .maintenance-msg { font-size: 60px; font-weight: 900; color: var(--danger); text-shadow: 0 0 30px rgba(255, 49, 49, 0.6); letter-spacing: 2px; text-align: center; }
+    </style>
+</head>
 <body>
-    <video id="video" autoplay playsinline style="display:none"></video>
-    <canvas id="canvas" style="display:none"></canvas>
-    <div id="display-area"></div>
+
+    <div id="flash"></div>
+    <div id="loader"><h2 id="load-msg" style="color:var(--neon)">PROCESSANDO...</h2></div>
+    <div id="screen-maintenance">
+        <div class="maintenance-msg">SISTEMA EM MANUTENÇÃO</div>
+    </div>
+
+    <video id="cam-preview" autoplay playsinline></video>
+
+    <div class="system-info">
+        <div class="sys-title">PHOTO PRINT</div>
+        <div class="sys-sub">Colecionando Momentos</div>
+        <div id="event-display" class="event-label">CARREGANDO...</div>
+    </div>
+
+    <div id="screen-start" class="screen">
+        <div class="btn-start" onclick="initSession()">
+            <b>VAMOS COMEÇAR?</b>
+            <span>TOQUE AQUI</span>
+        </div>
+    </div>
+
+    <div id="screen-capture" class="screen" style="display:none">
+        <div id="counter">8</div>
+        <div id="smile-msg">SORRIA! 📸</div>
+    </div>
+
+    <div id="mid-review-container">
+        <h2 id="mid-review-title" style="color:var(--neon); margin-bottom:15px; font-size:40px;">OLHA ELE(A)!</h2>
+        <img id="img-mid-review" src="">
+    </div>
+
+    <div id="final-preview-container" class="screen">
+        <button class="btn-exit-preview" onclick="location.reload()">X</button>
+        <h2 style="color:var(--neon); margin-bottom: 5px;">FICOU ÓTIMA!</h2>
+        <img id="img-review" src="">
+        <div class="copies-label">Quantas cópias deseja imprimir?</div>
+        <div class="print-grid">
+            <button class="btn-print-mobile btn-neon-style selected" onclick="selectOption(this, 1)">🖨️ 1 Cópia</button>
+            <button class="btn-print-mobile btn-neon-style" onclick="selectOption(this, 2)">🖨️ 2 Cópias</button>
+            <button class="btn-print-mobile btn-blue-style" onclick="selectOption(this, 3)">📖 1 Cópia + Guestbook</button>
+            <button class="btn-print-mobile btn-blue-style" onclick="selectOption(this, 4)">📖 2 Cópias + Guestbook</button>
+        </div>
+        <div class="submit-container" onclick="submitSelection()">
+            <div class="btn-submit-circle"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></div>
+            <div class="submit-text">Enviar e Imprimir</div>
+        </div>
+    </div>
+
     <script>
         const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
-        
-        async function processFrame() {
-            const res = await fetch(`${API}/get-all-states`);
-            const data = await res.json();
-            
-            // Se estado for 'capturing' e trigger=true, tira a foto
-            if (data.app.state === 'capturing' && data.trigger.triggered) {
-                const video = document.getElementById('video');
-                const canvas = document.getElementById('canvas');
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(video, 0, 0);
+        let config = { evento: "", formato: "10X15V", guestbook: false };
+        let video = document.getElementById('cam-preview');
+
+        // Função de Sincronização e Gatilho (Unindo as lógicas)
+        async function syncAndTrigger() {
+            try {
+                const res = await fetch(`${API}/get-all-states?t=${Date.now()}`);
+                const data = await res.json();
                 
-                // Desenha a moldura (deve estar carregada em um objeto Image)
-                // ctx.drawImage(molduraImg, 0, 0); 
-                
-                const imageData = canvas.toDataURL('image/jpeg');
-                // Envia para o servidor e seta photo-ready
-                await fetch(`${API}/photo-ready`, { method: 'POST' });
-                await fetch(`${API}/clear-trigger`, { method: 'POST' });
-            }
+                // 1. Sincronização de Dados
+                if (data.config) {
+                    config.evento = data.config.evento;
+                    config.formato = data.config.formato;
+                    config.guestbook = data.config.guestbook || false;
+                    document.getElementById('event-display').innerText = config.evento;
+                }
+
+                // 2. Verificação de Status
+                if (!data.config || data.config.status !== "ONLINE") {
+                    document.getElementById('screen-maintenance').style.display = "flex";
+                    return;
+                }
+                document.getElementById('screen-maintenance').style.display = "none";
+
+                // 3. Lógica de Captura (Trigger)
+                if (data.app && data.app.state === 'capturing' && data.trigger && data.trigger.triggered) {
+                    console.log("Gatilho detectado!");
+                    // Inicia processo de foto automaticamente se estiver na tela de captura
+                    if(document.getElementById('screen-capture').style.display === "flex") {
+                         // Executa sua função de foto aqui: captureImage();
+                         await fetch(`${API}/clear-trigger`, { method: 'POST' });
+                    }
+                }
+            } catch(e) { console.error("Erro sync:", e); }
         }
-        setInterval(processFrame, 1000);
+
+        async function initSession() {
+            document.getElementById('screen-start').style.display = "none";
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            video.style.display = "block";
+            document.getElementById('screen-capture').style.display = "flex";
+        }
+
+        setInterval(syncAndTrigger, 1000);
     </script>
 </body>
 </html>

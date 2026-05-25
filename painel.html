@@ -46,7 +46,7 @@
 </head>
 <body>
 
-    <div class="version-tag">v1.2</div>
+    <div class="version-tag">v1.6 - Patched</div>
 
     <div id="tela-inicial">
         <div class="splash-header">
@@ -121,14 +121,13 @@
 
     window.onload = async () => {
         try {
-            const resp = await fetch(`${API_URL}/get-all-states`);
+            const resp = await fetch(`${API_URL}/get-all-states?t=${Date.now()}`);
             const data = await resp.json();
-            // Sincroniza o status global do servidor com a UI
             if(data.config) {
                 atualizarUIStatus(data.config.status === "ONLINE");
                 document.getElementById('server-status').checked = (data.config.status === "ONLINE");
             }
-        } catch(e) { console.log("Servidor offline, operando local."); }
+        } catch(e) { console.log("Servidor offline ou erro de resposta inicial. Operando local."); }
     };
 
     function abrirModalSenha() { document.getElementById('modal-senha').style.display = 'flex'; document.getElementById('input-pass').focus(); }
@@ -163,7 +162,10 @@
         const novoEv = { nome, formato, livro, data: data.split('-').reverse().join('/'), dataRaw: data, ativo: true };
         if(editIdx > -1) eventos[editIdx] = novoEv;
         else { eventos.forEach(e => e.ativo = false); eventos.unshift(novoEv); }
+        
         localStorage.setItem('eventos_db', JSON.stringify(eventos));
+        
+        // Dispara sincronização com tratamento real de resposta
         await sincronizar(nome, formato, "ONLINE", livro);
         renderizarLista();
         checarEventoAtivo();
@@ -171,13 +173,25 @@
 
     async function sincronizar(nome, formato, status, livro) {
         try {
-            await fetch(`${API_URL}/set-config`, {
+            console.log(`Enviando config para Nuvem: ${nome} | ${formato}`);
+            const response = await fetch(`${API_URL}/set-config`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ evento: nome, status: status, formato: formato, livro: livro })
             });
-            atualizarUIStatus(status === "ONLINE");
-        } catch(e){ alert("Erro ao sincronizar com nuvem."); }
+            
+            if(response.ok) {
+                console.log("✅ Sincronizado com o Worker com sucesso!");
+                atualizarUIStatus(status === "ONLINE");
+            } else {
+                const errData = await response.json().catch(()=>({}));
+                console.error("❌ Erro de validação do Worker:", errData);
+                alert("Worker recusou os dados. Verifique logs do Cloudflare.");
+            }
+        } catch(e){ 
+            console.error("❌ Falha crítica de rede no fetch:", e);
+            alert("Erro ao sincronizar com nuvem. Verifique sua conexão com a internet."); 
+        }
     }
 
     function salvarStatusRede() {

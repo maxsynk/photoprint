@@ -6,9 +6,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>BOTOEIRA - PHOTO PRINT v3.3</title>
+    <title>BOTOEIRA - PHOTO PRINT v3.4</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
         :root { --neon: #39ff14; --dark: #050505; --danger: #ff3131; --info-blue: #00e5ff; }
 
         html, body {
@@ -18,7 +19,9 @@
                         linear-gradient(135deg, #020202 0%, #050505 40%, #071107 100%);
             color: white; font-family: Arial, Helvetica, sans-serif;
             overflow: hidden; display: flex; flex-direction: column; height: 100vh;
-            touch-action: manipulation; overscroll-behavior: none; -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            overscroll-behavior: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         #dynamic-bg { position:fixed; inset:0; z-index:0; background-size:cover; background-position:center; background-repeat:no-repeat; opacity:0; transition:opacity 0.6s ease; }
@@ -32,6 +35,7 @@
         .logo-title { font-family:'Orbitron',sans-serif; color:var(--neon); font-size:24px; font-weight:900; letter-spacing:4px; text-shadow: 0 0 10px var(--neon); }
         .logo-sub { margin-top:2px; color:white; opacity:0.7; letter-spacing:3px; font-size:10px; text-transform:uppercase; }
 
+        /* Menu Secreto de Fundo */
         #bg-menu { position:fixed; top:80px; left:20px; z-index:100; display:none; flex-direction:column; gap:12px; }
         #bg-menu.active { display:flex; }
         .bg-btn { padding:12px 20px; border-radius:14px; border:1px solid rgba(57,255,20,0.45); background:rgba(0,0,0,0.85); color:white; font-size:14px; font-weight:bold; letter-spacing:1px; cursor:pointer; backdrop-filter:blur(10px); text-align:center; }
@@ -52,7 +56,8 @@
         .triggered-text { font-family:'Orbitron',sans-serif; font-size: 26px; color: var(--neon); font-weight: 900; text-align: center; text-shadow: 0 0 15px var(--neon); animation:pulse 1s infinite; background: rgba(0,0,0,0.7); padding: 20px; border-radius: 15px; border: 1px solid var(--neon); backdrop-filter: blur(5px);}
         @keyframes pulse { 0%,100%{ opacity: 1;} 50%{ opacity: 0.5;} }
 
-        #monitor-status { position: fixed; bottom: 15px; right: 15px; left: 15px; font-size: 11px; font-family: monospace; color: #39ff14; z-index: 99; pointer-events: none; text-align: center; background: rgba(0,0,0,0.8); padding: 4px; border-radius: 5px; }
+        /* Monitor de Status */
+        #monitor-status { position: fixed; bottom: 15px; right: 15px; left: 15px; font-size: 11px; font-family: monospace; color: #39ff14; z-index: 99; pointer-events: none; text-align: center; background: rgba(0,0,0,0.85); padding: 6px; border-radius: 6px; border: 1px solid rgba(57,255,20,0.2); }
 
         .options-container { background: rgba(0,0,0,0.8); padding: 30px; border-radius: 20px; border: 1px solid var(--neon); box-shadow: 0 0 30px rgba(0,0,0,0.8); display:flex; flex-direction: column; align-items: center; backdrop-filter: blur(10px); }
         .copies-label { font-family:'Orbitron',sans-serif; font-size: 16px; color: var(--neon); font-weight: bold; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon); text-align: center; }
@@ -109,7 +114,7 @@
         </div>
     </div>
 
-    <div id="monitor-status">PRONTO PARA USAR</div>
+    <div id="monitor-status">SISTEMA PRONTO</div>
 
     <script>
         const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
@@ -119,6 +124,7 @@
         const secretLogo = document.getElementById('secret-logo');
         const monitor = document.getElementById('monitor-status');
 
+        /* MENU SECRETO */
         let clickCount = 0; let clickTimer = null;
         secretLogo.addEventListener('click',()=>{
             clickCount++; clearTimeout(clickTimer); 
@@ -126,6 +132,7 @@
             if(clickCount >= 7){ bgMenu.classList.toggle('active'); clickCount = 0; }
         });
 
+        /* LÓGICA DE BACKGROUND */
         document.getElementById('bg-input').addEventListener('change', (e) => {
             const file = e.target.files[0]; if(!file) return;
             const reader = new FileReader();
@@ -158,62 +165,57 @@
         }
         loadSavedBackground();
 
+        /* AÇÕES DA BOTOEIRA */
         async function triggerPhoto() {
             document.getElementById('screen-start').style.display = "none";
             document.getElementById('screen-triggered').style.display = "flex";
-            monitor.innerText = "Enviando disparo...";
+            monitor.innerText = "Disparando câmera...";
             
             localStorage.setItem('booth_state', 'capturing');
 
             try {
-                // Forçando cabeçalhos limpos e tirando cache de rota
-                await fetch(`${API}/trigger?t=${Date.now()}`, { method: 'POST', mode: 'cors' }).catch(e=>e);
+                // Envia sinal de trigger para ativar a webcam e atualiza o estado para capturing
+                await fetch(`${API}/trigger`, { method: 'POST' }).catch(e=>e);
                 
-                const resState = await fetch(`${API}/set-state?t=${Date.now()}`, {
+                const resState = await fetch(`${API}/set-state`, {
                     method: 'POST',
-                    mode: 'cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ state: 'capturing' })
                 });
 
                 if(resState.ok) {
-                    monitor.innerText = "Disparado com sucesso! Aguardando retorno da câmera...";
+                    monitor.innerText = "Conectado com sucesso! Aguardando fim da captura...";
                     waitPhotoFinish();
                 } else {
-                    monitor.innerText = `Erro no Servidor: Status ${resState.status}`;
+                    monitor.innerText = `Erro API: Status ${resState.status}`;
                 }
 
             } catch(e) {
-                monitor.innerText = "Falha de rede ao disparar. Verifique o CORS ou Wi-fi.";
-                setTimeout(() => { location.reload(); }, 3000);
+                monitor.innerText = "Falha ao conectar com o Servidor Cloudflare.";
             }
         }
 
         async function waitPhotoFinish() {
             const interval = setInterval(async () => {
                 try {
-                    // Cache: 'no-store' força o celular a buscar o dado real do Cloudflare, eliminando o erro de trava
-                    const res = await fetch(`${API}/get-state?t=${Date.now()}`, { 
-                        method: 'GET',
-                        mode: 'cors',
-                        cache: 'no-store'
-                    });
-                    
+                    // Consulta o endpoint unificado para verificar o estado correto da sessão
+                    const res = await fetch(`${API}/get-state?t=${Date.now()}`);
                     const data = await res.json();
-                    monitor.innerText = `Estado no Servidor: '${data.state}'`;
+                    
+                    monitor.innerText = `Estado no Worker: '${data.state}'`;
 
+                    // Quando a webcam salvar a foto e atualizar o estado para 'options', a botoeira libera
                     if (data.state === 'options') {
                         clearInterval(interval);
                         document.getElementById('screen-triggered').style.display = "none";
                         document.getElementById('screen-options').style.display = "flex";
                         localStorage.setItem('booth_state', 'options');
-                        monitor.innerText = "Sucesso! Escolha as cópias.";
+                        monitor.innerText = "Foto pronta! Selecione a impressão.";
                     }
                 } catch(e) {
-                    // Se falhar de forma intermitente, ele não quebra o loop, continua tentando até o servidor responder
-                    monitor.innerText = "Conexão instável... Tentando reconectar ao get-state";
+                    monitor.innerText = "Tentando ler estado do servidor...";
                 }
-            }, 1200);
+            }, 1000);
         }
 
         function selectOption(btn, val) {
@@ -224,21 +226,21 @@
 
         async function sendPrint() {
             try {
-                monitor.innerText = "Enviando dados de impressão...";
-                await fetch(`${API}/trigger-print?t=${Date.now()}`, {
+                monitor.innerText = "Enviando comando de impressão...";
+                await fetch(`${API}/trigger-print`, {
                     method: 'POST',
-                    mode: 'cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ copias: selectedCopiesValue })
                 });
                 
-                await fetch(`${API}/set-state?t=${Date.now()}`, {
-                    method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' },
+                await fetch(`${API}/set-state`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ state: 'start' })
                 }).catch(e=>e);
 
                 localStorage.setItem('booth_state', 'start');
-                document.getElementById('screen-options').innerHTML = '<div class="triggered-text">ENVIADO! ✅</div>';
+                
+                document.getElementById('screen-options').innerHTML = '<div class="triggered-text">ENVIADO COM SUCESSO! ✅</div>';
                 setTimeout(() => location.reload(), 1500);
             } catch(e) {
                 alert("Erro ao enviar impressão");

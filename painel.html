@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT - Master Panel v1.7</title>
+    <title>PHOTO PRINT - Master Panel v1.9</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --neon: #39ff14; --red: #ff3131; --dark: #000000; --card: rgba(255, 255, 255, 0.03); --border: rgba(57, 255, 20, 0.2); }
@@ -54,7 +54,7 @@
 </head>
 <body>
 
-    <div class="version-tag">v1.7</div>
+    <div class="version-tag">v1.9</div>
 
     <div id="tela-inicial">
         <div class="splash-header">
@@ -149,7 +149,7 @@
         renderizarFormatos(); renderizarLista(); checarEventoAtivo(); 
     }
 
-    function renderizarFormatos() { document.getElementById('select-formato').innerHTML = formatos.map(f => `<option value="${f.value}">${f.label}</option>`).join(''); }
+    function renderizarFormatos() { document.getElementById('select-formato').innerHTML = formats.map(f => `<option value="${f.value}">${f.label}</option>`).join(''); }
 
     function previewMoldura(input) {
         if(input.files[0]) {
@@ -167,7 +167,8 @@
         const editIdx = parseInt(document.getElementById('edit-index').value);
         if(!nome || !data) return alert("Preencha campos obrigatórios.");
 
-        const estaAtivo = editIdx > -1 ? eventos[editIdx].ativo : true;
+        // Mantém o estado ativo atual caso seja uma edição, se for novo entra como inativo
+        const estaAtivo = editIdx > -1 ? eventos[editIdx].ativo : false;
         const novoEv = { nome, formato, livro, data: data.split('-').reverse().join('/'), dataRaw: data, ativo: estaAtivo };
         
         if(editIdx > -1) {
@@ -176,13 +177,11 @@
             document.getElementById('card-form-title').innerText = "NOVO EVENTO";
             document.getElementById('btn-text').innerText = "CRIAR EVENTO";
         } else { 
-            eventos.forEach(e => e.ativo = false); 
             eventos.unshift(novoEv); 
         }
         
         localStorage.setItem('eventos_db', JSON.stringify(eventos));
         
-        // Limpar formulário após salvar
         document.getElementById('input-evento').value = "";
         document.getElementById('input-data').value = "";
         document.getElementById('input-livro').checked = false;
@@ -213,7 +212,11 @@
     function salvarStatusRede() {
         const on = document.getElementById('server-status').checked;
         const ativo = eventos.find(e => e.ativo);
-        if(ativo) sincronizar(ativo.nome, ativo.formato, on ? "ONLINE" : "OFFLINE", ativo.livro);
+        if(ativo) {
+            sincronizar(ativo.nome, ativo.formato, on ? "ONLINE" : "OFFLINE", ativo.livro);
+        } else {
+            sincronizar("Geral", "10X15V", on ? "ONLINE" : "OFFLINE", false);
+        }
     }
 
     function atualizarUIStatus(on) {
@@ -251,7 +254,6 @@
         document.getElementById('input-livro').checked = ev.livro;
         document.getElementById('edit-index').value = index;
         
-        // Altera interface visual para modo edição
         document.getElementById('card-form-title').innerText = "EDITAR EVENTO";
         document.getElementById('btn-text').innerText = "SALVAR ALTERAÇÕES";
         document.getElementById('input-evento').focus();
@@ -264,14 +266,8 @@
             eventos.splice(index, 1);
             localStorage.setItem('eventos_db', JSON.stringify(eventos));
             
-            // Se deletou o que estava ativo, desliga o sinalizador do servidor
-            if(foiAtivo && eventos.length === 0) {
+            if(foiAtivo) {
                 await sincronizar("Geral", "10X15V", "OFFLINE", false);
-            } else if(foiAtivo && eventos.length > 0) {
-                // Ativa automaticamente o próximo da lista caso o anterior tenha sido deletado
-                eventos[0].ativo = true;
-                localStorage.setItem('eventos_db', JSON.stringify(eventos));
-                await sincronizar(eventos[0].nome, eventos[0].formato, "ONLINE", eventos[0].livro);
             }
             
             renderizarLista();
@@ -279,18 +275,37 @@
         }
     }
 
-    async function activarEvento(index) {
-        eventos.forEach((e, i) => e.ativo = (i === index));
-        const ev = eventos[index];
-        await sincronizar(ev.nome, ev.formato, "ONLINE", ev.livro);
-        localStorage.setItem('eventos_db', JSON.stringify(eventos));
+    async function ativarEvento(index) {
+        const jaEstavaAtivo = eventos[index].ativo;
+
+        if (jaEstavaAtivo) {
+            // Se já estava ativo, o clique desativa o evento atual voltando para o modo Geral/Offline
+            eventos[index].ativo = false;
+            localStorage.setItem('eventos_db', JSON.stringify(eventos));
+            await sincronizar("Geral", "10X15V", "OFFLINE", false);
+        } else {
+            // Desmarca todos os outros e ativa apenas o selecionado
+            eventos.forEach((e, i) => e.ativo = (i === index));
+            localStorage.setItem('eventos_db', JSON.stringify(eventos));
+            const ev = eventos[index];
+            await sincronizar(ev.nome, ev.formato, "ONLINE", ev.livro);
+        }
+        
         renderizarLista();
+        checarEventoAtivo();
     }
 
     function checarEventoAtivo() {
-        const temAtivo = eventos.some(e => e.ativo);
-        document.getElementById('server-status').disabled = !temAtivo;
-        if(!temAtivo) atualizarUIStatus(false);
+        const ativo = eventos.find(e => e.ativo);
+        if(ativo) {
+            document.getElementById('server-status').checked = true;
+            document.getElementById('server-status').disabled = false;
+            atualizarUIStatus(true);
+        } else {
+            document.getElementById('server-status').checked = false;
+            document.getElementById('server-status').disabled = true;
+            atualizarUIStatus(false);
+        }
     }
 </script>
 </body>

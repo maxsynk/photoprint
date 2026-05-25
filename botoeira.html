@@ -3,43 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BOTOEIRA - PHOTO PRINT v3.6</title>
+    <title>BOTOEIRA - PHOTO PRINT v3.7</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
-        :root { --neon: #39ff14; }
-        body { margin:0; background:#050505; color:white; font-family:Arial; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-        
-        /* Título do evento no topo */
-        #active-event-name { 
-            position: fixed; top: 20px; left: 20px; 
-            font-family: 'Orbitron', sans-serif; color: var(--neon); 
-            font-size: 14px; font-weight: 700; letter-spacing: 2px; 
-            text-shadow: 0 0 10px var(--neon); 
-            background: rgba(0,0,0,0.5); padding: 5px 12px; 
-            border-radius: 8px; border: 1px solid var(--neon); 
-        }
+        :root { --neon: #39ff14; --dark: #050505; }
 
-        .btn-start { width:280px; height:280px; border-radius:50%; border:4px solid var(--neon); background:rgba(0,0,0,0.8); cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow: 0 0 30px rgba(57,255,20,0.4); }
-        .btn-start:active { transform: scale(0.95); }
-        .start-title { color:var(--neon); font-family:'Orbitron'; font-size:24px; font-weight:900; }
-        .screen { display:flex; flex-direction:column; align-items:center; }
-        .options-container { background:rgba(20,20,20,0.9); padding:20px; border:1px solid var(--neon); border-radius:15px; }
-        .btn-print { margin:10px; padding:15px; cursor:pointer; border:1px solid var(--neon); background:transparent; color:white; }
-        .btn-print.selected { background:var(--neon); color:black; }
+        body { margin: 0; background: #050505; color: white; font-family: Arial; height: 100vh; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+        /* LOGO E EVENTO */
+        .top-info { position: fixed; top: 20px; left: 20px; z-index: 50; }
+        .logo-title { font-family: 'Orbitron'; color: var(--neon); font-size: 24px; font-weight: 900; letter-spacing: 4px; text-shadow: 0 0 10px var(--neon); }
+        #active-event-name { color: white; opacity: 0.8; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; margin-top: 5px; }
+        #debug-log { position: fixed; bottom: 10px; left: 10px; font-size: 10px; color: #555; pointer-events: none; }
+
+        /* BOTÃO CENTRAL */
+        .btn-start { width: 280px; height: 280px; border-radius: 50%; border: 4px solid var(--neon); background: radial-gradient(circle, rgba(57,255,20,0.1), transparent); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 40px rgba(57,255,20,0.3); transition: 0.2s; }
+        .btn-start:active { transform: scale(0.92); }
+        .start-text { font-family: 'Orbitron'; color: var(--neon); font-size: 20px; font-weight: 900; }
+
+        /* TELAS */
+        .screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; background: #050505; }
+        .options-container { background: rgba(20,20,20,0.95); padding: 30px; border: 1px solid var(--neon); border-radius: 20px; text-align: center; }
+        .btn-print { margin: 10px; padding: 15px 30px; cursor: pointer; border: 2px solid var(--neon); background: transparent; color: white; font-weight: bold; border-radius: 10px; }
+        .btn-print.selected { background: var(--neon); color: black; }
     </style>
 </head>
 <body>
 
-    <div id="active-event-name">CARREGANDO...</div>
+    <div class="top-info">
+        <div class="logo-title" id="secret-trigger">BOTOEIRA</div>
+        <div id="active-event-name">CARREGANDO EVENTO...</div>
+    </div>
+    
+    <div id="debug-log">Status: Iniciando...</div>
 
     <div id="screen-start" class="screen">
         <div class="btn-start" onclick="iniciarCaptura()">
-            <div class="start-title">TIRAR FOTO</div>
+            <div class="start-text">TIRAR FOTO</div>
         </div>
     </div>
 
     <div id="screen-triggered" class="screen" style="display:none">
-        <h2 style="color:var(--neon)">AGUARDE...</h2>
+        <h2 style="color:var(--neon)">CAPTURANDO...</h2>
     </div>
 
     <div id="screen-options" class="screen" style="display:none">
@@ -47,7 +52,7 @@
             <h3>QUANTAS CÓPIAS?</h3>
             <button class="btn-print selected" onclick="select(this,1)">1 Cópia</button>
             <button class="btn-print" onclick="select(this,2)">2 Cópias</button>
-            <button class="btn-print" onclick="sendPrint()">ENVIAR</button>
+            <button class="btn-print" style="margin-top:20px; width:100%" onclick="sendPrint()">ENVIAR IMPRESSÃO</button>
         </div>
     </div>
 
@@ -55,41 +60,56 @@
         const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
         let copias = 1;
 
-        // Sincroniza o nome do evento
+        function log(msg) { document.getElementById('debug-log').innerText = "Status: " + msg; }
+
+        // SINCRONIZAR EVENTO
         async function syncEvento() {
             try {
                 const res = await fetch(`${API}/status?t=${Date.now()}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.evento) {
-                        document.getElementById('active-event-name').innerText = `📸 ${data.evento}`;
-                    }
+                const data = await res.json();
+                if (data.evento) {
+                    document.getElementById('active-event-name').innerText = data.evento;
+                } else {
+                    document.getElementById('active-event-name').innerText = "EVENTO NÃO DEFINIDO";
                 }
-            } catch(e) { console.error(e); }
+            } catch(e) { log("Erro ao buscar evento"); }
         }
 
+        // DISPARO
         async function iniciarCaptura() {
+            log("Disparando...");
             document.getElementById('screen-start').style.display = "none";
             document.getElementById('screen-triggered').style.display = "flex";
+            
             try {
-                await fetch(`${API}/set-state`, {
+                const res = await fetch(`${API}/set-state`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ state: 'capturing' })
                 });
-                verificarStatusWebcam();
-            } catch(e) { alert("Erro ao conectar"); location.reload(); }
+                
+                if (res.ok) {
+                    log("Comando enviado!");
+                    verificarStatusWebcam();
+                } else {
+                    log("Erro no servidor: " + res.status);
+                }
+            } catch(e) { log("Erro de rede: " + e.message); }
         }
 
+        // MONITORAR RETORNO DA WEBCAM
         async function verificarStatusWebcam() {
+            log("Aguardando webcam...");
             const interval = setInterval(async () => {
-                const res = await fetch(`${API}/get-state?t=${Date.now()}`);
-                const data = await res.json();
-                if (data.state === 'options') {
-                    clearInterval(interval);
-                    document.getElementById('screen-triggered').style.display = "none";
-                    document.getElementById('screen-options').style.display = "flex";
-                }
+                try {
+                    const res = await fetch(`${API}/get-state?t=${Date.now()}`);
+                    const data = await res.json();
+                    if (data.state === 'options') {
+                        clearInterval(interval);
+                        document.getElementById('screen-triggered').style.display = "none";
+                        document.getElementById('screen-options').style.display = "flex";
+                    }
+                } catch(e) {}
             }, 800);
         }
 
@@ -108,9 +128,7 @@
             location.reload();
         }
 
-        // Inicia a busca pelo nome do evento
         syncEvento();
-        setInterval(syncEvento, 30000); // Atualiza a cada 30 segundos
     </script>
 </body>
 </html>

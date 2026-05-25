@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>BOTOEIRA - PHOTO PRINT v3.8</title>
+    <title>BOTOEIRA - PHOTO PRINT v3.9</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
@@ -56,6 +56,9 @@
         .triggered-text { font-family:'Orbitron',sans-serif; font-size: 26px; color: var(--neon); font-weight: 900; text-align: center; text-shadow: 0 0 15px var(--neon); animation:pulse 1s infinite; background: rgba(0,0,0,0.7); padding: 20px; border-radius: 15px; border: 1px solid var(--neon); backdrop-filter: blur(5px);}
         @keyframes pulse { 0%,100%{ opacity: 1;} 50%{ opacity: 0.5;} }
 
+        /* Rodapé de Monitoramento Técnico */
+        #monitor-status { position: fixed; bottom: 15px; right: 15px; font-size: 11px; font-family: monospace; color: rgba(255,255,255,0.4); z-index: 99; pointer-events: none; }
+
         .options-container { background: rgba(0,0,0,0.8); padding: 30px; border-radius: 20px; border: 1px solid var(--neon); box-shadow: 0 0 30px rgba(0,0,0,0.8); display:flex; flex-direction: column; align-items: center; backdrop-filter: blur(10px); }
         .copies-label { font-family:'Orbitron',sans-serif; font-size: 16px; color: var(--neon); font-weight: bold; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon); text-align: center; }
         .print-grid { display: grid; grid-template-columns: 1fr; gap: 15px; width: 100%; min-width: 280px; margin-bottom: 30px; }
@@ -95,7 +98,7 @@
     </div>
 
     <div id="screen-triggered" class="screen" style="display:none">
-        <div class="triggered-text">CAPTURANDO... 📸</div>
+        <div class="triggered-text" id="status-text">CAPTURANDO... 📸</div>
     </div>
 
     <div id="screen-options" class="screen" style="display:none">
@@ -111,12 +114,15 @@
         </div>
     </div>
 
+    <div id="monitor-status">API: Conectando...</div>
+
     <script>
         const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
         let selectedCopiesValue = 1;
         const dynamicBg = document.getElementById('dynamic-bg');
         const bgMenu = document.getElementById('bg-menu');
         const secretLogo = document.getElementById('secret-logo');
+        const monitor = document.getElementById('monitor-status');
 
         /* MENU SECRETO */
         let clickCount = 0; let clickTimer = null;
@@ -163,18 +169,27 @@
         async function triggerPhoto() {
             document.getElementById('screen-start').style.display = "none";
             document.getElementById('screen-triggered').style.display = "flex";
+            document.getElementById('status-text').innerText = "CAPTURANDO... 📸";
             
             localStorage.setItem('booth_state', 'capturing');
 
             try {
-                await fetch(`${API}/trigger`, { method: 'POST' });
-                await fetch(`${API}/set-state`, {
+                // Dispara os dois comandos necessários para acordar a Webcam
+                await fetch(`${API}/trigger`, { method: 'POST' }).catch(e=>e);
+                
+                const resState = await fetch(`${API}/set-state`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ state: 'capturing' })
-                }).catch(e=>e);
+                });
 
-                waitPhotoFinish();
+                if(resState.ok) {
+                    monitor.innerText = "API: Estado 'capturing' definido. Aguardando foto...";
+                    waitPhotoFinish();
+                } else {
+                    monitor.innerText = `Erro API: Status ${resState.status}`;
+                }
+
             } catch(e) {
                 alert("Erro de conexão com o servidor.");
                 localStorage.setItem('booth_state', 'start');
@@ -185,19 +200,23 @@
         async function waitPhotoFinish() {
             const interval = setInterval(async () => {
                 try {
-                    // Consultamos o estado real unificado do Worker
+                    // Consulta o estado global guardado no Worker KV/Variável
                     const res = await fetch(`${API}/get-state?t=${Date.now()}`);
                     const data = await res.json();
                     
-                    // Quando a webcam termina, o estado vira 'options'
+                    monitor.innerText = `API State Atual: '${data.state}'`;
+
+                    // Quando a foto termina o processamento, a WEBCAM precisa mudar o estado para 'options'
                     if (data.state === 'options') {
                         clearInterval(interval);
                         document.getElementById('screen-triggered').style.display = "none";
                         document.getElementById('screen-options').style.display = "flex";
-                        
                         localStorage.setItem('booth_state', 'options');
+                        monitor.innerText = "API: Sucesso! Tela de cópias liberada.";
                     }
-                } catch(e) {}
+                } catch(e) {
+                    monitor.innerText = "API: Falha na requisição get-state...";
+                }
             }, 1000);
         }
 
@@ -209,6 +228,7 @@
 
         async function sendPrint() {
             try {
+                monitor.innerText = "Enviando impressão...";
                 await fetch(`${API}/trigger-print`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

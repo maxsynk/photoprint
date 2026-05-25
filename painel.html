@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT - Master Panel v1.9</title>
+    <title>PHOTO PRINT - Master Panel v1.9.1</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --neon: #39ff14; --red: #ff3131; --dark: #000000; --card: rgba(255, 255, 255, 0.03); --border: rgba(57, 255, 20, 0.2); }
@@ -54,7 +54,7 @@
 </head>
 <body>
 
-    <div class="version-tag">v1.9</div>
+    <div class="version-tag">v1.9.1</div>
 
     <div id="tela-inicial">
         <div class="splash-header">
@@ -149,7 +149,9 @@
         renderizarFormatos(); renderizarLista(); checarEventoAtivo(); 
     }
 
-    function renderizarFormatos() { document.getElementById('select-formato').innerHTML = formats.map(f => `<option value="${f.value}">${f.label}</option>`).join(''); }
+    function renderizarFormatos() { 
+        document.getElementById('select-formato').innerHTML = formatos.map(f => `<option value="${f.value}">${f.label}</option>`).join(''); 
+    }
 
     function previewMoldura(input) {
         if(input.files[0]) {
@@ -167,7 +169,6 @@
         const editIdx = parseInt(document.getElementById('edit-index').value);
         if(!nome || !data) return alert("Preencha campos obrigatórios.");
 
-        // Mantém o estado ativo atual caso seja uma edição, se for novo entra como inativo
         const estaAtivo = editIdx > -1 ? eventos[editIdx].ativo : false;
         const novoEv = { nome, formato, livro, data: data.split('-').reverse().join('/'), dataRaw: data, ativo: estaAtivo };
         
@@ -275,16 +276,19 @@
         }
     }
 
+    async function activarEvento(index) {
+        // Redundância para garantir o clique correto caso o HTML antigo chame com 'c'
+        ativarEvento(index);
+    }
+
     async function ativarEvento(index) {
         const jaEstavaAtivo = eventos[index].ativo;
 
         if (jaEstavaAtivo) {
-            // Se já estava ativo, o clique desativa o evento atual voltando para o modo Geral/Offline
             eventos[index].ativo = false;
             localStorage.setItem('eventos_db', JSON.stringify(eventos));
             await sincronizar("Geral", "10X15V", "OFFLINE", false);
         } else {
-            // Desmarca todos os outros e ativa apenas o selecionado
             eventos.forEach((e, i) => e.ativo = (i === index));
             localStorage.setItem('eventos_db', JSON.stringify(eventos));
             const ev = eventos[index];

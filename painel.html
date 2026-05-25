@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT - Master Panel v1.6</title>
+    <title>PHOTO PRINT - Master Panel v1.7</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --neon: #39ff14; --red: #ff3131; --dark: #000000; --card: rgba(255, 255, 255, 0.03); --border: rgba(57, 255, 20, 0.2); }
@@ -30,7 +30,7 @@
         .btn-neon-style { background: transparent; border: 1px solid var(--neon); color: white; padding: 14px; border-radius: 6px; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; border-left: 5px solid var(--neon); display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-neon-style:hover { background: rgba(57, 255, 20, 0.1); transform: translateX(5px); }
         .btn-neon-style.success { background: var(--neon); color: black; border-left: 5px solid white; }
-        .evento-item { background: rgba(255,255,255,0.02); border: 1px solid #1a1a1a; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .evento-item { background: rgba(255,255,255,0.02); border: 1px solid #1a1a1a; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; transition: 0.2s; }
         .evento-item.ativo { border-left: 4px solid var(--neon); background: rgba(57, 255, 20, 0.05); }
         .status-container { display: flex; align-items: center; gap: 12px; padding: 6px 15px; border-radius: 30px; border: 1px solid #333; }
         .switch-mega { position: relative; display: inline-block; width: 50px; height: 26px; }
@@ -42,11 +42,19 @@
         .custom-file-upload { border: 1px dashed var(--border); display: block; padding: 12px; cursor: pointer; text-align: center; border-radius: 6px; color: #555; font-size: 11px; font-weight: bold; }
         .preview-img { max-width: 100%; max-height: 80px; margin-top: 10px; display: none; border: 1px solid #222; }
         .version-tag { position: fixed; bottom: 15px; right: 20px; font-size: 10px; color: #333; font-weight: 900; }
+        .btn-acao { cursor: pointer; padding: 5px; transition: 0.2s; }
+        .btn-acao.edit { color: #aaa; }
+        .btn-acao.edit:hover { color: var(--neon); }
+        .btn-acao.delete { color: #555; }
+        .btn-acao.delete:hover { color: var(--red); }
+        .status-icon { font-size: 14px; margin-right: 5px; }
+        .status-icon.ativo { color: var(--neon); text-shadow: 0 0 8px var(--neon); }
+        .status-icon.inativo { color: #333; }
     </style>
 </head>
 <body>
 
-    <div class="version-tag">v1.6 - Patched</div>
+    <div class="version-tag">v1.7</div>
 
     <div id="tela-inicial">
         <div class="splash-header">
@@ -127,7 +135,7 @@
                 atualizarUIStatus(data.config.status === "ONLINE");
                 document.getElementById('server-status').checked = (data.config.status === "ONLINE");
             }
-        } catch(e) { console.log("Servidor offline ou erro de resposta inicial. Operando local."); }
+        } catch(e) { console.log("Servidor offline, operando local."); }
     };
 
     function abrirModalSenha() { document.getElementById('modal-senha').style.display = 'flex'; document.getElementById('input-pass').focus(); }
@@ -159,39 +167,47 @@
         const editIdx = parseInt(document.getElementById('edit-index').value);
         if(!nome || !data) return alert("Preencha campos obrigatórios.");
 
-        const novoEv = { nome, formato, livro, data: data.split('-').reverse().join('/'), dataRaw: data, ativo: true };
-        if(editIdx > -1) eventos[editIdx] = novoEv;
-        else { eventos.forEach(e => e.ativo = false); eventos.unshift(novoEv); }
+        const estaAtivo = editIdx > -1 ? eventos[editIdx].ativo : true;
+        const novoEv = { nome, formato, livro, data: data.split('-').reverse().join('/'), dataRaw: data, ativo: estaAtivo };
+        
+        if(editIdx > -1) {
+            eventos[editIdx] = novoEv;
+            document.getElementById('edit-index').value = "-1";
+            document.getElementById('card-form-title').innerText = "NOVO EVENTO";
+            document.getElementById('btn-text').innerText = "CRIAR EVENTO";
+        } else { 
+            eventos.forEach(e => e.ativo = false); 
+            eventos.unshift(novoEv); 
+        }
         
         localStorage.setItem('eventos_db', JSON.stringify(eventos));
         
-        // Dispara sincronização com tratamento real de resposta
-        await sincronizar(nome, formato, "ONLINE", livro);
+        // Limpar formulário após salvar
+        document.getElementById('input-evento').value = "";
+        document.getElementById('input-data').value = "";
+        document.getElementById('input-livro').checked = false;
+        document.getElementById('img-preview').style.display = 'none';
+        document.getElementById('label-file').innerText = "CARREGAR MOLDURA PNG";
+
+        if(estaAtivo) {
+            await sincronizar(nome, formato, "ONLINE", livro);
+        }
+        
         renderizarLista();
         checarEventoAtivo();
     }
 
     async function sincronizar(nome, formato, status, livro) {
         try {
-            console.log(`Enviando config para Nuvem: ${nome} | ${formato}`);
             const response = await fetch(`${API_URL}/set-config`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ evento: nome, status: status, formato: formato, livro: livro })
             });
-            
             if(response.ok) {
-                console.log("✅ Sincronizado com o Worker com sucesso!");
                 atualizarUIStatus(status === "ONLINE");
-            } else {
-                const errData = await response.json().catch(()=>({}));
-                console.error("❌ Erro de validação do Worker:", errData);
-                alert("Worker recusou os dados. Verifique logs do Cloudflare.");
             }
-        } catch(e){ 
-            console.error("❌ Falha crítica de rede no fetch:", e);
-            alert("Erro ao sincronizar com nuvem. Verifique sua conexão com a internet."); 
-        }
+        } catch(e){ console.error("Erro de sincronismo:", e); }
     }
 
     function salvarStatusRede() {
@@ -209,16 +225,61 @@
     function renderizarLista() {
         document.getElementById('corpo-lista').innerHTML = eventos.map((ev, i) => `
             <div class="evento-item ${ev.ativo ? 'ativo' : ''}">
-                <div><div style="font-size:12px; font-weight:900;">${ev.nome}</div><div style="font-size:9px; color:#555; text-transform:uppercase;">${ev.data} • ${ev.formato}</div></div>
-                <div style="display:flex; gap:15px; align-items:center;">
-                    <i class="fas fa-edit" style="cursor:pointer;" onclick="editar(${i})"></i>
-                    <button class="btn-neon-style" style="font-size:9px; padding: 6px 12px;" onclick="ativarEvento(${i})">${ev.ativo ? 'ATIVO' : 'ATIVAR'}</button>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i class="fas ${ev.ativo ? 'fa-check-circle status-icon ativo' : 'fa-circle status-icon inativo'}"></i>
+                    <div>
+                        <div style="font-size:12px; font-weight:900; color: ${ev.ativo ? 'var(--neon)' : '#fff'}">${ev.nome}</div>
+                        <div style="font-size:9px; color:#555; text-transform:uppercase;">${ev.data} • ${ev.formato}</div>
+                    </div>
+                </div>
+                <div style="display:flex; gap:12px; align-items:center;">
+                    <i class="fas fa-edit btn-acao edit" title="Editar Evento" onclick="editar(${i})"></i>
+                    <i class="fas fa-trash btn-acao delete" title="Excluir Evento" onclick="excluir(${i})"></i>
+                    <button class="btn-neon-style ${ev.ativo ? 'success' : ''}" style="font-size:9px; padding: 6px 12px; border-left: ${ev.ativo ? '5px solid black' : '5px solid var(--neon)'}" onclick="ativarEvento(${i})">
+                        ${ev.ativo ? 'ATIVADO' : 'ATIVAR'}
+                    </button>
                 </div>
             </div>
         `).join('');
     }
 
-    async function ativarEvento(index) {
+    function editar(index) {
+        const ev = eventos[index];
+        document.getElementById('input-evento').value = ev.nome;
+        document.getElementById('input-data').value = ev.dataRaw || "";
+        document.getElementById('select-formato').value = ev.formato;
+        document.getElementById('input-livro').checked = ev.livro;
+        document.getElementById('edit-index').value = index;
+        
+        // Altera interface visual para modo edição
+        document.getElementById('card-form-title').innerText = "EDITAR EVENTO";
+        document.getElementById('btn-text').innerText = "SALVAR ALTERAÇÕES";
+        document.getElementById('input-evento').focus();
+    }
+
+    async function excluir(index) {
+        const ev = eventos[index];
+        if(confirm(`Tem certeza que deseja deletar o evento "${ev.nome}"?`)) {
+            const foiAtivo = ev.ativo;
+            eventos.splice(index, 1);
+            localStorage.setItem('eventos_db', JSON.stringify(eventos));
+            
+            // Se deletou o que estava ativo, desliga o sinalizador do servidor
+            if(foiAtivo && eventos.length === 0) {
+                await sincronizar("Geral", "10X15V", "OFFLINE", false);
+            } else if(foiAtivo && eventos.length > 0) {
+                // Ativa automaticamente o próximo da lista caso o anterior tenha sido deletado
+                eventos[0].ativo = true;
+                localStorage.setItem('eventos_db', JSON.stringify(eventos));
+                await sincronizar(eventos[0].nome, eventos[0].formato, "ONLINE", eventos[0].livro);
+            }
+            
+            renderizarLista();
+            checarEventoAtivo();
+        }
+    }
+
+    async function activarEvento(index) {
         eventos.forEach((e, i) => e.ativo = (i === index));
         const ev = eventos[index];
         await sincronizar(ev.nome, ev.formato, "ONLINE", ev.livro);
@@ -229,6 +290,7 @@
     function checarEventoAtivo() {
         const temAtivo = eventos.some(e => e.ativo);
         document.getElementById('server-status').disabled = !temAtivo;
+        if(!temAtivo) atualizarUIStatus(false);
     }
 </script>
 </body>

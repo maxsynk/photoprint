@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>WEBCAM - AUTOGRAPH CAM v8.8</title>
+<title>WEBCAM - AUTOGRAPH CAM v8.9</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
@@ -24,20 +24,21 @@ body{
 #dynamic-bg{ position:fixed; inset:0; z-index:0; background-size:cover; background-position:center; background-repeat:no-repeat; opacity:0; transition:opacity 0.6s ease; }
 #dynamic-bg.active{ opacity:0.45; }
 #dynamic-bg::after{ content:''; position:absolute; inset:0; background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.65)); }
-body::before{ content:''; position:fixed; inset:0; background-image: linear-gradient(rgba(57,255,20,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(57,255,20,0.03) 1px, transparent 1px); background-size:40px 40px; z-index:0; animation:gridMove 12s linear infinite; }
+body::before{ content:''; position:fixed; inset:0; background-image: linear-gradient(rgba(57,255,20,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(57,255,20,0.03) 1px, transparent 1px); background-size:40px 40px; z-index:1; animation:gridMove 12s linear infinite; }
 body.bg-active::before{ display:none; }
 @keyframes gridMove{ from{ transform:translateY(0px); } to{ transform:translateY(40px); } }
 
-.bg-brand{ position:fixed; inset:0; z-index:1; pointer-events:none; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.07; }
+/* ELEMENTOS VISUAIS FIXOS DO TOPO COM Z-INDEX ALTO */
+.bg-brand{ position:fixed; inset:0; z-index:2; pointer-events:none; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.07; }
 body.bg-active .bg-brand{ display:none; }
 .bg-brand-title{ font-family:'Orbitron',sans-serif; font-size:140px; font-weight:900; color:var(--neon); letter-spacing:14px; text-transform:uppercase; }
 .bg-brand-sub{ margin-top:20px; font-size:42px; letter-spacing:12px; text-transform:uppercase; color:white; }
 
-.top-logo{ position:fixed; top:40px; left:50px; z-index:25; }
+.top-logo{ position:fixed; top:40px; left:50px; z-index:100; }
 .logo-title{ font-family:'Orbitron',sans-serif; color:var(--neon); font-size:46px; font-weight:900; letter-spacing:8px; text-shadow: 0 0 15px var(--neon), 0 0 35px rgba(57,255,20,0.8); cursor:pointer; user-select:none; }
 .logo-sub{ margin-top:4px; color:white; opacity:0.7; letter-spacing:5px; font-size:13px; text-transform:uppercase; }
 
-#active-event-name { position: fixed; top: 130px; left: 50px; z-index: 26; font-family: 'Orbitron', sans-serif; color: var(--neon); font-size: 16px; font-weight: 700; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon); background: rgba(0,0,0,0.7); padding: 8px 16px; border-radius: 8px; border: 1px solid var(--neon); display: none; }
+#active-event-name { position: fixed; top: 130px; left: 50px; z-index: 100; font-family: 'Orbitron', sans-serif; color: var(--neon); font-size: 16px; font-weight: 700; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon); background: rgba(0,0,0,0.8); padding: 8px 16px; border-radius: 8px; border: 1px solid var(--neon); display: none; }
 
 #debug-info { position: fixed; bottom: 10px; right: 10px; z-index: 999; background: rgba(0,0,0,0.8); color: var(--neon); font-size: 10px; padding: 5px 10px; border-radius: 5px; font-family: monospace; max-width: 350px; word-break: break-all; }
 
@@ -46,48 +47,49 @@ body.bg-active .corner-glow{ display:none; }
 .corner-1{ top:-150px; left:-100px; }
 .corner-2{ bottom:-180px; right:-100px; }
 
-#bg-menu{ position:fixed; top:40px; right:40px; z-index:100; display:none; flex-direction:column; gap:12px; }
+#bg-menu{ position:fixed; top:40px; right:40px; z-index:200; display:none; flex-direction:column; gap:12px; }
 #bg-menu.active{ display:flex; }
 .bg-btn{ padding:12px 20px; border-radius:14px; border:1px solid rgba(57,255,20,0.45); background:rgba(0,0,0,0.55); color:white; font-size:14px; font-weight:bold; letter-spacing:1px; cursor:pointer; backdrop-filter:blur(10px); transition:0.25s; box-shadow: 0 0 20px rgba(57,255,20,0.12); text-align:center; }
 .bg-btn:hover{ transform:translateY(-2px); border-color:var(--neon); color:var(--neon); box-shadow: 0 0 25px rgba(57,255,20,0.35); }
 #bg-input{ display:none; }
 
-.screen { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:20; flex-direction:column; }
+/* TELAS COM Z-INDEX MENOR PARA FICAREM ABAIXO DO TEXTO DO TOPO */
+.screen { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:5; flex-direction:column; }
 
-.btn-start{ position:relative; width:380px; height:380px; border-radius:50%; border:4px solid var(--neon); background: radial-gradient(circle at center, rgba(57,255,20,0.18), rgba(0,0,0,0.96)); overflow:hidden; transition:0.3s; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:35px; box-shadow: 0 0 30px rgba(57,255,20,0.8), inset 0 0 60px rgba(57,255,20,0.15); backdrop-filter:blur(4px); z-index:30; }
+.btn-start{ position:relative; width:380px; height:380px; border-radius:50%; border:4px solid var(--neon); background: radial-gradient(circle at center, rgba(57,255,20,0.18), rgba(0,0,0,0.96)); overflow:hidden; transition:0.3s; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:35px; box-shadow: 0 0 30px rgba(57,255,20,0.8), inset 0 0 60px rgba(57,255,20,0.15); backdrop-filter:blur(4px); z-index:6; }
 .btn-start::before{ content:''; position:absolute; width:250%; height:250%; background:conic-gradient( transparent, rgba(57,255,20,1), rgba(57,255,20,0.25), transparent ); animation:rotateGlow 3s linear infinite; filter:blur(20px); opacity:1; }
 .btn-start::after{ content:''; position:absolute; inset:8px; border-radius:50%; background:rgba(0,0,0,0.92); box-shadow: inset 0 0 60px rgba(57,255,20,0.15); }
 @keyframes rotateGlow{ 100%{ transform:rotate(360deg); } }
 
-.start-content{ position:relative; z-index:5; text-align:center; width:100%; }
+.start-content{ position:relative; z-index:10; text-align:center; width:100%; }
 .start-icon{ font-size:58px; margin-bottom:18px; filter:drop-shadow(0 0 15px var(--neon)); }
 .start-title{ color:var(--neon); font-family:'Orbitron',sans-serif; font-size:22px; font-weight:900; letter-spacing:4px; text-shadow: 0 0 15px var(--neon), 0 0 35px var(--neon); margin-bottom:18px; text-transform:uppercase; line-height:1.4; min-height:40px; }
 .start-subtitle{ font-size:22px; line-height:1.6; }
 
-/* 3º DETALHE: CONTAINER COM BORDAS FINAS MAS VISÍVEIS PARA EVITAR TELA ESTOURADA */
+/* CONTAINER EXPANDIDO E ATUALIZADO POR BAIXO DAS BORDAS/LOGOS */
 #camera-wrapper { 
     position: absolute; 
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    width: 85vw; height: 85vh; 
+    width: 94vw; height: 92vh; 
     background: #000; 
     overflow: hidden; 
-    z-index: 40; 
-    border: 2px solid rgba(57, 255, 20, 0.6); 
-    box-shadow: 0 0 25px rgba(57, 255, 20, 0.25);
-    border-radius: 12px;
+    z-index: 5; 
+    border: 3px solid rgba(57, 255, 20, 0.8); 
+    box-shadow: 0 0 35px rgba(57, 255, 20, 0.4);
+    border-radius: 16px;
 }
 #camera-feed { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-#camera-canvas { width: 100%; height: 100%; object-fit: contain; background: #050505; }
+#camera-canvas { width: 100%; height: 100%; object-fit: contain; background: #000; }
 
-.fun-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif; font-size: 80px; font-weight: 900; text-align: center; color: #fff; white-space: nowrap; text-transform: uppercase; text-shadow: 0px 0px 15px #ff0080, 0px 0px 30px #ff8c00, 0px 0px 45px #ffff00; animation: funPulse 0.6s infinite alternate, hueShift 3s linear infinite; z-index: 50; pointer-events: none; }
+.fun-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif; font-size: 85px; font-weight: 900; text-align: center; color: #fff; white-space: nowrap; text-transform: uppercase; text-shadow: 0px 0px 15px #ff0080, 0px 0px 30px #ff8c00, 0px 0px 45px #ffff00; animation: funPulse 0.6s infinite alternate, hueShift 3s linear infinite; z-index: 110; pointer-events: none; }
 @keyframes funPulse { 0% { transform: translate(-50%, -50%) scale(0.9); } 100% { transform: translate(-50%, -50%) scale(1.15); } }
 @keyframes hueShift { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
 
-#options-overlay { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.85); border: 1px solid var(--neon); padding: 15px 40px; border-radius: 50px; box-shadow: 0 0 20px rgba(57,255,20,0.3); z-index: 60; text-align: center; }
-.options-text { font-family: 'Orbitron', sans-serif; font-size: 22px; color: var(--neon); font-weight: bold; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon); }
+#options-overlay { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.9); border: 2px solid var(--neon); padding: 18px 50px; border-radius: 50px; box-shadow: 0 0 25px rgba(57,255,20,0.5); z-index: 120; text-align: center; }
+.options-text { font-family: 'Orbitron', sans-serif; font-size: 24px; color: var(--neon); font-weight: bold; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon); }
 
-.status-text { font-family:'Orbitron',sans-serif; font-size:40px; color:var(--neon); font-weight:900; letter-spacing:4px; text-shadow: 0 0 20px var(--neon); text-align:center; animation:pulseText 1.5s infinite; background: rgba(0,0,0,0.8); padding: 40px 80px; border-radius: 20px; border: 2px solid var(--neon); backdrop-filter: blur(10px); }
+.status-text { font-family:'Orbitron',sans-serif; font-size:40px; color:var(--neon); font-weight:900; letter-spacing:4px; text-shadow: 0 0 20px var(--neon); text-align:center; animation:pulseText 1.5s infinite; background: rgba(0,0,0,0.85); padding: 40px 80px; border-radius: 20px; border: 2px solid var(--neon); backdrop-filter: blur(10px); z-index:150; }
 @keyframes pulseText { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
 </style>
 </head>
@@ -126,7 +128,7 @@ body.bg-active .corner-glow{ display:none; }
     </div>
 </div>
 
-<div id="screen-camera" class="screen" style="display:none; z-index:40;">
+<div id="screen-camera" class="screen" style="display:none;">
     <div id="camera-wrapper">
         <video id="camera-feed" autoplay playsinline muted></video>
         <canvas id="camera-canvas" style="display:none;"></canvas>
@@ -142,14 +144,7 @@ body.bg-active .corner-glow{ display:none; }
 </div>
 
 <script>
-// ==================== DEBUG ====================
-function debug(msg) {
-    console.log('[WEBCAM]', msg);
-    const el = document.getElementById('debug-info');
-    if (el) el.innerText = msg;
-}
-
-// ==================== CONSTANTES ====================
+// ==================== CONFIGS E ESTADOS ====================
 const API_BASE = 'https://photoprint-api.maxprimefotovideo.workers.dev';
 const bgInput = document.getElementById('bg-input');
 const dynamicBg = document.getElementById('dynamic-bg');
@@ -169,13 +164,20 @@ let eventoAtual = null;
 let formatoAtual = '10X15V';
 let molduraUrl = null;
 let cameraOk = false;
+let rawCapturedFrame = null; // Guarda o frame horizontal puro para evitar achatamento na rotação
 
 const FORMATOS = {
-    "TIRINHA": { w: 600, h: 1800, key: "TIRINHA" },
-    "POLAROID": { w: 1200, h: 1500, key: "POLAROID" },
-    "10X15H": { w: 1800, h: 1200, key: "10X15H" },
-    "10X15V": { w: 1200, h: 1800, key: "10X15V" }
+    "TIRINHA": { w: 600, h: 1800 },
+    "POLAROID": { w: 1200, h: 1500 },
+    "10X15H": { w: 1800, h: 1200 },
+    "10X15V": { w: 1200, h: 1800 }
 };
+
+function debug(msg) {
+    console.log('[WEBCAM]', msg);
+    const el = document.getElementById('debug-info');
+    if (el) el.innerText = msg;
+}
 
 // ==================== CÂMERA ====================
 async function initCamera() {
@@ -186,10 +188,10 @@ async function initCamera() {
         videoFeed.srcObject = stream;
         videoFeed.pause(); 
         cameraOk = true;
-        debug('✅ Câmera OK');
+        debug('✅ Câmera Conectada');
         return true;
     } catch (err) {
-        debug('❌ Câmera: ' + err.message);
+        debug('❌ Erro Câmera: ' + err.message);
         cameraOk = false;
         return false;
     }
@@ -207,17 +209,21 @@ function pauseCamera() {
     }
 }
 
-// ==================== 1º DETALHE: SINCRONIZAR EXATO COM O PAINEL E WORKER ====================
+// ==================== 1º CORREÇÃO: SINCRONISMO MAPEADO COM O PAINEL ====================
 async function syncEvento() {
     try {
         const res = await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`);
         if (res.ok) {
             const data = await res.json();
+            // Mapeamento exato com a estrutura enviada pelo seu painel v1.6 (data.config.evento)
             if (data.config && data.config.evento) {
-                if (eventoAtual !== data.config.evento || formatoAtual !== data.config.formato) {
-                    eventoAtual = data.config.evento;
-                    formatoAtual = (data.config.formato || '10X15V').toUpperCase().trim();
-                    debug(`📡 Painel/Worker Sincronizado: ${eventoAtual} | ${formatoAtual}`);
+                const cloudNome = data.config.evento;
+                const cloudFormato = (data.config.formato || '10X15V').toUpperCase().trim();
+                
+                if (eventoAtual !== cloudNome || formatoAtual !== cloudFormato) {
+                    eventoAtual = cloudNome;
+                    formatoAtual = cloudFormato;
+                    debug(`📡 Sincronizado via Worker: ${eventoAtual} [${formatoAtual}]`);
                     updateEventoUI();
                     await loadMoldura();
                 }
@@ -225,19 +231,19 @@ async function syncEvento() {
             }
         }
     } catch(e) {
-        debug('⚠️ Sincronismo API suspenso: ' + e.message);
+        console.log('Erro de polling na nuvem, buscando local...', e.message);
     }
     
-    // Fallback completo se houver inconsistência temporária na cloud
+    // Fallback mapeando a chave 'eventos_db' do localStorage que seu painel alimenta
     try {
         const db = localStorage.getItem('eventos_db');
         if (db) {
-            const eventos = JSON.parse(db);
-            const ativo = eventos.find(e => e.ativo);
+            const listaEventos = JSON.parse(db);
+            const ativo = listaEventos.find(e => e.ativo);
             if (ativo && (ativo.nome !== eventoAtual || ativo.formato !== formatoAtual)) {
                 eventoAtual = ativo.nome;
                 formatoAtual = (ativo.formato || '10X15V').toUpperCase().trim();
-                debug(`💾 LocalStorage Restaurado: ${eventoAtual}`);
+                debug(`💾 Sincronizado via LocalStorage: ${eventoAtual}`);
                 updateEventoUI();
                 await loadMoldura();
             }
@@ -249,7 +255,7 @@ function updateEventoUI() {
     const el = document.getElementById('active-event-name');
     if (eventoAtual && eventoAtual !== 'Geral') {
         el.style.display = 'block';
-        el.innerText = `🎉 ${eventoAtual} (${formatoAtual})`;
+        el.innerText = `Evento Ativo: ${eventoAtual} (${formatoAtual})`;
     } else {
         el.style.display = 'none';
     }
@@ -264,24 +270,23 @@ async function loadMoldura() {
         let molduraKey = arquivos.find(f => 
             f.key.toLowerCase().includes('moldura') && f.key.toLowerCase().endsWith('.png')
         );
-        
         if (!molduraKey) {
             molduraKey = arquivos.find(f => f.key.toLowerCase().endsWith('.png'));
         }
         
         if (molduraKey) {
             molduraUrl = `${API_BASE}/photo/${encodeURIComponent(molduraKey.key)}`;
-            debug(`🖼️ Moldura pronta para o preview: ${molduraKey.key}`);
+            debug(`🖼️ Moldura pronta para o Preview: ${molduraKey.key}`);
         } else {
             molduraUrl = null;
-            debug('ℹ️ Nenhuma moldura vinculada encontrada.');
+            debug('Nenhuma moldura vinculada encontrada.');
         }
     } catch(e) {
         molduraUrl = null;
     }
 }
 
-// ==================== 2º DETALHE: CAPTURA E PREVIEW COMPLETO COM A MOLDURA ====================
+// ==================== 2º E 3º CORREÇÃO: CAPTURA E PREVIEW COMPLETO HORIZONTAL ====================
 function capturePhoto() {
     if (captureInProgress) return;
     captureInProgress = true;
@@ -306,39 +311,39 @@ function capturePhoto() {
                 funText.style.display = 'none';
                 clearInterval(timer);
                 
-                const fmt = FORMATOS[formatoAtual] || FORMATOS['10X15V'];
-                canvasCapture.width = fmt.w;
-                canvasCapture.height = fmt.h;
+                // Pegamos a resolução horizontal original nativa da câmera
+                const camW = videoFeed.videoWidth || 1920;
+                const camH = videoFeed.videoHeight || 1080;
                 
-                // 1. Limpa e cria fundo branco estrutural
-                ctx.fillStyle = 'white';
-                ctx.fillRect(0, 0, canvasCapture.width, canvasCapture.height);
+                // Definimos o canvas de exibição EXATAMENTE com o aspecto horizontal capturado da webcam
+                // Isso mata o bug da foto girar ou deformar para vertical na tela do cliente
+                canvasCapture.width = camW;
+                canvasCapture.height = camH;
                 
-                // 2. Tira o frame do vídeo e aplica o espelhamento correto no canvas de saída
-                const tempCanvas = document.createElement('canvas');
-                tempCanvas.width = videoFeed.videoWidth || 1920;
-                tempCanvas.height = videoFeed.videoHeight || 1080;
-                const tempCtx = tempCanvas.getContext('2d');
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, camW, camH);
                 
-                tempCtx.save();
-                tempCtx.scale(-1, 1);
-                tempCtx.drawImage(videoFeed, -tempCanvas.width, 0, tempCanvas.width, tempCanvas.height);
-                tempCtx.restore();
+                // Espelha horizontalmente para manter a coerência visual de espelho
+                ctx.save();
+                ctx.scale(-1, 1);
+                ctx.drawImage(videoFeed, -camW, 0, camW, camH);
+                ctx.restore();
                 
-                const scale = Math.max(canvasCapture.width / tempCanvas.width, canvasCapture.height / tempCanvas.height);
-                const w = tempCanvas.width * scale;
-                const h = tempCanvas.height * scale;
+                // Salvamos uma cópia em memória dessa captura limpa e horizontal para a montagem final de impressão posterior
+                rawCapturedFrame = document.createElement('canvas');
+                rawCapturedFrame.width = camW;
+                rawCapturedFrame.height = camH;
+                rawCapturedFrame.getContext('2d').drawImage(canvasCapture, 0, 0);
                 
-                ctx.drawImage(tempCanvas, (canvasCapture.width - w) / 2, (canvasCapture.height - h) / 2, w, h);
-                
-                // 3. Renderiza a moldura IMEDIATAMENTE por cima do Canvas para o preview do cliente
+                // Puxamos a moldura ativa e desenhamos por cima adaptada na visualização horizontal do totem
                 if (molduraUrl) {
                     try {
                         const molduraImg = await loadImage(molduraUrl);
-                        ctx.drawImage(molduraImg, 0, 0, canvasCapture.width, canvasCapture.height);
-                        debug('✅ Moldura Mesclada com Sucesso na Tela de Preview');
+                        // Desenha centralizado adaptando o preenchimento proporcional
+                        ctx.drawImage(molduraImg, 0, 0, camW, camH);
+                        debug('✅ Foto travada e montada com a moldura na tela');
                     } catch(e) {
-                        debug('⚠️ Exibindo foto limpa (Falha ao carregar arquivo de overlay): ' + e.message);
+                        debug('Exibindo foto limpa (Moldura indisponível no momento): ' + e.message);
                     }
                 }
                 
@@ -346,7 +351,7 @@ function capturePhoto() {
                 canvasCapture.style.display = 'block';
                 pauseCamera();
                 
-                // Altera o estado para destravar o celular do cliente
+                // Comunica a API para liberar as opções de impressão no smartphone
                 fetch(`${API_BASE}/set-state`, { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -354,19 +359,49 @@ function capturePhoto() {
                 }).catch(()=>{});
 
                 captureInProgress = false;
-                
                 optionsOverlay.style.display = 'block';
-                optionsOverlay.querySelector('.options-text').innerText = 'VEJA O CELULAR PARA IMPRIMIR SUA FOTO';
             }
         }, 1000);
     }, 4000);
 }
 
-// ==================== COMPOSIÇÃO PARA IMPRESSÃO FINAL ====================
+// ==================== PROCESSAMENTO E MONTAGEM FINAL PARA IMPRESSÃO (VERTICAL/HORIZONTAL) ====================
 async function composeAndUpload(copias) {
-    debug(`🖨️ Extraindo composição montada para processamento de arquivos...`);
-    // Como a foto já foi perfeitamente montada com moldura no capturePhoto(), enviamos direto o canvas pronto!
-    const blob = await new Promise(r => canvasCapture.toBlob(r, 'image/jpeg', 0.95));
+    debug(`🖨️ Redimensionando arquivo final para o padrão de saída solicitado pelo painel...`);
+    
+    const fmt = FORMATOS[formatoAtual] || FORMATOS['10X15V'];
+    
+    // Este canvas oculto cria o arquivo nas dimensões oficiais exatas do evento (ex: 1200x1800 vertical)
+    const finalCanvas = document.createElement('canvas');
+    finalCanvas.width = fmt.w;
+    finalCanvas.height = fmt.h;
+    const finalCtx = finalCanvas.getContext('2d');
+    
+    // 1. Fundo base limpo
+    finalCtx.fillStyle = 'white';
+    finalCtx.fillRect(0, 0, fmt.w, fmt.h);
+    
+    // 2. Aplica a foto capturada preenchendo a área útil correta sem esticar as proporções
+    if (rawCapturedFrame) {
+        const scale = Math.max(fmt.w / rawCapturedFrame.width, fmt.h / rawCapturedFrame.height);
+        const w = rawCapturedFrame.width * scale;
+        const h = rawCapturedFrame.height * scale;
+        const x = (fmt.w - w) / 2;
+        const y = (fmt.h - h) / 2;
+        finalCtx.drawImage(rawCapturedFrame, x, y, w, h);
+    }
+    
+    // 3. Mescla a moldura original em alta resolução por cima obedecendo o aspecto final de impressão
+    if (molduraUrl) {
+        try {
+            const molduraImg = await loadImage(molduraUrl);
+            finalCtx.drawImage(molduraImg, 0, 0, fmt.w, fmt.h);
+        } catch(e) {
+            console.error("Erro ao mesclar moldura final:", e);
+        }
+    }
+    
+    const blob = await new Promise(r => finalCanvas.toBlob(r, 'image/jpeg', 0.98));
     await uploadBlob(blob, copias);
 }
 
@@ -380,7 +415,7 @@ function loadImage(src) {
     });
 }
 
-// ==================== UPLOAD PARA O R2 ====================
+// ==================== ENVIO DOS ENVELOPES DE ARQUIVOS R2 ====================
 async function uploadBlob(blob, copias) {
     if (!eventoAtual) return;
     
@@ -399,13 +434,13 @@ async function uploadBlob(blob, copias) {
     
     try {
         const res = await fetch(`${API_BASE}/upload`, { method: 'POST', body: fd });
-        if (res.ok) debug('✅ Upload do arquivo finalizado!');
+        if (res.ok) debug('✅ Arquivo enviado para fila de impressão!');
     } catch(e) {
-        debug('❌ Erro de Upload: ' + e.message);
+        debug('❌ Erro no envio do arquivo: ' + e.message);
     }
 }
 
-// ==================== AGUARDAR SELEÇÃO DE IMPRESSÃO ====================
+// ==================== AGUARDAR RESPOSTA DO SMARTPHONE ====================
 async function waitForPrint() {
     for (let i = 0; i < 120; i++) {
         try {
@@ -420,7 +455,7 @@ async function waitForPrint() {
     return null;
 }
 
-// ==================== CICLO COMPLETO ====================
+// ==================== CONTROLE DE CICLOS E FLUXO ====================
 async function finishCycle() {
     const copias = await waitForPrint();
     if (!copias) {
@@ -428,7 +463,7 @@ async function finishCycle() {
         return;
     }
     
-    optionsOverlay.querySelector('.options-text').innerText = 'Processando arquivo...';
+    optionsOverlay.querySelector('.options-text').innerText = 'PROCESSANDO MÍDIA...';
     await composeAndUpload(copias);
     
     await fetch(`${API_BASE}/reset-session`, { method: 'POST' }).catch(()=>{});
@@ -438,18 +473,19 @@ async function finishCycle() {
 function showThanks() {
     document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
     document.getElementById('screen-thanks').style.display = 'flex';
-    document.getElementById('thanks-text').innerHTML = "🖨️ AGUARDE A IMPRESSÃO...";
+    document.getElementById('thanks-text').innerHTML = "🖨️ SOLICITAÇÃO ENVIADA!<br>AGUARDE A IMPRESSÃO...";
     
     setTimeout(() => {
-        document.getElementById('thanks-text').innerHTML = "💖 OBRIGADO! 💖<br>APROVEITE SUA FOTO!";
-        setTimeout(resetToStart, 2500);
-    }, 2500);
+        document.getElementById('thanks-text').innerHTML = "💖 OBRIGADO!<br>APROVEITE SEU REGISTRO!";
+        setTimeout(resetToStart, 2800);
+    }, 3000);
 }
 
 function resetToStart() {
     document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
     document.getElementById('screen-start').style.display = 'flex';
     ctx.clearRect(0, 0, canvasCapture.width, canvasCapture.height);
+    rawCapturedFrame = null;
     captureInProgress = false;
     pauseCamera();
     lastState = 'start';
@@ -461,7 +497,7 @@ function resetToStart() {
     }).catch(()=>{});
 }
 
-// ==================== MÁQUINA DE ESTADO ====================
+// ==================== GERENCIADOR DE ESTADO GLOBAL ====================
 function updateScreenState(state) {
     if (state === lastState && state !== 'capturing') return;
     
@@ -493,7 +529,7 @@ function updateScreenState(state) {
     lastState = state;
 }
 
-// ==================== POLLING ====================
+// ==================== POLLING CONTINUO ====================
 async function pollServerState() {
     try {
         const res = await fetch(`${API_BASE}/get-state?t=${Date.now()}`);
@@ -518,7 +554,7 @@ async function pollServerState() {
     } catch(e) {}
 }
 
-// ==================== EVENTOS SECUNDÁRIOS ====================
+// ==================== INTERRUPÇÃO DE ESCOPO LOCAL ====================
 window.addEventListener('storage', (e) => {
     if (e.key === 'booth_state') {
         updateScreenState(e.newValue);
@@ -571,7 +607,7 @@ function loadSavedBackground() {
     updateVisualMode();
 }
 
-// EXECUÇÃO INICIAL
+// DISPARO DE STARTUP
 loadSavedBackground();
 localStorage.setItem('booth_state', 'start');
 updateScreenState('start');
@@ -579,10 +615,10 @@ updateScreenState('start');
 initCamera();
 
 setInterval(pollServerState, 800);
-setInterval(syncEvento, 5000); // Sincronismo rápido a cada 5 segundos
+setInterval(syncEvento, 4000); // Polling de verificação de troca de evento a cada 4s
 syncEvento();
 
-debug('🚀 AUTOGRAPH CAM v8.8 pronta e atualizada.');
+debug('🚀 AUTOGRAPH CAM v8.9 Operando Integrada ao Painel v1.6');
 </script>
 </body>
 </html>

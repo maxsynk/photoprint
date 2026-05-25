@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>WEBCAM - AUTOGRAPH CAM v8.7</title>
+<title>WEBCAM - AUTOGRAPH CAM v8.8</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
@@ -64,16 +64,28 @@ body.bg-active .corner-glow{ display:none; }
 .start-title{ color:var(--neon); font-family:'Orbitron',sans-serif; font-size:22px; font-weight:900; letter-spacing:4px; text-shadow: 0 0 15px var(--neon), 0 0 35px var(--neon); margin-bottom:18px; text-transform:uppercase; line-height:1.4; min-height:40px; }
 .start-subtitle{ font-size:22px; line-height:1.6; }
 
-#camera-wrapper { position: absolute; inset: 0; width: 100vw; height: 100vh; background: #000; overflow: hidden; z-index: 40; }
+/* 3º DETALHE: CONTAINER COM BORDAS FINAS MAS VISÍVEIS PARA EVITAR TELA ESTOURADA */
+#camera-wrapper { 
+    position: absolute; 
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 85vw; height: 85vh; 
+    background: #000; 
+    overflow: hidden; 
+    z-index: 40; 
+    border: 2px solid rgba(57, 255, 20, 0.6); 
+    box-shadow: 0 0 25px rgba(57, 255, 20, 0.25);
+    border-radius: 12px;
+}
 #camera-feed { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-#camera-canvas { width: 100%; height: 100%; object-fit: cover; }
+#camera-canvas { width: 100%; height: 100%; object-fit: contain; background: #050505; }
 
-.fun-text { position: absolute; top: 75%; left: 50%; transform: translate(-50%, -50%); font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif; font-size: 90px; font-weight: 900; text-align: center; color: #fff; white-space: nowrap; text-transform: uppercase; text-shadow: 0px 0px 15px #ff0080, 0px 0px 30px #ff8c00, 0px 0px 45px #ffff00; animation: funPulse 0.6s infinite alternate, hueShift 3s linear infinite; z-index: 50; pointer-events: none; }
+.fun-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif; font-size: 80px; font-weight: 900; text-align: center; color: #fff; white-space: nowrap; text-transform: uppercase; text-shadow: 0px 0px 15px #ff0080, 0px 0px 30px #ff8c00, 0px 0px 45px #ffff00; animation: funPulse 0.6s infinite alternate, hueShift 3s linear infinite; z-index: 50; pointer-events: none; }
 @keyframes funPulse { 0% { transform: translate(-50%, -50%) scale(0.9); } 100% { transform: translate(-50%, -50%) scale(1.15); } }
 @keyframes hueShift { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
 
-#options-overlay { position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.95); padding: 20px 45px; border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 60; text-align: center; }
-.options-text { font-family: 'Arial', sans-serif; font-size: 28px; color: #222; font-weight: bold; letter-spacing: 1px; }
+#options-overlay { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.85); border: 1px solid var(--neon); padding: 15px 40px; border-radius: 50px; box-shadow: 0 0 20px rgba(57,255,20,0.3); z-index: 60; text-align: center; }
+.options-text { font-family: 'Orbitron', sans-serif; font-size: 22px; color: var(--neon); font-weight: bold; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon); }
 
 .status-text { font-family:'Orbitron',sans-serif; font-size:40px; color:var(--neon); font-weight:900; letter-spacing:4px; text-shadow: 0 0 20px var(--neon); text-align:center; animation:pulseText 1.5s infinite; background: rgba(0,0,0,0.8); padding: 40px 80px; border-radius: 20px; border: 2px solid var(--neon); backdrop-filter: blur(10px); }
 @keyframes pulseText { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
@@ -120,7 +132,7 @@ body.bg-active .corner-glow{ display:none; }
         <canvas id="camera-canvas" style="display:none;"></canvas>
         <div id="fun-text" class="fun-text" style="display:none;"></div>
         <div id="options-overlay" style="display:none;">
-            <div class="options-text">ACESSE O TOTEM PARA IMPRIMIR SUA FOTO</div>
+            <div class="options-text">VEJA O CELULAR PARA IMPRIMIR SUA FOTO</div>
         </div>
     </div>
 </div>
@@ -195,20 +207,17 @@ function pauseCamera() {
     }
 }
 
-// ==================== SINCRONIZAÇÃO VIA ENDPOINT CONSOLIDADO ====================
+// ==================== 1º DETALHE: SINCRONIZAR EXATO COM O PAINEL E WORKER ====================
 async function syncEvento() {
     try {
-        // Consultando o endpoint mestre que traz todas as tabelas e configurações sincronizadas
         const res = await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`);
         if (res.ok) {
             const data = await res.json();
-            
-            // Pega a configuração do evento ativo retornada do banco D1
-            if (data.config && data.config.evento && data.config.evento !== 'Geral') {
+            if (data.config && data.config.evento) {
                 if (eventoAtual !== data.config.evento || formatoAtual !== data.config.formato) {
                     eventoAtual = data.config.evento;
                     formatoAtual = (data.config.formato || '10X15V').toUpperCase().trim();
-                    debug(`📡 Evento Ativo Detectado: ${eventoAtual} | Formato: ${formatoAtual}`);
+                    debug(`📡 Painel/Worker Sincronizado: ${eventoAtual} | ${formatoAtual}`);
                     updateEventoUI();
                     await loadMoldura();
                 }
@@ -216,19 +225,19 @@ async function syncEvento() {
             }
         }
     } catch(e) {
-        debug('⚠️ Erro ao sincronizar evento via get-all-states: ' + e.message);
+        debug('⚠️ Sincronismo API suspenso: ' + e.message);
     }
     
-    // Fallback LocalStorage (Painel) se a API falhar ou estiver em Geral
+    // Fallback completo se houver inconsistência temporária na cloud
     try {
         const db = localStorage.getItem('eventos_db');
         if (db) {
             const eventos = JSON.parse(db);
             const ativo = eventos.find(e => e.ativo);
-            if (ativo && ativo.nome !== eventoAtual) {
+            if (ativo && (ativo.nome !== eventoAtual || ativo.formato !== formatoAtual)) {
                 eventoAtual = ativo.nome;
                 formatoAtual = (ativo.formato || '10X15V').toUpperCase().trim();
-                debug(`💾 LocalStorage Fallback: ${eventoAtual} | ${formatoAtual}`);
+                debug(`💾 LocalStorage Restaurado: ${eventoAtual}`);
                 updateEventoUI();
                 await loadMoldura();
             }
@@ -238,7 +247,7 @@ async function syncEvento() {
 
 function updateEventoUI() {
     const el = document.getElementById('active-event-name');
-    if (eventoAtual) {
+    if (eventoAtual && eventoAtual !== 'Geral') {
         el.style.display = 'block';
         el.innerText = `🎉 ${eventoAtual} (${formatoAtual})`;
     } else {
@@ -246,41 +255,33 @@ function updateEventoUI() {
     }
 }
 
-// ==================== BUSCA E CARREGAMENTO DA MOLDURA R2 ====================
 async function loadMoldura() {
     if (!eventoAtual) return;
-    debug(` Moldura: Escaneando arquivos do evento no R2...`);
-    
     try {
         const res = await fetch(`${API_BASE}/list-photos?evento=${encodeURIComponent(eventoAtual)}&t=${Date.now()}`);
         const arquivos = await res.json();
         
-        let molduraKey = null;
-        
-        // Prioridade 1: Arquivos que contêm a string 'moldura' com extensão .png
-        molduraKey = arquivos.find(f => 
+        let molduraKey = arquivos.find(f => 
             f.key.toLowerCase().includes('moldura') && f.key.toLowerCase().endsWith('.png')
         );
         
-        // Prioridade 2: Qualquer .png solto na pasta do evento ativo
         if (!molduraKey) {
             molduraKey = arquivos.find(f => f.key.toLowerCase().endsWith('.png'));
         }
         
         if (molduraKey) {
             molduraUrl = `${API_BASE}/photo/${encodeURIComponent(molduraKey.key)}`;
-            debug(`✅ Moldura Encontrada com Sucesso: ${molduraKey.key}`);
+            debug(`🖼️ Moldura pronta para o preview: ${molduraKey.key}`);
         } else {
             molduraUrl = null;
-            debug('ℹ️ Nenhuma moldura PNG mapeada para este evento.');
+            debug('ℹ️ Nenhuma moldura vinculada encontrada.');
         }
     } catch(e) {
         molduraUrl = null;
-        debug('❌ Falha ao processar lista de arquivos da moldura: ' + e.message);
     }
 }
 
-// ==================== CAPTURA DA FOTO ====================
+// ==================== 2º DETALHE: CAPTURA E PREVIEW COMPLETO COM A MOLDURA ====================
 function capturePhoto() {
     if (captureInProgress) return;
     captureInProgress = true;
@@ -292,13 +293,12 @@ function capturePhoto() {
     
     funText.style.display = 'block';
     funText.innerHTML = "✨ PREPARE-SE! ✨<br>😜🕺💃";
-    debug('📸 Contagem iniciada');
     
     setTimeout(() => {
         let countdown = 3;
         funText.innerHTML = `😁 SORRIA! 😁<br>⏳ ${countdown}`;
         
-        const timer = setInterval(() => {
+        const timer = setInterval(async () => {
             countdown--;
             if (countdown > 0) {
                 funText.innerHTML = `😁 SORRIA! 😁<br>⏳ ${countdown}`;
@@ -306,80 +306,68 @@ function capturePhoto() {
                 funText.style.display = 'none';
                 clearInterval(timer);
                 
-                canvasCapture.width = videoFeed.videoWidth || 1920;
-                canvasCapture.height = videoFeed.videoHeight || 1080;
+                const fmt = FORMATOS[formatoAtual] || FORMATOS['10X15V'];
+                canvasCapture.width = fmt.w;
+                canvasCapture.height = fmt.h;
                 
-                // Grava o espelhamento exato do Feed
-                ctx.save();
-                ctx.scale(-1, 1);
-                ctx.drawImage(videoFeed, -canvasCapture.width, 0, canvasCapture.width, canvasCapture.height);
-                ctx.restore();
+                // 1. Limpa e cria fundo branco estrutural
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvasCapture.width, canvasCapture.height);
+                
+                // 2. Tira o frame do vídeo e aplica o espelhamento correto no canvas de saída
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = videoFeed.videoWidth || 1920;
+                tempCanvas.height = videoFeed.videoHeight || 1080;
+                const tempCtx = tempCanvas.getContext('2d');
+                
+                tempCtx.save();
+                tempCtx.scale(-1, 1);
+                tempCtx.drawImage(videoFeed, -tempCanvas.width, 0, tempCanvas.width, tempCanvas.height);
+                tempCtx.restore();
+                
+                const scale = Math.max(canvasCapture.width / tempCanvas.width, canvasCapture.height / tempCanvas.height);
+                const w = tempCanvas.width * scale;
+                const h = tempCanvas.height * scale;
+                
+                ctx.drawImage(tempCanvas, (canvasCapture.width - w) / 2, (canvasCapture.height - h) / 2, w, h);
+                
+                // 3. Renderiza a moldura IMEDIATAMENTE por cima do Canvas para o preview do cliente
+                if (molduraUrl) {
+                    try {
+                        const molduraImg = await loadImage(molduraUrl);
+                        ctx.drawImage(molduraImg, 0, 0, canvasCapture.width, canvasCapture.height);
+                        debug('✅ Moldura Mesclada com Sucesso na Tela de Preview');
+                    } catch(e) {
+                        debug('⚠️ Exibindo foto limpa (Falha ao carregar arquivo de overlay): ' + e.message);
+                    }
+                }
                 
                 videoFeed.style.display = 'none';
                 canvasCapture.style.display = 'block';
                 pauseCamera();
                 
-                debug('✅ Foto capturada');
-                
-                // CORREÇÃO: Altera o estado do Worker para "options" destravando a Botoeira na hora
+                // Altera o estado para destravar o celular do cliente
                 fetch(`${API_BASE}/set-state`, { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ state: 'options' })
-                }).then(() => {
-                    debug('🚀 Worker atualizado para options -> Celular Liberado');
                 }).catch(()=>{});
 
                 captureInProgress = false;
                 
                 optionsOverlay.style.display = 'block';
-                optionsOverlay.querySelector('.options-text').innerText = 'ACESSE O CELULAR PARA IMPRIMIR SUA FOTO';
+                optionsOverlay.querySelector('.options-text').innerText = 'VEJA O CELULAR PARA IMPRIMIR SUA FOTO';
             }
         }, 1000);
     }, 4000);
 }
 
-// ==================== COMPOSIÇÃO COM MOLDURA E UPLOAD ====================
+// ==================== COMPOSIÇÃO PARA IMPRESSÃO FINAL ====================
 async function composeAndUpload(copias) {
-    debug(`🖨️ Mesclando imagem com a moldura ativa...`);
-    
-    const fmt = FORMATOS[formatoAtual] || FORMATOS['10X15V'];
-    const outCanvas = document.createElement('canvas');
-    outCanvas.width = fmt.w;
-    outCanvas.height = fmt.h;
-    const outCtx = outCanvas.getContext('2d');
-    
-    outCtx.fillStyle = 'white';
-    outCtx.fillRect(0, 0, outCanvas.width, outCanvas.height);
-    
-    const fotoImg = await imageFromCanvas(canvasCapture);
-    const scale = Math.max(outCanvas.width / fotoImg.width, outCanvas.height / fotoImg.height);
-    const w = fotoImg.width * scale;
-    const h = fotoImg.height * scale;
-    outCtx.drawImage(fotoImg, (outCanvas.width - w) / 2, (outCanvas.height - h) / 2, w, h);
-    
-    // Injeção da moldura carregada dinamicamente
-    if (molduraUrl) {
-        try {
-            const molduraImg = await loadImage(molduraUrl);
-            outCtx.drawImage(molduraImg, 0, 0, outCanvas.width, outCanvas.height);
-            debug('✅ Moldura integrada no arquivo final de impressão.');
-        } catch(e) {
-            debug('⚠️ Erro ao renderizar a moldura de overlay: ' + e.message);
-        }
-    }
-    
-    const blob = await new Promise(r => outCanvas.toBlob(r, 'image/jpeg', 0.95));
+    debug(`🖨️ Extraindo composição montada para processamento de arquivos...`);
+    // Como a foto já foi perfeitamente montada com moldura no capturePhoto(), enviamos direto o canvas pronto!
+    const blob = await new Promise(r => canvasCapture.toBlob(r, 'image/jpeg', 0.95));
     await uploadBlob(blob, copias);
-}
-
-function imageFromCanvas(canvas) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = reject;
-        img.src = canvas.toDataURL('image/jpeg', 0.92);
-    });
 }
 
 function loadImage(src) {
@@ -394,66 +382,41 @@ function loadImage(src) {
 
 // ==================== UPLOAD PARA O R2 ====================
 async function uploadBlob(blob, copias) {
-    if (!eventoAtual) {
-        debug('❌ Sem evento para upload');
-        return;
-    }
+    if (!eventoAtual) return;
     
     let nomeArquivo = 'foto.jpg';
     let copiasFisicas = 1;
     
-    if (copias === 1) {
-        nomeArquivo = 'foto.jpg';
-        copiasFisicas = 1;
-    } else if (copias === 2) {
-        nomeArquivo = 'foto_2c.jpg';
-        copiasFisicas = 2;
-    } else if (copias === 3) {
-        nomeArquivo = 'foto_2c_guestbook.jpg';
-        copiasFisicas = 2;
-    } else if (copias === 4) {
-        nomeArquivo = 'foto_3c_guestbook.jpg';
-        copiasFisicas = 3;
-    }
+    if (copias === 1) { nomeArquivo = 'foto.jpg'; copiasFisicas = 1; } 
+    else if (copias === 2) { nomeArquivo = 'foto_2c.jpg'; copiasFisicas = 2; } 
+    else if (copias === 3) { nomeArquivo = 'foto_2c_guestbook.jpg'; copiasFisicas = 2; } 
+    else if (copias === 4) { nomeArquivo = 'foto_3c_guestbook.jpg'; copiasFisicas = 3; }
     
     const fd = new FormData();
     fd.append('file', blob, nomeArquivo);
     fd.append('evento', eventoAtual);
     fd.append('copias', copiasFisicas.toString());
     
-    debug(`⬆️ Enviando ao R2: ${nomeArquivo} (${copiasFisicas} cópias)`);
-    
     try {
         const res = await fetch(`${API_BASE}/upload`, { method: 'POST', body: fd });
-        if (res.ok) {
-            debug('✅ Envio concluído com sucesso!');
-        } else {
-            debug('❌ Erro HTTP no upload: ' + res.status);
-        }
+        if (res.ok) debug('✅ Upload do arquivo finalizado!');
     } catch(e) {
-        debug('❌ Falha na conexão de upload: ' + e.message);
+        debug('❌ Erro de Upload: ' + e.message);
     }
 }
 
 // ==================== AGUARDAR SELEÇÃO DE IMPRESSÃO ====================
 async function waitForPrint() {
-    debug('⏳ Aguardando comando de impressão vindo do celular...');
-    
-    // Loop de verificação rápida do clique de envio da botoeira
     for (let i = 0; i < 120; i++) {
         try {
             const res = await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`);
             const data = await res.json();
-            
             if (data.print && data.print.printTriggered) {
-                debug(`🖨️ Sinal capturado! Imprimir ${data.print.copias} cópia(s)`);
                 return data.print.copias || 1;
             }
         } catch(e) {}
         await new Promise(r => setTimeout(r, 500));
     }
-    
-    debug('⏰ Tempo esgotado para escolha da cópia.');
     return null;
 }
 
@@ -465,12 +428,10 @@ async function finishCycle() {
         return;
     }
     
-    optionsOverlay.querySelector('.options-text').innerText = 'Compondo foto final...';
+    optionsOverlay.querySelector('.options-text').innerText = 'Processando arquivo...';
     await composeAndUpload(copias);
     
-    // Limpa gatilho de impressão para fechar o ciclo limpo
     await fetch(`${API_BASE}/reset-session`, { method: 'POST' }).catch(()=>{});
-    
     showThanks();
 }
 
@@ -498,14 +459,10 @@ function resetToStart() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ state: 'start' })
     }).catch(()=>{});
-    
-    debug('🏁 Reset completo - Pronto para o próximo');
 }
 
 // ==================== MÁQUINA DE ESTADO ====================
 function updateScreenState(state) {
-    debug(`🔄 Alteração de estado interno: ${lastState} → ${state}`);
-    
     if (state === lastState && state !== 'capturing') return;
     
     if (state === 'start' && lastState === 'options') {
@@ -546,7 +503,6 @@ async function pollServerState() {
         if (initialLoad) {
             initialLoad = false;
             if (data.state !== 'start') {
-                debug(`🧹 Limpando estado residual: ${data.state}`);
                 await fetch(`${API_BASE}/set-state`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -562,14 +518,13 @@ async function pollServerState() {
     } catch(e) {}
 }
 
-// ==================== INICIALIZAÇÕES SECUNDÁRIAS ====================
+// ==================== EVENTOS SECUNDÁRIOS ====================
 window.addEventListener('storage', (e) => {
     if (e.key === 'booth_state') {
         updateScreenState(e.newValue);
     }
 });
 
-// Menu secreto
 let clickCount = 0, clickTimer = null;
 secretLogo.addEventListener('click', () => {
     clickCount++;
@@ -578,7 +533,6 @@ secretLogo.addEventListener('click', () => {
     if (clickCount >= 7) { bgMenu.classList.toggle('active'); clickCount = 0; }
 });
 
-// Controle Visual Background
 function updateVisualMode() {
     const savedBg = localStorage.getItem('photoprint_bg');
     if (savedBg) { document.body.classList.add('bg-active'); }
@@ -617,19 +571,18 @@ function loadSavedBackground() {
     updateVisualMode();
 }
 
-// RUN
+// EXECUÇÃO INICIAL
 loadSavedBackground();
 localStorage.setItem('booth_state', 'start');
 updateScreenState('start');
 
 initCamera();
 
-// Loops de Polling e Sincronismo de Evento Ativo
 setInterval(pollServerState, 800);
-setInterval(syncEvento, 7000);
+setInterval(syncEvento, 5000); // Sincronismo rápido a cada 5 segundos
 syncEvento();
 
-debug('🚀 WEBCAM v8.7 pronta para o Totem');
+debug('🚀 AUTOGRAPH CAM v8.8 pronta e atualizada.');
 </script>
 </body>
 </html>

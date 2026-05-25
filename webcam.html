@@ -1,304 +1,624 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT - Master Panel v1.8</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root { --neon: #39ff14; --red: #ff3131; --dark: #000000; --card: rgba(255, 255, 255, 0.03); --border: rgba(57, 255, 20, 0.2); }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--dark); background: radial-gradient(circle at 50% -20%, #1a3a12 0%, #000 65%); color: white; margin: 0; height: 100vh; display: flex; flex-direction: column; box-sizing: border-box; overflow: hidden; }
-        #tela-inicial { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 1000; background: #000; flex-direction: column; text-align: center; }
-        .splash-brand { font-size: clamp(40px, 10vw, 90px); font-weight: 900; color: var(--neon); letter-spacing: 15px; text-transform: uppercase; margin: 0; text-shadow: 0 0 20px var(--neon); }
-        .splash-subtitle { font-size: 14px; letter-spacing: 8px; color: #666; text-transform: uppercase; margin-top: 10px; width: 100%; display: block; }
-        #modal-senha { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
-        .pass-box { background: #0a0a0a; padding: 40px; border-radius: 24px; border: 1px solid var(--neon); text-align: center; width: 320px; }
-        .pass-box input { width: 100%; padding: 15px; margin: 20px 0; background: #000; border: 1px solid #222; color: var(--neon); text-align: center; font-size: 32px; border-radius: 12px; outline: none; box-sizing: border-box; font-weight: 900; }
-        .top-nav { display: none; justify-content: space-between; align-items: center; padding: 15px 40px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.7); backdrop-filter: blur(15px); }
-        .internal-brand { font-size: 24px; font-weight: 900; color: var(--neon); letter-spacing: 4px; margin: 0; text-transform: uppercase; }
-        .internal-subtitle { font-size: 10px; letter-spacing: 3px; color: #555; text-transform: uppercase; font-weight: bold; margin-top: -2px; }
-        .main-layout { display: none; grid-template-columns: 1fr 1.3fr; gap: 25px; flex: 1; padding: 25px; min-height: 0; }
-        .card { background: var(--card); backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; overflow: hidden; }
-        .card-header { padding: 15px 25px; background: rgba(57, 255, 20, 0.08); color: var(--neon); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; }
-        .card-body { padding: 30px; flex: 1; overflow-y: auto; }
-        .form-group { margin-bottom: 20px; }
-        .form-group-inline { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; border: 1px solid #222; margin-bottom: 20px; }
-        label { font-size: 10px; color: var(--neon); font-weight: 900; text-transform: uppercase; display: block; margin-bottom: 8px; }
-        .form-group-inline label { margin-bottom: 0; }
-        input[type="text"], input[type="date"], select { width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid #222; color: white; border-radius: 6px; outline: none; box-sizing: border-box; }
-        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
-        .btn-neon-style { background: transparent; border: 1px solid var(--neon); color: white; padding: 14px; border-radius: 6px; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; border-left: 5px solid var(--neon); display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-neon-style:hover { background: rgba(57, 255, 20, 0.1); transform: translateX(5px); }
-        .btn-neon-style.success { background: var(--neon); color: black; border-left: 5px solid white; }
-        .evento-item { background: rgba(255,255,255,0.02); border: 1px solid #1a1a1a; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; transition: 0.2s; }
-        .evento-item.ativo { border-left: 4px solid var(--neon); background: rgba(57, 255, 20, 0.05); }
-        .status-container { display: flex; align-items: center; gap: 12px; padding: 6px 15px; border-radius: 30px; border: 1px solid #333; }
-        .switch-mega { position: relative; display: inline-block; width: 50px; height: 26px; }
-        .switch-mega input { opacity: 0; width: 0; height: 0; }
-        .slider-mega { position: absolute; cursor: pointer; inset: 0; background: #222; transition: .4s; border-radius: 30px; }
-        .slider-mega:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background: #555; transition: .4s; border-radius: 50%; }
-        input:checked + .slider-mega { background: var(--neon); }
-        input:checked + .slider-mega:before { transform: translateX(24px); background: #000; }
-        .custom-file-upload { border: 1px dashed var(--border); display: block; padding: 12px; cursor: pointer; text-align: center; border-radius: 6px; color: #555; font-size: 11px; font-weight: bold; }
-        .preview-img { max-width: 100%; max-height: 80px; margin-top: 10px; display: none; border: 1px solid #222; }
-        .version-tag { position: fixed; bottom: 15px; right: 20px; font-size: 10px; color: #333; font-weight: 900; }
-        .btn-acao { cursor: pointer; padding: 5px; transition: 0.2s; }
-        .btn-acao.edit { color: #aaa; }
-        .btn-acao.edit:hover { color: var(--neon); }
-        .btn-acao.delete { color: #555; }
-        .btn-acao.delete:hover { color: var(--red); }
-        .status-icon { font-size: 14px; margin-right: 5px; }
-        .status-icon.ativo { color: var(--neon); text-shadow: 0 0 8px var(--neon); }
-        .status-icon.inativo { color: #333; }
-    </style>
+<meta charset="UTF-8">
+<title>WEBCAM - AUTOGRAPH CAM v8.9</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+:root{ --neon:#39ff14; --dark:#050505; --danger:#ff3131; }
+
+*{ box-sizing:border-box; }
+
+body{
+    margin:0;
+    background: radial-gradient(circle at top, rgba(57,255,20,0.10), transparent 35%),
+                radial-gradient(circle at bottom right, rgba(57,255,20,0.08), transparent 30%),
+                linear-gradient(135deg, #020202 0%, #050505 40%, #071107 100%);
+    color:white;
+    font-family:Arial,Helvetica,sans-serif;
+    width:100vw; height:100vh;
+    overflow:hidden; position:relative;
+}
+
+#dynamic-bg{ position:fixed; inset:0; z-index:0; background-size:cover; background-position:center; background-repeat:no-repeat; opacity:0; transition:opacity 0.6s ease; }
+#dynamic-bg.active{ opacity:0.45; }
+#dynamic-bg::after{ content:''; position:absolute; inset:0; background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.65)); }
+body::before{ content:''; position:fixed; inset:0; background-image: linear-gradient(rgba(57,255,20,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(57,255,20,0.03) 1px, transparent 1px); background-size:40px 40px; z-index:1; animation:gridMove 12s linear infinite; }
+body.bg-active::before{ display:none; }
+@keyframes gridMove{ from{ transform:translateY(0px); } to{ transform:translateY(40px); } }
+
+/* ELEMENTOS VISUAIS FIXOS DO TOPO COM Z-INDEX ALTO */
+.bg-brand{ position:fixed; inset:0; z-index:2; pointer-events:none; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.07; }
+body.bg-active .bg-brand{ display:none; }
+.bg-brand-title{ font-family:'Orbitron',sans-serif; font-size:140px; font-weight:900; color:var(--neon); letter-spacing:14px; text-transform:uppercase; }
+.bg-brand-sub{ margin-top:20px; font-size:42px; letter-spacing:12px; text-transform:uppercase; color:white; }
+
+.top-logo{ position:fixed; top:40px; left:50px; z-index:100; }
+.logo-title{ font-family:'Orbitron',sans-serif; color:var(--neon); font-size:46px; font-weight:900; letter-spacing:8px; text-shadow: 0 0 15px var(--neon), 0 0 35px rgba(57,255,20,0.8); cursor:pointer; user-select:none; }
+.logo-sub{ margin-top:4px; color:white; opacity:0.7; letter-spacing:5px; font-size:13px; text-transform:uppercase; }
+
+#active-event-name { position: fixed; top: 130px; left: 50px; z-index: 100; font-family: 'Orbitron', sans-serif; color: var(--neon); font-size: 16px; font-weight: 700; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon); background: rgba(0,0,0,0.8); padding: 8px 16px; border-radius: 8px; border: 1px solid var(--neon); display: none; }
+
+#debug-info { position: fixed; bottom: 10px; right: 10px; z-index: 999; background: rgba(0,0,0,0.8); color: var(--neon); font-size: 10px; padding: 5px 10px; border-radius: 5px; font-family: monospace; max-width: 350px; word-break: break-all; }
+
+.corner-glow{ position:fixed; width:420px; height:420px; border-radius:50%; background:rgba(57,255,20,0.08); filter:blur(90px); z-index:0; }
+body.bg-active .corner-glow{ display:none; }
+.corner-1{ top:-150px; left:-100px; }
+.corner-2{ bottom:-180px; right:-100px; }
+
+#bg-menu{ position:fixed; top:40px; right:40px; z-index:200; display:none; flex-direction:column; gap:12px; }
+#bg-menu.active{ display:flex; }
+.bg-btn{ padding:12px 20px; border-radius:14px; border:1px solid rgba(57,255,20,0.45); background:rgba(0,0,0,0.55); color:white; font-size:14px; font-weight:bold; letter-spacing:1px; cursor:pointer; backdrop-filter:blur(10px); transition:0.25s; box-shadow: 0 0 20px rgba(57,255,20,0.12); text-align:center; }
+.bg-btn:hover{ transform:translateY(-2px); border-color:var(--neon); color:var(--neon); box-shadow: 0 0 25px rgba(57,255,20,0.35); }
+#bg-input{ display:none; }
+
+/* TELAS COM Z-INDEX MENOR PARA FICAREM ABAIXO DO TEXTO DO TOPO */
+.screen { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:5; flex-direction:column; }
+
+.btn-start{ position:relative; width:380px; height:380px; border-radius:50%; border:4px solid var(--neon); background: radial-gradient(circle at center, rgba(57,255,20,0.18), rgba(0,0,0,0.96)); overflow:hidden; transition:0.3s; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:35px; box-shadow: 0 0 30px rgba(57,255,20,0.8), inset 0 0 60px rgba(57,255,20,0.15); backdrop-filter:blur(4px); z-index:6; }
+.btn-start::before{ content:''; position:absolute; width:250%; height:250%; background:conic-gradient( transparent, rgba(57,255,20,1), rgba(57,255,20,0.25), transparent ); animation:rotateGlow 3s linear infinite; filter:blur(20px); opacity:1; }
+.btn-start::after{ content:''; position:absolute; inset:8px; border-radius:50%; background:rgba(0,0,0,0.92); box-shadow: inset 0 0 60px rgba(57,255,20,0.15); }
+@keyframes rotateGlow{ 100%{ transform:rotate(360deg); } }
+
+.start-content{ position:relative; z-index:10; text-align:center; width:100%; }
+.start-icon{ font-size:58px; margin-bottom:18px; filter:drop-shadow(0 0 15px var(--neon)); }
+.start-title{ color:var(--neon); font-family:'Orbitron',sans-serif; font-size:22px; font-weight:900; letter-spacing:4px; text-shadow: 0 0 15px var(--neon), 0 0 35px var(--neon); margin-bottom:18px; text-transform:uppercase; line-height:1.4; min-height:40px; }
+.start-subtitle{ font-size:22px; line-height:1.6; }
+
+/* CONTAINER EXPANDIDO E ATUALIZADO POR BAIXO DAS BORDAS/LOGOS */
+#camera-wrapper { 
+    position: absolute; 
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 94vw; height: 92vh; 
+    background: #000; 
+    overflow: hidden; 
+    z-index: 5; 
+    border: 3px solid rgba(57, 255, 20, 0.8); 
+    box-shadow: 0 0 35px rgba(57, 255, 20, 0.4);
+    border-radius: 16px;
+}
+#camera-feed { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+#camera-canvas { width: 100%; height: 100%; object-fit: contain; background: #000; }
+
+.fun-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif; font-size: 85px; font-weight: 900; text-align: center; color: #fff; white-space: nowrap; text-transform: uppercase; text-shadow: 0px 0px 15px #ff0080, 0px 0px 30px #ff8c00, 0px 0px 45px #ffff00; animation: funPulse 0.6s infinite alternate, hueShift 3s linear infinite; z-index: 110; pointer-events: none; }
+@keyframes funPulse { 0% { transform: translate(-50%, -50%) scale(0.9); } 100% { transform: translate(-50%, -50%) scale(1.15); } }
+@keyframes hueShift { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
+
+#options-overlay { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.9); border: 2px solid var(--neon); padding: 18px 50px; border-radius: 50px; box-shadow: 0 0 25px rgba(57,255,20,0.5); z-index: 120; text-align: center; }
+.options-text { font-family: 'Orbitron', sans-serif; font-size: 24px; color: var(--neon); font-weight: bold; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon); }
+
+.status-text { font-family:'Orbitron',sans-serif; font-size:40px; color:var(--neon); font-weight:900; letter-spacing:4px; text-shadow: 0 0 20px var(--neon); text-align:center; animation:pulseText 1.5s infinite; background: rgba(0,0,0,0.85); padding: 40px 80px; border-radius: 20px; border: 2px solid var(--neon); backdrop-filter: blur(10px); z-index:150; }
+@keyframes pulseText { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+</style>
 </head>
 <body>
 
-    <div class="version-tag">v1.8</div>
+<div id="dynamic-bg"></div>
+<div class="corner-glow corner-1"></div>
+<div class="corner-glow corner-2"></div>
 
-    <div id="tela-inicial">
-        <div class="splash-header">
-            <h1 class="splash-brand">PHOTO PRINT</h1>
-            <p class="splash-subtitle">Colecionando Momentos</p>
-        </div>
-        <button class="btn-neon-style" style="padding: 20px 60px; margin-top: 30px;" onclick="abrirModalSenha()">Acessar Terminal</button>
-    </div>
+<div class="bg-brand">
+    <div class="bg-brand-title">AUTOGRAPH CAM</div>
+    <div class="bg-brand-sub">Colecionando momentos</div>
+</div>
 
-    <div id="modal-senha">
-        <div class="pass-box">
-            <div style="font-size: 9px; color: var(--neon); letter-spacing: 2px;">SECURITY PROTOCOL</div>
-            <input type="password" id="input-pass" placeholder="••••" maxlength="4" onkeydown="if(event.key === 'Enter') confirmarSenha()">
-            <button class="btn-neon-style" style="width:100%" onclick="confirmarSenha()">Autenticar</button>
-            <div style="margin-top: 20px; color: #333; font-size: 9px; cursor: pointer;" onclick="fecharModalSenha()">ABORTAR</div>
-        </div>
-    </div>
+<div class="top-logo">
+    <div class="logo-title" id="secret-logo">AUTOGRAPH CAM</div>
+    <div class="logo-sub">Colecionando momentos</div>
+</div>
 
-    <div class="top-nav" id="header">
-        <div>
-            <h2 class="internal-brand">PROTO PRINT</h2>
-            <div class="internal-subtitle">colecionando momentos</div>
-        </div>
-        <div class="status-container" id="status-box">
-            <span id="label-status" style="font-size: 9px; font-weight: 900; color: var(--red);">OFFLINE</span>
-            <label class="switch-mega">
-                <input type="checkbox" id="server-status" onchange="salvarStatusRede()">
-                <span class="slider-mega"></span>
-            </label>
-        </div>
-    </div>
+<div id="active-event-name"></div>
+<div id="debug-info">INICIANDO...</div>
 
-    <div class="main-layout" id="layout">
-        <div class="card">
-            <div class="card-header" id="card-form-title">NOVO EVENTO</div>
-            <div class="card-body">
-                <input type="hidden" id="edit-index" value="-1">
-                <div class="form-group"><label>Nome do Evento</label><input type="text" id="input-evento" placeholder="Ex: Casamento João e Maria"></div>
-                <div class="form-group"><label>Data do Evento</label><input type="date" id="input-data"></div>
-                <div class="form-group"><label>Configuração de Saída</label><select id="select-formato"></select></div>
-                
-                <div class="form-group-inline">
-                    <label>Modo Guestbook (+1 Cópia)</label>
-                    <label class="switch-mega">
-                        <input type="checkbox" id="input-livro">
-                        <span class="slider-mega"></span>
-                    </label>
-                </div>
+<div id="bg-menu">
+    <label class="bg-btn" for="bg-input">🖼 ALTERAR FUNDO</label>
+    <div class="bg-btn" onclick="removeBackground()">✖ SEM FUNDO</div>
+</div>
+<input type="file" id="bg-input" accept="image/*"/>
 
-                <div class="form-group">
-                    <label>Moldura (.PNG)</label>
-                    <label for="input-moldura" class="custom-file-upload" id="label-file">CARREGAR MOLDURA PNG</label>
-                    <input type="file" id="input-moldura" accept="image/png" style="display:none" onchange="previewMoldura(this)">
-                    <center><img id="img-preview" class="preview-img"></center>
-                </div>
-                <button class="btn-neon-style" style="width:100%" onclick="salvarEvento()" id="btn-submit">
-                    <span id="btn-text">CRIAR EVENTO</span>
-                </button>
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-header">Logs de Atividade</div>
-            <div class="card-body" id="corpo-lista"></div>
+<div id="screen-start" class="screen">
+    <div class="btn-start" id="main-start-btn">
+        <div class="start-content">
+            <div class="start-icon">📸</div>
+            <div class="start-title">AUTOGRAPH CAM</div>
+            <div class="start-subtitle">Aguardando comando...</div>
         </div>
     </div>
+</div>
+
+<div id="screen-camera" class="screen" style="display:none;">
+    <div id="camera-wrapper">
+        <video id="camera-feed" autoplay playsinline muted></video>
+        <canvas id="camera-canvas" style="display:none;"></canvas>
+        <div id="fun-text" class="fun-text" style="display:none;"></div>
+        <div id="options-overlay" style="display:none;">
+            <div class="options-text">VEJA O CELULAR PARA IMPRIMIR SUA FOTO</div>
+        </div>
+    </div>
+</div>
+
+<div id="screen-thanks" class="screen" style="display:none;">
+    <div class="status-text" id="thanks-text">🖨️ AGUARDE A IMPRESSÃO...</div>
+</div>
 
 <script>
-    const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
-    const SENHA_MESTRA = "1234";
-    let eventos = JSON.parse(localStorage.getItem('eventos_db')) || [];
-    let formatos = [{label: "10x15 Vertical", value: "10X15V"}, {label: "10x15 Horizontal", value: "10X15H"}, {label: "Tirinha 5x15", value: "TIRINHA"}, {label: "Polaroid", value: "POLAROID"}];
+// ==================== CONFIGS E ESTADOS ====================
+const API_BASE = 'https://photoprint-api.maxprimefotovideo.workers.dev';
+const bgInput = document.getElementById('bg-input');
+const dynamicBg = document.getElementById('dynamic-bg');
+const bgMenu = document.getElementById('bg-menu');
+const secretLogo = document.getElementById('secret-logo');
+const videoFeed = document.getElementById('camera-feed');
+const canvasCapture = document.getElementById('camera-canvas');
+const ctx = canvasCapture.getContext('2d');
+const funText = document.getElementById('fun-text');
+const optionsOverlay = document.getElementById('options-overlay');
 
-    window.onload = async () => {
-        try {
-            const resp = await fetch(`${API_URL}/get-all-states?t=${Date.now()}`);
-            const data = await resp.json();
-            if(data.config) {
-                atualizarUIStatus(data.config.status === "ONLINE");
-                document.getElementById('server-status').checked = (data.config.status === "ONLINE");
+let stream = null;
+let lastState = 'start';
+let captureInProgress = false;
+let initialLoad = true;
+let eventoAtual = null;
+let formatoAtual = '10X15V';
+let molduraUrl = null;
+let cameraOk = false;
+let rawCapturedFrame = null; // Guarda o frame horizontal puro para evitar achatamento na rotação
+
+const FORMATOS = {
+    "TIRINHA": { w: 600, h: 1800 },
+    "POLAROID": { w: 1200, h: 1500 },
+    "10X15H": { w: 1800, h: 1200 },
+    "10X15V": { w: 1200, h: 1800 }
+};
+
+function debug(msg) {
+    console.log('[WEBCAM]', msg);
+    const el = document.getElementById('debug-info');
+    if (el) el.innerText = msg;
+}
+
+// ==================== CÂMERA ====================
+async function initCamera() {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: 'user', width: 1920, height: 1080 } 
+        });
+        videoFeed.srcObject = stream;
+        videoFeed.pause(); 
+        cameraOk = true;
+        debug('✅ Câmera Conectada');
+        return true;
+    } catch (err) {
+        debug('❌ Erro Câmera: ' + err.message);
+        cameraOk = false;
+        return false;
+    }
+}
+
+function resumeCamera() {
+    if (stream && videoFeed.paused) {
+        videoFeed.play().catch(e => debug('Erro play: ' + e.message));
+    }
+}
+
+function pauseCamera() {
+    if (stream && !videoFeed.paused) {
+        videoFeed.pause();
+    }
+}
+
+// ==================== 1º CORREÇÃO: SINCRONISMO MAPEADO COM O PAINEL ====================
+async function syncEvento() {
+    try {
+        const res = await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`);
+        if (res.ok) {
+            const data = await res.json();
+            // Mapeamento exato com a estrutura enviada pelo seu painel v1.6 (data.config.evento)
+            if (data.config && data.config.evento) {
+                const cloudNome = data.config.evento;
+                const cloudFormato = (data.config.formato || '10X15V').toUpperCase().trim();
+                
+                if (eventoAtual !== cloudNome || formatoAtual !== cloudFormato) {
+                    eventoAtual = cloudNome;
+                    formatoAtual = cloudFormato;
+                    debug(`📡 Sincronizado via Worker: ${eventoAtual} [${formatoAtual}]`);
+                    updateEventoUI();
+                    await loadMoldura();
+                }
+                return;
             }
-        } catch(e) { console.log("Servidor offline, operando local."); }
-    };
-
-    function abrirModalSenha() { document.getElementById('modal-senha').style.display = 'flex'; document.getElementById('input-pass').focus(); }
-    function fecharModalSenha() { document.getElementById('modal-senha').style.display = 'none'; }
-    function confirmarSenha() { if(document.getElementById('input-pass').value === SENHA_MESTRA) { fecharModalSenha(); ativarPainel(); } else alert("Senha Incorreta!"); }
-
-    function ativarPainel() {
-        document.getElementById('tela-inicial').style.display = 'none';
-        document.getElementById('header').style.display = 'flex';
-        document.getElementById('layout').style.display = 'grid';
-        renderizarFormatos(); renderizarLista(); checarEventoAtivo(); 
-    }
-
-    function renderizarFormatos() { document.getElementById('select-formato').innerHTML = formatos.map(f => `<option value="${f.value}">${f.label}</option>`).join(''); }
-
-    function previewMoldura(input) {
-        if(input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = e => { const img = document.getElementById('img-preview'); img.src = e.target.result; img.style.display = 'block'; document.getElementById('label-file').innerText = input.files[0].name; };
-            reader.readAsDataURL(input.files[0]);
         }
+    } catch(e) {
+        console.log('Erro de polling na nuvem, buscando local...', e.message);
     }
-
-    async function salvarEvento() {
-        const nome = document.getElementById('input-evento').value;
-        const data = document.getElementById('input-data').value;
-        const formato = document.getElementById('select-formato').value;
-        const livro = document.getElementById('input-livro').checked;
-        const editIdx = parseInt(document.getElementById('edit-index').value);
-        if(!nome || !data) return alert("Preencha campos obrigatórios.");
-
-        const estaAtivo = editIdx > -1 ? eventos[editIdx].ativo : true;
-        const novoEv = { nome, formato, livro, data: data.split('-').reverse().join('/'), dataRaw: data, ativo: estaAtivo };
-        
-        if(editIdx > -1) {
-            eventos[editIdx] = novoEv;
-            document.getElementById('edit-index').value = "-1";
-            document.getElementById('card-form-title').innerText = "NOVO EVENTO";
-            document.getElementById('btn-text').innerText = "CRIAR EVENTO";
-        } else { 
-            eventos.forEach(e => e.ativo = false); 
-            eventos.unshift(novoEv); 
-        }
-        
-        localStorage.setItem('eventos_db', JSON.stringify(eventos));
-        
-        document.getElementById('input-evento').value = "";
-        document.getElementById('input-data').value = "";
-        document.getElementById('input-livro').checked = false;
-        document.getElementById('img-preview').style.display = 'none';
-        document.getElementById('label-file').innerText = "CARREGAR MOLDURA PNG";
-
-        if(estaAtivo) {
-            await sincronizar(nome, formato, "ONLINE", livro);
-        }
-        
-        renderizarLista();
-        checarEventoAtivo();
-    }
-
-    async function sincronizar(nome, formato, status, livro) {
-        try {
-            const response = await fetch(`${API_URL}/set-config`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ evento: nome, status: status, formato: formato, livro: livro })
-            });
-            if(response.ok) {
-                atualizarUIStatus(status === "ONLINE");
+    
+    // Fallback mapeando a chave 'eventos_db' do localStorage que seu painel alimenta
+    try {
+        const db = localStorage.getItem('eventos_db');
+        if (db) {
+            const listaEventos = JSON.parse(db);
+            const ativo = listaEventos.find(e => e.ativo);
+            if (ativo && (ativo.nome !== eventoAtual || ativo.formato !== formatoAtual)) {
+                eventoAtual = ativo.nome;
+                formatoAtual = (ativo.formato || '10X15V').toUpperCase().trim();
+                debug(`💾 Sincronizado via LocalStorage: ${eventoAtual}`);
+                updateEventoUI();
+                await loadMoldura();
             }
-        } catch(e){ console.error("Erro de sincronismo:", e); }
-    }
-
-    function salvarStatusRede() {
-        const on = document.getElementById('server-status').checked;
-        const ativo = eventos.find(e => e.ativo);
-        if(ativo) sincronizar(ativo.nome, ativo.formato, on ? "ONLINE" : "OFFLINE", ativo.livro);
-    }
-
-    function atualizarUIStatus(on) {
-        const lb = document.getElementById('label-status');
-        lb.innerText = on ? "ONLINE" : "OFFLINE";
-        lb.style.color = on ? "var(--neon)" : "var(--red)";
-    }
-
-    function renderizarLista() {
-        document.getElementById('corpo-lista').innerHTML = eventos.map((ev, i) => `
-            <div class="evento-item ${ev.ativo ? 'ativo' : ''}">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <i class="fas ${ev.ativo ? 'fa-check-circle status-icon ativo' : 'fa-circle status-icon inativo'}"></i>
-                    <div>
-                        <div style="font-size:12px; font-weight:900; color: ${ev.ativo ? 'var(--neon)' : '#fff'}">${ev.nome}</div>
-                        <div style="font-size:9px; color:#555; text-transform:uppercase;">${ev.data} • ${ev.formato}</div>
-                    </div>
-                </div>
-                <div style="display:flex; gap:12px; align-items:center;">
-                    <i class="fas fa-edit btn-acao edit" title="Editar Evento" onclick="editar(${i})"></i>
-                    <i class="fas fa-trash btn-acao delete" title="Excluir Evento" onclick="excluir(${i})"></i>
-                    <button class="btn-neon-style ${ev.ativo ? 'success' : ''}" style="font-size:9px; padding: 6px 12px; border-left: ${ev.ativo ? '5px solid black' : '5px solid var(--neon)'}" onclick="ativarEvento(${i})">
-                        ${ev.ativo ? 'ATIVADO' : 'ATIVAR'}
-                    </button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function editar(index) {
-        const ev = eventos[index];
-        document.getElementById('input-evento').value = ev.nome;
-        document.getElementById('input-data').value = ev.dataRaw || "";
-        document.getElementById('select-formato').value = ev.formato;
-        document.getElementById('input-livro').checked = ev.livro;
-        document.getElementById('edit-index').value = index;
-        
-        document.getElementById('card-form-title').innerText = "EDITAR EVENTO";
-        document.getElementById('btn-text').innerText = "SALVAR ALTERAÇÕES";
-        document.getElementById('input-evento').focus();
-    }
-
-    async function excluir(index) {
-        const ev = eventos[index];
-        if(confirm(`Tem certeza que deseja deletar o evento "${ev.nome}"?`)) {
-            const foiAtivo = ev.ativo;
-            eventos.splice(index, 1);
-            localStorage.setItem('eventos_db', JSON.stringify(eventos));
-            
-            if(foiAtivo && eventos.length === 0) {
-                await sincronizar("Geral", "10X15V", "OFFLINE", false);
-            } else if(foiAtivo && eventos.length > 0) {
-                eventos[0].ativo = true;
-                localStorage.setItem('eventos_db', JSON.stringify(eventos));
-                await sincronizar(eventos[0].nome, eventos[0].formato, "ONLINE", eventos[0].livro);
-            }
-            
-            renderizarLista();
-            checarEventoAtivo();
         }
-    }
+    } catch(e) {}
+}
 
-    async function ativarEvento(index) {
-        // Remove o estado ativo de todos e seta apenas no clicado
-        eventos.forEach((e, i) => e.ativo = (i === index));
-        localStorage.setItem('eventos_db', JSON.stringify(eventos));
-        
-        const ev = eventos[index];
-        // Envia o comando em tempo real para a nuvem sincronizar os totens
-        await sincronizar(ev.nome, ev.formato, "ONLINE", ev.livro);
-        
-        renderizarLista();
-        checarEventoAtivo();
+function updateEventoUI() {
+    const el = document.getElementById('active-event-name');
+    if (eventoAtual && eventoAtual !== 'Geral') {
+        el.style.display = 'block';
+        el.innerText = `Evento Ativo: ${eventoAtual} (${formatoAtual})`;
+    } else {
+        el.style.display = 'none';
     }
+}
 
-    function checarEventoAtivo() {
-        const temAtivo = eventos.some(e => e.ativo);
-        document.getElementById('server-status').disabled = !temAtivo;
-        if(temAtivo) {
-            document.getElementById('server-status').checked = true;
-            atualizarUIStatus(true);
+async function loadMoldura() {
+    if (!eventoAtual) return;
+    try {
+        const res = await fetch(`${API_BASE}/list-photos?evento=${encodeURIComponent(eventoAtual)}&t=${Date.now()}`);
+        const arquivos = await res.json();
+        
+        let molduraKey = arquivos.find(f => 
+            f.key.toLowerCase().includes('moldura') && f.key.toLowerCase().endsWith('.png')
+        );
+        if (!molduraKey) {
+            molduraKey = arquivos.find(f => f.key.toLowerCase().endsWith('.png'));
+        }
+        
+        if (molduraKey) {
+            molduraUrl = `${API_BASE}/photo/${encodeURIComponent(molduraKey.key)}`;
+            debug(`🖼️ Moldura pronta para o Preview: ${molduraKey.key}`);
         } else {
-            document.getElementById('server-status').checked = false;
-            atualizarUIStatus(false);
+            molduraUrl = null;
+            debug('Nenhuma moldura vinculada encontrada.');
+        }
+    } catch(e) {
+        molduraUrl = null;
+    }
+}
+
+// ==================== 2º E 3º CORREÇÃO: CAPTURA E PREVIEW COMPLETO HORIZONTAL ====================
+function capturePhoto() {
+    if (captureInProgress) return;
+    captureInProgress = true;
+    
+    resumeCamera();
+    videoFeed.style.display = 'block';
+    canvasCapture.style.display = 'none';
+    optionsOverlay.style.display = 'none';
+    
+    funText.style.display = 'block';
+    funText.innerHTML = "✨ PREPARE-SE! ✨<br>😜🕺💃";
+    
+    setTimeout(() => {
+        let countdown = 3;
+        funText.innerHTML = `😁 SORRIA! 😁<br>⏳ ${countdown}`;
+        
+        const timer = setInterval(async () => {
+            countdown--;
+            if (countdown > 0) {
+                funText.innerHTML = `😁 SORRIA! 😁<br>⏳ ${countdown}`;
+            } else {
+                funText.style.display = 'none';
+                clearInterval(timer);
+                
+                // Pegamos a resolução horizontal original nativa da câmera
+                const camW = videoFeed.videoWidth || 1920;
+                const camH = videoFeed.videoHeight || 1080;
+                
+                // Definimos o canvas de exibição EXATAMENTE com o aspecto horizontal capturado da webcam
+                // Isso mata o bug da foto girar ou deformar para vertical na tela do cliente
+                canvasCapture.width = camW;
+                canvasCapture.height = camH;
+                
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, camW, camH);
+                
+                // Espelha horizontalmente para manter a coerência visual de espelho
+                ctx.save();
+                ctx.scale(-1, 1);
+                ctx.drawImage(videoFeed, -camW, 0, camW, camH);
+                ctx.restore();
+                
+                // Salvamos uma cópia em memória dessa captura limpa e horizontal para a montagem final de impressão posterior
+                rawCapturedFrame = document.createElement('canvas');
+                rawCapturedFrame.width = camW;
+                rawCapturedFrame.height = camH;
+                rawCapturedFrame.getContext('2d').drawImage(canvasCapture, 0, 0);
+                
+                // Puxamos a moldura ativa e desenhamos por cima adaptada na visualização horizontal do totem
+                if (molduraUrl) {
+                    try {
+                        const molduraImg = await loadImage(molduraUrl);
+                        // Desenha centralizado adaptando o preenchimento proporcional
+                        ctx.drawImage(molduraImg, 0, 0, camW, camH);
+                        debug('✅ Foto travada e montada com a moldura na tela');
+                    } catch(e) {
+                        debug('Exibindo foto limpa (Moldura indisponível no momento): ' + e.message);
+                    }
+                }
+                
+                videoFeed.style.display = 'none';
+                canvasCapture.style.display = 'block';
+                pauseCamera();
+                
+                // Comunica a API para liberar as opções de impressão no smartphone
+                fetch(`${API_BASE}/set-state`, { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ state: 'options' })
+                }).catch(()=>{});
+
+                captureInProgress = false;
+                optionsOverlay.style.display = 'block';
+            }
+        }, 1000);
+    }, 4000);
+}
+
+// ==================== PROCESSAMENTO E MONTAGEM FINAL PARA IMPRESSÃO (VERTICAL/HORIZONTAL) ====================
+async function composeAndUpload(copias) {
+    debug(`🖨️ Redimensionando arquivo final para o padrão de saída solicitado pelo painel...`);
+    
+    const fmt = FORMATOS[formatoAtual] || FORMATOS['10X15V'];
+    
+    // Este canvas oculto cria o arquivo nas dimensões oficiais exatas do evento (ex: 1200x1800 vertical)
+    const finalCanvas = document.createElement('canvas');
+    finalCanvas.width = fmt.w;
+    finalCanvas.height = fmt.h;
+    const finalCtx = finalCanvas.getContext('2d');
+    
+    // 1. Fundo base limpo
+    finalCtx.fillStyle = 'white';
+    finalCtx.fillRect(0, 0, fmt.w, fmt.h);
+    
+    // 2. Aplica a foto capturada preenchendo a área útil correta sem esticar as proporções
+    if (rawCapturedFrame) {
+        const scale = Math.max(fmt.w / rawCapturedFrame.width, fmt.h / rawCapturedFrame.height);
+        const w = rawCapturedFrame.width * scale;
+        const h = rawCapturedFrame.height * scale;
+        const x = (fmt.w - w) / 2;
+        const y = (fmt.h - h) / 2;
+        finalCtx.drawImage(rawCapturedFrame, x, y, w, h);
+    }
+    
+    // 3. Mescla a moldura original em alta resolução por cima obedecendo o aspecto final de impressão
+    if (molduraUrl) {
+        try {
+            const molduraImg = await loadImage(molduraUrl);
+            finalCtx.drawImage(molduraImg, 0, 0, fmt.w, fmt.h);
+        } catch(e) {
+            console.error("Erro ao mesclar moldura final:", e);
         }
     }
+    
+    const blob = await new Promise(r => finalCanvas.toBlob(r, 'image/jpeg', 0.98));
+    await uploadBlob(blob, copias);
+}
+
+function loadImage(src) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src + '?t=' + Date.now();
+    });
+}
+
+// ==================== ENVIO DOS ENVELOPES DE ARQUIVOS R2 ====================
+async function uploadBlob(blob, copias) {
+    if (!eventoAtual) return;
+    
+    let nomeArquivo = 'foto.jpg';
+    let copiasFisicas = 1;
+    
+    if (copias === 1) { nomeArquivo = 'foto.jpg'; copiasFisicas = 1; } 
+    else if (copias === 2) { nomeArquivo = 'foto_2c.jpg'; copiasFisicas = 2; } 
+    else if (copias === 3) { nomeArquivo = 'foto_2c_guestbook.jpg'; copiasFisicas = 2; } 
+    else if (copias === 4) { nomeArquivo = 'foto_3c_guestbook.jpg'; copiasFisicas = 3; }
+    
+    const fd = new FormData();
+    fd.append('file', blob, nomeArquivo);
+    fd.append('evento', eventoAtual);
+    fd.append('copias', copiasFisicas.toString());
+    
+    try {
+        const res = await fetch(`${API_BASE}/upload`, { method: 'POST', body: fd });
+        if (res.ok) debug('✅ Arquivo enviado para fila de impressão!');
+    } catch(e) {
+        debug('❌ Erro no envio do arquivo: ' + e.message);
+    }
+}
+
+// ==================== AGUARDAR RESPOSTA DO SMARTPHONE ====================
+async function waitForPrint() {
+    for (let i = 0; i < 120; i++) {
+        try {
+            const res = await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`);
+            const data = await res.json();
+            if (data.print && data.print.printTriggered) {
+                return data.print.copias || 1;
+            }
+        } catch(e) {}
+        await new Promise(r => setTimeout(r, 500));
+    }
+    return null;
+}
+
+// ==================== CONTROLE DE CICLOS E FLUXO ====================
+async function finishCycle() {
+    const copias = await waitForPrint();
+    if (!copias) {
+        resetToStart();
+        return;
+    }
+    
+    optionsOverlay.querySelector('.options-text').innerText = 'PROCESSANDO MÍDIA...';
+    await composeAndUpload(copias);
+    
+    await fetch(`${API_BASE}/reset-session`, { method: 'POST' }).catch(()=>{});
+    showThanks();
+}
+
+function showThanks() {
+    document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
+    document.getElementById('screen-thanks').style.display = 'flex';
+    document.getElementById('thanks-text').innerHTML = "🖨️ SOLICITAÇÃO ENVIADA!<br>AGUARDE A IMPRESSÃO...";
+    
+    setTimeout(() => {
+        document.getElementById('thanks-text').innerHTML = "💖 OBRIGADO!<br>APROVEITE SEU REGISTRO!";
+        setTimeout(resetToStart, 2800);
+    }, 3000);
+}
+
+function resetToStart() {
+    document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
+    document.getElementById('screen-start').style.display = 'flex';
+    ctx.clearRect(0, 0, canvasCapture.width, canvasCapture.height);
+    rawCapturedFrame = null;
+    captureInProgress = false;
+    pauseCamera();
+    lastState = 'start';
+    
+    fetch(`${API_BASE}/set-state`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ state: 'start' })
+    }).catch(()=>{});
+}
+
+// ==================== GERENCIADOR DE ESTADO GLOBAL ====================
+function updateScreenState(state) {
+    if (state === lastState && state !== 'capturing') return;
+    
+    if (state === 'start' && lastState === 'options') {
+        finishCycle();
+        lastState = state;
+        return;
+    }
+    
+    if (state === 'capturing' && lastState === 'options') return;
+    
+    document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
+    
+    if (state === 'capturing') {
+        document.getElementById('screen-camera').style.display = 'flex';
+        capturePhoto();
+    } else if (state === 'options') {
+        document.getElementById('screen-camera').style.display = 'flex';
+        videoFeed.style.display = 'none';
+        canvasCapture.style.display = 'block';
+        funText.style.display = 'none';
+        optionsOverlay.style.display = 'block';
+        pauseCamera();
+    } else {
+        document.getElementById('screen-start').style.display = 'flex';
+        pauseCamera();
+    }
+    
+    lastState = state;
+}
+
+// ==================== POLLING CONTINUO ====================
+async function pollServerState() {
+    try {
+        const res = await fetch(`${API_BASE}/get-state?t=${Date.now()}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        if (initialLoad) {
+            initialLoad = false;
+            if (data.state !== 'start') {
+                await fetch(`${API_BASE}/set-state`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ state: 'start' })
+                });
+                return;
+            }
+        }
+        
+        if (data.state && data.state !== lastState) {
+            updateScreenState(data.state);
+        }
+    } catch(e) {}
+}
+
+// ==================== INTERRUPÇÃO DE ESCOPO LOCAL ====================
+window.addEventListener('storage', (e) => {
+    if (e.key === 'booth_state') {
+        updateScreenState(e.newValue);
+    }
+});
+
+let clickCount = 0, clickTimer = null;
+secretLogo.addEventListener('click', () => {
+    clickCount++;
+    clearTimeout(clickTimer);
+    clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
+    if (clickCount >= 7) { bgMenu.classList.toggle('active'); clickCount = 0; }
+});
+
+function updateVisualMode() {
+    const savedBg = localStorage.getItem('photoprint_bg');
+    if (savedBg) { document.body.classList.add('bg-active'); }
+    else { document.body.classList.remove('bg-active'); }
+}
+
+bgInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        const image = ev.target.result;
+        dynamicBg.style.backgroundImage = `url('${image}')`;
+        dynamicBg.classList.add('active');
+        localStorage.setItem('photoprint_bg', image);
+        updateVisualMode();
+        bgMenu.classList.remove('active');
+    };
+    reader.readAsDataURL(file);
+});
+
+function removeBackground() {
+    localStorage.removeItem('photoprint_bg');
+    dynamicBg.style.backgroundImage = "";
+    dynamicBg.classList.remove('active');
+    updateVisualMode();
+    bgMenu.classList.remove('active');
+}
+
+function loadSavedBackground() {
+    const savedBg = localStorage.getItem('photoprint_bg');
+    if (savedBg) {
+        dynamicBg.style.backgroundImage = `url('${savedBg}')`;
+        dynamicBg.classList.add('active');
+    }
+    updateVisualMode();
+}
+
+// DISPARO DE STARTUP
+loadSavedBackground();
+localStorage.setItem('booth_state', 'start');
+updateScreenState('start');
+
+initCamera();
+
+setInterval(pollServerState, 800);
+setInterval(syncEvento, 4000); // Polling de verificação de troca de evento a cada 4s
+syncEvento();
+
+debug('🚀 AUTOGRAPH CAM v8.9 Operando Integrada ao Painel v1.6');
 </script>
 </body>
 </html>

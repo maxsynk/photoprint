@@ -179,70 +179,63 @@
         </div>
     </div>
 
-<script>
-    const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
-    const SENHA_MESTRA = "1234";
-    let eventos = [];
-    let arquivoMoldura = null;
+    <script>
+        const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
+        const SENHA_MESTRA = "1234";
+        let eventos = [];
+        let arquivoMoldura = null;
 
-    // ============ INICIALIZAÇÃO ============
-    window.onload = async () => {
-        console.log("🚀 Painel iniciado");
-        try {
-            const resp = await fetch(`${API_URL}/`);
-            const data = await resp.json();
-            if (data.status === "online") {
-                console.log("✅ Worker online!");
+        window.onload = async () => {
+            console.log("🚀 Painel iniciado");
+            try {
+                const resp = await fetch(`${API_URL}/`);
+                const data = await resp.json();
+                if (data.status === "online") {
+                    console.log("✅ Worker online!");
+                }
+            } catch(e) { 
+                console.warn("⚠️ Worker offline");
             }
-        } catch(e) { 
-            console.warn("⚠️ Worker offline");
+        };
+
+        function abrirModalSenha() { 
+            document.getElementById('modal-senha').style.display = 'flex'; 
+            setTimeout(() => document.getElementById('input-pass').focus(), 100);
         }
-    };
-
-    // ============ AUTENTICAÇÃO ============
-    function abrirModalSenha() { 
-        document.getElementById('modal-senha').style.display = 'flex'; 
-        setTimeout(() => document.getElementById('input-pass').focus(), 100);
-    }
-    
-    function fecharModalSenha() { 
-        document.getElementById('modal-senha').style.display = 'none'; 
-        document.getElementById('input-pass').value = '';
-    }
-    
-    function confirmarSenha() { 
-        if(document.getElementById('input-pass').value === SENHA_MESTRA) { 
-            fecharModalSenha(); 
-            ativarPainel(); 
-        } else {
-            alert("❌ Senha Incorreta!");
-            document.getElementById('input-pass').value = '';
-            document.getElementById('input-pass').focus();
-        }
-    }
-
-    async function ativarPainel() {
-        document.getElementById('tela-inicial').style.display = 'none';
-        document.getElementById('header').style.display = 'flex';
-        document.getElementById('layout').style.display = 'grid';
-        await carregarEventosDoServidor();
-        await verificarEstadoAtual();
-    }
-
-    // ============ CARREGAR EVENTOS ============
-    async function carregarEventosDoServidor() {
-        mostrarLoading(true);
         
-        try {
-            console.log("📥 Buscando eventos do servidor...");
-            const resp = await fetch(`${API_URL}/eventos`);
-            const data = await resp.json();
+        function fecharModalSenha() { 
+            document.getElementById('modal-senha').style.display = 'none'; 
+            document.getElementById('input-pass').value = '';
+        }
+        
+        function confirmarSenha() { 
+            if(document.getElementById('input-pass').value === SENHA_MESTRA) { 
+                fecharModalSenha(); 
+                ativarPainel(); 
+            } else {
+                alert("❌ Senha Incorreta!");
+                document.getElementById('input-pass').value = '';
+                document.getElementById('input-pass').focus();
+            }
+        }
+
+        async function ativarPainel() {
+            document.getElementById('tela-inicial').style.display = 'none';
+            document.getElementById('header').style.display = 'flex';
+            document.getElementById('layout').style.display = 'grid';
+            await carregarEventosDoServidor();
+            await verificarEstadoAtual();
+        }
+
+        async function carregarEventosDoServidor() {
+            mostrarLoading(true);
             
-            console.log("📦 Resposta do servidor:", data);
-            
-            if (data.success && data.eventos) {
-                // Só substitui se vieram eventos
-                if (data.eventos.length > 0 || eventos.length === 0) {
+            try {
+                console.log("📥 Buscando eventos...");
+                const resp = await fetch(`${API_URL}/eventos`);
+                const data = await resp.json();
+                
+                if (data.success && data.eventos && data.eventos.length > 0) {
                     eventos = data.eventos.map(ev => ({
                         id: ev.id,
                         nome: ev.nome,
@@ -253,449 +246,312 @@
                         ativo: ev.ativo === 1,
                         temMoldura: ev.tem_moldura === 1
                     }));
-                    
                     console.log(`✅ ${eventos.length} eventos carregados`);
                     mostrarSucesso(`${eventos.length} eventos carregados`);
-                } else {
-                    console.log("⚠️ Resposta vazia, mantendo eventos atuais:", eventos.length);
                 }
-            } else {
-                console.warn("⚠️ Resposta sem eventos, mantendo lista atual");
-                // Não substitui a lista se a resposta veio vazia
+            } catch(e) {
+                console.warn("⚠️ Erro:", e.message);
+                if (eventos.length === 0) {
+                    mostrarErro("Erro ao carregar eventos");
+                }
+            } finally {
+                mostrarLoading(false);
+                renderizarLista();
+                checarEventoAtivo();
             }
-        } catch(e) {
-            console.warn("⚠️ Erro ao carregar:", e.message);
-            // Só mostra erro se não tiver eventos
-            if (eventos.length === 0) {
-                mostrarErro("Erro ao carregar eventos do servidor");
-            }
-        } finally {
-            mostrarLoading(false);
-            renderizarLista();
-            checarEventoAtivo();
         }
-    }
 
-    async function verificarEstadoAtual() {
-        try {
-            const resp = await fetch(`${API_URL}/get-all-states`);
-            const data = await resp.json();
+        async function verificarEstadoAtual() {
+            try {
+                const resp = await fetch(`${API_URL}/get-all-states`);
+                const data = await resp.json();
+                if (data.config) {
+                    atualizarUIStatus(data.config.status === "ONLINE");
+                    document.getElementById('server-status').checked = (data.config.status === "ONLINE");
+                }
+            } catch(e) {
+                console.warn("⚠️ Erro ao verificar estado");
+            }
+        }
+
+        function mostrarErro(msg) {
+            const el = document.getElementById('error-message');
+            el.textContent = msg;
+            el.style.display = 'block';
+            document.getElementById('success-message').style.display = 'none';
+            setTimeout(() => el.style.display = 'none', 5000);
+        }
+
+        function mostrarSucesso(msg) {
+            const el = document.getElementById('success-message');
+            el.textContent = msg;
+            el.style.display = 'block';
+            document.getElementById('error-message').style.display = 'none';
+            setTimeout(() => el.style.display = 'none', 3000);
+        }
+
+        function mostrarLoading(show) {
+            document.getElementById('loading-indicator').style.display = show ? 'block' : 'none';
+            document.getElementById('btn-submit').disabled = show;
+        }
+
+        function atualizarUIStatus(on) {
+            const lb = document.getElementById('label-status');
+            lb.innerText = on ? "ONLINE" : "OFFLINE";
+            lb.style.color = on ? "var(--neon)" : "var(--red)";
+        }
+
+        function previewMoldura(input) {
+            if(input.files && input.files[0]) {
+                if (input.files[0].type !== 'image/png') {
+                    mostrarErro('Apenas arquivos PNG são aceitos!');
+                    input.value = '';
+                    return;
+                }
+                arquivoMoldura = input.files[0];
+                const reader = new FileReader();
+                reader.onload = e => { 
+                    document.getElementById('img-preview').src = e.target.result; 
+                    document.getElementById('img-preview').style.display = 'block'; 
+                    document.getElementById('label-file').innerHTML = `<i class="fas fa-check"></i> ${input.files[0].name}`;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        async function salvarEvento() {
+            const nome = document.getElementById('input-evento').value.trim();
+            const data = document.getElementById('input-data').value;
+            const formato = document.getElementById('select-formato').value;
+            const livro = document.getElementById('input-livro').checked;
+            const editId = document.getElementById('edit-id').value;
             
-            if (data.config) {
-                atualizarUIStatus(data.config.status === "ONLINE");
-                document.getElementById('server-status').checked = (data.config.status === "ONLINE");
-            }
-        } catch(e) {
-            console.warn("⚠️ Erro ao verificar estado:", e.message);
-        }
-    }
-
-    // ============ UI HELPERS ============
-    function mostrarErro(msg) {
-        const el = document.getElementById('error-message');
-        el.textContent = msg;
-        el.style.display = 'block';
-        document.getElementById('success-message').style.display = 'none';
-        setTimeout(() => el.style.display = 'none', 5000);
-    }
-
-    function mostrarSucesso(msg) {
-        const el = document.getElementById('success-message');
-        el.textContent = msg;
-        el.style.display = 'block';
-        document.getElementById('error-message').style.display = 'none';
-        setTimeout(() => el.style.display = 'none', 3000);
-    }
-
-    function mostrarLoading(show) {
-        document.getElementById('loading-indicator').style.display = show ? 'block' : 'none';
-        document.getElementById('btn-submit').disabled = show;
-    }
-
-    function atualizarUIStatus(on) {
-        const lb = document.getElementById('label-status');
-        lb.innerText = on ? "ONLINE" : "OFFLINE";
-        lb.style.color = on ? "var(--neon)" : "var(--red)";
-    }
-
-    // ============ MANIPULAÇÃO DE ARQUIVOS ============
-    function previewMoldura(input) {
-        if(input.files && input.files[0]) {
-            if (input.files[0].type !== 'image/png') {
-                mostrarErro('Apenas arquivos PNG são aceitos!');
-                input.value = '';
+            if(!nome || !data) {
+                mostrarErro("Preencha todos os campos!");
                 return;
             }
-            
-            arquivoMoldura = input.files[0];
-            const reader = new FileReader();
-            reader.onload = e => { 
-                const img = document.getElementById('img-preview'); 
-                img.src = e.target.result; 
-                img.style.display = 'block'; 
-                document.getElementById('label-file').innerHTML = `<i class="fas fa-check"></i> ${input.files[0].name}`;
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
 
-    // ============ SALVAR EVENTO (CORRIGIDO) ============
-    async function salvarEvento() {
-        const nome = document.getElementById('input-evento').value.trim();
-        const data = document.getElementById('input-data').value;
-        const formato = document.getElementById('select-formato').value;
-        const livro = document.getElementById('input-livro').checked;
-        const editId = document.getElementById('edit-id').value;
-        
-        if(!nome || !data) {
-            mostrarErro("Preencha todos os campos obrigatórios!");
-            return;
+            mostrarLoading(true);
+            
+            try {
+                if (editId) {
+                    await fetch(`${API_URL}/atualizar-evento/${editId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ nome, data, formato, livro, ativo: false })
+                    });
+                    if (arquivoMoldura) await fazerUploadMoldura(editId);
+                    mostrarSucesso("✅ Evento atualizado!");
+                } else {
+                    const resp = await fetch(`${API_URL}/criar-evento`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ nome, data, formato, livro })
+                    });
+                    const result = await resp.json();
+                    if (arquivoMoldura && result.id) await fazerUploadMoldura(result.id);
+                    
+                    eventos.unshift({
+                        id: result.id, nome, data, dataRaw: data,
+                        formato, livro, ativo: false,
+                        temMoldura: arquivoMoldura ? true : false
+                    });
+                    
+                    mostrarSucesso("✅ Evento criado!");
+                }
+                
+                resetarFormulario();
+                setTimeout(() => carregarEventosDoServidor(), 500);
+                
+            } catch(e) {
+                console.error("❌ Erro:", e);
+                mostrarErro("Erro: " + e.message);
+            } finally {
+                mostrarLoading(false);
+            }
         }
 
-        mostrarLoading(true);
-        document.getElementById('error-message').style.display = 'none';
-        document.getElementById('success-message').style.display = 'none';
-        
-        try {
-            let eventoCriado = null;
+        async function fazerUploadMoldura(eventoId) {
+            if (!arquivoMoldura) return;
+            const formData = new FormData();
+            formData.append('moldura', arquivoMoldura);
+            formData.append('eventoId', eventoId);
+            try {
+                await fetch(`${API_URL}/upload-moldura`, { method: 'POST', body: formData });
+                console.log("✅ Moldura enviada");
+            } catch(e) {
+                console.error("❌ Erro upload:", e);
+            }
+        }
+
+        function resetarFormulario() {
+            document.getElementById('input-evento').value = "";
+            document.getElementById('input-data').value = "";
+            document.getElementById('input-livro').checked = false;
+            document.getElementById('select-formato').value = "10X15V";
+            document.getElementById('img-preview').style.display = 'none';
+            document.getElementById('img-preview').src = '';
+            document.getElementById('label-file').innerHTML = '<i class="fas fa-cloud-upload-alt"></i> CARREGAR MOLDURA PNG';
+            document.getElementById('input-moldura').value = "";
+            document.getElementById('edit-id').value = "";
+            document.getElementById('card-form-title').innerHTML = '<i class="fas fa-plus-circle"></i> NOVO EVENTO';
+            document.getElementById('btn-text').innerText = "CRIAR EVENTO";
+            document.getElementById('btn-cancelar').style.display = 'none';
+            arquivoMoldura = null;
+        }
+
+        function cancelarEdicao() {
+            resetarFormulario();
+        }
+
+        async function ativarEvento(index) {
+            const ev = eventos[index];
+            const novoEstado = !ev.ativo;
             
-            if (editId) {
-                // EDITAR
-                console.log("✏️ Atualizando evento:", editId);
-                await fetch(`${API_URL}/atualizar-evento/${editId}`, {
+            mostrarLoading(true);
+            
+            try {
+                await fetch(`${API_URL}/atualizar-evento/${ev.id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nome, data, formato, livro, ativo: false })
+                    body: JSON.stringify({
+                        nome: ev.nome, data: ev.dataRaw || ev.data,
+                        formato: ev.formato, livro: ev.livro, ativo: novoEstado
+                    })
                 });
                 
-                if (arquivoMoldura) {
-                    await fazerUploadMoldura(editId);
-                }
+                eventos.forEach((e, i) => e.ativo = (i === index && novoEstado));
+                renderizarLista();
+                checarEventoAtivo();
                 
-                mostrarSucesso("✅ Evento atualizado com sucesso!");
-            } else {
-                // CRIAR NOVO
-                console.log("➕ Criando novo evento...");
-                const resp = await fetch(`${API_URL}/criar-evento`, {
+                await sincronizarWorker(
+                    novoEstado ? ev.nome : "Geral",
+                    novoEstado ? ev.formato : "10X15V",
+                    novoEstado ? "ONLINE" : "OFFLINE",
+                    novoEstado ? ev.livro : false,
+                    novoEstado ? String(ev.id) : "",
+                    novoEstado ? ev.temMoldura : false
+                );
+                
+                mostrarSucesso(`✅ Evento ${novoEstado ? 'ATIVADO' : 'DESATIVADO'}!`);
+                setTimeout(() => carregarEventosDoServidor(), 500);
+                
+            } catch(e) {
+                console.error("❌ Erro:", e);
+                mostrarErro("Erro: " + e.message);
+                eventos[index].ativo = !novoEstado;
+                renderizarLista();
+                checarEventoAtivo();
+            } finally {
+                mostrarLoading(false);
+            }
+        }
+
+        async function sincronizarWorker(nome, formato, status, livro, eventoId, temMoldura) {
+            try {
+                await fetch(`${API_URL}/set-config`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nome, data, formato, livro })
+                    body: JSON.stringify({ evento: nome, status, formato, livro, eventoId, temMoldura })
                 });
-                
-                if (!resp.ok) {
-                    const err = await resp.json();
-                    throw new Error(err.error || 'Erro ao criar evento');
-                }
-                
-                const result = await resp.json();
-                console.log("✅ Evento criado, ID:", result.id);
-                eventoCriado = result;
-                
-                if (arquivoMoldura && result.id) {
-                    await fazerUploadMoldura(result.id);
-                }
-                
-                // Adiciona na lista local IMEDIATAMENTE
-                const novoEvento = {
-                    id: result.id,
-                    nome: nome,
-                    data: data,
-                    dataRaw: data,
-                    formato: formato,
-                    livro: livro,
-                    ativo: false,
-                    temMoldura: arquivoMoldura ? true : false
-                };
-                
-                // Adiciona no início da lista
-                eventos.unshift(novoEvento);
-                console.log("📋 Evento adicionado à lista local:", eventos.length);
-                
-                mostrarSucesso("✅ Evento criado com sucesso!");
-            }
-            
-            // Reseta o formulário
-            resetarFormulario();
-            
-            // Recarrega do servidor para confirmar
-            setTimeout(async () => {
-                await carregarEventosDoServidor();
-            }, 500);
-            
-        } catch(e) {
-            console.error("❌ Erro ao salvar:", e);
-            mostrarErro("❌ Erro: " + e.message);
-        } finally {
-            mostrarLoading(false);
-        }
-    }
-
-    async function fazerUploadMoldura(eventoId) {
-        if (!arquivoMoldura) return;
-        
-        console.log("📤 Enviando moldura para evento:", eventoId);
-        
-        const formData = new FormData();
-        formData.append('moldura', arquivoMoldura);
-        formData.append('eventoId', eventoId);
-        
-        try {
-            const resp = await fetch(`${API_URL}/upload-moldura`, {
-                method: 'POST',
-                body: formData
-            });
-            
-            if (resp.ok) {
-                console.log("✅ Moldura enviada com sucesso");
-            } else {
-                console.error("❌ Erro no upload da moldura");
-            }
-        } catch(e) {
-            console.error("❌ Erro no upload:", e);
-        }
-    }
-
-    function resetarFormulario() {
-        document.getElementById('input-evento').value = "";
-        document.getElementById('input-data').value = "";
-        document.getElementById('input-livro').checked = false;
-        document.getElementById('select-formato').value = "10X15V";
-        document.getElementById('img-preview').style.display = 'none';
-        document.getElementById('img-preview').src = '';
-        document.getElementById('label-file').innerHTML = '<i class="fas fa-cloud-upload-alt"></i> CARREGAR MOLDURA PNG';
-        document.getElementById('input-moldura').value = "";
-        document.getElementById('edit-id').value = "";
-        document.getElementById('card-form-title').innerHTML = '<i class="fas fa-plus-circle"></i> NOVO EVENTO';
-        document.getElementById('btn-text').innerText = "CRIAR EVENTO";
-        document.getElementById('btn-cancelar').style.display = 'none';
-        arquivoMoldura = null;
-    }
-
-    function cancelarEdicao() {
-        resetarFormulario();
-    }
-
-    // ============ ATIVAR/DESATIVAR ============
-    async function ativarEvento(index) {
-        const ev = eventos[index];
-        const novoEstado = !ev.ativo;
-        
-        console.log(`${novoEstado ? '✅' : '❌'} ${novoEstado ? 'Ativando' : 'Desativando'}:`, ev.nome);
-        
-        mostrarLoading(true);
-        
-        try {
-            const resp = await fetch(`${API_URL}/atualizar-evento/${ev.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    nome: ev.nome,
-                    data: ev.dataRaw || ev.data,
-                    formato: ev.formato,
-                    livro: ev.livro,
-                    ativo: novoEstado
-                })
-            });
-            
-            if (!resp.ok) {
-                throw new Error('Erro ao atualizar evento');
-            }
-            
-            // Atualiza localmente primeiro
-            eventos.forEach((e, i) => e.ativo = (i === index && novoEstado));
-            renderizarLista();
-            checarEventoAtivo();
-            
-            // Sincroniza com Worker
-            await sincronizarWorker(
-                novoEstado ? ev.nome : "Geral",
-                novoEstado ? ev.formato : "10X15V",
-                novoEstado ? "ONLINE" : "OFFLINE",
-                novoEstado ? ev.livro : false,
-                novoEstado ? String(ev.id) : "",
-                novoEstado ? ev.temMoldura : false
-            );
-            
-            mostrarSucesso(`✅ Evento ${novoEstado ? 'ATIVADO' : 'DESATIVADO'}!`);
-            
-            // Recarrega para confirmar
-            setTimeout(() => carregarEventosDoServidor(), 500);
-            
-        } catch(e) {
-            console.error("❌ Erro:", e);
-            mostrarErro("Erro: " + e.message);
-            // Reverte estado local
-            eventos[index].ativo = !novoEstado;
-            renderizarLista();
-            checarEventoAtivo();
-        } finally {
-            mostrarLoading(false);
-        }
-    }
-
-    async function sincronizarWorker(nome, formato, status, livro, eventoId, temMoldura) {
-        try {
-            console.log("📤 Sincronizando Worker:", { nome, status, formato, eventoId });
-            
-            const resp = await fetch(`${API_URL}/set-config`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    evento: nome, 
-                    status, 
-                    formato, 
-                    livro, 
-                    eventoId, 
-                    temMoldura 
-                })
-            });
-            
-            if (resp.ok) {
-                console.log("✅ Worker sincronizado!");
                 atualizarUIStatus(status === "ONLINE");
+                console.log("✅ Worker sincronizado!");
+            } catch(e) { 
+                console.warn("⚠️ Falha na sincronização");
             }
-        } catch(e) { 
-            console.warn("⚠️ Falha na sincronização:", e.message);
         }
-    }
 
-    function salvarStatusRede() {
-        const on = document.getElementById('server-status').checked;
-        const ativo = eventos.find(e => e.ativo);
-        
-        if(ativo) {
-            sincronizarWorker(
-                ativo.nome, 
-                ativo.formato, 
-                on ? "ONLINE" : "OFFLINE", 
-                ativo.livro, 
-                String(ativo.id), 
-                ativo.temMoldura
-            );
-        } else {
-            sincronizarWorker("Geral", "10X15V", "OFFLINE", false, "", false);
-        }
-    }
-
-    // ============ EDITAR/EXCLUIR ============
-    function editarEvento(index) {
-        const ev = eventos[index];
-        
-        document.getElementById('input-evento').value = ev.nome;
-        document.getElementById('input-data').value = ev.dataRaw || ev.data || "";
-        document.getElementById('select-formato').value = ev.formato;
-        document.getElementById('input-livro').checked = ev.livro;
-        document.getElementById('edit-id').value = ev.id;
-        
-        document.getElementById('card-form-title').innerHTML = '<i class="fas fa-edit"></i> EDITAR EVENTO';
-        document.getElementById('btn-text').innerText = "SALVAR ALTERAÇÕES";
-        document.getElementById('btn-cancelar').style.display = 'block';
-        document.getElementById('input-evento').focus();
-        
-        console.log("✏️ Editando:", ev.nome);
-    }
-
-    async function excluirEvento(index) {
-        const ev = eventos[index];
-        
-        if(!confirm(`⚠️ Excluir "${ev.nome}"?\n\nTODAS as fotos deste evento serão apagadas permanentemente!`)) {
-            return;
-        }
-        
-        mostrarLoading(true);
-        
-        try {
-            console.log("🗑️ Excluindo evento:", ev.id);
-            
-            const resp = await fetch(`${API_URL}/deletar-evento/${ev.id}`, { 
-                method: 'DELETE' 
-            });
-            
-            if (!resp.ok) {
-                throw new Error('Erro ao excluir evento');
+        function salvarStatusRede() {
+            const on = document.getElementById('server-status').checked;
+            const ativo = eventos.find(e => e.ativo);
+            if(ativo) {
+                sincronizarWorker(ativo.nome, ativo.formato, on ? "ONLINE" : "OFFLINE", ativo.livro, String(ativo.id), ativo.temMoldura);
+            } else {
+                sincronizarWorker("Geral", "10X15V", "OFFLINE", false, "", false);
             }
-            
-            // Remove da lista local
-            eventos.splice(index, 1);
-            
-            if (ev.ativo) {
-                await sincronizarWorker("Geral", "10X15V", "OFFLINE", false, "", false);
-            }
-            
-            mostrarSucesso("🗑️ Evento excluído com sucesso!");
-            renderizarLista();
-            checarEventoAtivo();
-            
-            // Recarrega para confirmar
-            setTimeout(() => carregarEventosDoServidor(), 500);
-            
-        } catch(e) {
-            console.error("❌ Erro:", e);
-            mostrarErro("Erro ao excluir: " + e.message);
-        } finally {
-            mostrarLoading(false);
         }
-    }
 
-    // ============ RENDERIZAÇÃO ============
-    function renderizarLista() {
-        const container = document.getElementById('corpo-lista');
-        
-        if (!eventos || eventos.length === 0) {
-            container.innerHTML = `
-                <div style="color: #555; text-align: center; padding: 40px;">
+        function editarEvento(index) {
+            const ev = eventos[index];
+            document.getElementById('input-evento').value = ev.nome;
+            document.getElementById('input-data').value = ev.dataRaw || ev.data || "";
+            document.getElementById('select-formato').value = ev.formato;
+            document.getElementById('input-livro').checked = ev.livro;
+            document.getElementById('edit-id').value = ev.id;
+            document.getElementById('card-form-title').innerHTML = '<i class="fas fa-edit"></i> EDITAR EVENTO';
+            document.getElementById('btn-text').innerText = "SALVAR ALTERAÇÕES";
+            document.getElementById('btn-cancelar').style.display = 'block';
+            document.getElementById('input-evento').focus();
+        }
+
+        async function excluirEvento(index) {
+            const ev = eventos[index];
+            if(!confirm(`⚠️ Excluir "${ev.nome}"?\n\nTODAS as fotos serão apagadas!`)) return;
+            
+            mostrarLoading(true);
+            try {
+                await fetch(`${API_URL}/deletar-evento/${ev.id}`, { method: 'DELETE' });
+                eventos.splice(index, 1);
+                if (ev.ativo) await sincronizarWorker("Geral", "10X15V", "OFFLINE", false, "", false);
+                mostrarSucesso("🗑️ Evento excluído!");
+                renderizarLista();
+                checarEventoAtivo();
+                setTimeout(() => carregarEventosDoServidor(), 500);
+            } catch(e) {
+                console.error("❌ Erro:", e);
+                mostrarErro("Erro ao excluir: " + e.message);
+            } finally {
+                mostrarLoading(false);
+            }
+        }
+
+        function renderizarLista() {
+            const container = document.getElementById('corpo-lista');
+            if (!eventos || eventos.length === 0) {
+                container.innerHTML = `<div style="color: #555; text-align: center; padding: 40px;">
                     <i class="fas fa-inbox" style="font-size: 48px; display: block; margin-bottom: 15px;"></i>
                     Nenhum evento cadastrado<br>
                     <span style="font-size: 10px; margin-top: 10px; display: block;">
-                        Crie um novo evento ou clique em 
-                        <span style="color: var(--neon); cursor: pointer;" onclick="carregarEventosDoServidor()">SINCRONIZAR</span>
-                    </span>
-                </div>`;
-            return;
-        }
-        
-        container.innerHTML = eventos.map((ev, i) => `
-            <div class="evento-item ${ev.ativo ? 'ativo' : ''}">
-                <div style="display:flex; align-items:center; gap:10px; flex:1;">
-                    <i class="fas ${ev.ativo ? 'fa-check-circle status-icon ativo' : 'fa-circle status-icon inativo'}"></i>
-                    <div style="flex:1;">
-                        <div style="font-size:12px; font-weight:900; color: ${ev.ativo ? 'var(--neon)' : '#fff'}">
-                            ${ev.nome}
-                            ${ev.livro ? '<span class="badge badge-info">📖 Guestbook</span>' : ''}
-                            ${ev.temMoldura ? '<span class="badge badge-success">🖼️ Moldura</span>' : ''}
-                        </div>
-                        <div style="font-size:9px; color:#555; text-transform:uppercase; margin-top: 3px;">
-                            ${ev.data || 'Sem data'} • ${ev.formato}
+                        Clique em <span style="color: var(--neon); cursor: pointer;" onclick="carregarEventosDoServidor()">SINCRONIZAR</span>
+                    </span></div>`;
+                return;
+            }
+            
+            container.innerHTML = eventos.map((ev, i) => `
+                <div class="evento-item ${ev.ativo ? 'ativo' : ''}">
+                    <div style="display:flex; align-items:center; gap:10px; flex:1;">
+                        <i class="fas ${ev.ativo ? 'fa-check-circle status-icon ativo' : 'fa-circle status-icon inativo'}"></i>
+                        <div style="flex:1;">
+                            <div style="font-size:12px; font-weight:900; color: ${ev.ativo ? 'var(--neon)' : '#fff'}">
+                                ${ev.nome}
+                                ${ev.livro ? '<span class="badge badge-info">📖 Guestbook</span>' : ''}
+                                ${ev.temMoldura ? '<span class="badge badge-success">🖼️ Moldura</span>' : ''}
+                            </div>
+                            <div style="font-size:9px; color:#555; margin-top: 3px;">${ev.data || 'Sem data'} • ${ev.formato}</div>
                         </div>
                     </div>
+                    <div style="display:flex; gap:8px;">
+                        <i class="fas fa-edit btn-acao edit" title="Editar" onclick="editarEvento(${i})"></i>
+                        <i class="fas fa-trash btn-acao delete" title="Excluir" onclick="excluirEvento(${i})"></i>
+                        <button class="btn-neon-style ${ev.ativo ? 'success' : ''}" style="font-size:9px; padding: 6px 12px; width: auto;" onclick="ativarEvento(${i})">${ev.ativo ? 'ATIVADO' : 'ATIVAR'}</button>
+                    </div>
                 </div>
-                <div style="display:flex; gap:8px; align-items:center;">
-                    <i class="fas fa-edit btn-acao edit" title="Editar" onclick="editarEvento(${i})"></i>
-                    <i class="fas fa-trash btn-acao delete" title="Excluir" onclick="excluirEvento(${i})"></i>
-                    <button class="btn-neon-style ${ev.ativo ? 'success' : ''}" 
-                            style="font-size:9px; padding: 6px 12px; width: auto;" 
-                            onclick="ativarEvento(${i})">
-                        ${ev.ativo ? 'ATIVADO' : 'ATIVAR'}
-                    </button>
-                </div>
-            </div>
-        `).join('');
-        
-        console.log(`📋 Renderizada lista com ${eventos.length} eventos`);
-    }
-
-    function checarEventoAtivo() {
-        const ativo = eventos.find(e => e.ativo);
-        const statusCheckbox = document.getElementById('server-status');
-        
-        if(ativo) {
-            statusCheckbox.checked = true;
-            statusCheckbox.disabled = false;
-            atualizarUIStatus(true);
-        } else {
-            statusCheckbox.checked = false;
-            statusCheckbox.disabled = true;
-            atualizarUIStatus(false);
+            `).join('');
         }
-    }
-</script>    
+
+        function checarEventoAtivo() {
+            const ativo = eventos.find(e => e.ativo);
+            const checkbox = document.getElementById('server-status');
+            if(ativo) {
+                checkbox.checked = true;
+                checkbox.disabled = false;
+                atualizarUIStatus(true);
+            } else {
+                checkbox.checked = false;
+                checkbox.disabled = true;
+                atualizarUIStatus(false);
+            }
+        }
+    </script>
+</body>
+</html>

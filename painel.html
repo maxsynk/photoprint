@@ -417,47 +417,70 @@ function confirmarSenha() {
         }
 
         async function ativarEvento(index) {
-            const ev = eventos[index];
-            const novoEstado = !ev.ativo;
-            
-            mostrarLoading(true);
-            
-            try {
-                await fetch(`${API_URL}/atualizar-evento/${ev.id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        nome: ev.nome, data: ev.dataRaw || ev.data,
-                        formato: ev.formato, livro: ev.livro, ativo: novoEstado
-                    })
-                });
-                
-                eventos.forEach((e, i) => e.ativo = (i === index && novoEstado));
-                renderizarLista();
-                checarEventoAtivo();
-                
-                await sincronizarWorker(
-                    novoEstado ? ev.nome : "Geral",
-                    novoEstado ? ev.formato : "10X15V",
-                    novoEstado ? "ONLINE" : "OFFLINE",
-                    novoEstado ? ev.livro : false,
-                    novoEstado ? String(ev.id) : "",
-                    novoEstado ? ev.temMoldura : false
-                );
-                
-                mostrarSucesso(`✅ Evento ${novoEstado ? 'ATIVADO' : 'DESATIVADO'}!`);
-                setTimeout(() => carregarEventosDoServidor(), 500);
-                
-            } catch(e) {
-                console.error("❌ Erro:", e);
-                mostrarErro("Erro: " + e.message);
-                eventos[index].ativo = !novoEstado;
-                renderizarLista();
-                checarEventoAtivo();
-            } finally {
-                mostrarLoading(false);
-            }
+    const ev = eventos[index];
+    
+    // VERIFICAÇÃO CRÍTICA: se não tem ID, não faz nada
+    if (!ev || !ev.id) {
+        mostrarErro("❌ Evento inválido! Delete e crie novamente.");
+        console.error("❌ Evento sem ID:", ev);
+        return;
+    }
+    
+    const novoEstado = !ev.ativo;
+    
+    console.log(`${novoEstado ? '✅' : '❌'} ${novoEstado ? 'Ativando' : 'Desativando'}:`, ev.nome, "ID:", ev.id);
+    
+    mostrarLoading(true);
+    
+    try {
+        const resp = await fetch(`${API_URL}/atualizar-evento/${ev.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                nome: ev.nome,
+                data: ev.dataRaw || ev.data,
+                formato: ev.formato,
+                livro: ev.livro,
+                ativo: novoEstado
+            })
+        });
+        
+        if (!resp.ok) {
+            const err = await resp.json();
+            throw new Error(err.error || 'Erro ao atualizar');
         }
+        
+        // Atualiza localmente
+        eventos.forEach((e, i) => e.ativo = (i === index && novoEstado));
+        renderizarLista();
+        checarEventoAtivo();
+        
+        // Sincroniza com Worker
+        await sincronizarWorker(
+            novoEstado ? ev.nome : "Geral",
+            novoEstado ? ev.formato : "10X15V",
+            novoEstado ? "ONLINE" : "OFFLINE",
+            novoEstado ? ev.livro : false,
+            novoEstado ? String(ev.id) : "",
+            novoEstado ? ev.temMoldura : false
+        );
+        
+        mostrarSucesso(`✅ Evento ${novoEstado ? 'ATIVADO' : 'DESATIVADO'}!`);
+        
+        // Recarrega para confirmar
+        setTimeout(() => carregarEventosDoServidor(), 500);
+        
+    } catch(e) {
+        console.error("❌ Erro:", e);
+        mostrarErro("Erro: " + e.message);
+        // Reverte estado local
+        eventos[index].ativo = !novoEstado;
+        renderizarLista();
+        checarEventoAtivo();
+    } finally {
+        mostrarLoading(false);
+    }
+}
 
         async function sincronizarWorker(nome, formato, status, livro, eventoId, temMoldura) {
             try {

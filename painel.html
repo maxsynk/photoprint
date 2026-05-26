@@ -185,39 +185,51 @@
         let eventos = [];
         let arquivoMoldura = null;
 
-        window.onload = async () => {
-            console.log("🚀 Painel iniciado");
-            try {
-                const resp = await fetch(`${API_URL}/`);
-                const data = await resp.json();
-                if (data.status === "online") {
-                    console.log("✅ Worker online!");
-                }
-            } catch(e) { 
-                console.warn("⚠️ Worker offline");
-            }
-        };
+        // APAGUE o window.onload antigo e cole este:
+window.onload = function() {
+    console.log("🚀 Painel iniciado");
+    // Não faz nada no carregamento para não travar
+};
 
-        function abrirModalSenha() { 
-            document.getElementById('modal-senha').style.display = 'flex'; 
-            setTimeout(() => document.getElementById('input-pass').focus(), 100);
-        }
-        
-        function fecharModalSenha() { 
-            document.getElementById('modal-senha').style.display = 'none'; 
-            document.getElementById('input-pass').value = '';
-        }
-        
-        function confirmarSenha() { 
-            if(document.getElementById('input-pass').value === SENHA_MESTRA) { 
-                fecharModalSenha(); 
-                ativarPainel(); 
-            } else {
-                alert("❌ Senha Incorreta!");
-                document.getElementById('input-pass').value = '';
-                document.getElementById('input-pass').focus();
-            }
-        }
+        // APAGUE a função abrirModalSenha antiga e cole esta:
+function abrirModalSenha() { 
+    console.log("🔑 Abrindo modal de senha...");
+    var modal = document.getElementById('modal-senha');
+    if (modal) {
+        modal.style.display = 'flex';
+        setTimeout(function() {
+            var input = document.getElementById('input-pass');
+            if (input) input.focus();
+        }, 200);
+    } else {
+        console.error("❌ Modal não encontrado!");
+    }
+}
+
+// APAGUE a função fecharModalSenha antiga e cole esta:
+function fecharModalSenha() { 
+    var modal = document.getElementById('modal-senha');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    var input = document.getElementById('input-pass');
+    if (input) input.value = '';
+}
+
+// APAGUE a função confirmarSenha antiga e cole esta:
+function confirmarSenha() { 
+    var input = document.getElementById('input-pass');
+    if (!input) return;
+    
+    if(input.value === SENHA_MESTRA) { 
+        fecharModalSenha(); 
+        ativarPainel(); 
+    } else {
+        alert("❌ Senha Incorreta!");
+        input.value = '';
+        input.focus();
+    }
+}
 
         async function ativarPainel() {
             document.getElementById('tela-inicial').style.display = 'none';

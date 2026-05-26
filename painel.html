@@ -7,52 +7,88 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --neon: #39ff14; --red: #ff3131; --dark: #000000; --card: rgba(255, 255, 255, 0.03); --border: rgba(57, 255, 20, 0.2); }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--dark); background: radial-gradient(circle at 50% -20%, #1a3a12 0%, #000 65%); color: white; margin: 0; height: 100vh; display: flex; flex-direction: column; box-sizing: border-box; overflow: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: radial-gradient(circle at 50% -20%, #1a3a12 0%, #000 65%); color: white; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* Tela Inicial */
         #tela-inicial { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 1000; background: #000; flex-direction: column; text-align: center; }
-        .splash-brand { font-size: clamp(40px, 10vw, 90px); font-weight: 900; color: var(--neon); letter-spacing: 15px; text-transform: uppercase; margin: 0; text-shadow: 0 0 20px var(--neon); }
-        .splash-subtitle { font-size: 14px; letter-spacing: 8px; color: #666; text-transform: uppercase; margin-top: 10px; width: 100%; display: block; }
+        .splash-brand { font-size: clamp(40px, 10vw, 90px); font-weight: 900; color: var(--neon); letter-spacing: 15px; text-transform: uppercase; text-shadow: 0 0 20px var(--neon); }
+        .splash-subtitle { font-size: 14px; letter-spacing: 8px; color: #666; text-transform: uppercase; margin-top: 10px; }
+        
+        /* Modal Senha */
         #modal-senha { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
         .pass-box { background: #0a0a0a; padding: 40px; border-radius: 24px; border: 1px solid var(--neon); text-align: center; width: 320px; }
-        .pass-box input { width: 100%; padding: 15px; margin: 20px 0; background: #000; border: 1px solid #222; color: var(--neon); text-align: center; font-size: 32px; border-radius: 12px; outline: none; box-sizing: border-box; font-weight: 900; }
+        .pass-box input { width: 100%; padding: 15px; margin: 20px 0; background: #000; border: 1px solid #222; color: var(--neon); text-align: center; font-size: 32px; border-radius: 12px; outline: none; font-weight: 900; }
+        
+        /* Header */
         .top-nav { display: none; justify-content: space-between; align-items: center; padding: 15px 40px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.7); backdrop-filter: blur(15px); }
-        .internal-brand { font-size: 24px; font-weight: 900; color: var(--neon); letter-spacing: 4px; margin: 0; text-transform: uppercase; }
-        .internal-subtitle { font-size: 10px; letter-spacing: 3px; color: #555; text-transform: uppercase; font-weight: bold; margin-top: -2px; }
+        .internal-brand { font-size: 24px; font-weight: 900; color: var(--neon); letter-spacing: 4px; text-transform: uppercase; }
+        .internal-subtitle { font-size: 10px; letter-spacing: 3px; color: #555; text-transform: uppercase; font-weight: bold; }
+        
+        /* Layout Principal */
         .main-layout { display: none; grid-template-columns: 1fr 1.3fr; gap: 25px; flex: 1; padding: 25px; min-height: 0; }
+        
+        /* Cards */
         .card { background: var(--card); backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; overflow: hidden; }
-        .card-header { padding: 15px 25px; background: rgba(57, 255, 20, 0.08); color: var(--neon); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; }
+        .card-header { padding: 15px 25px; background: rgba(57, 255, 20, 0.08); color: var(--neon); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; display: flex; align-items: center; gap: 8px; }
         .card-body { padding: 30px; flex: 1; overflow-y: auto; }
+        
+        /* Formulário */
         .form-group { margin-bottom: 20px; }
         .form-group-inline { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; border: 1px solid #222; margin-bottom: 20px; }
         label { font-size: 10px; color: var(--neon); font-weight: 900; text-transform: uppercase; display: block; margin-bottom: 8px; }
         .form-group-inline label { margin-bottom: 0; }
-        input[type="text"], input[type="date"], select { width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid #222; color: white; border-radius: 6px; outline: none; box-sizing: border-box; }
+        input[type="text"], input[type="date"], select { width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid #222; color: white; border-radius: 6px; outline: none; }
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
-        .btn-neon-style { background: transparent; border: 1px solid var(--neon); color: white; padding: 14px; border-radius: 6px; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; border-left: 5px solid var(--neon); display: flex; align-items: center; justify-content: center; gap: 8px; }
+        
+        /* Botões */
+        .btn-neon-style { background: transparent; border: 1px solid var(--neon); color: white; padding: 14px; border-radius: 6px; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; border-left: 5px solid var(--neon); display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
         .btn-neon-style:hover { background: rgba(57, 255, 20, 0.1); transform: translateX(5px); }
+        .btn-neon-style:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-neon-style.success { background: var(--neon); color: black; border-left: 5px solid white; }
-        .evento-item { background: rgba(255,255,255,0.02); border: 1px solid #1a1a1a; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; transition: 0.2s; }
-        .evento-item.ativo { border-left: 4px solid var(--neon); background: rgba(57, 255, 20, 0.05); }
-        .status-container { display: flex; align-items: center; gap: 12px; padding: 6px 15px; border-radius: 30px; border: 1px solid #333; }
+        
+        /* Switch */
         .switch-mega { position: relative; display: inline-block; width: 50px; height: 26px; }
         .switch-mega input { opacity: 0; width: 0; height: 0; }
         .slider-mega { position: absolute; cursor: pointer; inset: 0; background: #222; transition: .4s; border-radius: 30px; }
         .slider-mega:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background: #555; transition: .4s; border-radius: 50%; }
         input:checked + .slider-mega { background: var(--neon); }
         input:checked + .slider-mega:before { transform: translateX(24px); background: #000; }
-        .custom-file-upload { border: 1px dashed var(--border); display: block; padding: 12px; cursor: pointer; text-align: center; border-radius: 6px; color: #555; font-size: 11px; font-weight: bold; }
-        .custom-file-upload:hover { border-color: var(--neon); color: var(--neon); }
-        .preview-img { max-width: 100%; max-height: 80px; margin-top: 10px; display: none; border: 1px solid #222; border-radius: 4px; }
-        .version-tag { position: fixed; bottom: 15px; right: 20px; font-size: 10px; color: #333; font-weight: 900; }
-        .btn-acao { cursor: pointer; padding: 5px; transition: 0.2s; font-size: 16px; }
-        .btn-acao.edit { color: #aaa; }
-        .btn-acao.edit:hover { color: var(--neon); }
-        .btn-acao.delete { color: #555; }
-        .btn-acao.delete:hover { color: var(--red); }
+        
+        /* Lista de Eventos */
+        .evento-item { background: rgba(255,255,255,0.02); border: 1px solid #1a1a1a; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; transition: 0.2s; }
+        .evento-item.ativo { border-left: 4px solid var(--neon); background: rgba(57, 255, 20, 0.05); }
+        .evento-item:hover { border-color: #333; }
+        
+        /* Status */
+        .status-container { display: flex; align-items: center; gap: 12px; padding: 6px 15px; border-radius: 30px; border: 1px solid #333; }
         .status-icon { font-size: 14px; margin-right: 5px; }
         .status-icon.ativo { color: var(--neon); text-shadow: 0 0 8px var(--neon); }
         .status-icon.inativo { color: #333; }
-        .loading { display: none; text-align: center; padding: 20px; color: var(--neon); }
+        
+        /* Ações */
+        .btn-acao { cursor: pointer; padding: 8px; transition: 0.2s; font-size: 16px; border-radius: 4px; }
+        .btn-acao.edit { color: #aaa; }
+        .btn-acao.edit:hover { color: var(--neon); background: rgba(57, 255, 20, 0.1); }
+        .btn-acao.delete { color: #555; }
+        .btn-acao.delete:hover { color: var(--red); background: rgba(255, 49, 49, 0.1); }
+        
+        /* Upload */
+        .custom-file-upload { border: 1px dashed var(--border); display: block; padding: 12px; cursor: pointer; text-align: center; border-radius: 6px; color: #555; font-size: 11px; font-weight: bold; transition: 0.3s; }
+        .custom-file-upload:hover { border-color: var(--neon); color: var(--neon); }
+        .preview-img { max-width: 100%; max-height: 80px; margin-top: 10px; display: none; border: 1px solid #222; border-radius: 4px; }
+        
+        /* Mensagens */
+        .version-tag { position: fixed; bottom: 15px; right: 20px; font-size: 10px; color: #333; font-weight: 900; z-index: 9999; }
+        .loading { display: none; text-align: center; padding: 10px; color: var(--neon); font-size: 12px; }
         .error-message { background: rgba(255,49,49,0.1); border: 1px solid var(--red); color: var(--red); padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 12px; display: none; }
+        .success-message { background: rgba(57,255,20,0.1); border: 1px solid var(--neon); color: var(--neon); padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 12px; display: none; }
+        
+        /* Status badge */
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 9px; font-weight: 900; text-transform: uppercase; }
+        .badge-success { background: rgba(57,255,20,0.2); color: var(--neon); }
+        .badge-danger { background: rgba(255,49,49,0.2); color: var(--red); }
+        .badge-info { background: rgba(0,150,255,0.2); color: #0096ff; }
     </style>
 </head>
 <body>
@@ -65,7 +101,7 @@
             <h1 class="splash-brand">PHOTO PRINT</h1>
             <p class="splash-subtitle">Colecionando Momentos</p>
         </div>
-        <button class="btn-neon-style" style="padding: 20px 60px; margin-top: 30px; font-size: 16px;" onclick="abrirModalSenha()">
+        <button class="btn-neon-style" style="padding: 20px 60px; margin-top: 30px; font-size: 16px; width: auto;" onclick="abrirModalSenha()">
             <i class="fas fa-lock"></i> Acessar Terminal
         </button>
     </div>
@@ -75,7 +111,7 @@
         <div class="pass-box">
             <div style="font-size: 9px; color: var(--neon); letter-spacing: 2px;">SECURITY PROTOCOL</div>
             <input type="password" id="input-pass" placeholder="••••" maxlength="4" onkeydown="if(event.key === 'Enter') confirmarSenha()">
-            <button class="btn-neon-style" style="width:100%" onclick="confirmarSenha()">
+            <button class="btn-neon-style" onclick="confirmarSenha()">
                 <i class="fas fa-key"></i> Autenticar
             </button>
             <div style="margin-top: 20px; color: #333; font-size: 9px; cursor: pointer;" onclick="fecharModalSenha()">ABORTAR</div>
@@ -101,9 +137,12 @@
     <div class="main-layout" id="layout">
         <!-- Card Esquerda - Formulário -->
         <div class="card">
-            <div class="card-header" id="card-form-title">NOVO EVENTO</div>
+            <div class="card-header" id="card-form-title">
+                <i class="fas fa-plus-circle"></i> NOVO EVENTO
+            </div>
             <div class="card-body">
                 <input type="hidden" id="edit-index" value="-1">
+                <input type="hidden" id="edit-id" value="">
                 
                 <div class="form-group">
                     <label><i class="fas fa-tag"></i> Nome do Evento</label>
@@ -117,7 +156,12 @@
                 
                 <div class="form-group">
                     <label><i class="fas fa-crop"></i> Configuração de Saída</label>
-                    <select id="select-formato"></select>
+                    <select id="select-formato">
+                        <option value="10X15V">10x15 Vertical</option>
+                        <option value="10X15H">10x15 Horizontal</option>
+                        <option value="TIRINHA">Tirinha 5x15</option>
+                        <option value="POLAROID">Polaroid</option>
+                    </select>
                 </div>
                 
                 <div class="form-group-inline">
@@ -138,12 +182,17 @@
                 </div>
                 
                 <div id="error-message" class="error-message"></div>
+                <div id="success-message" class="success-message"></div>
                 <div id="loading-indicator" class="loading">
-                    <i class="fas fa-spinner fa-spin"></i> Enviando moldura...
+                    <i class="fas fa-spinner fa-spin"></i> Processando...
                 </div>
                 
-                <button class="btn-neon-style" style="width:100%" onclick="salvarEvento()" id="btn-submit">
-                    <i class="fas fa-plus-circle"></i> <span id="btn-text">CRIAR EVENTO</span>
+                <button class="btn-neon-style" onclick="salvarEvento()" id="btn-submit">
+                    <i class="fas fa-save"></i> <span id="btn-text">CRIAR EVENTO</span>
+                </button>
+                
+                <button class="btn-neon-style" style="margin-top: 10px; border-left: 5px solid #0096ff; display: none;" onclick="cancelarEdicao()" id="btn-cancelar">
+                    <i class="fas fa-times"></i> CANCELAR EDIÇÃO
                 </button>
             </div>
         </div>
@@ -152,6 +201,9 @@
         <div class="card">
             <div class="card-header">
                 <i class="fas fa-list"></i> Eventos Registrados
+                <button class="btn-neon-style" style="margin-left: auto; width: auto; padding: 5px 15px; font-size: 9px;" onclick="carregarEventosDoServidor()">
+                    <i class="fas fa-sync-alt"></i> SINCRONIZAR
+                </button>
             </div>
             <div class="card-body" id="corpo-lista">
                 <div style="color: #555; text-align: center; padding: 40px;">
@@ -163,45 +215,33 @@
     </div>
 
 <script>
-    // Configuração
+    // ============ CONFIGURAÇÃO ============
     const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
     const SENHA_MESTRA = "1234";
     
-    // Dados
-    let eventos = JSON.parse(localStorage.getItem('eventos_db')) || [];
+    // ============ ESTADO GLOBAL ============
+    let eventos = []; // Carregados do servidor
     let arquivoMoldura = null;
     
-    const formatos = [
-        {label: "10x15 Vertical", value: "10X15V"}, 
-        {label: "10x15 Horizontal", value: "10X15H"}, 
-        {label: "Tirinha 5x15", value: "TIRINHA"}, 
-        {label: "Polaroid", value: "POLAROID"}
-    ];
-
     // ============ INICIALIZAÇÃO ============
     window.onload = async () => {
         console.log("🚀 Painel iniciado");
-        await verificarConexaoWorker();
+        await testarConexaoWorker();
     };
 
-    async function verificarConexaoWorker() {
+    async function testarConexaoWorker() {
         try {
-            console.log("🔍 Verificando Worker:", API_URL);
-            const resp = await fetch(`${API_URL}/get-all-states?t=${Date.now()}`);
-            
-            if (!resp.ok) {
-                throw new Error(`HTTP ${resp.status}`);
-            }
-            
+            console.log("🔍 Testando conexão com Worker:", API_URL);
+            const resp = await fetch(`${API_URL}/`);
             const data = await resp.json();
-            console.log("✅ Worker conectado:", data);
             
-            if(data.config) {
-                atualizarUIStatus(data.config.status === "ONLINE");
-                document.getElementById('server-status').checked = (data.config.status === "ONLINE");
+            if (data.status === "online") {
+                console.log("✅ Worker online! v" + data.version);
+                document.getElementById('error-message').style.display = 'none';
             }
         } catch(e) { 
-            console.warn("⚠️ Worker offline, operando local:", e.message);
+            console.warn("⚠️ Worker offline:", e.message);
+            mostrarErro("Servidor offline. Trabalhando em modo local.");
         }
     }
 
@@ -221,29 +261,109 @@
             fecharModalSenha(); 
             ativarPainel(); 
         } else {
-            alert("Senha Incorreta!");
+            alert("❌ Senha Incorreta!");
             document.getElementById('input-pass').value = '';
             document.getElementById('input-pass').focus();
         }
     }
 
-    function ativarPainel() {
+    async function ativarPainel() {
         document.getElementById('tela-inicial').style.display = 'none';
         document.getElementById('header').style.display = 'flex';
         document.getElementById('layout').style.display = 'grid';
-        renderizarFormatos(); 
-        renderizarLista(); 
-        checarEventoAtivo();
-        console.log("🔓 Painel desbloqueado");
+        
+        // Carrega eventos do servidor
+        await carregarEventosDoServidor();
+        
+        // Verifica estado atual
+        await verificarEstadoAtual();
     }
 
-    // ============ FUNÇÕES DO FORMULÁRIO ============
-    function renderizarFormatos() { 
-        document.getElementById('select-formato').innerHTML = formatos.map(f => 
-            `<option value="${f.value}">${f.label}</option>`
-        ).join(''); 
+    // ============ CARREGAR EVENTOS DO SERVIDOR ============
+    async function carregarEventosDoServidor() {
+        mostrarLoading(true);
+        
+        try {
+            const resp = await fetch(`${API_URL}/eventos`);
+            
+            if (!resp.ok) {
+                throw new Error(`HTTP ${resp.status}`);
+            }
+            
+            const data = await resp.json();
+            
+            if (data.success && data.eventos) {
+                eventos = data.eventos.map(ev => ({
+                    id: ev.id,
+                    nome: ev.nome,
+                    data: ev.data_evento,
+                    dataRaw: ev.data_evento,
+                    formato: ev.formato,
+                    livro: ev.livro === 1,
+                    ativo: ev.ativo === 1,
+                    temMoldura: ev.tem_moldura === 1
+                }));
+                
+                console.log(`✅ ${eventos.length} eventos carregados do servidor`);
+                mostrarSucesso(`${eventos.length} eventos carregados`);
+            }
+        } catch(e) {
+            console.warn("⚠️ Não foi possível carregar eventos do servidor:", e.message);
+            mostrarErro("Usando dados locais. Servidor indisponível.");
+            
+            // Carrega do localStorage como fallback
+            eventos = JSON.parse(localStorage.getItem('eventos_db') || '[]');
+        } finally {
+            mostrarLoading(false);
+            renderizarLista();
+            checarEventoAtivo();
+        }
     }
 
+    async function verificarEstadoAtual() {
+        try {
+            const resp = await fetch(`${API_URL}/get-all-states`);
+            const data = await resp.json();
+            
+            if (data.config) {
+                atualizarUIStatus(data.config.status === "ONLINE");
+                document.getElementById('server-status').checked = (data.config.status === "ONLINE");
+                console.log("📊 Estado atual:", data.config);
+            }
+        } catch(e) {
+            console.warn("⚠️ Não foi possível verificar estado:", e.message);
+        }
+    }
+
+    // ============ UI HELPERS ============
+    function mostrarErro(msg) {
+        const el = document.getElementById('error-message');
+        el.textContent = msg;
+        el.style.display = 'block';
+        document.getElementById('success-message').style.display = 'none';
+        setTimeout(() => el.style.display = 'none', 5000);
+    }
+
+    function mostrarSucesso(msg) {
+        const el = document.getElementById('success-message');
+        el.textContent = msg;
+        el.style.display = 'block';
+        document.getElementById('error-message').style.display = 'none';
+        setTimeout(() => el.style.display = 'none', 3000);
+    }
+
+    function mostrarLoading(show) {
+        document.getElementById('loading-indicator').style.display = show ? 'block' : 'none';
+        document.getElementById('btn-submit').disabled = show;
+    }
+
+    function atualizarUIStatus(on) {
+        const lb = document.getElementById('label-status');
+        lb.innerText = on ? "ONLINE" : "OFFLINE";
+        lb.style.color = on ? "var(--neon)" : "var(--red)";
+    }
+
+    // ============ MANIPULAÇÃO DE ARQUIVOS ============
     function previewMoldura(input) {
         if(input.files && input.files[0]) {
             if (input.files[0].type !== 'image/png') {
@@ -264,138 +384,183 @@
         }
     }
 
-    function mostrarErro(msg) {
-        const erro = document.getElementById('error-message');
-        erro.textContent = msg;
-        erro.style.display = 'block';
-        setTimeout(() => erro.style.display = 'none', 5000);
-    }
-
-    function mostrarLoading(show) {
-        document.getElementById('loading-indicator').style.display = show ? 'block' : 'none';
-        document.getElementById('btn-submit').disabled = show;
-    }
-
-    // ============ UPLOAD PARA WORKER ============
-    async function fazerUploadMoldura(eventoId) {
-        if (!arquivoMoldura) {
-            console.log("ℹ️ Nenhuma moldura para enviar");
-            return false;
-        }
-        
-        mostrarLoading(true);
-        
-        const formData = new FormData();
-        formData.append('moldura', arquivoMoldura);
-        formData.append('eventoId', eventoId);
-        
-        try {
-            console.log("📤 Enviando moldura para Worker...");
-            
-            const response = await fetch(`${API_URL}/upload-moldura`, {
-                method: 'POST',
-                body: formData
-            });
-            
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || `Erro HTTP ${response.status}`);
-            }
-            
-            const result = await response.json();
-            console.log("✅ Moldura salva no R2:", result.molduraPath);
-            mostrarLoading(false);
-            return true;
-            
-        } catch (e) {
-            console.error("❌ Falha no upload:", e);
-            mostrarErro("Erro ao enviar moldura: " + e.message);
-            mostrarLoading(false);
-            return false;
-        }
-    }
-
     // ============ SALVAR EVENTO ============
     async function salvarEvento() {
         const nome = document.getElementById('input-evento').value.trim();
         const data = document.getElementById('input-data').value;
         const formato = document.getElementById('select-formato').value;
         const livro = document.getElementById('input-livro').checked;
-        const editIdx = parseInt(document.getElementById('edit-index').value);
+        const editId = document.getElementById('edit-id').value;
         
         if(!nome || !data) {
             mostrarErro("Preencha todos os campos obrigatórios!");
             return;
         }
 
-        const estaAtivo = editIdx > -1 ? eventos[editIdx].ativo : false;
+        mostrarLoading(true);
         
-        // Gera ID único
-        const eventoId = editIdx > -1 
-            ? eventos[editIdx].id 
-            : `${nome.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${Date.now()}`;
-        
-        // Upload da moldura
-        let temMoldura = editIdx > -1 ? eventos[editIdx].temMoldura : false;
-        
-        if (arquivoMoldura) {
-            const uploadOk = await fazerUploadMoldura(eventoId);
-            if (uploadOk) {
-                temMoldura = true;
+        try {
+            if (editId) {
+                // EDITAR evento existente
+                await editarEventoServidor(editId, nome, data, formato, livro);
             } else {
-                // Se falhou o upload, pergunta se quer continuar sem moldura
-                if (!confirm("Falha ao enviar moldura. Deseja salvar o evento sem moldura?")) {
-                    return;
-                }
+                // CRIAR novo evento
+                await criarEventoServidor(nome, data, formato, livro);
             }
+            
+            // Recarrega lista do servidor
+            await carregarEventosDoServidor();
+            resetarFormulario();
+            
+        } catch(e) {
+            console.error("❌ Erro ao salvar:", e);
+            mostrarErro("Erro ao salvar evento: " + e.message);
+        } finally {
+            mostrarLoading(false);
         }
+    }
 
-        const novoEv = { 
-            id: eventoId,
-            nome, 
-            formato, 
-            livro, 
-            data: data.split('-').reverse().join('/'), 
-            dataRaw: data, 
-            ativo: estaAtivo,
-            temMoldura: temMoldura
-        };
+    async function criarEventoServidor(nome, data, formato, livro) {
+        console.log("➕ Criando evento no servidor...");
         
-        if(editIdx > -1) {
-            eventos[editIdx] = novoEv;
-        } else { 
-            eventos.unshift(novoEv); 
+        const resp = await fetch(`${API_URL}/criar-evento`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nome, data, formato, livro })
+        });
+        
+        if (!resp.ok) {
+            const err = await resp.json();
+            throw new Error(err.message || 'Erro ao criar evento');
         }
         
-        localStorage.setItem('eventos_db', JSON.stringify(eventos));
+        const result = await resp.json();
+        console.log("✅ Evento criado, ID:", result.id);
         
-        resetarFormulario();
+        // Se tem moldura, faz upload
+        if (arquivoMoldura && result.id) {
+            await fazerUploadMoldura(result.id);
+        }
+        
+        mostrarSucesso("Evento criado com sucesso!");
+    }
 
-        // Sincroniza se ativo
-        if(estaAtivo) {
-            await sincronizarWorker(nome, formato, "ONLINE", livro, eventoId, temMoldura);
+    async function editarEventoServidor(id, nome, data, formato, livro) {
+        console.log("✏️ Editando evento:", id);
+        
+        const resp = await fetch(`${API_URL}/atualizar-evento/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nome, data, formato, livro })
+        });
+        
+        if (!resp.ok) {
+            const err = await resp.json();
+            throw new Error(err.message || 'Erro ao atualizar evento');
         }
         
-        renderizarLista();
-        checarEventoAtivo();
-        console.log("💾 Evento salvo:", novoEv);
+        console.log("✅ Evento atualizado");
+        
+        // Se tem moldura nova, faz upload
+        if (arquivoMoldura) {
+            await fazerUploadMoldura(id);
+        }
+        
+        mostrarSucesso("Evento atualizado com sucesso!");
+    }
+
+    async function fazerUploadMoldura(eventoId) {
+        if (!arquivoMoldura) return;
+        
+        console.log("📤 Enviando moldura para evento:", eventoId);
+        
+        const formData = new FormData();
+        formData.append('moldura', arquivoMoldura);
+        formData.append('eventoId', eventoId);
+        
+        const resp = await fetch(`${API_URL}/upload-moldura`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!resp.ok) {
+            const err = await resp.json();
+            throw new Error(err.message || 'Erro no upload da moldura');
+        }
+        
+        const result = await resp.json();
+        console.log("✅ Moldura enviada:", result.molduraPath);
     }
 
     function resetarFormulario() {
         document.getElementById('input-evento').value = "";
         document.getElementById('input-data').value = "";
         document.getElementById('input-livro').checked = false;
+        document.getElementById('select-formato').value = "10X15V";
         document.getElementById('img-preview').style.display = 'none';
         document.getElementById('img-preview').src = '';
         document.getElementById('label-file').innerHTML = '<i class="fas fa-cloud-upload-alt"></i> CARREGAR MOLDURA PNG';
         document.getElementById('input-moldura').value = "";
         document.getElementById('edit-index').value = "-1";
-        document.getElementById('card-form-title').innerText = "NOVO EVENTO";
+        document.getElementById('edit-id').value = "";
+        document.getElementById('card-form-title').innerHTML = '<i class="fas fa-plus-circle"></i> NOVO EVENTO';
         document.getElementById('btn-text').innerText = "CRIAR EVENTO";
+        document.getElementById('btn-cancelar').style.display = 'none';
         arquivoMoldura = null;
     }
 
-    // ============ SINCRONIZAÇÃO COM WORKER ============
+    function cancelarEdicao() {
+        resetarFormulario();
+        mostrarSucesso("Edição cancelada");
+    }
+
+    // ============ ATIVAR/DESATIVAR EVENTO ============
+    async function ativarEvento(index) {
+        const ev = eventos[index];
+        const novoEstado = !ev.ativo;
+        
+        console.log(`${novoEstado ? '✅' : '❌'} ${novoEstado ? 'Ativando' : 'Desativando'} evento:`, ev.nome);
+        
+        mostrarLoading(true);
+        
+        try {
+            const resp = await fetch(`${API_URL}/atualizar-evento/${ev.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nome: ev.nome,
+                    data: ev.dataRaw || ev.data,
+                    formato: ev.formato,
+                    livro: ev.livro,
+                    ativo: novoEstado
+                })
+            });
+            
+            if (!resp.ok) {
+                throw new Error('Erro ao atualizar estado');
+            }
+            
+            // Sincroniza com o Worker
+            await sincronizarWorker(
+                novoEstado ? ev.nome : "Geral",
+                novoEstado ? ev.formato : "10X15V",
+                novoEstado ? "ONLINE" : "OFFLINE",
+                novoEstado ? ev.livro : false,
+                novoEstado ? ev.id.toString() : "",
+                novoEstado ? ev.temMoldura : false
+            );
+            
+            await carregarEventosDoServidor();
+            mostrarSucesso(`Evento ${novoEstado ? 'ativado' : 'desativado'}!`);
+            
+        } catch(e) {
+            console.error("❌ Erro:", e);
+            mostrarErro("Erro ao alterar estado: " + e.message);
+        } finally {
+            mostrarLoading(false);
+        }
+    }
+
     async function sincronizarWorker(nome, formato, status, livro, eventoId, temMoldura) {
         try {
             const payload = { 
@@ -407,26 +572,17 @@
                 temMoldura: temMoldura
             };
             
-            console.log("📤 Sincronizando com Worker:", payload);
+            console.log("📤 Sincronizando Worker:", payload);
             
-            const response = await fetch(`${API_URL}/set-config`, {
+            await fetch(`${API_URL}/set-config`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
             
-            if(response.ok) {
-                const data = await response.json();
-                console.log("✅ Worker atualizado:", data);
-                atualizarUIStatus(status === "ONLINE");
-            } else {
-                const error = await response.json();
-                console.error("❌ Worker recusou:", error);
-                mostrarErro("Erro ao sincronizar: " + (error.error || 'Tente novamente'));
-            }
+            atualizarUIStatus(status === "ONLINE");
         } catch(e) { 
-            console.error("❌ Falha na sincronização:", e);
-            mostrarErro("Servidor offline. Evento salvo localmente.");
+            console.warn("⚠️ Falha na sincronização:", e.message);
         }
     }
 
@@ -440,21 +596,70 @@
                 ativo.formato, 
                 on ? "ONLINE" : "OFFLINE", 
                 ativo.livro, 
-                ativo.id,
+                ativo.id.toString(),
                 ativo.temMoldura
             );
         } else {
-            sincronizarWorker("Geral", "10X15V", on ? "ONLINE" : "OFFLINE", false, "", false);
+            sincronizarWorker("Geral", "10X15V", "OFFLINE", false, "", false);
         }
     }
 
-    function atualizarUIStatus(on) {
-        const lb = document.getElementById('label-status');
-        lb.innerText = on ? "ONLINE" : "OFFLINE";
-        lb.style.color = on ? "var(--neon)" : "var(--red)";
+    // ============ EDITAR/EXCLUIR ============
+    function editarEvento(index) {
+        const ev = eventos[index];
+        
+        document.getElementById('input-evento').value = ev.nome;
+        document.getElementById('input-data').value = ev.dataRaw || ev.data || "";
+        document.getElementById('select-formato').value = ev.formato;
+        document.getElementById('input-livro').checked = ev.livro;
+        document.getElementById('edit-id').value = ev.id;
+        
+        document.getElementById('card-form-title').innerHTML = '<i class="fas fa-edit"></i> EDITAR EVENTO';
+        document.getElementById('btn-text').innerText = "SALVAR ALTERAÇÕES";
+        document.getElementById('btn-cancelar').style.display = 'block';
+        
+        document.getElementById('input-evento').focus();
+        
+        console.log("✏️ Editando:", ev);
     }
 
-    // ============ GERENCIAR EVENTOS ============
+    async function excluirEvento(index) {
+        const ev = eventos[index];
+        
+        if(!confirm(`Tem certeza que deseja excluir o evento "${ev.nome}"?\n\nTODAS as fotos deste evento também serão excluídas!`)) {
+            return;
+        }
+        
+        mostrarLoading(true);
+        
+        try {
+            const resp = await fetch(`${API_URL}/deletar-evento/${ev.id}`, {
+                method: 'DELETE'
+            });
+            
+            if (!resp.ok) {
+                throw new Error('Erro ao excluir evento');
+            }
+            
+            console.log("🗑️ Evento excluído:", ev.nome);
+            mostrarSucesso("Evento excluído com sucesso!");
+            
+            // Se estava ativo, desativa no Worker
+            if (ev.ativo) {
+                await sincronizarWorker("Geral", "10X15V", "OFFLINE", false, "", false);
+            }
+            
+            await carregarEventosDoServidor();
+            
+        } catch(e) {
+            console.error("❌ Erro ao excluir:", e);
+            mostrarErro("Erro ao excluir evento: " + e.message);
+        } finally {
+            mostrarLoading(false);
+        }
+    }
+
+    // ============ RENDERIZAÇÃO ============
     function renderizarLista() {
         const container = document.getElementById('corpo-lista');
         
@@ -462,7 +667,8 @@
             container.innerHTML = `
                 <div style="color: #555; text-align: center; padding: 40px;">
                     <i class="fas fa-inbox" style="font-size: 48px; display: block; margin-bottom: 15px;"></i>
-                    Nenhum evento cadastrado
+                    Nenhum evento cadastrado<br>
+                    <span style="font-size: 10px;">Clique em SINCRONIZAR para carregar do servidor</span>
                 </div>`;
             return;
         }
@@ -472,85 +678,27 @@
                 <div style="display:flex; align-items:center; gap:10px; flex:1;">
                     <i class="fas ${ev.ativo ? 'fa-check-circle status-icon ativo' : 'fa-circle status-icon inativo'}"></i>
                     <div style="flex:1;">
-                        <div style="font-size:12px; font-weight:900; color: ${ev.ativo ? 'var(--neon)' : '#fff'}">${ev.nome}</div>
-                        <div style="font-size:9px; color:#555; text-transform:uppercase;">
-                            ${ev.data} • ${ev.formato} 
-                            ${ev.livro ? '• 📖 Guestbook' : ''} 
-                            ${ev.temMoldura ? '• 🖼️ Moldura' : ''}
+                        <div style="font-size:12px; font-weight:900; color: ${ev.ativo ? 'var(--neon)' : '#fff'}">
+                            ${ev.nome}
+                            ${ev.livro ? '<span class="badge badge-info">📖 Guestbook</span>' : ''}
+                            ${ev.temMoldura ? '<span class="badge badge-success">🖼️ Moldura</span>' : ''}
+                        </div>
+                        <div style="font-size:9px; color:#555; text-transform:uppercase; margin-top: 3px;">
+                            ${ev.data || 'Sem data'} • ${ev.formato} • ID: ${ev.id}
                         </div>
                     </div>
                 </div>
-                <div style="display:flex; gap:12px; align-items:center;">
+                <div style="display:flex; gap:8px; align-items:center;">
                     <i class="fas fa-edit btn-acao edit" title="Editar" onclick="editarEvento(${i})"></i>
                     <i class="fas fa-trash btn-acao delete" title="Excluir" onclick="excluirEvento(${i})"></i>
                     <button class="btn-neon-style ${ev.ativo ? 'success' : ''}" 
-                            style="font-size:9px; padding: 6px 12px;" 
+                            style="font-size:9px; padding: 6px 12px; width: auto;" 
                             onclick="ativarEvento(${i})">
                         ${ev.ativo ? 'ATIVADO' : 'ATIVAR'}
                     </button>
                 </div>
             </div>
         `).join('');
-    }
-
-    function editarEvento(index) {
-        const ev = eventos[index];
-        document.getElementById('input-evento').value = ev.nome;
-        document.getElementById('input-data').value = ev.dataRaw || "";
-        document.getElementById('select-formato').value = ev.formato;
-        document.getElementById('input-livro').checked = ev.livro;
-        document.getElementById('edit-index').value = index;
-        
-        document.getElementById('card-form-title').innerText = "EDITAR EVENTO";
-        document.getElementById('btn-text').innerText = "SALVAR ALTERAÇÕES";
-        document.getElementById('input-evento').focus();
-        
-        console.log("✏️ Editando evento:", ev);
-    }
-
-    async function excluirEvento(index) {
-        const ev = eventos[index];
-        if(confirm(`Tem certeza que deseja deletar o evento "${ev.nome}"?`)) {
-            const foiAtivo = ev.ativo;
-            eventos.splice(index, 1);
-            localStorage.setItem('eventos_db', JSON.stringify(eventos));
-            
-            if(foiAtivo) {
-                await sincronizarWorker("Geral", "10X15V", "OFFLINE", false, "", false);
-            }
-            
-            renderizarLista();
-            checarEventoAtivo();
-            console.log("🗑️ Evento excluído:", ev.nome);
-        }
-    }
-
-    async function ativarEvento(index) {
-        const jaEstavaAtivo = eventos[index].ativo;
-
-        if (jaEstavaAtivo) {
-            // Desativar
-            eventos[index].ativo = false;
-            localStorage.setItem('eventos_db', JSON.stringify(eventos));
-            await sincronizarWorker("Geral", "10X15V", "OFFLINE", false, "", false);
-        } else {
-            // Ativar (desativa todos os outros)
-            eventos.forEach((e, i) => e.ativo = (i === index));
-            localStorage.setItem('eventos_db', JSON.stringify(eventos));
-            
-            const ev = eventos[index];
-            await sincronizarWorker(
-                ev.nome, 
-                ev.formato, 
-                "ONLINE", 
-                ev.livro, 
-                ev.id,
-                ev.temMoldura
-            );
-        }
-        
-        renderizarLista();
-        checarEventoAtivo();
     }
 
     function checarEventoAtivo() {

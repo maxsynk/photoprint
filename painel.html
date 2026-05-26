@@ -9,82 +9,54 @@
         :root { --neon: #39ff14; --red: #ff3131; --dark: #000000; --card: rgba(255, 255, 255, 0.03); --border: rgba(57, 255, 20, 0.2); }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', sans-serif; background: radial-gradient(circle at 50% -20%, #1a3a12 0%, #000 65%); color: white; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        
-        /* Tela Inicial */
         #tela-inicial { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 1000; background: #000; flex-direction: column; text-align: center; }
         .splash-brand { font-size: clamp(40px, 10vw, 90px); font-weight: 900; color: var(--neon); letter-spacing: 15px; text-transform: uppercase; text-shadow: 0 0 20px var(--neon); }
         .splash-subtitle { font-size: 14px; letter-spacing: 8px; color: #666; text-transform: uppercase; margin-top: 10px; }
-        
-        /* Modal Senha */
         #modal-senha { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
         .pass-box { background: #0a0a0a; padding: 40px; border-radius: 24px; border: 1px solid var(--neon); text-align: center; width: 320px; }
         .pass-box input { width: 100%; padding: 15px; margin: 20px 0; background: #000; border: 1px solid #222; color: var(--neon); text-align: center; font-size: 32px; border-radius: 12px; outline: none; font-weight: 900; }
-        
-        /* Header */
         .top-nav { display: none; justify-content: space-between; align-items: center; padding: 15px 40px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.7); backdrop-filter: blur(15px); }
         .internal-brand { font-size: 24px; font-weight: 900; color: var(--neon); letter-spacing: 4px; text-transform: uppercase; }
         .internal-subtitle { font-size: 10px; letter-spacing: 3px; color: #555; text-transform: uppercase; font-weight: bold; }
-        
-        /* Layout Principal */
         .main-layout { display: none; grid-template-columns: 1fr 1.3fr; gap: 25px; flex: 1; padding: 25px; min-height: 0; }
-        
-        /* Cards */
         .card { background: var(--card); backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; overflow: hidden; }
         .card-header { padding: 15px 25px; background: rgba(57, 255, 20, 0.08); color: var(--neon); font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; display: flex; align-items: center; gap: 8px; }
         .card-body { padding: 30px; flex: 1; overflow-y: auto; }
-        
-        /* Formulário */
         .form-group { margin-bottom: 20px; }
         .form-group-inline { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; border: 1px solid #222; margin-bottom: 20px; }
         label { font-size: 10px; color: var(--neon); font-weight: 900; text-transform: uppercase; display: block; margin-bottom: 8px; }
         .form-group-inline label { margin-bottom: 0; }
         input[type="text"], input[type="date"], select { width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid #222; color: white; border-radius: 6px; outline: none; }
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
-        
-        /* Botões */
         .btn-neon-style { background: transparent; border: 1px solid var(--neon); color: white; padding: 14px; border-radius: 6px; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; border-left: 5px solid var(--neon); display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
         .btn-neon-style:hover { background: rgba(57, 255, 20, 0.1); transform: translateX(5px); }
         .btn-neon-style:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-neon-style.success { background: var(--neon); color: black; border-left: 5px solid white; }
-        
-        /* Switch */
         .switch-mega { position: relative; display: inline-block; width: 50px; height: 26px; }
         .switch-mega input { opacity: 0; width: 0; height: 0; }
         .slider-mega { position: absolute; cursor: pointer; inset: 0; background: #222; transition: .4s; border-radius: 30px; }
         .slider-mega:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background: #555; transition: .4s; border-radius: 50%; }
         input:checked + .slider-mega { background: var(--neon); }
         input:checked + .slider-mega:before { transform: translateX(24px); background: #000; }
-        
-        /* Lista de Eventos */
         .evento-item { background: rgba(255,255,255,0.02); border: 1px solid #1a1a1a; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; transition: 0.2s; }
         .evento-item.ativo { border-left: 4px solid var(--neon); background: rgba(57, 255, 20, 0.05); }
         .evento-item:hover { border-color: #333; }
-        
-        /* Status */
         .status-container { display: flex; align-items: center; gap: 12px; padding: 6px 15px; border-radius: 30px; border: 1px solid #333; }
         .status-icon { font-size: 14px; margin-right: 5px; }
         .status-icon.ativo { color: var(--neon); text-shadow: 0 0 8px var(--neon); }
         .status-icon.inativo { color: #333; }
-        
-        /* Ações */
         .btn-acao { cursor: pointer; padding: 8px; transition: 0.2s; font-size: 16px; border-radius: 4px; }
         .btn-acao.edit { color: #aaa; }
         .btn-acao.edit:hover { color: var(--neon); background: rgba(57, 255, 20, 0.1); }
         .btn-acao.delete { color: #555; }
         .btn-acao.delete:hover { color: var(--red); background: rgba(255, 49, 49, 0.1); }
-        
-        /* Upload */
         .custom-file-upload { border: 1px dashed var(--border); display: block; padding: 12px; cursor: pointer; text-align: center; border-radius: 6px; color: #555; font-size: 11px; font-weight: bold; transition: 0.3s; }
         .custom-file-upload:hover { border-color: var(--neon); color: var(--neon); }
         .preview-img { max-width: 100%; max-height: 80px; margin-top: 10px; display: none; border: 1px solid #222; border-radius: 4px; }
-        
-        /* Mensagens */
         .version-tag { position: fixed; bottom: 15px; right: 20px; font-size: 10px; color: #333; font-weight: 900; z-index: 9999; }
         .loading { display: none; text-align: center; padding: 10px; color: var(--neon); font-size: 12px; }
         .error-message { background: rgba(255,49,49,0.1); border: 1px solid var(--red); color: var(--red); padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 12px; display: none; }
         .success-message { background: rgba(57,255,20,0.1); border: 1px solid var(--neon); color: var(--neon); padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 12px; display: none; }
-        
-        /* Status badge */
         .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 9px; font-weight: 900; text-transform: uppercase; }
         .badge-success { background: rgba(57,255,20,0.2); color: var(--neon); }
         .badge-danger { background: rgba(255,49,49,0.2); color: var(--red); }
@@ -95,7 +67,6 @@
 
     <div class="version-tag">v2.0</div>
 
-    <!-- Tela Inicial -->
     <div id="tela-inicial">
         <div>
             <h1 class="splash-brand">PHOTO PRINT</h1>
@@ -106,7 +77,6 @@
         </button>
     </div>
 
-    <!-- Modal Senha -->
     <div id="modal-senha">
         <div class="pass-box">
             <div style="font-size: 9px; color: var(--neon); letter-spacing: 2px;">SECURITY PROTOCOL</div>
@@ -118,7 +88,6 @@
         </div>
     </div>
 
-    <!-- Header -->
     <div class="top-nav" id="header">
         <div>
             <h2 class="internal-brand">PHOTO PRINT</h2>
@@ -133,15 +102,12 @@
         </div>
     </div>
 
-    <!-- Layout Principal -->
     <div class="main-layout" id="layout">
-        <!-- Card Esquerda - Formulário -->
         <div class="card">
             <div class="card-header" id="card-form-title">
                 <i class="fas fa-plus-circle"></i> NOVO EVENTO
             </div>
             <div class="card-body">
-                <input type="hidden" id="edit-index" value="-1">
                 <input type="hidden" id="edit-id" value="">
                 
                 <div class="form-group">
@@ -197,7 +163,6 @@
             </div>
         </div>
 
-        <!-- Card Direita - Lista de Eventos -->
         <div class="card">
             <div class="card-header">
                 <i class="fas fa-list"></i> Eventos Registrados
@@ -208,42 +173,31 @@
             <div class="card-body" id="corpo-lista">
                 <div style="color: #555; text-align: center; padding: 40px;">
                     <i class="fas fa-inbox" style="font-size: 48px; display: block; margin-bottom: 15px;"></i>
-                    Nenhum evento cadastrado
+                    Clique em SINCRONIZAR para carregar eventos
                 </div>
             </div>
         </div>
     </div>
 
 <script>
-    // ============ CONFIGURAÇÃO ============
     const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
     const SENHA_MESTRA = "1234";
-    
-    // ============ ESTADO GLOBAL ============
-    let eventos = []; // Carregados do servidor
+    let eventos = [];
     let arquivoMoldura = null;
-    
+
     // ============ INICIALIZAÇÃO ============
     window.onload = async () => {
         console.log("🚀 Painel iniciado");
-        await testarConexaoWorker();
-    };
-
-    async function testarConexaoWorker() {
         try {
-            console.log("🔍 Testando conexão com Worker:", API_URL);
             const resp = await fetch(`${API_URL}/`);
             const data = await resp.json();
-            
             if (data.status === "online") {
-                console.log("✅ Worker online! v" + data.version);
-                document.getElementById('error-message').style.display = 'none';
+                console.log("✅ Worker online!");
             }
         } catch(e) { 
-            console.warn("⚠️ Worker offline:", e.message);
-            mostrarErro("Servidor offline. Trabalhando em modo local.");
+            console.warn("⚠️ Worker offline");
         }
-    }
+    };
 
     // ============ AUTENTICAÇÃO ============
     function abrirModalSenha() { 
@@ -271,25 +225,16 @@
         document.getElementById('tela-inicial').style.display = 'none';
         document.getElementById('header').style.display = 'flex';
         document.getElementById('layout').style.display = 'grid';
-        
-        // Carrega eventos do servidor
         await carregarEventosDoServidor();
-        
-        // Verifica estado atual
         await verificarEstadoAtual();
     }
 
-    // ============ CARREGAR EVENTOS DO SERVIDOR ============
+    // ============ CARREGAR EVENTOS ============
     async function carregarEventosDoServidor() {
         mostrarLoading(true);
         
         try {
             const resp = await fetch(`${API_URL}/eventos`);
-            
-            if (!resp.ok) {
-                throw new Error(`HTTP ${resp.status}`);
-            }
-            
             const data = await resp.json();
             
             if (data.success && data.eventos) {
@@ -304,15 +249,13 @@
                     temMoldura: ev.tem_moldura === 1
                 }));
                 
-                console.log(`✅ ${eventos.length} eventos carregados do servidor`);
+                console.log(`✅ ${eventos.length} eventos carregados`);
                 mostrarSucesso(`${eventos.length} eventos carregados`);
             }
         } catch(e) {
-            console.warn("⚠️ Não foi possível carregar eventos do servidor:", e.message);
-            mostrarErro("Usando dados locais. Servidor indisponível.");
-            
-            // Carrega do localStorage como fallback
-            eventos = JSON.parse(localStorage.getItem('eventos_db') || '[]');
+            console.warn("⚠️ Erro ao carregar:", e.message);
+            mostrarErro("Erro ao carregar eventos do servidor");
+            eventos = [];
         } finally {
             mostrarLoading(false);
             renderizarLista();
@@ -328,10 +271,9 @@
             if (data.config) {
                 atualizarUIStatus(data.config.status === "ONLINE");
                 document.getElementById('server-status').checked = (data.config.status === "ONLINE");
-                console.log("📊 Estado atual:", data.config);
             }
         } catch(e) {
-            console.warn("⚠️ Não foi possível verificar estado:", e.message);
+            console.warn("⚠️ Erro ao verificar estado:", e.message);
         }
     }
 
@@ -401,78 +343,46 @@
         
         try {
             if (editId) {
-                // EDITAR evento existente
-                await editarEventoServidor(editId, nome, data, formato, livro);
+                await fetch(`${API_URL}/atualizar-evento/${editId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome, data, formato, livro, ativo: false })
+                });
+                
+                if (arquivoMoldura) {
+                    await fazerUploadMoldura(editId);
+                }
+                
+                mostrarSucesso("Evento atualizado!");
             } else {
-                // CRIAR novo evento
-                await criarEventoServidor(nome, data, formato, livro);
+                const resp = await fetch(`${API_URL}/criar-evento`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome, data, formato, livro })
+                });
+                
+                const result = await resp.json();
+                
+                if (arquivoMoldura && result.id) {
+                    await fazerUploadMoldura(result.id);
+                }
+                
+                mostrarSucesso("Evento criado!");
             }
             
-            // Recarrega lista do servidor
             await carregarEventosDoServidor();
             resetarFormulario();
             
         } catch(e) {
-            console.error("❌ Erro ao salvar:", e);
-            mostrarErro("Erro ao salvar evento: " + e.message);
+            console.error("❌ Erro:", e);
+            mostrarErro("Erro ao salvar: " + e.message);
         } finally {
             mostrarLoading(false);
         }
     }
 
-    async function criarEventoServidor(nome, data, formato, livro) {
-        console.log("➕ Criando evento no servidor...");
-        
-        const resp = await fetch(`${API_URL}/criar-evento`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nome, data, formato, livro })
-        });
-        
-        if (!resp.ok) {
-            const err = await resp.json();
-            throw new Error(err.message || 'Erro ao criar evento');
-        }
-        
-        const result = await resp.json();
-        console.log("✅ Evento criado, ID:", result.id);
-        
-        // Se tem moldura, faz upload
-        if (arquivoMoldura && result.id) {
-            await fazerUploadMoldura(result.id);
-        }
-        
-        mostrarSucesso("Evento criado com sucesso!");
-    }
-
-    async function editarEventoServidor(id, nome, data, formato, livro) {
-        console.log("✏️ Editando evento:", id);
-        
-        const resp = await fetch(`${API_URL}/atualizar-evento/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nome, data, formato, livro })
-        });
-        
-        if (!resp.ok) {
-            const err = await resp.json();
-            throw new Error(err.message || 'Erro ao atualizar evento');
-        }
-        
-        console.log("✅ Evento atualizado");
-        
-        // Se tem moldura nova, faz upload
-        if (arquivoMoldura) {
-            await fazerUploadMoldura(id);
-        }
-        
-        mostrarSucesso("Evento atualizado com sucesso!");
-    }
-
     async function fazerUploadMoldura(eventoId) {
         if (!arquivoMoldura) return;
-        
-        console.log("📤 Enviando moldura para evento:", eventoId);
         
         const formData = new FormData();
         formData.append('moldura', arquivoMoldura);
@@ -483,13 +393,9 @@
             body: formData
         });
         
-        if (!resp.ok) {
-            const err = await resp.json();
-            throw new Error(err.message || 'Erro no upload da moldura');
+        if (resp.ok) {
+            console.log("✅ Moldura enviada");
         }
-        
-        const result = await resp.json();
-        console.log("✅ Moldura enviada:", result.molduraPath);
     }
 
     function resetarFormulario() {
@@ -501,7 +407,6 @@
         document.getElementById('img-preview').src = '';
         document.getElementById('label-file').innerHTML = '<i class="fas fa-cloud-upload-alt"></i> CARREGAR MOLDURA PNG';
         document.getElementById('input-moldura').value = "";
-        document.getElementById('edit-index').value = "-1";
         document.getElementById('edit-id').value = "";
         document.getElementById('card-form-title').innerHTML = '<i class="fas fa-plus-circle"></i> NOVO EVENTO';
         document.getElementById('btn-text').innerText = "CRIAR EVENTO";
@@ -511,20 +416,17 @@
 
     function cancelarEdicao() {
         resetarFormulario();
-        mostrarSucesso("Edição cancelada");
     }
 
-    // ============ ATIVAR/DESATIVAR EVENTO ============
+    // ============ ATIVAR/DESATIVAR ============
     async function ativarEvento(index) {
         const ev = eventos[index];
         const novoEstado = !ev.ativo;
         
-        console.log(`${novoEstado ? '✅' : '❌'} ${novoEstado ? 'Ativando' : 'Desativando'} evento:`, ev.nome);
-        
         mostrarLoading(true);
         
         try {
-            const resp = await fetch(`${API_URL}/atualizar-evento/${ev.id}`, {
+            await fetch(`${API_URL}/atualizar-evento/${ev.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -536,17 +438,12 @@
                 })
             });
             
-            if (!resp.ok) {
-                throw new Error('Erro ao atualizar estado');
-            }
-            
-            // Sincroniza com o Worker
             await sincronizarWorker(
                 novoEstado ? ev.nome : "Geral",
                 novoEstado ? ev.formato : "10X15V",
                 novoEstado ? "ONLINE" : "OFFLINE",
                 novoEstado ? ev.livro : false,
-                novoEstado ? ev.id.toString() : "",
+                novoEstado ? String(ev.id) : "",
                 novoEstado ? ev.temMoldura : false
             );
             
@@ -563,23 +460,11 @@
 
     async function sincronizarWorker(nome, formato, status, livro, eventoId, temMoldura) {
         try {
-            const payload = { 
-                evento: nome, 
-                status: status, 
-                formato: formato, 
-                livro: livro,
-                eventoId: eventoId,
-                temMoldura: temMoldura
-            };
-            
-            console.log("📤 Sincronizando Worker:", payload);
-            
             await fetch(`${API_URL}/set-config`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({ evento: nome, status, formato, livro, eventoId, temMoldura })
             });
-            
             atualizarUIStatus(status === "ONLINE");
         } catch(e) { 
             console.warn("⚠️ Falha na sincronização:", e.message);
@@ -591,14 +476,7 @@
         const ativo = eventos.find(e => e.ativo);
         
         if(ativo) {
-            sincronizarWorker(
-                ativo.nome, 
-                ativo.formato, 
-                on ? "ONLINE" : "OFFLINE", 
-                ativo.livro, 
-                ativo.id.toString(),
-                ativo.temMoldura
-            );
+            sincronizarWorker(ativo.nome, ativo.formato, on ? "ONLINE" : "OFFLINE", ativo.livro, String(ativo.id), ativo.temMoldura);
         } else {
             sincronizarWorker("Geral", "10X15V", "OFFLINE", false, "", false);
         }
@@ -617,43 +495,31 @@
         document.getElementById('card-form-title').innerHTML = '<i class="fas fa-edit"></i> EDITAR EVENTO';
         document.getElementById('btn-text').innerText = "SALVAR ALTERAÇÕES";
         document.getElementById('btn-cancelar').style.display = 'block';
-        
         document.getElementById('input-evento').focus();
-        
-        console.log("✏️ Editando:", ev);
     }
 
     async function excluirEvento(index) {
         const ev = eventos[index];
         
-        if(!confirm(`Tem certeza que deseja excluir o evento "${ev.nome}"?\n\nTODAS as fotos deste evento também serão excluídas!`)) {
+        if(!confirm(`Excluir "${ev.nome}"?\n\nTODAS as fotos serão apagadas!`)) {
             return;
         }
         
         mostrarLoading(true);
         
         try {
-            const resp = await fetch(`${API_URL}/deletar-evento/${ev.id}`, {
-                method: 'DELETE'
-            });
+            await fetch(`${API_URL}/deletar-evento/${ev.id}`, { method: 'DELETE' });
             
-            if (!resp.ok) {
-                throw new Error('Erro ao excluir evento');
-            }
-            
-            console.log("🗑️ Evento excluído:", ev.nome);
-            mostrarSucesso("Evento excluído com sucesso!");
-            
-            // Se estava ativo, desativa no Worker
             if (ev.ativo) {
                 await sincronizarWorker("Geral", "10X15V", "OFFLINE", false, "", false);
             }
             
+            mostrarSucesso("Evento excluído!");
             await carregarEventosDoServidor();
             
         } catch(e) {
-            console.error("❌ Erro ao excluir:", e);
-            mostrarErro("Erro ao excluir evento: " + e.message);
+            console.error("❌ Erro:", e);
+            mostrarErro("Erro ao excluir: " + e.message);
         } finally {
             mostrarLoading(false);
         }
@@ -668,7 +534,7 @@
                 <div style="color: #555; text-align: center; padding: 40px;">
                     <i class="fas fa-inbox" style="font-size: 48px; display: block; margin-bottom: 15px;"></i>
                     Nenhum evento cadastrado<br>
-                    <span style="font-size: 10px;">Clique em SINCRONIZAR para carregar do servidor</span>
+                    <span style="font-size: 10px;">Crie um evento ou clique em SINCRONIZAR</span>
                 </div>`;
             return;
         }

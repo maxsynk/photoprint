@@ -180,6 +180,7 @@
     </div>
 
 <script>
+<script>
     const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
     const SENHA_MESTRA = "1234";
     let eventos = [];
@@ -234,28 +235,41 @@
         mostrarLoading(true);
         
         try {
+            console.log("📥 Buscando eventos do servidor...");
             const resp = await fetch(`${API_URL}/eventos`);
             const data = await resp.json();
             
+            console.log("📦 Resposta do servidor:", data);
+            
             if (data.success && data.eventos) {
-                eventos = data.eventos.map(ev => ({
-                    id: ev.id,
-                    nome: ev.nome,
-                    data: ev.data_evento,
-                    dataRaw: ev.data_evento,
-                    formato: ev.formato,
-                    livro: ev.livro === 1,
-                    ativo: ev.ativo === 1,
-                    temMoldura: ev.tem_moldura === 1
-                }));
-                
-                console.log(`✅ ${eventos.length} eventos carregados`);
-                mostrarSucesso(`${eventos.length} eventos carregados`);
+                // Só substitui se vieram eventos
+                if (data.eventos.length > 0 || eventos.length === 0) {
+                    eventos = data.eventos.map(ev => ({
+                        id: ev.id,
+                        nome: ev.nome,
+                        data: ev.data_evento,
+                        dataRaw: ev.data_evento,
+                        formato: ev.formato,
+                        livro: ev.livro === 1,
+                        ativo: ev.ativo === 1,
+                        temMoldura: ev.tem_moldura === 1
+                    }));
+                    
+                    console.log(`✅ ${eventos.length} eventos carregados`);
+                    mostrarSucesso(`${eventos.length} eventos carregados`);
+                } else {
+                    console.log("⚠️ Resposta vazia, mantendo eventos atuais:", eventos.length);
+                }
+            } else {
+                console.warn("⚠️ Resposta sem eventos, mantendo lista atual");
+                // Não substitui a lista se a resposta veio vazia
             }
         } catch(e) {
             console.warn("⚠️ Erro ao carregar:", e.message);
-            mostrarErro("Erro ao carregar eventos do servidor");
-            eventos = [];
+            // Só mostra erro se não tiver eventos
+            if (eventos.length === 0) {
+                mostrarErro("Erro ao carregar eventos do servidor");
+            }
         } finally {
             mostrarLoading(false);
             renderizarLista();
@@ -326,7 +340,7 @@
         }
     }
 
-    // ============ SALVAR EVENTO ============
+    // ============ SALVAR EVENTO (CORRIGIDO) ============
     async function salvarEvento() {
         const nome = document.getElementById('input-evento').value.trim();
         const data = document.getElementById('input-data').value;
@@ -340,9 +354,15 @@
         }
 
         mostrarLoading(true);
+        document.getElementById('error-message').style.display = 'none';
+        document.getElementById('success-message').style.display = 'none';
         
         try {
+            let eventoCriado = null;
+            
             if (editId) {
+                // EDITAR
+                console.log("✏️ Atualizando evento:", editId);
                 await fetch(`${API_URL}/atualizar-evento/${editId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
@@ -353,29 +373,59 @@
                     await fazerUploadMoldura(editId);
                 }
                 
-                mostrarSucesso("Evento atualizado!");
+                mostrarSucesso("✅ Evento atualizado com sucesso!");
             } else {
+                // CRIAR NOVO
+                console.log("➕ Criando novo evento...");
                 const resp = await fetch(`${API_URL}/criar-evento`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ nome, data, formato, livro })
                 });
                 
+                if (!resp.ok) {
+                    const err = await resp.json();
+                    throw new Error(err.error || 'Erro ao criar evento');
+                }
+                
                 const result = await resp.json();
+                console.log("✅ Evento criado, ID:", result.id);
+                eventoCriado = result;
                 
                 if (arquivoMoldura && result.id) {
                     await fazerUploadMoldura(result.id);
                 }
                 
-                mostrarSucesso("Evento criado!");
+                // Adiciona na lista local IMEDIATAMENTE
+                const novoEvento = {
+                    id: result.id,
+                    nome: nome,
+                    data: data,
+                    dataRaw: data,
+                    formato: formato,
+                    livro: livro,
+                    ativo: false,
+                    temMoldura: arquivoMoldura ? true : false
+                };
+                
+                // Adiciona no início da lista
+                eventos.unshift(novoEvento);
+                console.log("📋 Evento adicionado à lista local:", eventos.length);
+                
+                mostrarSucesso("✅ Evento criado com sucesso!");
             }
             
-            await carregarEventosDoServidor();
+            // Reseta o formulário
             resetarFormulario();
             
+            // Recarrega do servidor para confirmar
+            setTimeout(async () => {
+                await carregarEventosDoServidor();
+            }, 500);
+            
         } catch(e) {
-            console.error("❌ Erro:", e);
-            mostrarErro("Erro ao salvar: " + e.message);
+            console.error("❌ Erro ao salvar:", e);
+            mostrarErro("❌ Erro: " + e.message);
         } finally {
             mostrarLoading(false);
         }
@@ -384,17 +434,25 @@
     async function fazerUploadMoldura(eventoId) {
         if (!arquivoMoldura) return;
         
+        console.log("📤 Enviando moldura para evento:", eventoId);
+        
         const formData = new FormData();
         formData.append('moldura', arquivoMoldura);
         formData.append('eventoId', eventoId);
         
-        const resp = await fetch(`${API_URL}/upload-moldura`, {
-            method: 'POST',
-            body: formData
-        });
-        
-        if (resp.ok) {
-            console.log("✅ Moldura enviada");
+        try {
+            const resp = await fetch(`${API_URL}/upload-moldura`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (resp.ok) {
+                console.log("✅ Moldura enviada com sucesso");
+            } else {
+                console.error("❌ Erro no upload da moldura");
+            }
+        } catch(e) {
+            console.error("❌ Erro no upload:", e);
         }
     }
 
@@ -423,10 +481,12 @@
         const ev = eventos[index];
         const novoEstado = !ev.ativo;
         
+        console.log(`${novoEstado ? '✅' : '❌'} ${novoEstado ? 'Ativando' : 'Desativando'}:`, ev.nome);
+        
         mostrarLoading(true);
         
         try {
-            await fetch(`${API_URL}/atualizar-evento/${ev.id}`, {
+            const resp = await fetch(`${API_URL}/atualizar-evento/${ev.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -438,6 +498,16 @@
                 })
             });
             
+            if (!resp.ok) {
+                throw new Error('Erro ao atualizar evento');
+            }
+            
+            // Atualiza localmente primeiro
+            eventos.forEach((e, i) => e.ativo = (i === index && novoEstado));
+            renderizarLista();
+            checarEventoAtivo();
+            
+            // Sincroniza com Worker
             await sincronizarWorker(
                 novoEstado ? ev.nome : "Geral",
                 novoEstado ? ev.formato : "10X15V",
@@ -447,12 +517,18 @@
                 novoEstado ? ev.temMoldura : false
             );
             
-            await carregarEventosDoServidor();
-            mostrarSucesso(`Evento ${novoEstado ? 'ativado' : 'desativado'}!`);
+            mostrarSucesso(`✅ Evento ${novoEstado ? 'ATIVADO' : 'DESATIVADO'}!`);
+            
+            // Recarrega para confirmar
+            setTimeout(() => carregarEventosDoServidor(), 500);
             
         } catch(e) {
             console.error("❌ Erro:", e);
-            mostrarErro("Erro ao alterar estado: " + e.message);
+            mostrarErro("Erro: " + e.message);
+            // Reverte estado local
+            eventos[index].ativo = !novoEstado;
+            renderizarLista();
+            checarEventoAtivo();
         } finally {
             mostrarLoading(false);
         }
@@ -460,12 +536,25 @@
 
     async function sincronizarWorker(nome, formato, status, livro, eventoId, temMoldura) {
         try {
-            await fetch(`${API_URL}/set-config`, {
+            console.log("📤 Sincronizando Worker:", { nome, status, formato, eventoId });
+            
+            const resp = await fetch(`${API_URL}/set-config`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ evento: nome, status, formato, livro, eventoId, temMoldura })
+                body: JSON.stringify({ 
+                    evento: nome, 
+                    status, 
+                    formato, 
+                    livro, 
+                    eventoId, 
+                    temMoldura 
+                })
             });
-            atualizarUIStatus(status === "ONLINE");
+            
+            if (resp.ok) {
+                console.log("✅ Worker sincronizado!");
+                atualizarUIStatus(status === "ONLINE");
+            }
         } catch(e) { 
             console.warn("⚠️ Falha na sincronização:", e.message);
         }
@@ -476,7 +565,14 @@
         const ativo = eventos.find(e => e.ativo);
         
         if(ativo) {
-            sincronizarWorker(ativo.nome, ativo.formato, on ? "ONLINE" : "OFFLINE", ativo.livro, String(ativo.id), ativo.temMoldura);
+            sincronizarWorker(
+                ativo.nome, 
+                ativo.formato, 
+                on ? "ONLINE" : "OFFLINE", 
+                ativo.livro, 
+                String(ativo.id), 
+                ativo.temMoldura
+            );
         } else {
             sincronizarWorker("Geral", "10X15V", "OFFLINE", false, "", false);
         }
@@ -496,26 +592,43 @@
         document.getElementById('btn-text').innerText = "SALVAR ALTERAÇÕES";
         document.getElementById('btn-cancelar').style.display = 'block';
         document.getElementById('input-evento').focus();
+        
+        console.log("✏️ Editando:", ev.nome);
     }
 
     async function excluirEvento(index) {
         const ev = eventos[index];
         
-        if(!confirm(`Excluir "${ev.nome}"?\n\nTODAS as fotos serão apagadas!`)) {
+        if(!confirm(`⚠️ Excluir "${ev.nome}"?\n\nTODAS as fotos deste evento serão apagadas permanentemente!`)) {
             return;
         }
         
         mostrarLoading(true);
         
         try {
-            await fetch(`${API_URL}/deletar-evento/${ev.id}`, { method: 'DELETE' });
+            console.log("🗑️ Excluindo evento:", ev.id);
+            
+            const resp = await fetch(`${API_URL}/deletar-evento/${ev.id}`, { 
+                method: 'DELETE' 
+            });
+            
+            if (!resp.ok) {
+                throw new Error('Erro ao excluir evento');
+            }
+            
+            // Remove da lista local
+            eventos.splice(index, 1);
             
             if (ev.ativo) {
                 await sincronizarWorker("Geral", "10X15V", "OFFLINE", false, "", false);
             }
             
-            mostrarSucesso("Evento excluído!");
-            await carregarEventosDoServidor();
+            mostrarSucesso("🗑️ Evento excluído com sucesso!");
+            renderizarLista();
+            checarEventoAtivo();
+            
+            // Recarrega para confirmar
+            setTimeout(() => carregarEventosDoServidor(), 500);
             
         } catch(e) {
             console.error("❌ Erro:", e);
@@ -529,12 +642,15 @@
     function renderizarLista() {
         const container = document.getElementById('corpo-lista');
         
-        if (eventos.length === 0) {
+        if (!eventos || eventos.length === 0) {
             container.innerHTML = `
                 <div style="color: #555; text-align: center; padding: 40px;">
                     <i class="fas fa-inbox" style="font-size: 48px; display: block; margin-bottom: 15px;"></i>
                     Nenhum evento cadastrado<br>
-                    <span style="font-size: 10px;">Crie um evento ou clique em SINCRONIZAR</span>
+                    <span style="font-size: 10px; margin-top: 10px; display: block;">
+                        Crie um novo evento ou clique em 
+                        <span style="color: var(--neon); cursor: pointer;" onclick="carregarEventosDoServidor()">SINCRONIZAR</span>
+                    </span>
                 </div>`;
             return;
         }
@@ -550,7 +666,7 @@
                             ${ev.temMoldura ? '<span class="badge badge-success">🖼️ Moldura</span>' : ''}
                         </div>
                         <div style="font-size:9px; color:#555; text-transform:uppercase; margin-top: 3px;">
-                            ${ev.data || 'Sem data'} • ${ev.formato} • ID: ${ev.id}
+                            ${ev.data || 'Sem data'} • ${ev.formato}
                         </div>
                     </div>
                 </div>
@@ -565,6 +681,8 @@
                 </div>
             </div>
         `).join('');
+        
+        console.log(`📋 Renderizada lista com ${eventos.length} eventos`);
     }
 
     function checarEventoAtivo() {
@@ -581,6 +699,4 @@
             atualizarUIStatus(false);
         }
     }
-</script>
-</body>
-</html>
+</script>    

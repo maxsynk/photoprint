@@ -1,364 +1,106 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<title>WEBCAM - PHOTO PRINT v9.0</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
-:root{ --neon:#39ff14; --dark:#050505; --danger:#ff3131; }
-*{ box-sizing:border-box; }
-body{
-    margin:0;
-    background: radial-gradient(circle at top, rgba(57,255,20,0.10), transparent 35%),
-                radial-gradient(circle at bottom right, rgba(57,255,20,0.08), transparent 30%),
-                linear-gradient(135deg, #020202 0%, #050505 40%, #071107 100%);
-    color:white; font-family:Arial,Helvetica,sans-serif;
-    width:100vw; height:100vh; overflow:hidden; position:relative;
-}
-#dynamic-bg{ position:fixed; inset:0; z-index:0; background-size:cover; background-position:center; background-repeat:no-repeat; opacity:0; transition:opacity 0.6s ease; }
-#dynamic-bg.active{ opacity:0.45; }
-#dynamic-bg::after{ content:''; position:absolute; inset:0; background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.65)); }
-body::before{ content:''; position:fixed; inset:0; background-image: linear-gradient(rgba(57,255,20,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(57,255,20,0.03) 1px, transparent 1px); background-size:40px 40px; z-index:1; animation:gridMove 12s linear infinite; }
-body.bg-active::before{ display:none; }
-@keyframes gridMove{ from{ transform:translateY(0px); } to{ transform:translateY(40px); } }
-
-.bg-brand{ position:fixed; inset:0; z-index:2; pointer-events:none; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.07; }
-body.bg-active .bg-brand{ display:none; }
-.bg-brand-title{ font-family:'Orbitron',sans-serif; font-size:140px; font-weight:900; color:var(--neon); letter-spacing:14px; text-transform:uppercase; }
-.bg-brand-sub{ margin-top:20px; font-size:42px; letter-spacing:12px; text-transform:uppercase; color:white; }
-
-.top-logo{ position:fixed; top:40px; left:50px; z-index:100; }
-.logo-title{ font-family:'Orbitron',sans-serif; color:var(--neon); font-size:46px; font-weight:900; letter-spacing:8px; text-shadow: 0 0 15px var(--neon), 0 0 35px rgba(57,255,20,0.8); cursor:pointer; user-select:none; }
-.logo-sub{ margin-top:4px; color:white; opacity:0.7; letter-spacing:5px; font-size:13px; text-transform:uppercase; }
-
-#active-event-name { position: fixed; top: 130px; left: 50px; z-index: 100; font-family: 'Orbitron', sans-serif; color: var(--neon); font-size: 16px; font-weight: 700; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon); background: rgba(0,0,0,0.8); padding: 8px 16px; border-radius: 8px; border: 1px solid var(--neon); display: none; }
-#debug-info { position: fixed; bottom: 10px; right: 10px; z-index: 999; background: rgba(0,0,0,0.8); color: var(--neon); font-size: 10px; padding: 5px 10px; border-radius: 5px; font-family: monospace; max-width: 350px; word-break: break-all; }
-
-.screen { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:5; flex-direction:column; }
-.btn-start{ position:relative; width:380px; height:380px; border-radius:50%; border:4px solid var(--neon); background: radial-gradient(circle at center, rgba(57,255,20,0.18), rgba(0,0,0,0.96)); overflow:hidden; transition:0.3s; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:35px; box-shadow: 0 0 30px rgba(57,255,20,0.8), inset 0 0 60px rgba(57,255,20,0.15); backdrop-filter:blur(4px); z-index:6; }
-.btn-start::before{ content:''; position:absolute; width:250%; height:250%; background:conic-gradient( transparent, rgba(57,255,20,1), rgba(57,255,20,0.25), transparent ); animation:rotateGlow 3s linear infinite; filter:blur(20px); opacity:1; }
-.btn-start::after{ content:''; position:absolute; inset:8px; border-radius:50%; background:rgba(0,0,0,0.92); box-shadow: inset 0 0 60px rgba(57,255,20,0.15); }
-@keyframes rotateGlow{ 100%{ transform:rotate(360deg); } }
-
-.start-content{ position:relative; z-index:10; text-align:center; width:100%; }
-.start-icon{ font-size:58px; margin-bottom:18px; filter:drop-shadow(0 0 15px var(--neon)); }
-.start-title{ color:var(--neon); font-family:'Orbitron',sans-serif; font-size:22px; font-weight:900; letter-spacing:4px; text-shadow: 0 0 15px var(--neon), 0 0 35px var(--neon); margin-bottom:18px; text-transform:uppercase; line-height:1.4; }
-.start-subtitle{ font-size:22px; line-height:1.6; }
-
-#camera-wrapper { 
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 94vw; height: 92vh; background: #000; overflow: hidden; z-index: 5; 
-    border: 3px solid rgba(57, 255, 20, 0.8); box-shadow: 0 0 35px rgba(57, 255, 20, 0.4); border-radius: 16px;
-}
-#camera-feed { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-#camera-canvas { width: 100%; height: 100%; object-fit: contain; background: #000; }
-
-.fun-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: sans-serif; font-size: 70px; font-weight: 900; text-align: center; color: #fff; text-transform: uppercase; text-shadow: 0px 0px 15px #ff0080, 0px 0px 30px #ff8c00; z-index: 110; pointer-events: none; }
-#options-overlay { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.9); border: 2px solid var(--neon); padding: 18px 50px; border-radius: 50px; box-shadow: 0 0 25px rgba(57,255,20,0.5); z-index: 120; text-align: center; }
-.options-text { font-family: 'Orbitron', sans-serif; font-size: 24px; color: var(--neon); font-weight: bold; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon); }
-.status-text { font-family:'Orbitron',sans-serif; font-size:40px; color:var(--neon); font-weight:900; letter-spacing:4px; text-shadow: 0 0 20px var(--neon); text-align:center; background: rgba(0,0,0,0.85); padding: 40px 80px; border-radius: 20px; border: 2px solid var(--neon); backdrop-filter: blur(10px); z-index:150; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHOTO PRINT - Webcam v9.1</title>
+    <style>
+        body { margin: 0; background: #000; color: white; font-family: sans-serif; overflow: hidden; }
+        .camera-container { position: relative; width: 100vh; height: 100vh; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* A moldura fica exatamente em cima do vídeo da webcam */
+        #moldura-overlay { 
+            position: absolute; 
+            inset: 0; 
+            width: 100%; 
+            height: 100%; 
+            object-fit: contain; 
+            pointer-events: none; /* Não bloqueia o clique na tela */
+            display: none; 
+        }
+        .info-box { position: fixed; bottom: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 10px; font-size: 12px; border-radius: 5px; border: 1px solid #39ff14; z-index: 10; }
+    </style>
 </head>
 <body>
 
-<div id="dynamic-bg"></div>
-
-<div class="bg-brand">
-    <div class="bg-brand-title">AUTOGRAPH CAM</div>
-    <div class="bg-brand-sub">Colecionando momentos</div>
-</div>
-
-<div class="top-logo"><div class="logo-title" id="secret-logo">AUTOGRAPH CAM</div><div class="logo-sub">Colecionando momentos</div></div>
-<div id="active-event-name"></div>
-<div id="debug-info">INICIANDO...</div>
-
-<div id="bg-menu">
-    <label class="bg-btn" for="bg-input">🖼 ALTERAR FUNDO</label>
-    <div class="bg-btn" onclick="removeBackground()">✖ SEM FUNDO</div>
-</div>
-<input type="file" id="bg-input" accept="image/*"/>
-
-<div id="screen-start" class="screen">
-    <div class="btn-start" id="main-start-btn">
-        <div class="start-content">
-            <div class="start-icon">📸</div>
-            <div class="start-title">AUTOGRAPH CAM</div>
-            <div class="start-subtitle">Aguardando comando...</div>
-        </div>
+    <div class="info-box">
+        <div>SISTEMA: <strong style="color: #39ff14;">PHOTO PRINT</strong></div>
+        <div>EVENTO: <span id="txt-evento">Carregando...</span></div>
+        <div>FORMATO: <span id="txt-formato">-</span></div>
     </div>
-</div>
 
-<div id="screen-camera" class="screen" style="display:none;">
-    <div id="camera-wrapper">
-        <video id="camera-feed" autoplay playsinline muted></video>
-        <canvas id="camera-canvas" style="display:none;"></canvas>
-        <div id="fun-text" class="fun-text" style="display:none;"></div>
-        <div id="options-overlay" style="display:none;">
-            <div class="options-text">VEJA O CELULAR PARA IMPRIMIR SUA FOTO</div>
-        </div>
+    <div class="camera-container">
+        <video id="video" autoplay playsinline></video>
+        <img id="moldura-overlay" src="" alt="Moldura do Evento">
     </div>
-</div>
-
-<div id="screen-thanks" class="screen" style="display:none;">
-    <div class="status-text" id="thanks-text">🖨️ AGUARDE A IMPRESSÃO...</div>
-</div>
 
 <script>
-const API_BASE = 'https://photoprint-api.maxprimefotovideo.workers.dev';
-const videoFeed = document.getElementById('camera-feed');
-const canvasCapture = document.getElementById('camera-canvas');
-const ctx = canvasCapture.getContext('2d');
-const funText = document.getElementById('fun-text');
-const optionsOverlay = document.getElementById('options-overlay');
+    const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
+    
+    // Variáveis dinâmicas (NADA FIXO)
+    let eventoAtivo = "";
+    let formatoAtivo = "";
+    let molduraAtiva = "";
 
-let stream = null;
-let lastState = 'start';
-let captureInProgress = false;
-let eventoAtual = "Geral";
-let formatoAtual = '10X15V';
-let molduraUrl = null;
-let rawCapturedFrame = null;
+    // 1. Inicia a Câmera local do dispositivo
+    async function iniciarCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1920, height: 1080 }, audio: false });
+            document.getElementById('video').srcObject = stream;
+        } catch (e) {
+            console.error("Erro ao acessar a webcam: ", e);
+        }
+    }
 
-const FORMATOS = {
-    "TIRINHA": { w: 600, h: 1800 },
-    "POLAROID": { w: 1200, h: 1500 },
-    "10X15H": { w: 1800, h: 1200 },
-    "10X15V": { w: 1200, h: 1800 }
-};
+    // 2. Sincroniza em tempo real com o Worker buscando o que foi decidido no painel
+    async function sincronizarComPainel() {
+        try {
+            const resp = await fetch(`${API_URL}/get-all-states?t=${Date.now()}`);
+            const data = await resp.json();
+            
+            if (data && data.config) {
+                const conf = data.config;
 
-function debug(msg) {
-    console.log('[WEBCAM]', msg);
-    if (document.getElementById('debug-info')) document.getElementById('debug-info').innerText = msg;
-}
+                // Só reconfigura a tela se o painel tiver mudado o evento ou a moldura
+                if (eventoAtivo !== conf.evento || molduraAtiva !== conf.moldura || formatoAtivo !== conf.formato) {
+                    
+                    eventoAtivo = conf.evento;
+                    formatoAtivo = conf.formato;
+                    molduraAtiva = conf.moldura;
 
-async function initCamera() {
-    try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1920, height: 1080 } });
-        videoFeed.srcObject = stream;
-        debug('✅ Câmera Conectada');
-    } catch (err) { debug('❌ Erro Câmera: ' + err.message); }
-}
+                    // Atualiza os textos informativos na tela
+                    document.getElementById('txt-evento').innerText = eventoAtivo.toUpperCase();
+                    document.getElementById('txt-formato').innerText = formatoAtivo;
 
-function resumeCamera() { if (stream && videoFeed.paused) videoFeed.play().catch(()=>{}); }
-function pauseCamera() { if (stream && !videoFeed.paused) videoFeed.bind; videoFeed.pause(); }
+                    // Atualiza a moldura PNG sobreposta na tela
+                    const imgOverlay = document.getElementById('moldura-overlay');
+                    if (molduraAtiva) {
+                        imgOverlay.src = molduraAtiva; // Carrega o Base64 direto na imagem
+                        imgOverlay.style.display = "block";
+                    } else {
+                        imgOverlay.src = "";
+                        imgOverlay.style.display = "none";
+                    }
 
-async function syncEvento() {
-    try {
-        const res = await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`);
-        if (res.ok) {
-            const data = await res.json();
-            if (data.config && data.config.evento) {
-                const cloudNome = data.config.evento;
-                const cloudFormato = (data.config.formato || '10X15V').toUpperCase().trim();
-                
-                if (eventoAtual !== cloudNome || formatoAtual !== cloudFormato) {
-                    eventoAtual = cloudNome;
-                    formatoAtual = cloudFormato;
-                    updateEventoUI();
-                    await loadMoldura();
+                    console.log(`Webcam sincronizada com o evento: ${eventoAtivo} (${formatoAtivo})`);
+                    
+                    // Se você tiver uma função que prepara o motor de captura/recorte baseado no formato, dispare aqui:
+                    // ajustarFormatacaoDaCaptura(formatoAtivo);
                 }
             }
+        } catch (e) {
+            console.error("Falha ao atualizar dados do painel:", e);
         }
-    } catch(e) { console.error("Erro sincronia", e); }
-}
+    }
 
-function updateEventoUI() {
-    const el = document.getElementById('active-event-name');
-    if (eventoAtual && eventoAtual !== 'Geral') {
-        el.style.display = 'block';
-        el.innerText = `Evento Ativo: ${eventoAtual} (${formatoAtual})`;
-    } else { el.style.display = 'none'; }
-}
-
-async function loadMoldura() {
-    try {
-        const res = await fetch(`${API_BASE}/list-photos?evento=${encodeURIComponent(eventoAtual)}&t=${Date.now()}`);
-        const arquivos = await res.json();
-        let molduraKey = arquivos.find(f => f.key.toLowerCase().includes('moldura') && f.key.toLowerCase().endsWith('.png'));
-        if (!molduraKey) molduraKey = arquivos.find(f => f.key.toLowerCase().endsWith('.png'));
+    window.onload = () => {
+        iniciarCamera();
+        sincronizarComPainel();
         
-        if (molduraKey) {
-            molduraUrl = `${API_BASE}/photo/${encodeURIComponent(molduraKey.key)}`;
-            debug(`🖼️ Moldura Vinculada: ${molduraKey.key}`);
-        } else {
-            molduraUrl = null;
-            debug('Nenhuma moldura .png encontrada para este evento.');
-        }
-    } catch(e) { molduraUrl = null; }
-}
-
-function capturePhoto() {
-    if (captureInProgress) return;
-    captureInProgress = true;
-    resumeCamera();
-    
-    videoFeed.style.display = 'block';
-    canvasCapture.style.display = 'none';
-    optionsOverlay.style.display = 'none';
-    funText.style.display = 'block';
-    
-    let countdown = 3;
-    funText.innerHTML = `⏳ ${countdown}`;
-    
-    const timer = setInterval(async () => {
-        countdown--;
-        if (countdown > 0) {
-            funText.innerHTML = `⏳ ${countdown}`;
-        } else {
-            clearInterval(timer);
-            funText.style.display = 'none';
-            
-            const camW = videoFeed.videoWidth || 1920;
-            const camH = videoFeed.videoHeight || 1080;
-            
-            canvasCapture.width = camW;
-            canvasCapture.height = camH;
-            
-            ctx.save();
-            ctx.scale(-1, 1);
-            ctx.drawImage(videoFeed, -camW, 0, camW, camH);
-            ctx.restore();
-            
-            rawCapturedFrame = document.createElement('canvas');
-            rawCapturedFrame.width = camW;
-            rawCapturedFrame.height = camH;
-            rawCapturedFrame.getContext('2d').drawImage(canvasCapture, 0, 0);
-            
-            if (molduraUrl) {
-                try {
-                    const imgM = await loadImage(molduraUrl);
-                    ctx.drawImage(imgM, 0, 0, camW, camH);
-                } catch(e) { console.error(e); }
-            }
-            
-            videoFeed.style.display = 'none';
-            canvasCapture.style.display = 'block';
-            pauseCamera();
-            
-            await fetch(`${API_BASE}/set-state`, { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ state: 'options' }) 
-            });
-            captureInProgress = false;
-            optionsOverlay.style.display = 'block';
-        }
-    }, 1000);
-}
-
-async function composeAndUpload(copias) {
-    const fmt = FORMATOS[formatoAtual] || FORMATOS['10X15V'];
-    const finalCanvas = document.createElement('canvas');
-    finalCanvas.width = fmt.w;
-    finalCanvas.height = fmt.h;
-    const finalCtx = finalCanvas.getContext('2d');
-    
-    finalCtx.fillStyle = 'white';
-    finalCtx.fillRect(0, 0, fmt.w, fmt.h);
-    
-    if (rawCapturedFrame) {
-        const scale = Math.max(fmt.w / rawCapturedFrame.width, fmt.h / rawCapturedFrame.height);
-        const w = rawCapturedFrame.width * scale;
-        const h = rawCapturedFrame.height * scale;
-        const x = (fmt.w - w) / 2;
-        const y = (fmt.h - h) / 2;
-        finalCtx.drawImage(rawCapturedFrame, x, y, w, h);
-    }
-    
-    if (molduraUrl) {
-        try {
-            const imgM = await loadImage(molduraUrl);
-            finalCtx.drawImage(imgM, 0, 0, fmt.w, fmt.h);
-        } catch(e) {}
-    }
-    
-    const blob = await new Promise(r => finalCanvas.toBlob(r, 'image/jpeg', 0.96));
-    
-    let nomeArquivo = `foto_${Date.now()}.jpg`;
-    if (copias === 2) nomeArquivo = `foto_${Date.now()}_2c.jpg`;
-    else if (copias === 3) nomeArquivo = `foto_${Date.now()}_2c_livro.jpg`;
-    else if (copias === 4) nomeArquivo = `foto_${Date.now()}_3c_livro.jpg`;
-
-    const fd = new FormData();
-    fd.append('file', blob, nomeArquivo);
-    fd.append('evento', eventoAtual);
-    
-    try {
-        await fetch(`${API_BASE}/upload`, { method: 'POST', body: fd });
-    } catch(e) { debug('❌ Erro upload file'); }
-}
-
-function loadImage(src) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => resolve(img);
-        img.onerror = reject;
-        img.src = src + '?t=' + Date.now();
-    });
-}
-
-async function waitForPrint() {
-    for (let i = 0; i < 60; i++) {
-        try {
-            const res = await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`);
-            const data = await res.json();
-            if (data.print && data.print.printTriggered) return data.print.copias || 1;
-        } catch(e) {}
-        await new Promise(r => setTimeout(r, 1000));
-    }
-    return null;
-}
-
-async function finishCycle() {
-    const copias = await waitForPrint();
-    if (!copias) { resetToStart(); return; }
-    
-    optionsOverlay.querySelector('.options-text').innerText = 'ENVIANDO PARA GALERIA...';
-    await composeAndUpload(copias);
-    await fetch(`${API_BASE}/reset-session`, { method: 'POST' });
-    showThanks();
-}
-
-function showThanks() {
-    document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
-    document.getElementById('screen-thanks').style.display = 'flex';
-    setTimeout(resetToStart, 4000);
-}
-
-function resetToStart() {
-    document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
-    document.getElementById('screen-start').style.display = 'flex';
-    rawCapturedFrame = null;
-    pauseCamera();
-    lastState = 'start';
-    fetch(`${API_BASE}/set-state`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state: 'start' }) }).catch(()=>{});
-}
-
-async function pollServerState() {
-    try {
-        const res = await fetch(`${API_BASE}/get-state?t=${Date.now()}`);
-        const data = await res.json();
-        // Fallback estrutural para ler estado simples do app_state se encapsulado
-        const stateStr = data.state || (data.app ? data.app.state : 'start');
-        
-        if (stateStr && stateStr !== lastState) {
-            if (stateStr === 'start' && lastState === 'options') {
-                finishCycle();
-            } else if (stateStr === 'capturing') {
-                document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
-                document.getElementById('screen-camera').style.display = 'flex';
-                capturePhoto();
-            }
-            lastState = stateStr;
-        }
-    } catch(e) {}
-}
-
-initCamera();
-setInterval(pollServerState, 1000);
-setInterval(syncEvento, 5000);
-syncEvento();
+        // Verifica se houve mudanças no painel a cada 3 segundos
+        setInterval(sincronizarComPainel, 3000);
+    };
 </script>
 </body>
 </html>

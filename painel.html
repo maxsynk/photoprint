@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT - Master Panel v1.9.1</title>
+    <title>PHOTO PRINT - Master Panel v1.9.2</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --neon: #39ff14; --red: #ff3131; --dark: #000000; --card: rgba(255, 255, 255, 0.03); --border: rgba(57, 255, 20, 0.2); }
@@ -54,7 +54,7 @@
 </head>
 <body>
 
-    <div class="version-tag">v1.9.1</div>
+    <div class="version-tag">v1.9.2</div>
 
     <div id="tela-inicial">
         <div class="splash-header">
@@ -75,7 +75,7 @@
 
     <div class="top-nav" id="header">
         <div>
-            <h2 class="internal-brand">PROTO PRINT</h2>
+            <h2 class="internal-brand">PHOTO PRINT</h2>
             <div class="internal-subtitle">colecionando momentos</div>
         </div>
         <div class="status-container" id="status-box">
@@ -126,6 +126,7 @@
     const SENHA_MESTRA = "1234";
     let eventos = JSON.parse(localStorage.getItem('eventos_db')) || [];
     let formatos = [{label: "10x15 Vertical", value: "10X15V"}, {label: "10x15 Horizontal", value: "10X15H"}, {label: "Tirinha 5x15", value: "TIRINHA"}, {label: "Polaroid", value: "POLAROID"}];
+    let molduraBase64 = ""; // Armazena a string da moldura para envio imediato
 
     window.onload = async () => {
         try {
@@ -137,6 +138,10 @@
             }
         } catch(e) { console.log("Servidor offline, operando local."); }
     };
+
+    function abrirModalSenha() { document.getElementById('modal-senha').style.display = 'flex'; document.getElementById('input-pass').focus(); }
+    function fecharModalSenha() { document.getElementById('modal-senha').style.display = 'none'; }
+    function confirmarSenha() { if(document.getElementById('input-pass').value === SENHA_MESTRA) { fecharModalSenha(); ativarPainel(); } else alert("Senha Incorreta!"); }
 
     function abrirModalSenha() { document.getElementById('modal-senha').style.display = 'flex'; document.getElementById('input-pass').focus(); }
     function fecharModalSenha() { document.getElementById('modal-senha').style.display = 'none'; }
@@ -156,7 +161,13 @@
     function previewMoldura(input) {
         if(input.files[0]) {
             const reader = new FileReader();
-            reader.onload = e => { const img = document.getElementById('img-preview'); img.src = e.target.result; img.style.display = 'block'; document.getElementById('label-file').innerText = input.files[0].name; };
+            reader.onload = e => { 
+                const img = document.getElementById('img-preview'); 
+                img.src = e.target.result; 
+                img.style.display = 'block'; 
+                document.getElementById('label-file').innerText = input.files[0].name;
+                molduraBase64 = e.target.result; // Salva o Base64 completo
+            };
             reader.readAsDataURL(input.files[0]);
         }
     }
@@ -170,7 +181,19 @@
         if(!nome || !data) return alert("Preencha campos obrigatórios.");
 
         const estaAtivo = editIdx > -1 ? eventos[editIdx].ativo : false;
-        const novoEv = { nome, formato, livro, data: data.split('-').reverse().join('/'), dataRaw: data, ativo: estaAtivo };
+        
+        // Mantém a moldura antiga se estiver editando e não subiu uma nova
+        const molduraFinal = molduraBase64 || (editIdx > -1 ? eventos[editIdx].moldura : "");
+
+        const novoEv = { 
+            nome, 
+            formato, 
+            livro, 
+            data: data.split('-').reverse().join('/'), 
+            dataRaw: data, 
+            ativo: estaAtivo,
+            moldura: molduraFinal 
+        };
         
         if(editIdx > -1) {
             eventos[editIdx] = novoEv;
@@ -183,26 +206,34 @@
         
         localStorage.setItem('eventos_db', JSON.stringify(eventos));
         
+        // Reset do formulário
         document.getElementById('input-evento').value = "";
         document.getElementById('input-data').value = "";
         document.getElementById('input-livro').checked = false;
         document.getElementById('img-preview').style.display = 'none';
         document.getElementById('label-file').innerText = "CARREGAR MOLDURA PNG";
+        molduraBase64 = ""; // Limpa cache temporário
 
         if(estaAtivo) {
-            await sincronizar(nome, formato, "ONLINE", livro);
+            await sincronizar(nome, formato, "ONLINE", livro, molduraFinal);
         }
         
         renderizarLista();
         checarEventoAtivo();
     }
 
-    async function sincronizar(nome, formato, status, livro) {
+    async function sincronizar(nome, formato, status, livro, moldura = "") {
         try {
             const response = await fetch(`${API_URL}/set-config`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ evento: nome, status: status, formato: formato, livro: livro })
+                body: JSON.stringify({ 
+                    evento: nome, 
+                    status: status, 
+                    formato: formato, 
+                    livro: livro,
+                    moldura: moldura // Passa a string base64 da moldura para o Worker distribuir
+                })
             });
             if(response.ok) {
                 atualizarUIStatus(status === "ONLINE");
@@ -214,9 +245,9 @@
         const on = document.getElementById('server-status').checked;
         const ativo = eventos.find(e => e.ativo);
         if(ativo) {
-            sincronizar(ativo.nome, ativo.formato, on ? "ONLINE" : "OFFLINE", ativo.livro);
+            sincronizar(ativo.nome, ativo.formato, on ? "ONLINE" : "OFFLINE", ativo.livro, ativo.moldura);
         } else {
-            sincronizar("Geral", "10X15V", on ? "ONLINE" : "OFFLINE", false);
+            sincronizar("Geral", "10X15V", on ? "ONLINE" : "OFFLINE", false, "");
         }
     }
 
@@ -255,6 +286,14 @@
         document.getElementById('input-livro').checked = ev.livro;
         document.getElementById('edit-index').value = index;
         
+        if (ev.moldura) {
+            const img = document.getElementById('img-preview');
+            img.src = ev.moldura;
+            img.style.display = 'block';
+            document.getElementById('label-file').innerText = "MOLDURA JÁ CARREGADA";
+            molduraBase64 = ev.moldura;
+        }
+
         document.getElementById('card-form-title').innerText = "EDITAR EVENTO";
         document.getElementById('btn-text').innerText = "SALVAR ALTERAÇÕES";
         document.getElementById('input-evento').focus();
@@ -268,17 +307,12 @@
             localStorage.setItem('eventos_db', JSON.stringify(eventos));
             
             if(foiAtivo) {
-                await sincronizar("Geral", "10X15V", "OFFLINE", false);
+                await sincronizar("Geral", "10X15V", "OFFLINE", false, "");
             }
             
             renderizarLista();
             checarEventoAtivo();
         }
-    }
-
-    async function activarEvento(index) {
-        // Redundância para garantir o clique correto caso o HTML antigo chame com 'c'
-        ativarEvento(index);
     }
 
     async function ativarEvento(index) {
@@ -287,12 +321,12 @@
         if (jaEstavaAtivo) {
             eventos[index].ativo = false;
             localStorage.setItem('eventos_db', JSON.stringify(eventos));
-            await sincronizar("Geral", "10X15V", "OFFLINE", false);
+            await sincronizar("Geral", "10X15V", "OFFLINE", false, "");
         } else {
             eventos.forEach((e, i) => e.ativo = (i === index));
             localStorage.setItem('eventos_db', JSON.stringify(eventos));
             const ev = eventos[index];
-            await sincronizar(ev.nome, ev.formato, "ONLINE", ev.livro);
+            await sincronizar(ev.nome, ev.formato, "ONLINE", ev.livro, ev.moldura);
         }
         
         renderizarLista();

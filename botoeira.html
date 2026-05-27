@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>BOTOEIRA - AUTOGRAPH CAM v3.5</title>
+    <title>BOTOEIRA - PHOTO PRINT v3.6</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
         :root { --neon: #39ff14; --dark: #050505; --danger: #ff3131; --info-blue: #00e5ff; }
@@ -18,44 +18,48 @@
         body.bg-active::before { display:none; }
         @keyframes gridMove{ from{ transform:translateY(0px); } to{ transform:translateY(40px); } }
         .top-logo { position:fixed; top:20px; left:20px; z-index:25; cursor:pointer; user-select:none; }
-        .logo-title { font-family:'Orbitron',sans-serif; color:var(--neon); font-size:24px; font-weight:900; letter-spacing:4px; text-shadow: 0 0 10px var(--neon); }
+        .logo-title { font-family:'Orbitron',sans-serif; color:var(--neon); font-size:22px; font-weight:900; letter-spacing:4px; text-shadow: 0 0 10px var(--neon); }
         .logo-sub { margin-top:2px; color:white; opacity:0.7; letter-spacing:3px; font-size:10px; text-transform:uppercase; }
-        #active-event-name { margin-top:8px; color:var(--neon); font-size:11px; font-weight:bold; letter-spacing:1px; text-shadow: 0 0 5px var(--neon); display:none; }
+        #active-event-name { margin-top:6px; color:var(--neon); font-size:12px; font-weight:bold; letter-spacing:1px; text-shadow: 0 0 5px var(--neon); display:none; }
         #bg-menu { position:fixed; top:80px; left:20px; z-index:100; display:none; flex-direction:column; gap:12px; }
         #bg-menu.active { display:flex; }
         .bg-btn { padding:12px 20px; border-radius:14px; border:1px solid rgba(57,255,20,0.45); background:rgba(0,0,0,0.85); color:white; font-size:14px; font-weight:bold; letter-spacing:1px; cursor:pointer; backdrop-filter:blur(10px); text-align:center; }
         #bg-input { display:none; }
         .screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; }
-        .btn-start { position:relative; width:280px; height:280px; border-radius:50%; border:4px solid var(--neon); background: radial-gradient(circle at center, rgba(57,255,20,0.18), rgba(0,0,0,0.96)); cursor:pointer; overflow:hidden; transition:0.1s; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow: 0 0 30px rgba(57,255,20,0.8), inset 0 0 60px rgba(57,255,20,0.15); backdrop-filter:blur(4px); z-index:30; }
+        .btn-start { position:relative; width:260px; height:260px; border-radius:50%; border:4px solid var(--neon); background: radial-gradient(circle at center, rgba(57,255,20,0.18), rgba(0,0,0,0.96)); cursor:pointer; overflow:hidden; transition:0.1s; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow: 0 0 30px rgba(57,255,20,0.8), inset 0 0 60px rgba(57,255,20,0.15); backdrop-filter:blur(4px); z-index:30; }
         .btn-start::before { content:''; position:absolute; width:250%; height:250%; background:conic-gradient( transparent, rgba(57,255,20,1), rgba(57,255,20,0.25), transparent ); animation:rotateGlow 3s linear infinite; filter:blur(20px); opacity:1; }
         .btn-start::after { content:''; position:absolute; inset:8px; border-radius:50%; background:rgba(0,0,0,0.92); box-shadow: inset 0 0 60px rgba(57,255,20,0.15); }
         .btn-start:active { transform: scale(0.92); }
         .start-content { position:relative; z-index:5; text-align:center; width:100%; }
-        .start-icon { font-size:48px; margin-bottom:10px; filter:drop-shadow(0 0 15px var(--neon)); }
-        .start-title { color:var(--neon); font-family:'Orbitron',sans-serif; font-size:24px; font-weight:900; letter-spacing:2px; text-shadow: 0 0 15px var(--neon); }
+        .start-icon { font-size:42px; margin-bottom:8px; filter:drop-shadow(0 0 15px var(--neon)); }
+        .start-title { color:var(--neon); font-family:'Orbitron',sans-serif; font-size:22px; font-weight:900; letter-spacing:2px; text-shadow: 0 0 15px var(--neon); }
         @keyframes rotateGlow{ 100%{ transform:rotate(360deg); } }
-        .triggered-text { font-family:'Orbitron',sans-serif; font-size: 26px; color: var(--neon); font-weight: 900; text-align: center; text-shadow: 0 0 15px var(--neon); animation:pulse 1s infinite; background: rgba(0,0,0,0.7); padding: 20px; border-radius: 15px; border: 1px solid var(--neon); backdrop-filter: blur(5px);}
+        .triggered-text { font-family:'Orbitron',sans-serif; font-size: 22px; color: var(--neon); font-weight: 900; text-align: center; text-shadow: 0 0 15px var(--neon); animation:pulse 1s infinite; background: rgba(0,0,0,0.7); padding: 20px; border-radius: 15px; border: 1px solid var(--neon); backdrop-filter: blur(5px);}
         @keyframes pulse { 0%,100%{ opacity: 1;} 50%{ opacity: 0.5;} }
-        #monitor-status { position: fixed; bottom: 15px; right: 15px; left: 15px; font-size: 11px; font-family: monospace; color: #39ff14; z-index: 99; pointer-events: none; text-align: center; background: rgba(0,0,0,0.85); padding: 6px; border-radius: 6px; border: 1px solid rgba(57,255,20,0.2); }
-        .options-container { background: rgba(0,0,0,0.8); padding: 30px; border-radius: 20px; border: 1px solid var(--neon); box-shadow: 0 0 30px rgba(0,0,0,0.8); display:flex; flex-direction: column; align-items: center; backdrop-filter: blur(10px); }
-        .copies-label { font-family:'Orbitron',sans-serif; font-size: 16px; color: var(--neon); font-weight: bold; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon); text-align: center; }
-        .print-grid { display: grid; grid-template-columns: 1fr; gap: 15px; width: 100%; min-width: 280px; margin-bottom: 30px; }
-        .btn-print-mobile { padding: 15px; border-radius: 12px; cursor: pointer; background: rgba(0,0,0,0.5); color: white; font-weight: bold; font-size: 16px; transition: 0.3s; backdrop-filter: blur(5px); }
+        #monitor-status { position: fixed; bottom: 15px; right: 15px; left: 15px; font-size: 10px; font-family: monospace; color: #39ff14; z-index: 99; pointer-events: none; text-align: center; background: rgba(0,0,0,0.85); padding: 8px; border-radius: 6px; border: 1px solid rgba(57,255,20,0.2); }
+        .options-container { background: rgba(0,0,0,0.8); padding: 25px; border-radius: 20px; border: 1px solid var(--neon); box-shadow: 0 0 30px rgba(0,0,0,0.8); display:flex; flex-direction: column; align-items: center; backdrop-filter: blur(10px); }
+        .copies-label { font-family:'Orbitron',sans-serif; font-size: 14px; color: var(--neon); font-weight: bold; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon); text-align: center; }
+        .print-grid { display: grid; grid-template-columns: 1fr; gap: 12px; width: 100%; min-width: 260px; margin-bottom: 25px; }
+        .btn-print-mobile { padding: 14px; border-radius: 12px; cursor: pointer; background: rgba(0,0,0,0.5); color: white; font-weight: bold; font-size: 15px; transition: 0.3s; backdrop-filter: blur(5px); }
         .btn-neon-style { border: 2px solid var(--neon); }
         .btn-neon-style.selected { background: var(--neon); color: black; box-shadow: 0 0 20px var(--neon); }
         .btn-blue-style { border: 2px solid var(--info-blue); }
         .btn-blue-style.selected { background: var(--info-blue); color: black; box-shadow: 0 0 20px var(--info-blue); }
-        .btn-send { font-family:'Orbitron',sans-serif; padding: 18px 40px; border-radius: 50px; border: none; background: var(--neon); color: #000; font-size: 20px; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 10px; text-transform: uppercase; animation: bounce 1.5s infinite; box-shadow: 0 0 20px var(--neon); }
+        .btn-send { font-family:'Orbitron',sans-serif; padding: 16px 35px; border-radius: 50px; border: none; background: var(--neon); color: #000; font-size: 18px; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 10px; text-transform: uppercase; animation: bounce 1.5s infinite; box-shadow: 0 0 20px var(--neon); }
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
     </style>
 </head>
 <body>
     <div id="dynamic-bg"></div>
-    <div class="top-logo" id="secret-logo"><div class="logo-title">BOTOEIRA</div><div class="logo-sub">Controle da Câmera</div><div id="active-event-name"></div></div>
+    <div class="top-logo" id="secret-logo">
+        <div class="logo-title">BOTOEIRA</div>
+        <div class="logo-sub">Controle da Câmera</div>
+        <div id="active-event-name"></div>
+    </div>
     <div id="bg-menu"><label class="bg-btn" for="bg-input">🖼 ALTERAR FUNDO</label><div class="bg-btn" onclick="removeBackground()">✖ SEM FUNDO</div></div>
     <input type="file" id="bg-input" accept="image/*"/>
     <div id="screen-start" class="screen"><div class="btn-start" onclick="triggerPhoto()"><div class="start-content"><div class="start-icon">📸</div><div class="start-title">TIRAR FOTO</div></div></div></div>
-    <div id="screen-triggered" class="screen" style="display:none"><div class="triggered-text">CAPTURANDO... 📸</div></div>
+    <div id="screen-triggered" class="screen" style="display:none"><div class="triggered-text" id="status-text">CAPTURANDO... 📸</div></div>
     <div id="screen-options" class="screen" style="display:none"><div class="options-container"><div class="copies-label">COMO DESEJA IMPRIMIR?</div><div class="print-grid"><button class="btn-print-mobile btn-neon-style selected" onclick="selectOption(this,1)">🖨️ 1 Cópia</button><button class="btn-print-mobile btn-neon-style" onclick="selectOption(this,2)">🖨️ 2 Cópias</button><button class="btn-print-mobile btn-blue-style" onclick="selectOption(this,3)">📖 1 Cópia + Guestbook</button><button class="btn-print-mobile btn-blue-style" onclick="selectOption(this,4)">📖 2 Cópias + Guestbook</button></div><button class="btn-send" onclick="sendPrint()">ENVIAR ✈️</button></div></div>
     <div id="monitor-status">SISTEMA PRONTO</div>
 <script>
@@ -63,7 +67,7 @@ const API="https://photoprint-api.maxprimefotovideo.workers.dev";
 let selectedCopiesValue=1;
 const monitor=document.getElementById('monitor-status');
 
-// Sincroniza evento ativo
+// ================== SINCRONIZA EVENTO ATIVO ==================
 async function syncEvento(){
     try{
         const res=await fetch(`${API}/get-all-states?t=${Date.now()}`);
@@ -71,54 +75,67 @@ async function syncEvento(){
             const data=await res.json();
             const el=document.getElementById('active-event-name');
             if(data.config&&data.config.evento&&data.config.evento!=='Geral'){
-                el.style.display='block'; el.innerText=`📸 ${data.config.evento}`;
-            }else{ el.style.display='none'; }
+                el.style.display='block';
+                el.innerText=`📸 ${data.config.evento}`;
+            }else{
+                el.style.display='none';
+            }
         }
     }catch(e){}
 }
-syncEvento(); setInterval(syncEvento,10000);
+syncEvento();
+setInterval(syncEvento,10000);
 
+// Menu secreto
 let cc=0,ct=null;
 document.getElementById('secret-logo').addEventListener('click',()=>{cc++;clearTimeout(ct);ct=setTimeout(()=>{cc=0},2000);if(cc>=7){document.getElementById('bg-menu').classList.toggle('active');cc=0;}});
+
+// Fundo
 document.getElementById('bg-input').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{document.getElementById('dynamic-bg').style.backgroundImage=`url('${ev.target.result}')`;document.getElementById('dynamic-bg').classList.add('active');document.body.classList.add('bg-active');localStorage.setItem('photoprint_bg_mobile',ev.target.result);document.getElementById('bg-menu').classList.remove('active');};r.readAsDataURL(f);});
 function removeBackground(){localStorage.removeItem('photoprint_bg_mobile');document.getElementById('dynamic-bg').style.backgroundImage="";document.getElementById('dynamic-bg').classList.remove('active');document.body.classList.remove('bg-active');document.getElementById('bg-menu').classList.remove('active');}
 (function(){const bg=localStorage.getItem('photoprint_bg_mobile');if(bg){document.getElementById('dynamic-bg').style.backgroundImage=`url('${bg}')`;document.getElementById('dynamic-bg').classList.add('active');document.body.classList.add('bg-active');}})();
 
+// ================== AÇÕES ==================
 async function triggerPhoto(){
-    document.getElementById('screen-start').style.display="none"; document.getElementById('screen-triggered').style.display="flex";
-    monitor.innerText="Disparando..."; localStorage.setItem('booth_state','capturing');
+    document.getElementById('screen-start').style.display="none";
+    document.getElementById('screen-triggered').style.display="flex";
+    document.getElementById('status-text').innerText="CAPTURANDO... 📸";
+    monitor.innerText="Disparando câmera...";
+    localStorage.setItem('booth_state','capturing');
     try{
         await fetch(`${API}/trigger`,{method:'POST'}).catch(()=>{});
         const rs=await fetch(`${API}/set-state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:'capturing'})});
-        if(rs.ok){ monitor.innerText="Aguardando foto..."; waitPhotoFinish(); }
-        else monitor.innerText=`Erro: ${rs.status}`;
-    }catch(e){ monitor.innerText="Falha conexão"; }
+        if(rs.ok){monitor.innerText="Comando enviado. Aguardando foto...";waitPhotoFinish();}
+        else monitor.innerText=`Erro API: ${rs.status}`;
+    }catch(e){monitor.innerText="Falha ao conectar.";}
 }
 
 async function waitPhotoFinish(){
     let t=0;
-    const iv=setInterval(async()=>{ t++;
+    const iv=setInterval(async()=>{t++;
         try{
             const res=await fetch(`${API}/get-state?t=${Date.now()}`);
-            const d=await res.json(); monitor.innerText=`Estado: ${d.state} (${t}s)`;
-            if(d.state==='options'){ clearInterval(iv); document.getElementById('screen-triggered').style.display="none"; document.getElementById('screen-options').style.display="flex"; localStorage.setItem('booth_state','options'); monitor.innerText="✅ Pronto!"; }
-            if(t>=30){ clearInterval(iv); monitor.innerText="⏰ Timeout"; resetUI(); }
-        }catch(e){ monitor.innerText="Lendo..."; }
+            const d=await res.json();
+            monitor.innerText=`Aguardando foto... (${t}s) | Estado: ${d.state}`;
+            if(d.state==='options'){clearInterval(iv);document.getElementById('screen-triggered').style.display="none";document.getElementById('screen-options').style.display="flex";localStorage.setItem('booth_state','options');monitor.innerText="✅ Foto pronta! Escolha a impressão.";}
+            if(t>=30){clearInterval(iv);monitor.innerText="⏰ Timeout.";resetUI();}
+        }catch(e){monitor.innerText=`Tentando... (${t}s)`;}
     },1000);
 }
 
-function resetUI(){ document.getElementById('screen-triggered').style.display="none"; document.getElementById('screen-options').style.display="none"; document.getElementById('screen-start').style.display="flex"; localStorage.setItem('booth_state','start'); }
-function selectOption(b,v){ document.querySelectorAll('.btn-print-mobile').forEach(x=>x.classList.remove('selected')); b.classList.add('selected'); selectedCopiesValue=v; }
+function resetUI(){document.getElementById('screen-triggered').style.display="none";document.getElementById('screen-options').style.display="none";document.getElementById('screen-start').style.display="flex";localStorage.setItem('booth_state','start');}
+function selectOption(b,v){document.querySelectorAll('.btn-print-mobile').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');selectedCopiesValue=v;}
 
 async function sendPrint(){
-    monitor.innerText="Enviando...";
+    monitor.innerText="Enviando comando de impressão...";
     try{
         await fetch(`${API}/trigger-print`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({copias:selectedCopiesValue})});
         await fetch(`${API}/set-state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:'start'})}).catch(()=>{});
         localStorage.setItem('booth_state','start');
         document.getElementById('screen-options').innerHTML='<div class="triggered-text">ENVIADO! ✅</div>';
+        monitor.innerText="Impressão enviada!";
         setTimeout(()=>location.reload(),2000);
-    }catch(e){ alert("Erro"); }
+    }catch(e){monitor.innerText="Erro ao enviar";alert("Erro ao enviar impressão.");}
 }
 </script>
 </body>

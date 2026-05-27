@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT - GALLERY v5.2</title>
+    <title>PHOTO PRINT - GALLERY v5.3</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -98,6 +98,7 @@
     let todasFotos = [];
     let chavesLocais = new Set();
     let eventoAtual = "";
+    let eventoIdAtual = "";
     let formatoAtual = "";
     let printQueue = [];
     let isPrinting = false;
@@ -120,17 +121,19 @@
 
     async function atualizar() {
         try {
-            // Busca estado completo
+            // Usa /get-all-states para obter todos os dados
             const resStatus = await fetch(`${API}/get-all-states?t=${Date.now()}`);
             const config = await resStatus.json();
             
             const novoEvento = (config.config && config.config.evento) ? config.config.evento : "Geral";
+            const novoEventoId = (config.config && config.config.eventoId) ? config.config.eventoId : "";
             formatoAtual = (config.config && config.config.formato) ? config.config.formato.toUpperCase().trim() : "10X15V";
             
             // Se mudou o evento, limpa
-            if (eventoAtual !== novoEvento) {
-                debug(`Evento: ${eventoAtual} -> ${novoEvento}`);
+            if (eventoIdAtual !== novoEventoId) {
+                debug(`Evento: ${eventoAtual} -> ${novoEvento} (ID: ${novoEventoId})`);
                 eventoAtual = novoEvento;
+                eventoIdAtual = novoEventoId;
                 todasFotos = [];
                 chavesLocais.clear();
                 printQueue = []; 
@@ -141,27 +144,34 @@
             document.getElementById('nome-evento').innerText = eventoAtual;
             document.getElementById('tipo-formato').innerText = traduzirFormato(formatoAtual);
 
-            // Busca fotos
+            if (!eventoIdAtual) {
+                debug('Nenhum evento ativo');
+                return;
+            }
+
+            // Busca fotos usando o nome do evento
             const resF = await fetch(`${API}/list-photos?evento=${encodeURIComponent(eventoAtual)}&t=${Date.now()}`);
             const dados = await resF.json();
             
             debug(`${dados.length} arquivos em "${eventoAtual}"`);
             
-            // Filtra JPGs
-            const fotosJpg = Array.isArray(dados) ? dados.filter(f => {
+            // Aceita tanto JPG quanto PNG (fotos)
+            const fotosValidas = Array.isArray(dados) ? dados.filter(f => {
                 const k = f.key.toLowerCase();
-                return !k.endsWith('.png');
+                // Ignora molduras (arquivos que contém "moldura" no nome ou no caminho)
+                if (k.includes('moldura')) return false;
+                // Aceita .jpg e .png
+                return k.endsWith('.jpg') || k.endsWith('.png') || k.endsWith('.jpeg');
             }) : [];
             
-            debug(`${fotosJpg.length} JPGs encontrados`);
+            debug(`${fotosValidas.length} fotos válidas`);
             
-            const novasFotos = fotosJpg.filter(f => !chavesLocais.has(f.key));
+            const novasFotos = fotosValidas.filter(f => !chavesLocais.has(f.key));
 
             if (novasFotos.length > 0) {
-                debug(`+${novasFotos.length} novas fotos`);
+                debug(`+${novasFotos.length} novas`);
                 for (let f of novasFotos) {
                     const keyLower = f.key.toLowerCase();
-                    // A URL da foto usa o key completo
                     const urlCompleta = `${API}/photo?key=${encodeURIComponent(f.key)}`;
                     
                     let copiasDoCard = 1;
@@ -187,7 +197,7 @@
                     }
                 }
                 render();
-                debug(`Total: ${todasFotos.length} fotos na grade`);
+                debug(`Total: ${todasFotos.length} fotos`);
             }
             primeiraCarga = false;
         } catch(e) { 
@@ -200,7 +210,7 @@
         if (todasFotos.length === 0) {
             grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:#555;">
                 <i class="fa-solid fa-camera-retro" style="font-size:64px;display:block;margin-bottom:20px;opacity:0.3;"></i>
-                Nenhuma foto ainda. Tire uma foto na cabine!
+                Nenhuma foto ainda
             </div>`;
             return;
         }
@@ -209,7 +219,7 @@
                 <span class="badge">#${f.id}</span>
                 ${f.copias > 1 ? `<span class="print-badge"><i class="fa-solid fa-print"></i> ${f.copias}x</span>` : ''}
                 ${f.livro ? `<span class="guestbook-badge"><i class="fa-solid fa-book-open"></i> Livro de Assinaturas</span>` : ''}
-                <img src="${f.url}" loading="lazy" onerror="this.style.display='none';this.parentElement.style.minHeight='150px';">
+                <img src="${f.url}" loading="lazy" onerror="this.parentElement.style.minHeight='150px';this.style.display='none';">
             </div>
         `).join('');
     }

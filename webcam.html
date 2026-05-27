@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>WEBCAM - AUTOGRAPH CAM v8.7</title>
+<title>WEBCAM - AUTOGRAPH CAM v8.8</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
@@ -15,10 +15,8 @@ body{
     background: radial-gradient(circle at top, rgba(57,255,20,0.10), transparent 35%),
                 radial-gradient(circle at bottom right, rgba(57,255,20,0.08), transparent 30%),
                 linear-gradient(135deg, #020202 0%, #050505 40%, #071107 100%);
-    color:white;
-    font-family:Arial,Helvetica,sans-serif;
-    width:100vw; height:100vh;
-    overflow:hidden; position:relative;
+    color:white; font-family:Arial,Helvetica,sans-serif;
+    width:100vw; height:100vh; overflow:hidden; position:relative;
 }
 
 #dynamic-bg{ position:fixed; inset:0; z-index:0; background-size:cover; background-position:center; background-repeat:no-repeat; opacity:0; transition:opacity 0.6s ease; }
@@ -38,7 +36,6 @@ body.bg-active .bg-brand{ display:none; }
 .logo-sub{ margin-top:4px; color:white; opacity:0.7; letter-spacing:5px; font-size:13px; text-transform:uppercase; }
 
 #active-event-name { position: fixed; top: 130px; left: 50px; z-index: 26; font-family: 'Orbitron', sans-serif; color: var(--neon); font-size: 16px; font-weight: 700; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon); background: rgba(0,0,0,0.7); padding: 8px 16px; border-radius: 8px; border: 1px solid var(--neon); display: none; }
-
 #debug-info { position: fixed; bottom: 10px; right: 10px; z-index: 999; background: rgba(0,0,0,0.8); color: var(--neon); font-size: 10px; padding: 5px 10px; border-radius: 5px; font-family: monospace; max-width: 350px; word-break: break-all; }
 
 .corner-glow{ position:fixed; width:420px; height:420px; border-radius:50%; background:rgba(57,255,20,0.08); filter:blur(90px); z-index:0; }
@@ -85,33 +82,17 @@ body.bg-active .corner-glow{ display:none; }
 <div class="corner-glow corner-1"></div>
 <div class="corner-glow corner-2"></div>
 
-<div class="bg-brand">
-    <div class="bg-brand-title">AUTOGRAPH CAM</div>
-    <div class="bg-brand-sub">Colecionando momentos</div>
-</div>
-
-<div class="top-logo">
-    <div class="logo-title" id="secret-logo">AUTOGRAPH CAM</div>
-    <div class="logo-sub">Colecionando momentos</div>
-</div>
+<div class="bg-brand"><div class="bg-brand-title">AUTOGRAPH CAM</div><div class="bg-brand-sub">Colecionando momentos</div></div>
+<div class="top-logo"><div class="logo-title" id="secret-logo">AUTOGRAPH CAM</div><div class="logo-sub">Colecionando momentos</div></div>
 
 <div id="active-event-name"></div>
 <div id="debug-info">INICIANDO...</div>
 
-<div id="bg-menu">
-    <label class="bg-btn" for="bg-input">🖼 ALTERAR FUNDO</label>
-    <div class="bg-btn" onclick="removeBackground()">✖ SEM FUNDO</div>
-</div>
+<div id="bg-menu"><label class="bg-btn" for="bg-input">🖼 ALTERAR FUNDO</label><div class="bg-btn" onclick="removeBackground()">✖ SEM FUNDO</div></div>
 <input type="file" id="bg-input" accept="image/*"/>
 
 <div id="screen-start" class="screen">
-    <div class="btn-start" id="main-start-btn">
-        <div class="start-content">
-            <div class="start-icon">📸</div>
-            <div class="start-title">AUTOGRAPH CAM</div>
-            <div class="start-subtitle">Aguardando comando...</div>
-        </div>
-    </div>
+    <div class="btn-start"><div class="start-content"><div class="start-icon">📸</div><div class="start-title">AUTOGRAPH CAM</div><div class="start-subtitle">Aguardando comando...</div></div></div>
 </div>
 
 <div id="screen-camera" class="screen" style="display:none; z-index:40;">
@@ -119,9 +100,7 @@ body.bg-active .corner-glow{ display:none; }
         <video id="camera-feed" autoplay playsinline muted></video>
         <canvas id="camera-canvas" style="display:none;"></canvas>
         <div id="fun-text" class="fun-text" style="display:none;"></div>
-        <div id="options-overlay" style="display:none;">
-            <div class="options-text">ACESSE O TOTEM PARA IMPRIMIR SUA FOTO</div>
-        </div>
+        <div id="options-overlay" style="display:none;"><div class="options-text">ACESSE O TOTEM PARA IMPRIMIR SUA FOTO</div></div>
     </div>
 </div>
 
@@ -130,506 +109,203 @@ body.bg-active .corner-glow{ display:none; }
 </div>
 
 <script>
-// ==================== DEBUG ====================
-function debug(msg) {
-    console.log('[WEBCAM]', msg);
-    const el = document.getElementById('debug-info');
-    if (el) el.innerText = msg;
-}
-
-// ==================== CONSTANTES ====================
 const API_BASE = 'https://photoprint-api.maxprimefotovideo.workers.dev';
-const bgInput = document.getElementById('bg-input');
-const dynamicBg = document.getElementById('dynamic-bg');
-const bgMenu = document.getElementById('bg-menu');
-const secretLogo = document.getElementById('secret-logo');
 const videoFeed = document.getElementById('camera-feed');
 const canvasCapture = document.getElementById('camera-canvas');
 const ctx = canvasCapture.getContext('2d');
 const funText = document.getElementById('fun-text');
 const optionsOverlay = document.getElementById('options-overlay');
 
-let stream = null;
-let lastState = 'start';
-let captureInProgress = false;
-let initialLoad = true;
-let eventoAtual = null;
-let formatoAtual = '10X15V';
-let molduraUrl = null;
-let cameraOk = false;
+let stream = null, lastState = 'start', captureInProgress = false, initialLoad = true;
+let eventoAtual = null, eventoId = null, formatoAtual = '10X15V', molduraUrl = null, cameraOk = false;
 
-const FORMATOS = {
-    "TIRINHA": { w: 600, h: 1800, key: "TIRINHA" },
-    "POLAROID": { w: 1200, h: 1500, key: "POLAROID" },
-    "10X15H": { w: 1800, h: 1200, key: "10X15H" },
-    "10X15V": { w: 1200, h: 1800, key: "10X15V" }
-};
+const FORMATOS = { "TIRINHA":{w:600,h:1800},"POLAROID":{w:1200,h:1500},"10X15H":{w:1800,h:1200},"10X15V":{w:1200,h:1800} };
+
+function debug(msg){ console.log('[WEBCAM]',msg); const el=document.getElementById('debug-info'); if(el)el.innerText=msg; }
 
 // ==================== CÂMERA ====================
-async function initCamera() {
-    try {
-        stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: 'user', width: 1920, height: 1080 } 
-        });
-        videoFeed.srcObject = stream;
-        videoFeed.pause(); 
-        cameraOk = true;
-        debug('✅ Câmera OK');
-        return true;
-    } catch (err) {
-        debug('❌ Câmera: ' + err.message);
-        cameraOk = false;
-        return false;
-    }
+async function initCamera(){
+    try{
+        stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:1920,height:1080}});
+        videoFeed.srcObject=stream;
+        // NÃO pausar - deixa o vídeo pronto para uso
+        cameraOk=true; debug('✅ Câmera OK');
+    }catch(err){ debug('❌ Câmera: '+err.message); cameraOk=false; }
 }
 
-function resumeCamera() {
-    if (stream && videoFeed.paused) {
-        videoFeed.play().catch(e => debug('Erro play: ' + e.message));
-    }
-}
+function resumeCamera(){ if(stream && videoFeed.paused) videoFeed.play().catch(e=>debug('play err: '+e)); }
+function pauseCamera(){ if(stream && !videoFeed.paused) videoFeed.pause(); }
 
-function pauseCamera() {
-    if (stream && !videoFeed.paused) {
-        videoFeed.pause();
-    }
-}
-
-// ==================== SINCRONIZAÇÃO VIA ENDPOINT CONSOLIDADO ====================
-async function syncEvento() {
-    try {
-        // Consultando o endpoint mestre que traz todas as tabelas e configurações sincronizadas
-        const res = await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`);
-        if (res.ok) {
-            const data = await res.json();
-            
-            // Pega a configuração do evento ativo retornada do banco D1
-            if (data.config && data.config.evento && data.config.evento !== 'Geral') {
-                if (eventoAtual !== data.config.evento || formatoAtual !== data.config.formato) {
-                    eventoAtual = data.config.evento;
-                    formatoAtual = (data.config.formato || '10X15V').toUpperCase().trim();
-                    debug(`📡 Evento Ativo Detectado: ${eventoAtual} | Formato: ${formatoAtual}`);
-                    updateEventoUI();
-                    await loadMoldura();
-                }
+// ==================== SINCRONIZAÇÃO ====================
+async function syncEvento(){
+    try{
+        const res=await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`);
+        if(res.ok){
+            const data=await res.json();
+            if(data.config && data.config.evento && data.config.evento!=='Geral'){
+                eventoAtual=data.config.evento;
+                eventoId=data.config.eventoId;
+                formatoAtual=(data.config.formato||'10X15V').toUpperCase().trim();
+                debug(`📡 Evento: ${eventoAtual} | ID: ${eventoId} | ${formatoAtual}`);
+                updateEventoUI();
+                await loadMoldura();
                 return;
             }
         }
-    } catch(e) {
-        debug('⚠️ Erro ao sincronizar evento via get-all-states: ' + e.message);
-    }
-    
-    // Fallback LocalStorage (Painel) se a API falhar ou estiver em Geral
-    try {
-        const db = localStorage.getItem('eventos_db');
-        if (db) {
-            const eventos = JSON.parse(db);
-            const ativo = eventos.find(e => e.ativo);
-            if (ativo && ativo.nome !== eventoAtual) {
-                eventoAtual = ativo.nome;
-                formatoAtual = (ativo.formato || '10X15V').toUpperCase().trim();
-                debug(`💾 LocalStorage Fallback: ${eventoAtual} | ${formatoAtual}`);
-                updateEventoUI();
-                await loadMoldura();
-            }
+    }catch(e){ debug('⚠️ sync err: '+e.message); }
+    // Fallback
+    try{
+        const db=localStorage.getItem('eventos_db');
+        if(db){ const evs=JSON.parse(db); const at=evs.find(e=>e.ativo);
+            if(at){ eventoAtual=at.nome; formatoAtual=(at.formato||'10X15V').toUpperCase().trim(); updateEventoUI(); await loadMoldura(); }
         }
-    } catch(e) {}
+    }catch(e){}
 }
 
-function updateEventoUI() {
-    const el = document.getElementById('active-event-name');
-    if (eventoAtual) {
-        el.style.display = 'block';
-        el.innerText = `🎉 ${eventoAtual} (${formatoAtual})`;
-    } else {
-        el.style.display = 'none';
-    }
+function updateEventoUI(){
+    const el=document.getElementById('active-event-name');
+    if(eventoAtual){ el.style.display='block'; el.innerText=`🎉 ${eventoAtual} | ${formatoAtual}`; }
+    else el.style.display='none';
 }
 
-// ==================== BUSCA E CARREGAMENTO DA MOLDURA R2 ====================
-async function loadMoldura() {
-    if (!eventoAtual) return;
-    debug(` Moldura: Escaneando arquivos do evento no R2...`);
-    
-    try {
-        const res = await fetch(`${API_BASE}/list-photos?evento=${encodeURIComponent(eventoAtual)}&t=${Date.now()}`);
-        const arquivos = await res.json();
-        
-        let molduraKey = null;
-        
-        // Prioridade 1: Arquivos que contêm a string 'moldura' com extensão .png
-        molduraKey = arquivos.find(f => 
-            f.key.toLowerCase().includes('moldura') && f.key.toLowerCase().endsWith('.png')
-        );
-        
-        // Prioridade 2: Qualquer .png solto na pasta do evento ativo
-        if (!molduraKey) {
-            molduraKey = arquivos.find(f => f.key.toLowerCase().endsWith('.png'));
-        }
-        
-        if (molduraKey) {
-            molduraUrl = `${API_BASE}/photo/${encodeURIComponent(molduraKey.key)}`;
-            debug(`✅ Moldura Encontrada com Sucesso: ${molduraKey.key}`);
-        } else {
-            molduraUrl = null;
-            debug('ℹ️ Nenhuma moldura PNG mapeada para este evento.');
-        }
-    } catch(e) {
-        molduraUrl = null;
-        debug('❌ Falha ao processar lista de arquivos da moldura: ' + e.message);
-    }
+async function loadMoldura(){
+    if(!eventoId){ debug('ℹ️ Sem eventoId para moldura'); return; }
+    const molduraKey=`eventos/${eventoId}/moldura.png`;
+    debug(`🖼️ Buscando: ${molduraKey}`);
+    try{
+        const check=await fetch(`${API_BASE}/photo?key=${encodeURIComponent(molduraKey)}`);
+        if(check.ok){ molduraUrl=`${API_BASE}/photo?key=${encodeURIComponent(molduraKey)}`; debug('✅ Moldura encontrada'); }
+        else { molduraUrl=null; debug('ℹ️ Sem moldura'); }
+    }catch(e){ molduraUrl=null; }
 }
 
-// ==================== CAPTURA DA FOTO ====================
-function capturePhoto() {
-    if (captureInProgress) return;
-    captureInProgress = true;
-    
+// ==================== CAPTURA ====================
+function capturePhoto(){
+    if(captureInProgress)return;
+    captureInProgress=true;
     resumeCamera();
-    videoFeed.style.display = 'block';
-    canvasCapture.style.display = 'none';
-    optionsOverlay.style.display = 'none';
-    
-    funText.style.display = 'block';
-    funText.innerHTML = "✨ PREPARE-SE! ✨<br>😜🕺💃";
-    debug('📸 Contagem iniciada');
-    
-    setTimeout(() => {
-        let countdown = 3;
-        funText.innerHTML = `😁 SORRIA! 😁<br>⏳ ${countdown}`;
-        
-        const timer = setInterval(() => {
-            countdown--;
-            if (countdown > 0) {
-                funText.innerHTML = `😁 SORRIA! 😁<br>⏳ ${countdown}`;
-            } else {
-                funText.style.display = 'none';
-                clearInterval(timer);
-                
-                canvasCapture.width = videoFeed.videoWidth || 1920;
-                canvasCapture.height = videoFeed.videoHeight || 1080;
-                
-                // Grava o espelhamento exato do Feed
-                ctx.save();
-                ctx.scale(-1, 1);
-                ctx.drawImage(videoFeed, -canvasCapture.width, 0, canvasCapture.width, canvasCapture.height);
-                ctx.restore();
-                
-                videoFeed.style.display = 'none';
-                canvasCapture.style.display = 'block';
-                pauseCamera();
-                
+    videoFeed.style.display='block'; canvasCapture.style.display='none'; optionsOverlay.style.display='none';
+    funText.style.display='block'; funText.innerHTML="✨ PREPARE-SE! ✨<br>😜🕺💃";
+    debug('📸 Contagem');
+    setTimeout(()=>{
+        let cd=3; funText.innerHTML=`😁 SORRIA! 😁<br>⏳ ${cd}`;
+        const t=setInterval(()=>{ cd--;
+            if(cd>0)funText.innerHTML=`😁 SORRIA! 😁<br>⏳ ${cd}`;
+            else{ funText.style.display='none'; clearInterval(t);
+                canvasCapture.width=videoFeed.videoWidth||1920; canvasCapture.height=videoFeed.videoHeight||1080;
+                ctx.save(); ctx.scale(-1,1); ctx.drawImage(videoFeed,-canvasCapture.width,0,canvasCapture.width,canvasCapture.height); ctx.restore();
+                videoFeed.style.display='none'; canvasCapture.style.display='block'; pauseCamera();
                 debug('✅ Foto capturada');
-                
-                // CORREÇÃO: Altera o estado do Worker para "options" destravando a Botoeira na hora
-                fetch(`${API_BASE}/set-state`, { 
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ state: 'options' })
-                }).then(() => {
-                    debug('🚀 Worker atualizado para options -> Celular Liberado');
-                }).catch(()=>{});
-
-                captureInProgress = false;
-                
-                optionsOverlay.style.display = 'block';
-                optionsOverlay.querySelector('.options-text').innerText = 'ACESSE O CELULAR PARA IMPRIMIR SUA FOTO';
+                fetch(`${API_BASE}/set-state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:'options'})}).catch(()=>{});
+                captureInProgress=false;
+                optionsOverlay.style.display='block'; optionsOverlay.querySelector('.options-text').innerText='ACESSE O TOTEM PARA IMPRIMIR SUA FOTO';
             }
-        }, 1000);
-    }, 4000);
+        },1000);
+    },4000);
 }
 
-// ==================== COMPOSIÇÃO COM MOLDURA E UPLOAD ====================
-async function composeAndUpload(copias) {
-    debug(`🖨️ Mesclando imagem com a moldura ativa...`);
-    
-    const fmt = FORMATOS[formatoAtual] || FORMATOS['10X15V'];
-    const outCanvas = document.createElement('canvas');
-    outCanvas.width = fmt.w;
-    outCanvas.height = fmt.h;
-    const outCtx = outCanvas.getContext('2d');
-    
-    outCtx.fillStyle = 'white';
-    outCtx.fillRect(0, 0, outCanvas.width, outCanvas.height);
-    
-    const fotoImg = await imageFromCanvas(canvasCapture);
-    const scale = Math.max(outCanvas.width / fotoImg.width, outCanvas.height / fotoImg.height);
-    const w = fotoImg.width * scale;
-    const h = fotoImg.height * scale;
-    outCtx.drawImage(fotoImg, (outCanvas.width - w) / 2, (outCanvas.height - h) / 2, w, h);
-    
-    // Injeção da moldura carregada dinamicamente
-    if (molduraUrl) {
-        try {
-            const molduraImg = await loadImage(molduraUrl);
-            outCtx.drawImage(molduraImg, 0, 0, outCanvas.width, outCanvas.height);
-            debug('✅ Moldura integrada no arquivo final de impressão.');
-        } catch(e) {
-            debug('⚠️ Erro ao renderizar a moldura de overlay: ' + e.message);
-        }
-    }
-    
-    const blob = await new Promise(r => outCanvas.toBlob(r, 'image/jpeg', 0.95));
-    await uploadBlob(blob, copias);
+// ==================== COMPOSIÇÃO E UPLOAD ====================
+async function composeAndUpload(copias){
+    debug(`🖨️ Compondo ${copias} cópias...`);
+    const fmt=FORMATOS[formatoAtual]||FORMATOS['10X15V'];
+    const oc=document.createElement('canvas'); oc.width=fmt.w; oc.height=fmt.h; const octx=oc.getContext('2d');
+    octx.fillStyle='white'; octx.fillRect(0,0,oc.width,oc.height);
+    const fi=await imgFromCanvas(canvasCapture);
+    const sc=Math.max(oc.width/fi.width,oc.height/fi.height); const w=fi.width*sc,h=fi.height*sc;
+    octx.drawImage(fi,(oc.width-w)/2,(oc.height-h)/2,w,h);
+    if(molduraUrl){ try{ const mi=await loadImg(molduraUrl); octx.drawImage(mi,0,0,oc.width,oc.height); debug('✅ Moldura aplicada'); }catch(e){ debug('⚠️ Moldura falhou'); } }
+    const blob=await new Promise(r=>oc.toBlob(r,'image/jpeg',0.95));
+    await uploadBlob(blob,copias);
 }
 
-function imageFromCanvas(canvas) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = reject;
-        img.src = canvas.toDataURL('image/jpeg', 0.92);
-    });
+function imgFromCanvas(c){ return new Promise((rs,rj)=>{ const i=new Image(); i.onload=()=>rs(i); i.onerror=rj; i.src=c.toDataURL('image/jpeg',0.92); }); }
+function loadImg(s){ return new Promise((rs,rj)=>{ const i=new Image(); i.crossOrigin='anonymous'; i.onload=()=>rs(i); i.onerror=rj; i.src=s+'?t='+Date.now(); }); }
+
+async function uploadBlob(blob,copias){
+    if(!eventoId){ debug('❌ Sem eventoId'); return; }
+    let nome='foto.jpg',cf=1;
+    if(copias===2){ nome='foto_2c.jpg'; cf=2; } else if(copias===3){ nome='foto_2c_guestbook.jpg'; cf=2; } else if(copias===4){ nome='foto_3c_guestbook.jpg'; cf=3; }
+    const fd=new FormData(); fd.append('foto',blob,nome); fd.append('eventoId',eventoId); fd.append('timestamp',String(Date.now()));
+    debug(`⬆️ Upload: ${nome} (${cf} cópias) -> eventoId=${eventoId}`);
+    try{
+        const res=await fetch(`${API_BASE}/salvar-foto`,{method:'POST',body:fd});
+        if(res.ok)debug('✅ Upload OK'); else debug('❌ Upload: '+res.status);
+    }catch(e){ debug('❌ Upload err: '+e.message); }
 }
 
-function loadImage(src) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => resolve(img);
-        img.onerror = reject;
-        img.src = src + '?t=' + Date.now();
-    });
+// ==================== AGUARDAR TOTEM ====================
+async function waitForPrint(){
+    debug('⏳ Aguardando totem...');
+    for(let i=0;i<120;i++){
+        try{
+            const res=await fetch(`${API_BASE}/check-print?t=${Date.now()}`);
+            if(res.ok){ const d=await res.json(); if(d.printTriggered){ debug(`🖨️ ${d.copias} cópia(s)`); return d.copias||1; } }
+        }catch(e){}
+        await new Promise(r=>setTimeout(r,500));
+    }
+    debug('⏰ Timeout'); return null;
 }
 
-// ==================== UPLOAD PARA O R2 ====================
-async function uploadBlob(blob, copias) {
-    if (!eventoAtual) {
-        debug('❌ Sem evento para upload');
-        return;
-    }
-    
-    let nomeArquivo = 'foto.jpg';
-    let copiasFisicas = 1;
-    
-    if (copias === 1) {
-        nomeArquivo = 'foto.jpg';
-        copiasFisicas = 1;
-    } else if (copias === 2) {
-        nomeArquivo = 'foto_2c.jpg';
-        copiasFisicas = 2;
-    } else if (copias === 3) {
-        nomeArquivo = 'foto_2c_guestbook.jpg';
-        copiasFisicas = 2;
-    } else if (copias === 4) {
-        nomeArquivo = 'foto_3c_guestbook.jpg';
-        copiasFisicas = 3;
-    }
-    
-    const fd = new FormData();
-    fd.append('file', blob, nomeArquivo);
-    fd.append('evento', eventoAtual);
-    fd.append('copias', copiasFisicas.toString());
-    
-    debug(`⬆️ Enviando ao R2: ${nomeArquivo} (${copiasFisicas} cópias)`);
-    
-    try {
-        const res = await fetch(`${API_BASE}/upload`, { method: 'POST', body: fd });
-        if (res.ok) {
-            debug('✅ Envio concluído com sucesso!');
-        } else {
-            debug('❌ Erro HTTP no upload: ' + res.status);
-        }
-    } catch(e) {
-        debug('❌ Falha na conexão de upload: ' + e.message);
-    }
-}
-
-// ==================== AGUARDAR SELEÇÃO DE IMPRESSÃO ====================
-async function waitForPrint() {
-    debug('⏳ Aguardando comando de impressão vindo do celular...');
-    
-    // Loop de verificação rápida do clique de envio da botoeira
-    for (let i = 0; i < 120; i++) {
-        try {
-            const res = await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`);
-            const data = await res.json();
-            
-            if (data.print && data.print.printTriggered) {
-                debug(`🖨️ Sinal capturado! Imprimir ${data.print.copias} cópia(s)`);
-                return data.print.copias || 1;
-            }
-        } catch(e) {}
-        await new Promise(r => setTimeout(r, 500));
-    }
-    
-    debug('⏰ Tempo esgotado para escolha da cópia.');
-    return null;
-}
-
-// ==================== CICLO COMPLETO ====================
-async function finishCycle() {
-    const copias = await waitForPrint();
-    if (!copias) {
-        resetToStart();
-        return;
-    }
-    
-    optionsOverlay.querySelector('.options-text').innerText = 'Compondo foto final...';
+async function finishCycle(){
+    const copias=await waitForPrint();
+    if(!copias){ resetToStart(); return; }
+    optionsOverlay.querySelector('.options-text').innerText='Compondo foto...';
     await composeAndUpload(copias);
-    
-    // Limpa gatilho de impressão para fechar o ciclo limpo
-    await fetch(`${API_BASE}/reset-session`, { method: 'POST' }).catch(()=>{});
-    
+    await fetch(`${API_BASE}/clear-print`,{method:'POST'}).catch(()=>{});
     showThanks();
 }
 
-function showThanks() {
-    document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
-    document.getElementById('screen-thanks').style.display = 'flex';
-    document.getElementById('thanks-text').innerHTML = "🖨️ AGUARDE A IMPRESSÃO...";
-    
-    setTimeout(() => {
-        document.getElementById('thanks-text').innerHTML = "💖 OBRIGADO! 💖<br>APROVEITE SUA FOTO!";
-        setTimeout(resetToStart, 2500);
-    }, 2500);
+function showThanks(){
+    document.querySelectorAll('.screen').forEach(e=>e.style.display='none');
+    document.getElementById('screen-thanks').style.display='flex';
+    document.getElementById('thanks-text').innerHTML="🖨️ AGUARDE A IMPRESSÃO...";
+    setTimeout(()=>{ document.getElementById('thanks-text').innerHTML="💖 OBRIGADO! 💖<br>APROVEITE SUA FOTO!"; setTimeout(resetToStart,2500); },2500);
 }
 
-function resetToStart() {
-    document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
-    document.getElementById('screen-start').style.display = 'flex';
-    ctx.clearRect(0, 0, canvasCapture.width, canvasCapture.height);
-    captureInProgress = false;
-    pauseCamera();
-    lastState = 'start';
-    
-    fetch(`${API_BASE}/set-state`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ state: 'start' })
-    }).catch(()=>{});
-    
-    debug('🏁 Reset completo - Pronto para o próximo');
+function resetToStart(){
+    document.querySelectorAll('.screen').forEach(e=>e.style.display='none');
+    document.getElementById('screen-start').style.display='flex';
+    ctx.clearRect(0,0,canvasCapture.width,canvasCapture.height);
+    captureInProgress=false; pauseCamera(); lastState='start';
+    fetch(`${API_BASE}/set-state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:'start'})}).catch(()=>{});
+    debug('🏁 Reset');
 }
 
 // ==================== MÁQUINA DE ESTADO ====================
-function updateScreenState(state) {
-    debug(`🔄 Alteração de estado interno: ${lastState} → ${state}`);
-    
-    if (state === lastState && state !== 'capturing') return;
-    
-    if (state === 'start' && lastState === 'options') {
-        finishCycle();
-        lastState = state;
-        return;
-    }
-    
-    if (state === 'capturing' && lastState === 'options') return;
-    
-    document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
-    
-    if (state === 'capturing') {
-        document.getElementById('screen-camera').style.display = 'flex';
-        capturePhoto();
-    } else if (state === 'options') {
-        document.getElementById('screen-camera').style.display = 'flex';
-        videoFeed.style.display = 'none';
-        canvasCapture.style.display = 'block';
-        funText.style.display = 'none';
-        optionsOverlay.style.display = 'block';
-        pauseCamera();
-    } else {
-        document.getElementById('screen-start').style.display = 'flex';
-        pauseCamera();
-    }
-    
-    lastState = state;
+function updateScreenState(state){
+    if(state===lastState&&state!=='capturing')return;
+    if(state==='start'&&lastState==='options'){ finishCycle(); lastState=state; return; }
+    if(state==='capturing'&&lastState==='options')return;
+    document.querySelectorAll('.screen').forEach(e=>e.style.display='none');
+    if(state==='capturing'){ document.getElementById('screen-camera').style.display='flex'; capturePhoto(); }
+    else if(state==='options'){ document.getElementById('screen-camera').style.display='flex'; videoFeed.style.display='none'; canvasCapture.style.display='block'; funText.style.display='none'; optionsOverlay.style.display='block'; pauseCamera(); }
+    else{ document.getElementById('screen-start').style.display='flex'; pauseCamera(); }
+    lastState=state;
 }
 
-// ==================== POLLING ====================
-async function pollServerState() {
-    try {
-        const res = await fetch(`${API_BASE}/get-state?t=${Date.now()}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        
-        if (initialLoad) {
-            initialLoad = false;
-            if (data.state !== 'start') {
-                debug(`🧹 Limpando estado residual: ${data.state}`);
-                await fetch(`${API_BASE}/set-state`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ state: 'start' })
-                });
-                return;
-            }
-        }
-        
-        if (data.state && data.state !== lastState) {
-            updateScreenState(data.state);
-        }
-    } catch(e) {}
+async function pollServerState(){
+    try{
+        const res=await fetch(`${API_BASE}/get-state?t=${Date.now()}`);
+        if(!res.ok)return;
+        const d=await res.json();
+        if(initialLoad){ initialLoad=false; if(d.state!=='start'){ await fetch(`${API_BASE}/set-state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:'start'})}); return; } }
+        if(d.state&&d.state!==lastState)updateScreenState(d.state);
+    }catch(e){}
 }
 
-// ==================== INICIALIZAÇÕES SECUNDÁRIAS ====================
-window.addEventListener('storage', (e) => {
-    if (e.key === 'booth_state') {
-        updateScreenState(e.newValue);
-    }
-});
+window.addEventListener('storage',e=>{ if(e.key==='booth_state')updateScreenState(e.newValue); });
 
-// Menu secreto
-let clickCount = 0, clickTimer = null;
-secretLogo.addEventListener('click', () => {
-    clickCount++;
-    clearTimeout(clickTimer);
-    clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
-    if (clickCount >= 7) { bgMenu.classList.toggle('active'); clickCount = 0; }
-});
+let clickCount=0,clickTimer=null;
+document.getElementById('secret-logo').addEventListener('click',()=>{ clickCount++; clearTimeout(clickTimer); clickTimer=setTimeout(()=>{clickCount=0},2000); if(clickCount>=7){ document.getElementById('bg-menu').classList.toggle('active'); clickCount=0; } });
 
-// Controle Visual Background
-function updateVisualMode() {
-    const savedBg = localStorage.getItem('photoprint_bg');
-    if (savedBg) { document.body.classList.add('bg-active'); }
-    else { document.body.classList.remove('bg-active'); }
-}
+function updateVisualMode(){ const bg=localStorage.getItem('photoprint_bg'); if(bg)document.body.classList.add('bg-active'); else document.body.classList.remove('bg-active'); }
+document.getElementById('bg-input').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=ev=>{ document.getElementById('dynamic-bg').style.backgroundImage=`url('${ev.target.result}')`; document.getElementById('dynamic-bg').classList.add('active'); localStorage.setItem('photoprint_bg',ev.target.result); updateVisualMode(); document.getElementById('bg-menu').classList.remove('active'); }; r.readAsDataURL(f); });
+function removeBackground(){ localStorage.removeItem('photoprint_bg'); document.getElementById('dynamic-bg').style.backgroundImage=""; document.getElementById('dynamic-bg').classList.remove('active'); updateVisualMode(); document.getElementById('bg-menu').classList.remove('active'); }
+(function(){ const bg=localStorage.getItem('photoprint_bg'); if(bg){ document.getElementById('dynamic-bg').style.backgroundImage=`url('${bg}')`; document.getElementById('dynamic-bg').classList.add('active'); } updateVisualMode(); })();
 
-bgInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(ev) {
-        const image = ev.target.result;
-        dynamicBg.style.backgroundImage = `url('${image}')`;
-        dynamicBg.classList.add('active');
-        localStorage.setItem('photoprint_bg', image);
-        updateVisualMode();
-        bgMenu.classList.remove('active');
-    };
-    reader.readAsDataURL(file);
-});
-
-function removeBackground() {
-    localStorage.removeItem('photoprint_bg');
-    dynamicBg.style.backgroundImage = "";
-    dynamicBg.classList.remove('active');
-    updateVisualMode();
-    bgMenu.classList.remove('active');
-}
-
-function loadSavedBackground() {
-    const savedBg = localStorage.getItem('photoprint_bg');
-    if (savedBg) {
-        dynamicBg.style.backgroundImage = `url('${savedBg}')`;
-        dynamicBg.classList.add('active');
-    }
-    updateVisualMode();
-}
-
-// RUN
-loadSavedBackground();
-localStorage.setItem('booth_state', 'start');
-updateScreenState('start');
-
-initCamera();
-
-// Loops de Polling e Sincronismo de Evento Ativo
-setInterval(pollServerState, 800);
-setInterval(syncEvento, 7000);
-syncEvento();
-
-debug('🚀 WEBCAM v8.7 pronta para o Totem');
+localStorage.setItem('booth_state','start'); updateScreenState('start'); initCamera();
+setInterval(pollServerState,800); setInterval(syncEvento,7000); syncEvento();
+debug('🚀 WEBCAM v8.8 pronta');
 </script>
 </body>
 </html>

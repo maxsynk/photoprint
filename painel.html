@@ -185,51 +185,46 @@
         let eventos = [];
         let arquivoMoldura = null;
 
-        // APAGUE o window.onload antigo e cole este:
-window.onload = function() {
-    console.log("🚀 Painel iniciado");
-    // Não faz nada no carregamento para não travar
-};
+        window.onload = function() {
+            console.log("🚀 Painel iniciado");
+        };
 
-        // APAGUE a função abrirModalSenha antiga e cole esta:
-function abrirModalSenha() { 
-    console.log("🔑 Abrindo modal de senha...");
-    var modal = document.getElementById('modal-senha');
-    if (modal) {
-        modal.style.display = 'flex';
-        setTimeout(function() {
+        function abrirModalSenha() { 
+            console.log("🔑 Abrindo modal de senha...");
+            var modal = document.getElementById('modal-senha');
+            if (modal) {
+                modal.style.display = 'flex';
+                setTimeout(function() {
+                    var input = document.getElementById('input-pass');
+                    if (input) input.focus();
+                }, 200);
+            } else {
+                console.error("❌ Modal não encontrado!");
+            }
+        }
+
+        function fecharModalSenha() { 
+            var modal = document.getElementById('modal-senha');
+            if (modal) {
+                modal.style.display = 'none';
+            }
             var input = document.getElementById('input-pass');
-            if (input) input.focus();
-        }, 200);
-    } else {
-        console.error("❌ Modal não encontrado!");
-    }
-}
+            if (input) input.value = '';
+        }
 
-// APAGUE a função fecharModalSenha antiga e cole esta:
-function fecharModalSenha() { 
-    var modal = document.getElementById('modal-senha');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-    var input = document.getElementById('input-pass');
-    if (input) input.value = '';
-}
-
-// APAGUE a função confirmarSenha antiga e cole esta:
-function confirmarSenha() { 
-    var input = document.getElementById('input-pass');
-    if (!input) return;
-    
-    if(input.value === SENHA_MESTRA) { 
-        fecharModalSenha(); 
-        ativarPainel(); 
-    } else {
-        alert("❌ Senha Incorreta!");
-        input.value = '';
-        input.focus();
-    }
-}
+        function confirmarSenha() { 
+            var input = document.getElementById('input-pass');
+            if (!input) return;
+            
+            if(input.value === SENHA_MESTRA) { 
+                fecharModalSenha(); 
+                ativarPainel(); 
+            } else {
+                alert("❌ Senha Incorreta!");
+                input.value = '';
+                input.focus();
+            }
+        }
 
         async function ativarPainel() {
             document.getElementById('tela-inicial').style.display = 'none';
@@ -239,53 +234,44 @@ function confirmarSenha() {
             await verificarEstadoAtual();
         }
 
-       async function carregarEventosDoServidor() {
-    mostrarLoading(true);
-    
-    try {
-        console.log("📥 Buscando eventos do servidor...");
-        const resp = await fetch(`${API_URL}/eventos`);
-        const data = await resp.json();
-        
-        console.log("📦 Dados recebidos:", JSON.stringify(data));
-        
-        if (data.success && data.eventos && Array.isArray(data.eventos)) {
-            if (data.eventos.length > 0) {
-                eventos = data.eventos.map(ev => {
-                    console.log("📍 Processando evento:", ev.id, ev.nome);
-                    return {
+        async function carregarEventosDoServidor() {
+            mostrarLoading(true);
+            
+            try {
+                console.log("📥 Buscando eventos...");
+                const resp = await fetch(`${API_URL}/eventos`);
+                const data = await resp.json();
+                
+                console.log("📦 Recebido:", data);
+                
+                if (data.success && data.eventos) {
+                    eventos = data.eventos.map(ev => ({
                         id: ev.id,
                         nome: ev.nome,
                         data: ev.data_evento,
                         dataRaw: ev.data_evento,
-                        formato: ev.formato,
+                        formato: ev.formato || '10X15V',
                         livro: ev.livro === 1 || ev.livro === true,
                         ativo: ev.ativo === 1 || ev.ativo === true,
                         temMoldura: ev.tem_moldura === 1 || ev.tem_moldura === true
-                    };
-                });
-                
-                console.log(`✅ ${eventos.length} eventos carregados`);
-                console.log("📋 IDs:", eventos.map(e => e.id));
-                mostrarSucesso(`${eventos.length} eventos carregados`);
-            } else {
-                console.log("ℹ️ Nenhum evento encontrado");
+                    }));
+                    
+                    console.log(`✅ ${eventos.length} eventos carregados`);
+                    console.log("📋 IDs:", eventos.map(e => e.id));
+                    mostrarSucesso(`${eventos.length} eventos carregados`);
+                } else {
+                    console.log("ℹ️ Nenhum evento");
+                    eventos = [];
+                }
+            } catch(e) {
+                console.error("❌ Erro:", e);
                 eventos = [];
+            } finally {
+                mostrarLoading(false);
+                renderizarLista();
+                checarEventoAtivo();
             }
-        } else {
-            console.warn("⚠️ Resposta inválida do servidor:", data);
         }
-    } catch(e) {
-        console.error("❌ Erro ao carregar:", e);
-        if (eventos.length === 0) {
-            mostrarErro("Erro ao carregar eventos");
-        }
-    } finally {
-        mostrarLoading(false);
-        renderizarLista();
-        checarEventoAtivo();
-    }
-} 
 
         async function verificarEstadoAtual() {
             try {
@@ -346,88 +332,82 @@ function confirmarSenha() {
         }
 
         async function salvarEvento() {
-    const nome = document.getElementById('input-evento').value.trim();
-    const data = document.getElementById('input-data').value;
-    const formato = document.getElementById('select-formato').value;
-    const livro = document.getElementById('input-livro').checked;
-    const editId = document.getElementById('edit-id').value;
-    
-    if(!nome || !data) {
-        mostrarErro("Preencha todos os campos!");
-        return;
-    }
+            const nome = document.getElementById('input-evento').value.trim();
+            const data = document.getElementById('input-data').value;
+            const formato = document.getElementById('select-formato').value;
+            const livro = document.getElementById('input-livro').checked;
+            const editId = document.getElementById('edit-id').value;
+            
+            if(!nome || !data) {
+                mostrarErro("Preencha todos os campos!");
+                return;
+            }
 
-    mostrarLoading(true);
-    
-    try {
-        if (editId) {
-            // EDITAR evento existente
-            await fetch(`${API_URL}/atualizar-evento/${editId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nome, data, formato, livro, ativo: false })
-            });
-            if (arquivoMoldura) await fazerUploadMoldura(editId);
-            mostrarSucesso("✅ Evento atualizado!");
-        } else {
-            // CRIAR novo evento
-            console.log("➕ Criando evento:", { nome, data, formato, livro });
+            mostrarLoading(true);
             
-            const resp = await fetch(`${API_URL}/criar-evento`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nome, data, formato, livro })
-            });
-            
-            const result = await resp.json();
-            console.log("📦 Resposta do servidor:", result);
-            
-            if (!result.success || !result.id) {
-                throw new Error("Servidor não retornou ID do evento");
+            try {
+                if (editId) {
+                    await fetch(`${API_URL}/atualizar-evento/${editId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ nome, data, formato, livro, ativo: false })
+                    });
+                    if (arquivoMoldura) await fazerUploadMoldura(editId);
+                    mostrarSucesso("✅ Evento atualizado!");
+                } else {
+                    console.log("➕ Enviando para Worker:", { nome, data, formato, livro });
+                    
+                    const resp = await fetch(`${API_URL}/criar-evento`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ nome, data, formato, livro })
+                    });
+                    
+                    const result = await resp.json();
+                    console.log("📦 Worker respondeu:", result);
+                    
+                    if (!result.success) {
+                        throw new Error(result.error || 'Erro desconhecido');
+                    }
+                    
+                    // Garante que temos um ID
+                    const eventId = result.id || Date.now();
+                    console.log("✅ ID do evento:", eventId);
+                    
+                    // Upload da moldura
+                    if (arquivoMoldura) {
+                        await fazerUploadMoldura(eventId);
+                    }
+                    
+                    // Adiciona na lista local
+                    eventos.unshift({
+                        id: eventId,
+                        nome: nome,
+                        data: data,
+                        dataRaw: data,
+                        formato: formato,
+                        livro: livro,
+                        ativo: false,
+                        temMoldura: arquivoMoldura ? true : false
+                    });
+                    
+                    mostrarSucesso("✅ Evento criado! ID: " + eventId);
+                }
+                
+                resetarFormulario();
+                renderizarLista();
+                checarEventoAtivo();
+                
+                // Recarrega do servidor
+                setTimeout(() => carregarEventosDoServidor(), 1000);
+                
+            } catch(e) {
+                console.error("❌ Erro:", e);
+                mostrarErro("Erro: " + e.message);
+            } finally {
+                mostrarLoading(false);
             }
-            
-            console.log("✅ Evento criado com ID:", result.id);
-            
-            // Upload da moldura se tiver
-            if (arquivoMoldura && result.id) {
-                await fazerUploadMoldura(result.id);
-            }
-            
-            // Adiciona na lista local IMEDIATAMENTE com o ID correto
-            const novoEvento = {
-                id: result.id,
-                nome: nome,
-                data: data,
-                dataRaw: data,
-                formato: formato,
-                livro: livro,
-                ativo: false,
-                temMoldura: arquivoMoldura ? true : false
-            };
-            
-            eventos.unshift(novoEvento);
-            console.log("📋 Lista atualizada. Total de eventos:", eventos.length);
-            console.log("📋 IDs dos eventos:", eventos.map(e => e.id));
-            
-            mostrarSucesso("✅ Evento criado com sucesso! ID: " + result.id);
         }
-        
-        resetarFormulario();
-        renderizarLista();
-        checarEventoAtivo();
-        
-        // Recarrega do servidor para confirmar
-        setTimeout(async () => {
-            await carregarEventosDoServidor();
-        }, 1000);
-        
-    } catch(e) {
-        console.error("❌ Erro ao salvar:", e);
-        mostrarErro("❌ Erro: " + e.message);
-    } finally {
-        mostrarLoading(false);
-    }
-}
 
         async function fazerUploadMoldura(eventoId) {
             if (!arquivoMoldura) return;
@@ -463,70 +443,65 @@ function confirmarSenha() {
         }
 
         async function ativarEvento(index) {
-    const ev = eventos[index];
-    
-    // VERIFICAÇÃO CRÍTICA: se não tem ID, não faz nada
-    if (!ev || !ev.id) {
-        mostrarErro("❌ Evento inválido! Delete e crie novamente.");
-        console.error("❌ Evento sem ID:", ev);
-        return;
-    }
-    
-    const novoEstado = !ev.ativo;
-    
-    console.log(`${novoEstado ? '✅' : '❌'} ${novoEstado ? 'Ativando' : 'Desativando'}:`, ev.nome, "ID:", ev.id);
-    
-    mostrarLoading(true);
-    
-    try {
-        const resp = await fetch(`${API_URL}/atualizar-evento/${ev.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                nome: ev.nome,
-                data: ev.dataRaw || ev.data,
-                formato: ev.formato,
-                livro: ev.livro,
-                ativo: novoEstado
-            })
-        });
-        
-        if (!resp.ok) {
-            const err = await resp.json();
-            throw new Error(err.error || 'Erro ao atualizar');
+            const ev = eventos[index];
+            
+            if (!ev || !ev.id) {
+                mostrarErro("❌ Evento inválido! Delete e crie novamente.");
+                console.error("❌ Evento sem ID:", ev);
+                return;
+            }
+            
+            const novoEstado = !ev.ativo;
+            
+            console.log(`${novoEstado ? '✅' : '❌'} ${novoEstado ? 'Ativando' : 'Desativando'}:`, ev.nome, "ID:", ev.id);
+            
+            mostrarLoading(true);
+            
+            try {
+                const resp = await fetch(`${API_URL}/atualizar-evento/${ev.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nome: ev.nome,
+                        data: ev.dataRaw || ev.data,
+                        formato: ev.formato,
+                        livro: ev.livro,
+                        ativo: novoEstado
+                    })
+                });
+                
+                if (!resp.ok) {
+                    const err = await resp.json();
+                    throw new Error(err.error || 'Erro ao atualizar');
+                }
+                
+                eventos.forEach((e, i) => e.ativo = (i === index && novoEstado));
+                renderizarLista();
+                checarEventoAtivo();
+                
+                await sincronizarWorker(
+                    novoEstado ? ev.nome : "Geral",
+                    novoEstado ? ev.formato : "10X15V",
+                    novoEstado ? "ONLINE" : "OFFLINE",
+                    novoEstado ? ev.livro : false,
+                    novoEstado ? String(ev.id) : "",
+                    novoEstado ? ev.temMoldura : false
+                );
+                
+                mostrarSucesso(`✅ Evento ${novoEstado ? 'ATIVADO' : 'DESATIVADO'}!`);
+                
+                setTimeout(() => carregarEventosDoServidor(), 500);
+                
+            } catch(e) {
+                console.error("❌ Erro:", e);
+                mostrarErro("Erro: " + e.message);
+                eventos[index].ativo = !novoEstado;
+                renderizarLista();
+                checarEventoAtivo();
+            } finally {
+                mostrarLoading(false);
+            }
         }
-        
-        // Atualiza localmente
-        eventos.forEach((e, i) => e.ativo = (i === index && novoEstado));
-        renderizarLista();
-        checarEventoAtivo();
-        
-        // Sincroniza com Worker
-        await sincronizarWorker(
-            novoEstado ? ev.nome : "Geral",
-            novoEstado ? ev.formato : "10X15V",
-            novoEstado ? "ONLINE" : "OFFLINE",
-            novoEstado ? ev.livro : false,
-            novoEstado ? String(ev.id) : "",
-            novoEstado ? ev.temMoldura : false
-        );
-        
-        mostrarSucesso(`✅ Evento ${novoEstado ? 'ATIVADO' : 'DESATIVADO'}!`);
-        
-        // Recarrega para confirmar
-        setTimeout(() => carregarEventosDoServidor(), 500);
-        
-    } catch(e) {
-        console.error("❌ Erro:", e);
-        mostrarErro("Erro: " + e.message);
-        // Reverte estado local
-        eventos[index].ativo = !novoEstado;
-        renderizarLista();
-        checarEventoAtivo();
-    } finally {
-        mostrarLoading(false);
-    }
-}
 
         async function sincronizarWorker(nome, formato, status, livro, eventoId, temMoldura) {
             try {
@@ -608,7 +583,7 @@ function confirmarSenha() {
                                 ${ev.livro ? '<span class="badge badge-info">📖 Guestbook</span>' : ''}
                                 ${ev.temMoldura ? '<span class="badge badge-success">🖼️ Moldura</span>' : ''}
                             </div>
-                            <div style="font-size:9px; color:#555; margin-top: 3px;">${ev.data || 'Sem data'} • ${ev.formato}</div>
+                            <div style="font-size:9px; color:#555; margin-top: 3px;">${ev.data || 'Sem data'} • ${ev.formato} • ID: ${ev.id}</div>
                         </div>
                     </div>
                     <div style="display:flex; gap:8px;">

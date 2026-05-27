@@ -239,39 +239,53 @@ function confirmarSenha() {
             await verificarEstadoAtual();
         }
 
-        async function carregarEventosDoServidor() {
-            mostrarLoading(true);
-            
-            try {
-                console.log("📥 Buscando eventos...");
-                const resp = await fetch(`${API_URL}/eventos`);
-                const data = await resp.json();
-                
-                if (data.success && data.eventos && data.eventos.length > 0) {
-                    eventos = data.eventos.map(ev => ({
+       async function carregarEventosDoServidor() {
+    mostrarLoading(true);
+    
+    try {
+        console.log("📥 Buscando eventos do servidor...");
+        const resp = await fetch(`${API_URL}/eventos`);
+        const data = await resp.json();
+        
+        console.log("📦 Dados recebidos:", JSON.stringify(data));
+        
+        if (data.success && data.eventos && Array.isArray(data.eventos)) {
+            if (data.eventos.length > 0) {
+                eventos = data.eventos.map(ev => {
+                    console.log("📍 Processando evento:", ev.id, ev.nome);
+                    return {
                         id: ev.id,
                         nome: ev.nome,
                         data: ev.data_evento,
                         dataRaw: ev.data_evento,
                         formato: ev.formato,
-                        livro: ev.livro === 1,
-                        ativo: ev.ativo === 1,
-                        temMoldura: ev.tem_moldura === 1
-                    }));
-                    console.log(`✅ ${eventos.length} eventos carregados`);
-                    mostrarSucesso(`${eventos.length} eventos carregados`);
-                }
-            } catch(e) {
-                console.warn("⚠️ Erro:", e.message);
-                if (eventos.length === 0) {
-                    mostrarErro("Erro ao carregar eventos");
-                }
-            } finally {
-                mostrarLoading(false);
-                renderizarLista();
-                checarEventoAtivo();
+                        livro: ev.livro === 1 || ev.livro === true,
+                        ativo: ev.ativo === 1 || ev.ativo === true,
+                        temMoldura: ev.tem_moldura === 1 || ev.tem_moldura === true
+                    };
+                });
+                
+                console.log(`✅ ${eventos.length} eventos carregados`);
+                console.log("📋 IDs:", eventos.map(e => e.id));
+                mostrarSucesso(`${eventos.length} eventos carregados`);
+            } else {
+                console.log("ℹ️ Nenhum evento encontrado");
+                eventos = [];
             }
+        } else {
+            console.warn("⚠️ Resposta inválida do servidor:", data);
         }
+    } catch(e) {
+        console.error("❌ Erro ao carregar:", e);
+        if (eventos.length === 0) {
+            mostrarErro("Erro ao carregar eventos");
+        }
+    } finally {
+        mostrarLoading(false);
+        renderizarLista();
+        checarEventoAtivo();
+    }
+} 
 
         async function verificarEstadoAtual() {
             try {

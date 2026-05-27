@@ -332,56 +332,88 @@ function confirmarSenha() {
         }
 
         async function salvarEvento() {
-            const nome = document.getElementById('input-evento').value.trim();
-            const data = document.getElementById('input-data').value;
-            const formato = document.getElementById('select-formato').value;
-            const livro = document.getElementById('input-livro').checked;
-            const editId = document.getElementById('edit-id').value;
-            
-            if(!nome || !data) {
-                mostrarErro("Preencha todos os campos!");
-                return;
-            }
+    const nome = document.getElementById('input-evento').value.trim();
+    const data = document.getElementById('input-data').value;
+    const formato = document.getElementById('select-formato').value;
+    const livro = document.getElementById('input-livro').checked;
+    const editId = document.getElementById('edit-id').value;
+    
+    if(!nome || !data) {
+        mostrarErro("Preencha todos os campos!");
+        return;
+    }
 
-            mostrarLoading(true);
+    mostrarLoading(true);
+    
+    try {
+        if (editId) {
+            // EDITAR evento existente
+            await fetch(`${API_URL}/atualizar-evento/${editId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nome, data, formato, livro, ativo: false })
+            });
+            if (arquivoMoldura) await fazerUploadMoldura(editId);
+            mostrarSucesso("✅ Evento atualizado!");
+        } else {
+            // CRIAR novo evento
+            console.log("➕ Criando evento:", { nome, data, formato, livro });
             
-            try {
-                if (editId) {
-                    await fetch(`${API_URL}/atualizar-evento/${editId}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ nome, data, formato, livro, ativo: false })
-                    });
-                    if (arquivoMoldura) await fazerUploadMoldura(editId);
-                    mostrarSucesso("✅ Evento atualizado!");
-                } else {
-                    const resp = await fetch(`${API_URL}/criar-evento`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ nome, data, formato, livro })
-                    });
-                    const result = await resp.json();
-                    if (arquivoMoldura && result.id) await fazerUploadMoldura(result.id);
-                    
-                    eventos.unshift({
-                        id: result.id, nome, data, dataRaw: data,
-                        formato, livro, ativo: false,
-                        temMoldura: arquivoMoldura ? true : false
-                    });
-                    
-                    mostrarSucesso("✅ Evento criado!");
-                }
-                
-                resetarFormulario();
-                setTimeout(() => carregarEventosDoServidor(), 500);
-                
-            } catch(e) {
-                console.error("❌ Erro:", e);
-                mostrarErro("Erro: " + e.message);
-            } finally {
-                mostrarLoading(false);
+            const resp = await fetch(`${API_URL}/criar-evento`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nome, data, formato, livro })
+            });
+            
+            const result = await resp.json();
+            console.log("📦 Resposta do servidor:", result);
+            
+            if (!result.success || !result.id) {
+                throw new Error("Servidor não retornou ID do evento");
             }
+            
+            console.log("✅ Evento criado com ID:", result.id);
+            
+            // Upload da moldura se tiver
+            if (arquivoMoldura && result.id) {
+                await fazerUploadMoldura(result.id);
+            }
+            
+            // Adiciona na lista local IMEDIATAMENTE com o ID correto
+            const novoEvento = {
+                id: result.id,
+                nome: nome,
+                data: data,
+                dataRaw: data,
+                formato: formato,
+                livro: livro,
+                ativo: false,
+                temMoldura: arquivoMoldura ? true : false
+            };
+            
+            eventos.unshift(novoEvento);
+            console.log("📋 Lista atualizada. Total de eventos:", eventos.length);
+            console.log("📋 IDs dos eventos:", eventos.map(e => e.id));
+            
+            mostrarSucesso("✅ Evento criado com sucesso! ID: " + result.id);
         }
+        
+        resetarFormulario();
+        renderizarLista();
+        checarEventoAtivo();
+        
+        // Recarrega do servidor para confirmar
+        setTimeout(async () => {
+            await carregarEventosDoServidor();
+        }, 1000);
+        
+    } catch(e) {
+        console.error("❌ Erro ao salvar:", e);
+        mostrarErro("❌ Erro: " + e.message);
+    } finally {
+        mostrarLoading(false);
+    }
+}
 
         async function fazerUploadMoldura(eventoId) {
             if (!arquivoMoldura) return;

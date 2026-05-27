@@ -3,96 +3,260 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT - Galeria Digital v4.8</title>
+    <title>PHOTO PRINT - GALLERY v4.6</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #050505; color: white; margin: 0; padding: 20px; }
-        header { text-align: center; padding: 20px; border-bottom: 1px solid #222; margin-bottom: 30px; }
-        h1 { color: #39ff14; font-weight: 900; letter-spacing: 2px; margin: 0; text-transform: uppercase; font-size: 28px; }
-        h2 { font-size: 14px; color: #aaa; margin-top: 5px; text-transform: uppercase; letter-spacing: 4px; }
-        .grid-fotos { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; max-width: 1200px; margin: 0 auto; }
-        .foto-card { background: #111; border: 1px solid #222; border-radius: 8px; overflow: hidden; transition: 0.3s; }
-        .foto-card:hover { border-color: #39ff14; transform: scale(1.02); }
-        .foto-card img { width: 100%; height: auto; display: block; }
+        :root {
+            --bg: #020202; --surface: rgba(18, 18, 18, 0.9); 
+            --accent: #39ff14; --danger: #ff3131; --text: #ffffff;
+            --info-blue: #00e5ff;
+            --neon-shadow: 0 0 15px rgba(57, 255, 20, 0.5);
+            --glass-border: 1px solid rgba(57, 255, 20, 0.3);
+        }
+        body { background: radial-gradient(circle at center, #0a1a05 0%, #000 100%); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; overflow-x: hidden; }
+        
+        #modal-print { display: none; }
+        @media print {
+            @page { margin: 0; size: auto; }
+            body * { visibility: hidden; display: none !important; }
+            #modal-print, #modal-print img { display: flex !important; visibility: visible; }
+            #modal-print { position: absolute; inset: 0; width: 100vw; height: 100vh; justify-content: center; align-items: center; background: white !important; }
+            #img-print { max-width: 100% !important; max-height: 100% !important; width: auto !important; height: auto !important; }
+        }
+
+        header { padding: 30px 40px 10px; display: flex; flex-direction: column; align-items: center; position: relative; }
+        
+        .status-container { position: absolute; left: 40px; top: 40px; text-align: left; border-left: 3px solid var(--accent); padding-left: 15px; }
+        .status-label { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; opacity: 0.6; margin-bottom: 2px; }
+        #nome-evento { font-size: 18px; font-weight: 900; color: var(--accent); text-transform: uppercase; margin: 0; }
+        #tipo-formato { font-size: 12px; font-weight: bold; opacity: 0.8; margin-top: 2px; text-transform: uppercase; color: #fff; }
+
+        .brand-center { text-align: center; margin-top: 20px; }
+        .brand-center h1 { margin: 0; font-size: 45px; color: var(--accent); text-shadow: var(--neon-shadow); letter-spacing: 8px; font-weight: 900; text-transform: uppercase; }
+        .brand-subtitle { font-size: 14px; letter-spacing: 4px; text-transform: uppercase; opacity: 0.7; margin-top: 5px; font-weight: bold; }
+
+        .search-box { margin-top: 25px; display: flex; gap: 10px; justify-content: center; }
+        .search-box input { background: rgba(255,255,255,0.05); border: var(--glass-border); color: #fff; padding: 10px 15px; border-radius: 8px; width: 180px; outline: none; }
+        .search-btn { background: var(--accent); color: #000; border: none; padding: 0 20px; border-radius: 8px; font-weight: 900; cursor: pointer; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; padding: 30px 60px; }
+        .card { background: var(--surface); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; position: relative; }
+        .card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: var(--neon-shadow); }
+        .card img { width: 100%; display: block; height: auto; }
+        .card .badge { position: absolute; top: 8px; left: 8px; background: var(--accent); color: #000; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 2; }
+        .card .print-badge { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.8); border: 1px solid var(--accent); color: var(--accent); padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 2; }
+        .card .guestbook-badge { position: absolute; bottom: 8px; left: 8px; right: 8px; background: rgba(0,0,0,0.85); border: 1px solid var(--info-blue); color: var(--info-blue); padding: 5px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 2; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+        .sidebar { position: fixed; right: -350px; top: 0; width: 300px; height: 100%; background: rgba(10, 10, 10, 0.95); z-index: 5000; transition: 0.5s; padding: 120px 25px; border-left: var(--glass-border); }
+        .sidebar.active { right: 0; }
+        .sidebar-btn { width: 100%; padding: 18px; margin-bottom: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 15px; font-weight: bold; }
+        .menu-trigger { position: absolute; right: 40px; top: 40px; cursor: pointer; z-index: 5001; }
+        .menu-trigger span { display: block; width: 30px; height: 3px; background: var(--accent); margin: 5px 0; }
+
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 6000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .modal img { max-width: 90%; max-height: 70vh; border: 2px solid var(--accent); border-radius: 10px; margin-bottom: 25px; }
+        .modal-controls { display: flex; gap: 15px; }
+        .btn-act { border: none; padding: 15px 30px; border-radius: 30px; font-weight: 900; cursor: pointer; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1 id="nome-sistema">PHOTO PRINT</h1>
-        <h2 id="nome-evento">Buscando evento ativo...</h2>
-    </header>
+    <div class="menu-trigger" onclick="document.getElementById('sidebar').classList.toggle('active')"><span></span><span></span><span></span></div>
 
-    <div class="grid-fotos" id="galeria-container">
+    <header>
+        <div class="status-container">
+            <div class="status-label">Status Evento</div>
+            <div id="nome-evento">Carregando...</div>
+            <div id="tipo-formato">--</div>
         </div>
 
+        <div class="brand-center">
+            <h1>AUTOGRAPH CAM</h1>
+            <div class="brand-subtitle">colecionando momentos</div>
+            <div class="search-box">
+                <input type="number" id="input-busca" placeholder="DIGITE O ID">
+                <button class="search-btn" onclick="executarBusca()"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <div class="sidebar" id="sidebar">
+        <button class="sidebar-btn" onclick="baixarZip()"><i class="fa-solid fa-download"></i> Baixar Galeria</button>
+        <button class="sidebar-btn" style="color:var(--danger)" onclick="limparTudo()"><i class="fa-solid fa-trash"></i> Apagar Servidor</button>
+    </div>
+
+    <main class="grid" id="grid-fotos"></main>
+
+    <div class="modal" id="modal-zoom">
+        <img id="img-zoom" src="">
+        <div class="modal-controls">
+            <button class="btn-act" style="background:#333; color:#fff" onclick="fecharZoom()">Voltar</button>
+            <button class="btn-act" style="background:var(--accent); color:#000" onclick="reimprimirAtual()">Reimprimir</button>
+            <button class="btn-act" style="background:var(--danger); color:#fff" id="btn-excluir-zoom">Excluir</button>
+        </div>
+    </div>
+
+    <div id="modal-print"><img id="img-print"></div>
+
 <script>
-    const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
+    const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
+    let todasFotos = [];
+    let chavesLocais = new Set();
     let eventoAtual = "";
+    let formatoAtual = "";
+    let printQueue = [];
+    let isPrinting = false;
+    let primeiraCarga = true; 
 
-    // 1. Monitora qual evento o Painel mandou executar
-    async function monitorarPainel() {
+    function traduzirFormato(formato) {
+        if (!formato) return "--";
+        const f = formato.toUpperCase().trim();
+        if (f.includes("10X15H")) return "10x15 Horizontal";
+        if (f.includes("10X15V")) return "10x15 Vertical";
+        if (f.includes("STRIP") || f.includes("TIRINHA")) return "Tirinha";
+        if (f.includes("POLAROID")) return "Polaroid";
+        return formato; 
+    }
+
+    async function atualizar() {
         try {
-            const resp = await fetch(`${API_URL}/get-all-states?t=${Date.now()}`);
-            const data = await resp.json();
+            const resStatus = await fetch(`${API}/status?t=${Date.now()}`);
+            const config = await resStatus.json();
             
-            if (data && data.config) {
-                const eventoDoWorker = data.config.evento;
-
-                // Se o usuário trocou de evento no painel, atualiza a galeria
-                if (eventoAtual !== eventoDoWorker) {
-                    console.log(`Galeria mudando para o evento: ${eventoDoWorker}`);
-                    eventoAtual = eventoDoWorker;
-                    
-                    // Atualiza o título na tela
-                    document.getElementById('nome-evento').innerText = eventoAtual;
-
-                    // Dispara a busca de imagens no seu bucket/servidor passando o nome do evento limpo
-                    atualizarFotosDaGrade(eventoAtual);
-                }
+            const novoEvento = config.evento || "Geral";
+            formatoAtual = config.formato ? config.formato.toUpperCase().trim() : "10X15V";
+            
+            if (eventoAtual !== "" && eventoAtual !== novoEvento) {
+                eventoAtual = novoEvento;
+                todasFotos = [];
+                chavesLocais.clear();
+                printQueue = []; 
+                primeiraCarga = true; 
+                document.getElementById('grid-fotos').innerHTML = ""; 
+            } else {
+                eventoAtual = novoEvento;
             }
-        } catch (e) {
-            console.error("Erro na sincronização da galeria:", e);
-        }
-    }
-
-    // 2. Busca e renderiza os arquivos baseados no evento ativo
-    async function atualizarFotosDaGrade(nomeDoEvento) {
-        const container = document.getElementById('galeria-container');
-        container.innerHTML = "<p style='color: #666; text-align:center; width:100%'>Atualizando galeria...</p>";
-
-        try {
-            // Exemplo de integração: Substitua pela sua rota que lê os arquivos do Cloudflare R2
-            // Geralmente você passa o nome do evento como parâmetro para filtrar a pasta
-            // const respostaArquivos = await fetch(`https://seu-bucket-r2.com/list?pasta=${encodeURIComponent(nomeDoEvento)}`);
-            // const arquivos = await respostaArquivos.json();
-
-            // Exemplo de renderização falsa simulada:
-            let htmlGerado = "";
             
-            /* arquivos.forEach(urlDaFoto => {
-                htmlGerado += `
-                    <div class="foto-card">
-                        <img src="${urlDaFoto}" alt="Foto do evento">
-                    </div>
-                `;
-            });
-            */
+            document.getElementById('nome-evento').innerText = eventoAtual;
+            document.getElementById('tipo-formato').innerText = traduzirFormato(config.formato);
 
-            // Se não houver fotos integradas ainda, exibe aviso
-            container.innerHTML = htmlGerado || `<p style='color: #444; grid-column: 1/-1; text-align:center;'>Nenhuma foto encontrada para o evento "${nomeDoEvento}".</p>`;
+            const resF = await fetch(`${API}/list-photos?evento=${encodeURIComponent(eventoAtual)}&t=${Date.now()}`);
+            const dados = await resF.json();
+            
+            // Ignora molduras .png na galeria de exibição dos clientes
+            const fotosJpg = dados.filter(f => !f.key.toLowerCase().endsWith('.png'));
+            const novasFotos = fotosJpg.filter(f => !chavesLocais.has(f.key));
 
-        } catch (err) {
-            console.error("Erro ao carregar fotos do R2:", err);
-            container.innerHTML = "<p style='color: red; text-align:center; width:100%'>Erro ao carregar fotos.</p>";
+            if (novasFotos.length > 0) {
+                let houveMudancaNoGrid = false;
+
+                for (let f of novasFotos) {
+                    const keyLower = f.key.toLowerCase();
+                    const urlCompleta = `${API}/photo/${encodeURIComponent(f.key)}`;
+                    
+                    let copiasDoCard = 1;
+                    if (keyLower.includes("_3c_")) copiasDoCard = 3;
+                    else if (keyLower.includes("_2c_")) copiasDoCard = 2;
+
+                    const possuiLivro = keyLower.includes("_livro_") || keyLower.includes("guestbook");
+
+                    todasFotos.push({ 
+                        id: todasFotos.length + 1, 
+                        url: urlCompleta, 
+                        key: f.key,
+                        copias: copiasDoCard,
+                        livro: possuiLivro
+                    });
+                    
+                    chavesLocais.add(f.key);
+                    houveMudancaNoGrid = true;
+                    
+                    if (primeiraCarga === false) {
+                        for (let i = 0; i < copiasDoCard; i++) {
+                            addToPrintQueue(urlCompleta);
+                        }
+                    }
+                }
+                if (houveMudancaNoGrid) render();
+            }
+            primeiraCarga = false;
+        } catch(e) { console.error("Erro galeria:", e); }
+    }
+
+    function render() {
+        const grid = document.getElementById('grid-fotos');
+        grid.innerHTML = todasFotos.slice().reverse().map(f => `
+            <div class="card" onclick="abrirZoom('${f.url}', '${f.key}')">
+                <span class="badge">#${f.id}</span>
+                ${f.copias > 1 ? `<span class="print-badge"><i class="fa-solid fa-print"></i> ${f.copias}x</span>` : ''}
+                ${f.livro ? `<span class="guestbook-badge"><i class="fa-solid fa-book-open"></i> Livro de Assinaturas</span>` : ''}
+                <img src="${f.url}">
+            </div>
+        `).join('');
+    }
+
+    function addToPrintQueue(src) {
+        printQueue.push(src);
+        if (!isPrinting) processQueue();
+    }
+
+    function processQueue() {
+        if (printQueue.length === 0) { isPrinting = false; return; }
+        isPrinting = true;
+        const imgP = document.getElementById('img-print');
+        imgP.onload = () => {
+            window.focus();
+            document.title = "PRINT_JOB";
+            setTimeout(() => { window.print(); setTimeout(processQueue, 3000); }, 1000);
+        };
+        imgP.src = printQueue.shift();
+    }
+
+    function abrirZoom(url, key) {
+        document.getElementById('img-zoom').src = url;
+        document.getElementById('modal-zoom').style.display = 'flex';
+        document.getElementById('btn-excluir-zoom').onclick = () => excluirFoto(key);
+    }
+
+    function fecharZoom() { document.getElementById('modal-zoom').style.display = 'none'; }
+    function reimprimirAtual() { addToPrintQueue(document.getElementById('img-zoom').src); }
+
+    async function excluirFoto(key) {
+        if(confirm("Deseja realmente excluir esta foto permanentemente?")) {
+            await fetch(`${API}/photo?key=${encodeURIComponent(key)}`, { method: 'DELETE' });
+            fecharZoom();
+            location.reload();
         }
     }
 
-    window.onload = () => {
-        monitorarPainel();
-        
-        // Fica checando se o painel trocou de evento a cada 3 segundos
-        setInterval(monitorarPainel, 3000);
-    };
+    async function baixarZip() {
+        const zip = new JSZip();
+        for(let f of todasFotos) {
+            const blob = await fetch(f.url).then(r => r.blob());
+            zip.file(`foto_${f.id}.jpg`, blob);
+        }
+        const content = await zip.generateAsync({type:"blob"});
+        saveAs(content, "galeria_evento.zip");
+    }
+
+    async function limparTudo() {
+        if(confirm("Atenção! Isso apagará todas as mídias do servidor deste evento. Continuar?") && prompt("Senha mestre:") === "123") {
+            await fetch(`${API}/photo?key=all`, { method: 'DELETE' });
+            location.reload();
+        }
+    }
+
+    function executarBusca() {
+        const idBusca = document.getElementById('input-busca').value;
+        const foto = todasFotos.find(f => f.id == idBusca);
+        if(foto) abrirZoom(foto.url, foto.key);
+        else alert("ID não encontrado!");
+    }
+
+    setInterval(atualizar, 4000);
+    atualizar();
 </script>
 </body>
 </html>

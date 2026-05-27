@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>WEBCAM - AUTOGRAPH CAM v8.8</title>
+<title>WEBCAM - PHOTO PRINT v8.8</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 :root{ --neon:#39ff14; --dark:#050505; --danger:#ff3131; }
@@ -153,4 +153,96 @@ async function composeAndUpload(copias){
     octx.fillStyle='white';octx.fillRect(0,0,oc.width,oc.height);
     const fi=await imgFromCanvas(canvasCapture);
     const sc=Math.max(oc.width/fi.width,oc.height/fi.height);const w=fi.width*sc,h=fi.height*sc;
-    octx.drawImage(fi,(oc.width
+    octx.drawImage(fi,(oc.width-w)/2,(oc.height-h)/2,w,h);
+    if(molduraUrl){try{const mi=await loadImg(molduraUrl);octx.drawImage(mi,0,0,oc.width,oc.height);debug('✅ Moldura aplicada');}catch(e){debug('⚠️ Moldura falhou');}}
+    const blob=await new Promise(r=>oc.toBlob(r,'image/jpeg',0.95));
+    await uploadBlob(blob,copias);
+}
+function imgFromCanvas(c){return new Promise((rs,rj)=>{const i=new Image();i.onload=()=>rs(i);i.onerror=rj;i.src=c.toDataURL('image/jpeg',0.92);});}
+function loadImg(s){return new Promise((rs,rj)=>{const i=new Image();i.crossOrigin='anonymous';i.onload=()=>rs(i);i.onerror=rj;i.src=s+'?t='+Date.now();});}
+
+async function uploadBlob(blob,copias){
+    if(!eventoId){debug('❌ Sem eventoId');return;}
+    let nome='foto.jpg',cf=1;
+    if(copias===2){nome='foto_2c.jpg';cf=2;}else if(copias===3){nome='foto_2c_guestbook.jpg';cf=2;}else if(copias===4){nome='foto_3c_guestbook.jpg';cf=3;}
+    const fd=new FormData();fd.append('foto',blob,nome);fd.append('eventoId',eventoId);fd.append('timestamp',String(Date.now()));
+    debug(`⬆️ Upload: ${nome} -> eventoId=${eventoId}`);
+    try{
+        const res=await fetch(`${API_BASE}/salvar-foto`,{method:'POST',body:fd});
+        if(res.ok)debug('✅ Upload OK');else debug('❌ Upload: '+res.status);
+    }catch(e){debug('❌ Upload err: '+e.message);}
+}
+
+// ==================== AGUARDAR TOTEM ====================
+async function waitForPrint(){
+    debug('⏳ Aguardando totem...');
+    for(let i=0;i<120;i++){
+        try{const res=await fetch(`${API_BASE}/check-print?t=${Date.now()}`);if(res.ok){const d=await res.json();if(d.printTriggered){debug(`🖨️ ${d.copias} cópia(s)`);return d.copias||1;}}}catch(e){}
+        await new Promise(r=>setTimeout(r,500));
+    }
+    debug('⏰ Timeout');return null;
+}
+
+async function finishCycle(){
+    const copias=await waitForPrint();
+    if(!copias){resetToStart();return;}
+    optionsOverlay.querySelector('.options-text').innerText='Compondo foto...';
+    await composeAndUpload(copias);
+    await fetch(`${API_BASE}/clear-print`,{method:'POST'}).catch(()=>{});
+    showThanks();
+}
+
+function showThanks(){
+    document.querySelectorAll('.screen').forEach(e=>e.style.display='none');
+    document.getElementById('screen-thanks').style.display='flex';
+    document.getElementById('thanks-text').innerHTML="🖨️ AGUARDE A IMPRESSÃO...";
+    setTimeout(()=>{document.getElementById('thanks-text').innerHTML="💖 OBRIGADO! 💖<br>APROVEITE SUA FOTO!";setTimeout(resetToStart,2500);},2500);
+}
+
+function resetToStart(){
+    document.querySelectorAll('.screen').forEach(e=>e.style.display='none');
+    document.getElementById('screen-start').style.display='flex';
+    ctx.clearRect(0,0,canvasCapture.width,canvasCapture.height);
+    captureInProgress=false;lastState='start';
+    fetch(`${API_BASE}/set-state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:'start'})}).catch(()=>{});
+    debug('🏁 Reset');
+}
+
+// ==================== MÁQUINA DE ESTADO ====================
+function updateScreenState(state){
+    if(state===lastState&&state!=='capturing')return;
+    if(state==='start'&&lastState==='options'){finishCycle();lastState=state;return;}
+    if(state==='capturing'&&lastState==='options')return;
+    document.querySelectorAll('.screen').forEach(e=>e.style.display='none');
+    if(state==='capturing'){document.getElementById('screen-camera').style.display='flex';capturePhoto();}
+    else if(state==='options'){document.getElementById('screen-camera').style.display='flex';videoFeed.style.display='none';canvasCapture.style.display='block';funText.style.display='none';optionsOverlay.style.display='block';}
+    else{document.getElementById('screen-start').style.display='flex';}
+    lastState=state;
+}
+
+async function pollServerState(){
+    try{
+        const res=await fetch(`${API_BASE}/get-state?t=${Date.now()}`);
+        if(!res.ok)return;
+        const d=await res.json();
+        if(initialLoad){initialLoad=false;if(d.state!=='start'){await fetch(`${API_BASE}/set-state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:'start'})});return;}}
+        if(d.state&&d.state!==lastState)updateScreenState(d.state);
+    }catch(e){}
+}
+
+window.addEventListener('storage',e=>{if(e.key==='booth_state')updateScreenState(e.newValue);});
+
+let clickCount=0,clickTimer=null;
+document.getElementById('secret-logo').addEventListener('click',()=>{clickCount++;clearTimeout(clickTimer);clickTimer=setTimeout(()=>{clickCount=0},2000);if(clickCount>=7){document.getElementById('bg-menu').classList.toggle('active');clickCount=0;}});
+
+function updateVisualMode(){const bg=localStorage.getItem('photoprint_bg');if(bg)document.body.classList.add('bg-active');else document.body.classList.remove('bg-active');}
+document.getElementById('bg-input').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{document.getElementById('dynamic-bg').style.backgroundImage=`url('${ev.target.result}')`;document.getElementById('dynamic-bg').classList.add('active');localStorage.setItem('photoprint_bg',ev.target.result);updateVisualMode();document.getElementById('bg-menu').classList.remove('active');};r.readAsDataURL(f);});
+function removeBackground(){localStorage.removeItem('photoprint_bg');document.getElementById('dynamic-bg').style.backgroundImage="";document.getElementById('dynamic-bg').classList.remove('active');updateVisualMode();document.getElementById('bg-menu').classList.remove('active');}
+(function(){const bg=localStorage.getItem('photoprint_bg');if(bg){document.getElementById('dynamic-bg').style.backgroundImage=`url('${bg}')`;document.getElementById('dynamic-bg').classList.add('active');}updateVisualMode();})();
+
+localStorage.setItem('booth_state','start');updateScreenState('start');initCamera();
+setInterval(pollServerState,800);setInterval(syncEvento,5000);syncEvento();
+debug('🚀 WEBCAM v8.8 pronta');
+</script>
+</body>
+</html>

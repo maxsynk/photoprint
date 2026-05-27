@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT - GALLERY v4.6</title>
+    <title>PHOTO PRINT - GALLERY v5.0</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -122,12 +122,14 @@
 
     async function atualizar() {
         try {
+            // Busca estado atual do Worker
             const resStatus = await fetch(`${API}/status?t=${Date.now()}`);
             const config = await resStatus.json();
             
             const novoEvento = config.evento || "Geral";
             formatoAtual = config.formato ? config.formato.toUpperCase().trim() : "10X15V";
             
+            // Se mudou o evento, limpa a galeria
             if (eventoAtual !== "" && eventoAtual !== novoEvento) {
                 eventoAtual = novoEvento;
                 todasFotos = [];
@@ -142,19 +144,18 @@
             document.getElementById('nome-evento').innerText = eventoAtual;
             document.getElementById('tipo-formato').innerText = traduzirFormato(config.formato);
 
+            // Busca fotos do evento atual
             const resF = await fetch(`${API}/list-photos?evento=${encodeURIComponent(eventoAtual)}&t=${Date.now()}`);
             const dados = await resF.json();
             
-            // Ignora molduras .png na galeria de exibição dos clientes
-            const fotosJpg = dados.filter(f => !f.key.toLowerCase().endsWith('.png'));
+            // Filtra apenas JPG (ignora molduras PNG)
+            const fotosJpg = Array.isArray(dados) ? dados.filter(f => !f.key.toLowerCase().endsWith('.png')) : [];
             const novasFotos = fotosJpg.filter(f => !chavesLocais.has(f.key));
 
             if (novasFotos.length > 0) {
-                let houveMudancaNoGrid = false;
-
                 for (let f of novasFotos) {
                     const keyLower = f.key.toLowerCase();
-                    const urlCompleta = `${API}/photo/${encodeURIComponent(f.key)}`;
+                    const urlCompleta = `${API}/photo?key=${encodeURIComponent(f.key)}`;
                     
                     let copiasDoCard = 1;
                     if (keyLower.includes("_3c_")) copiasDoCard = 3;
@@ -171,18 +172,20 @@
                     });
                     
                     chavesLocais.add(f.key);
-                    houveMudancaNoGrid = true;
                     
+                    // Auto-impressão para fotos novas
                     if (primeiraCarga === false) {
                         for (let i = 0; i < copiasDoCard; i++) {
                             addToPrintQueue(urlCompleta);
                         }
                     }
                 }
-                if (houveMudancaNoGrid) render();
+                render();
             }
             primeiraCarga = false;
-        } catch(e) { console.error("Erro galeria:", e); }
+        } catch(e) { 
+            console.error("Erro galeria:", e); 
+        }
     }
 
     function render() {
@@ -192,7 +195,7 @@
                 <span class="badge">#${f.id}</span>
                 ${f.copias > 1 ? `<span class="print-badge"><i class="fa-solid fa-print"></i> ${f.copias}x</span>` : ''}
                 ${f.livro ? `<span class="guestbook-badge"><i class="fa-solid fa-book-open"></i> Livro de Assinaturas</span>` : ''}
-                <img src="${f.url}">
+                <img src="${f.url}" loading="lazy">
             </div>
         `).join('');
     }
@@ -203,13 +206,19 @@
     }
 
     function processQueue() {
-        if (printQueue.length === 0) { isPrinting = false; return; }
+        if (printQueue.length === 0) { 
+            isPrinting = false; 
+            return; 
+        }
         isPrinting = true;
         const imgP = document.getElementById('img-print');
         imgP.onload = () => {
             window.focus();
             document.title = "PRINT_JOB";
-            setTimeout(() => { window.print(); setTimeout(processQueue, 3000); }, 1000);
+            setTimeout(() => { 
+                window.print(); 
+                setTimeout(processQueue, 3000); 
+            }, 1000);
         };
         imgP.src = printQueue.shift();
     }
@@ -220,8 +229,13 @@
         document.getElementById('btn-excluir-zoom').onclick = () => excluirFoto(key);
     }
 
-    function fecharZoom() { document.getElementById('modal-zoom').style.display = 'none'; }
-    function reimprimirAtual() { addToPrintQueue(document.getElementById('img-zoom').src); }
+    function fecharZoom() { 
+        document.getElementById('modal-zoom').style.display = 'none'; 
+    }
+    
+    function reimprimirAtual() { 
+        addToPrintQueue(document.getElementById('img-zoom').src); 
+    }
 
     async function excluirFoto(key) {
         if(confirm("Deseja realmente excluir esta foto permanentemente?")) {
@@ -242,9 +256,14 @@
     }
 
     async function limparTudo() {
-        if(confirm("Atenção! Isso apagará todas as mídias do servidor deste evento. Continuar?") && prompt("Senha mestre:") === "123") {
-            await fetch(`${API}/photo?key=all`, { method: 'DELETE' });
-            location.reload();
+        if(confirm("Atenção! Isso apagará todas as mídias do servidor deste evento. Continuar?")) {
+            const senha = prompt("Senha mestre:");
+            if(senha === "1234") {
+                await fetch(`${API}/photo?key=all`, { method: 'DELETE' });
+                location.reload();
+            } else {
+                alert("Senha incorreta!");
+            }
         }
     }
 

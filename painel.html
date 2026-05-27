@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT - Master Panel v2.0</title>
+    <title>PHOTO PRINT - Master Panel v2.2</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --neon: #39ff14; --red: #ff3131; --dark: #000000; --card: rgba(255, 255, 255, 0.03); --border: rgba(57, 255, 20, 0.2); }
@@ -65,7 +65,7 @@
 </head>
 <body>
 
-    <div class="version-tag">v2.0</div>
+    <div class="version-tag">v2.2</div>
 
     <div id="tela-inicial">
         <div>
@@ -186,43 +186,27 @@
         let arquivoMoldura = null;
 
         window.onload = function() {
-            console.log("🚀 Painel iniciado");
+            console.log("🚀 Painel v2.2 iniciado");
         };
 
         function abrirModalSenha() { 
-            console.log("🔑 Abrindo modal de senha...");
-            var modal = document.getElementById('modal-senha');
-            if (modal) {
-                modal.style.display = 'flex';
-                setTimeout(function() {
-                    var input = document.getElementById('input-pass');
-                    if (input) input.focus();
-                }, 200);
-            } else {
-                console.error("❌ Modal não encontrado!");
-            }
+            document.getElementById('modal-senha').style.display = 'flex'; 
+            setTimeout(() => document.getElementById('input-pass').focus(), 200);
         }
 
         function fecharModalSenha() { 
-            var modal = document.getElementById('modal-senha');
-            if (modal) {
-                modal.style.display = 'none';
-            }
-            var input = document.getElementById('input-pass');
-            if (input) input.value = '';
+            document.getElementById('modal-senha').style.display = 'none'; 
+            document.getElementById('input-pass').value = '';
         }
 
         function confirmarSenha() { 
-            var input = document.getElementById('input-pass');
-            if (!input) return;
-            
-            if(input.value === SENHA_MESTRA) { 
+            if(document.getElementById('input-pass').value === SENHA_MESTRA) { 
                 fecharModalSenha(); 
                 ativarPainel(); 
             } else {
                 alert("❌ Senha Incorreta!");
-                input.value = '';
-                input.focus();
+                document.getElementById('input-pass').value = '';
+                document.getElementById('input-pass').focus();
             }
         }
 
@@ -248,8 +232,8 @@
                     eventos = data.eventos.map(ev => ({
                         id: ev.id,
                         nome: ev.nome,
-                        data: ev.data_evento,
-                        dataRaw: ev.data_evento,
+                        data: ev.data,
+                        dataRaw: ev.data,
                         formato: ev.formato || '10X15V',
                         livro: ev.livro === 1 || ev.livro === true,
                         ativo: ev.ativo === 1 || ev.ativo === true,
@@ -355,7 +339,7 @@
                     if (arquivoMoldura) await fazerUploadMoldura(editId);
                     mostrarSucesso("✅ Evento atualizado!");
                 } else {
-                    console.log("➕ Enviando para Worker:", { nome, data, formato, livro });
+                    console.log("➕ Enviando:", { nome, data, formato, livro });
                     
                     const resp = await fetch(`${API_URL}/criar-evento`, {
                         method: 'POST',
@@ -364,22 +348,19 @@
                     });
                     
                     const result = await resp.json();
-                    console.log("📦 Worker respondeu:", result);
+                    console.log("📦 Resposta:", result);
                     
                     if (!result.success) {
                         throw new Error(result.error || 'Erro desconhecido');
                     }
                     
-                    // Garante que temos um ID
                     const eventId = result.id || Date.now();
-                    console.log("✅ ID do evento:", eventId);
+                    console.log("✅ ID:", eventId);
                     
-                    // Upload da moldura
                     if (arquivoMoldura) {
                         await fazerUploadMoldura(eventId);
                     }
                     
-                    // Adiciona na lista local
                     eventos.unshift({
                         id: eventId,
                         nome: nome,
@@ -398,7 +379,6 @@
                 renderizarLista();
                 checarEventoAtivo();
                 
-                // Recarrega do servidor
                 setTimeout(() => carregarEventosDoServidor(), 1000);
                 
             } catch(e) {
@@ -447,7 +427,6 @@
             
             if (!ev || !ev.id) {
                 mostrarErro("❌ Evento inválido! Delete e crie novamente.");
-                console.error("❌ Evento sem ID:", ev);
                 return;
             }
             

@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>WEBCAM - PHOTO PRINT v8.9</title>
+<title>WEBCAM - PHOTO PRINT v9.0</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 :root{ --neon:#39ff14; --dark:#050505; --danger:#ff3131; }
@@ -63,7 +63,7 @@ body.bg-active .corner-glow{ display:none; }
 <div id="debug-info">INICIANDO...</div>
 <div id="bg-menu"><label class="bg-btn" for="bg-input">🖼 ALTERAR FUNDO</label><div class="bg-btn" onclick="removeBackground()">✖ SEM FUNDO</div></div>
 <input type="file" id="bg-input" accept="image/*"/>
-<div id="screen-start" class="screen"><div class="btn-start"><div class="start-content"><div class="start-icon">📸</div><div class="start-title">AUTOGRAPH CAM</div><div class="start-subtitle">Aguardando comando...</div></div></div></div>
+<div id="screen-start" class="screen"><div class="btn-start"><div class="start-content"><div class="start-icon">📸</div><div class="start-title">PHOTO PRINT</div><div class="start-subtitle">Aguardando comando...</div></div></div></div>
 <div id="screen-camera" class="screen" style="display:none;z-index:40;"><div id="camera-wrapper"><video id="camera-feed" autoplay playsinline muted></video><canvas id="camera-canvas" style="display:none;"></canvas><div id="fun-text" class="fun-text" style="display:none;"></div><div id="options-overlay" style="display:none;"><div class="options-text">ACESSE O TOTEM PARA IMPRIMIR SUA FOTO</div></div></div></div>
 <div id="screen-thanks" class="screen" style="display:none;"><div class="status-text" id="thanks-text">🖨️ AGUARDE A IMPRESSÃO...</div></div>
 <script>
@@ -103,7 +103,7 @@ async function syncEvento(){
                 return;
             }
         }
-    }catch(e){debug('⚠️ sync err');}
+    }catch(e){}
 }
 
 function updateEventoUI(){
@@ -113,7 +113,7 @@ function updateEventoUI(){
 }
 
 async function loadMoldura(){
-    if(!eventoId){debug('ℹ️ Sem eventoId');return;}
+    if(!eventoId)return;
     molduraUrl=`${API_BASE}/photo?key=eventos/${eventoId}/moldura.png`;
     debug(`🖼️ Moldura: ${molduraUrl}`);
 }
@@ -123,7 +123,6 @@ function capturePhoto(){
     captureInProgress=true;
     videoFeed.style.display='block';canvasCapture.style.display='none';optionsOverlay.style.display='none';
     funText.style.display='block';funText.innerHTML="✨ PREPARE-SE! ✨<br>😜🕺💃";
-    debug('📸 Contagem');
     setTimeout(()=>{
         let cd=3;funText.innerHTML=`😁 SORRIA! 😁<br>⏳ ${cd}`;
         const t=setInterval(()=>{cd--;
@@ -141,7 +140,6 @@ function capturePhoto(){
     },4000);
 }
 
-// ==================== COMPOSIÇÃO COM MOLDURA E UPLOAD COMO JPG ====================
 async function composeAndUpload(copias){
     debug(`🖨️ Compondo ${copias} cópias...`);
     const fmt=FORMATOS[formatoAtual]||FORMATOS['10X15V'];
@@ -149,17 +147,13 @@ async function composeAndUpload(copias){
     outCanvas.width=fmt.w; outCanvas.height=fmt.h;
     const octx=outCanvas.getContext('2d');
     
-    // Fundo branco
     octx.fillStyle='white';
     octx.fillRect(0,0,outCanvas.width,outCanvas.height);
     
-    // Desenha a foto
     const fotoImg=await imgFromCanvas(canvasCapture);
     const sc=Math.max(outCanvas.width/fotoImg.width,outCanvas.height/fotoImg.height);
-    const w=fotoImg.width*sc, h=fotoImg.height*sc;
-    octx.drawImage(fotoImg,(outCanvas.width-w)/2,(outCanvas.height-h)/2,w,h);
+    octx.drawImage(fotoImg,(outCanvas.width-fotoImg.width*sc)/2,(outCanvas.height-fotoImg.height*sc)/2,fotoImg.width*sc,fotoImg.height*sc);
     
-    // Aplica a moldura
     if(molduraUrl){
         try{
             const molduraImg=await loadImg(molduraUrl);
@@ -168,10 +162,7 @@ async function composeAndUpload(copias){
         }catch(e){debug('⚠️ Moldura falhou: '+e.message);}
     }
     
-    // Converte para BLOB JPEG (não PNG!)
     const blob=await new Promise(r=>outCanvas.toBlob(r,'image/jpeg',0.95));
-    
-    // Upload como JPEG
     await uploadBlob(blob,copias);
 }
 
@@ -194,45 +185,39 @@ function loadImg(s){
     });
 }
 
-// ==================== UPLOAD COMO JPEG ====================
 async function uploadBlob(blob,copias){
     if(!eventoId){debug('❌ Sem eventoId');return;}
     
+    // Garantir nome .jpg
     let nome='foto.jpg', cf=1;
     if(copias===2){nome='foto_2c.jpg';cf=2;}
     else if(copias===3){nome='foto_2c_guestbook.jpg';cf=2;}
     else if(copias===4){nome='foto_3c_guestbook.jpg';cf=3;}
-    
-    // Força o nome do arquivo como .jpg
-    if(!nome.toLowerCase().endsWith('.jpg')){
-        nome=nome.replace(/\.png$/i,'.jpg');
-    }
     
     const fd=new FormData();
     fd.append('foto',blob,nome);
     fd.append('eventoId',eventoId);
     fd.append('timestamp',String(Date.now()));
     
-    debug(`⬆️ Upload: ${nome} (${cf} cópias) -> eventoId=${eventoId}`);
+    debug(`⬆️ Upload: ${nome} -> eventoId=${eventoId}`);
     
     try{
         const res=await fetch(`${API_BASE}/salvar-foto`,{method:'POST',body:fd});
         if(res.ok)debug('✅ Upload OK');
-        else debug('❌ Upload: '+res.status);
+        else debug('❌ Upload status: '+res.status);
     }catch(e){debug('❌ Upload err: '+e.message);}
 }
 
-// ==================== AGUARDAR TOTEM ====================
 async function waitForPrint(){
     debug('⏳ Aguardando totem...');
     for(let i=0;i<120;i++){
         try{
             const res=await fetch(`${API_BASE}/check-print?t=${Date.now()}`);
-            if(res.ok){const d=await res.json();if(d.printTriggered){debug(`🖨️ ${d.copias} cópia(s)`);return d.copias||1;}}
+            if(res.ok){const d=await res.json();if(d.printTriggered){return d.copias||1;}}
         }catch(e){}
         await new Promise(r=>setTimeout(r,500));
     }
-    debug('⏰ Timeout');return null;
+    return null;
 }
 
 async function finishCycle(){
@@ -257,7 +242,6 @@ function resetToStart(){
     ctx.clearRect(0,0,canvasCapture.width,canvasCapture.height);
     captureInProgress=false;lastState='start';
     fetch(`${API_BASE}/set-state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:'start'})}).catch(()=>{});
-    debug('🏁 Reset');
 }
 
 function updateScreenState(state){
@@ -293,7 +277,7 @@ function removeBackground(){localStorage.removeItem('photoprint_bg');document.ge
 
 localStorage.setItem('booth_state','start');updateScreenState('start');initCamera();
 setInterval(pollServerState,800);setInterval(syncEvento,5000);syncEvento();
-debug('🚀 WEBCAM v8.9 pronta');
+debug('🚀 PHOTO PRINT v9.0 pronta');
 </script>
 </body>
 </html>

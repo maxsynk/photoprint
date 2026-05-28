@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT - GALLERY v5.5</title>
+    <title>PHOTO PRINT - GALLERY v5.6</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -36,7 +36,7 @@
         .search-box input { background: rgba(255,255,255,0.05); border: var(--glass-border); color: #fff; padding: 10px 15px; border-radius: 8px; width: 180px; outline: none; }
         .search-btn { background: var(--accent); color: #000; border: none; padding: 0 20px; border-radius: 8px; font-weight: 900; cursor: pointer; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; padding: 30px 60px; }
-        .card { background: var(--surface); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; position: relative; }
+        .card { background: var(--surface); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; position: relative; min-height: 250px; display: flex; align-items: center; justify-content: center; }
         .card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: var(--neon-shadow); }
         .card img { width: 100%; display: block; height: auto; }
         .card .badge { position: absolute; top: 8px; left: 8px; background: var(--accent); color: #000; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 2; }
@@ -104,6 +104,7 @@
     let printQueue = [];
     let isPrinting = false;
     let primeiraCarga = true;
+    let molduraPronta = false;
     
     const FORMATOS = {
         "TIRINHA": { w: 600, h: 1800 },
@@ -127,8 +128,8 @@
         return formato; 
     }
 
-    // Monta foto + moldura e retorna dataURL
-    async function montarFotoComMoldura(fotoUrl) {
+    // ==================== MONTAGEM DIRETA NO CANVAS ====================
+    async function montarFoto(fotoUrl) {
         const fmt = FORMATOS[formatoAtual] || FORMATOS['10X15V'];
         const canvas = document.createElement('canvas');
         canvas.width = fmt.w;
@@ -136,35 +137,57 @@
         const ctx = canvas.getContext('2d');
         
         // Fundo branco
-        ctx.fillStyle = 'white';
+        ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // Carrega a foto
-        const fotoImg = await loadImage(fotoUrl);
-        const scale = Math.max(canvas.width / fotoImg.width, canvas.height / fotoImg.height);
-        const w = fotoImg.width * scale;
-        const h = fotoImg.height * scale;
-        ctx.drawImage(fotoImg, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
-        
-        // Aplica moldura se existir
-        if (molduraUrl) {
-            try {
-                const molduraImg = await loadImage(molduraUrl);
-                ctx.drawImage(molduraImg, 0, 0, canvas.width, canvas.height);
-            } catch(e) {}
+        try {
+            // 1. Carrega a foto
+            const foto = await carregarImagem(fotoUrl);
+            if (!foto) throw new Error('Foto não carregou');
+            
+            // Calcula escala para cobrir o canvas
+            const scale = Math.max(canvas.width / foto.width, canvas.height / foto.height);
+            const w = foto.width * scale;
+            const h = foto.height * scale;
+            const x = (canvas.width - w) / 2;
+            const y = (canvas.height - h) / 2;
+            
+            ctx.drawImage(foto, x, y, w, h);
+            
+            // 2. Carrega e aplica a moldura (se existir)
+            if (molduraUrl && molduraPronta) {
+                const moldura = await carregarImagem(molduraUrl);
+                if (moldura) {
+                    ctx.drawImage(moldura, 0, 0, canvas.width, canvas.height);
+                }
+            }
+            
+            return canvas.toDataURL('image/jpeg', 0.85);
+        } catch(e) {
+            console.error('Erro na montagem:', e);
+            return fotoUrl; // fallback: foto pura
         }
-        
-        return canvas.toDataURL('image/jpeg', 0.85);
     }
     
-    function loadImage(src) {
-        return new Promise((resolve, reject) => {
+    function carregarImagem(src) {
+        return new Promise((resolve) => {
             const img = new Image();
             img.crossOrigin = 'anonymous';
             img.onload = () => resolve(img);
-            img.onerror = () => reject(new Error('Falha ao carregar imagem'));
+            img.onerror = () => resolve(null);
             img.src = src + '?t=' + Date.now();
         });
+    }
+    
+    // Pré-carrega a moldura
+    async function preCarregarMoldura(url) {
+        if (!url) {
+            molduraPronta = false;
+            return;
+        }
+        const img = await carregarImagem(url);
+        molduraPronta = (img !== null);
+        debug(molduraPronta ? '✅ Moldura carregada' : '⚠️ Moldura indisponível');
     }
 
     async function atualizar() {
@@ -176,13 +199,7 @@
             const novoEventoId = (config.config && config.config.eventoId) ? config.config.eventoId : "";
             formatoAtual = (config.config && config.config.formato) ? config.config.formato.toUpperCase().trim() : "10X15V";
             
-            // Atualiza URL da moldura
-            if (novoEventoId) {
-                molduraUrl = `${API}/photo?key=eventos/${novoEventoId}/moldura.png`;
-            } else {
-                molduraUrl = "";
-            }
-            
+            // Atualiza moldura se mudou o evento
             if (eventoIdAtual !== novoEventoId) {
                 debug(`Evento: ${eventoAtual} -> ${novoEvento} (ID: ${novoEventoId})`);
                 eventoAtual = novoEvento;
@@ -190,8 +207,17 @@
                 todasFotos = [];
                 chavesLocais.clear();
                 printQueue = []; 
-                primeiraCarga = true; 
-                document.getElementById('grid-fotos').innerHTML = ""; 
+                primeiraCarga = true;
+                molduraPronta = false;
+                document.getElementById('grid-fotos').innerHTML = "";
+                
+                // Pré-carrega a moldura
+                if (novoEventoId) {
+                    molduraUrl = `${API}/photo?key=eventos/${novoEventoId}/moldura.png`;
+                    await preCarregarMoldura(molduraUrl);
+                } else {
+                    molduraUrl = "";
+                }
             }
             
             document.getElementById('nome-evento').innerText = eventoAtual;
@@ -205,17 +231,15 @@
             const resF = await fetch(`${API}/list-photos?evento=${encodeURIComponent(eventoAtual)}&t=${Date.now()}`);
             const dados = await resF.json();
             
-            // Filtra apenas fotos (ignora molduras)
             const fotosValidas = Array.isArray(dados) ? dados.filter(f => {
                 const k = f.key.toLowerCase();
-                if (k.includes('moldura')) return false;
-                return true; // aceita qualquer formato
+                return !k.includes('moldura');
             }) : [];
             
             const novasFotos = fotosValidas.filter(f => !chavesLocais.has(f.key));
 
             if (novasFotos.length > 0) {
-                debug(`Montando ${novasFotos.length} novas fotos com moldura...`);
+                debug(`Montando ${novasFotos.length} foto(s)...`);
                 for (let f of novasFotos) {
                     const keyLower = f.key.toLowerCase();
                     const fotoUrl = `${API}/photo?key=${encodeURIComponent(f.key)}`;
@@ -226,18 +250,13 @@
 
                     const possuiLivro = keyLower.includes("_livro_") || keyLower.includes("guestbook");
 
-                    // Monta a foto com moldura (dataURL)
-                    let urlFinal = fotoUrl; // fallback: foto pura
-                    try {
-                        urlFinal = await montarFotoComMoldura(fotoUrl);
-                    } catch(e) {
-                        debug('⚠️ Falha ao montar moldura para: ' + f.key);
-                    }
+                    // Monta a foto com moldura
+                    const urlMontada = await montarFoto(fotoUrl);
 
                     todasFotos.push({ 
                         id: todasFotos.length + 1, 
                         url: fotoUrl,
-                        urlMontada: urlFinal,
+                        urlMontada: urlMontada,
                         key: f.key,
                         copias: copiasDoCard,
                         livro: possuiLivro
@@ -247,12 +266,12 @@
                     
                     if (primeiraCarga === false) {
                         for (let i = 0; i < copiasDoCard; i++) {
-                            addToPrintQueue(urlFinal);
+                            addToPrintQueue(urlMontada);
                         }
                     }
                 }
                 render();
-                debug(`Total: ${todasFotos.length} fotos`);
+                debug(`✅ ${todasFotos.length} fotos na galeria`);
             }
             primeiraCarga = false;
         } catch(e) { 
@@ -274,7 +293,7 @@
                 <span class="badge">#${f.id}</span>
                 ${f.copias > 1 ? `<span class="print-badge"><i class="fa-solid fa-print"></i> ${f.copias}x</span>` : ''}
                 ${f.livro ? `<span class="guestbook-badge"><i class="fa-solid fa-book-open"></i> Livro de Assinaturas</span>` : ''}
-                <img src="${f.urlMontada}" loading="lazy" onerror="this.src='${f.url}';">
+                <img src="${f.urlMontada}" loading="lazy">
             </div>
         `).join('');
     }

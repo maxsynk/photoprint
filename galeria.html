@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT - GALLERY v5.8</title>
+    <title>PHOTO PRINT - GALLERY v5.9</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -38,18 +38,22 @@
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; padding: 30px 60px; }
         .card { background: var(--surface); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; position: relative; }
         .card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: var(--neon-shadow); }
-        .card img { width: 100%; display: block; height: auto; }
-        .card .badge { position: absolute; top: 8px; left: 8px; background: var(--accent); color: #000; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 2; }
-        .card .print-badge { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.8); border: 1px solid var(--accent); color: var(--accent); padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 2; }
-        .card .guestbook-badge { position: absolute; bottom: 8px; left: 8px; right: 8px; background: rgba(0,0,0,0.85); border: 1px solid var(--info-blue); color: var(--info-blue); padding: 5px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 2; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .card .foto-container { position: relative; width: 100%; }
+        .card .foto-container img { width: 100%; display: block; height: auto; }
+        .card .foto-container .moldura-overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+        .card .badge { position: absolute; top: 8px; left: 8px; background: var(--accent); color: #000; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 3; }
+        .card .print-badge { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.8); border: 1px solid var(--accent); color: var(--accent); padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 3; }
+        .card .guestbook-badge { position: absolute; bottom: 8px; left: 8px; right: 8px; background: rgba(0,0,0,0.85); border: 1px solid var(--info-blue); color: var(--info-blue); padding: 5px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 3; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .sidebar { position: fixed; right: -350px; top: 0; width: 300px; height: 100%; background: rgba(10, 10, 10, 0.95); z-index: 5000; transition: 0.5s; padding: 120px 25px; border-left: var(--glass-border); }
         .sidebar.active { right: 0; }
         .sidebar-btn { width: 100%; padding: 18px; margin-bottom: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 15px; font-weight: bold; }
         .menu-trigger { position: absolute; right: 40px; top: 40px; cursor: pointer; z-index: 5001; }
         .menu-trigger span { display: block; width: 30px; height: 3px; background: var(--accent); margin: 5px 0; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 6000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .modal img { max-width: 90%; max-height: 70vh; border: 2px solid var(--accent); border-radius: 10px; margin-bottom: 25px; }
-        .modal-controls { display: flex; gap: 15px; }
+        .modal .modal-foto-container { position: relative; max-width: 90%; max-height: 70vh; }
+        .modal .modal-foto-container img { max-width: 100%; max-height: 70vh; border: 2px solid var(--accent); border-radius: 10px; display: block; }
+        .modal .modal-foto-container .moldura-overlay { position: absolute; inset: 0; pointer-events: none; }
+        .modal-controls { display: flex; gap: 15px; margin-top: 25px; }
         .btn-act { border: none; padding: 15px 30px; border-radius: 30px; font-weight: 900; cursor: pointer; text-transform: uppercase; }
         .debug-info { position: fixed; bottom: 10px; left: 10px; right: 10px; z-index: 999; background: rgba(0,0,0,0.9); color: var(--accent); font-size: 11px; padding: 8px 12px; border-radius: 6px; font-family: monospace; text-align: center; border: 1px solid rgba(57,255,20,0.3); }
     </style>
@@ -82,7 +86,10 @@
     <main class="grid" id="grid-fotos"></main>
 
     <div class="modal" id="modal-zoom">
-        <img id="img-zoom" src="">
+        <div class="modal-foto-container">
+            <img id="img-zoom" src="">
+            <img id="moldura-zoom" class="moldura-overlay" src="">
+        </div>
         <div class="modal-controls">
             <button class="btn-act" style="background:#333; color:#fff" onclick="fecharZoom()">Voltar</button>
             <button class="btn-act" style="background:var(--accent); color:#000" onclick="reimprimirAtual()">Reimprimir</button>
@@ -100,17 +107,10 @@
     let eventoAtual = "";
     let eventoIdAtual = "";
     let formatoAtual = "10X15V";
-    let molduraImg = null; // Imagem da moldura pré-carregada
+    let molduraUrl = "";
     let printQueue = [];
     let isPrinting = false;
     let primeiraCarga = true;
-    
-    const FORMATOS = {
-        "TIRINHA": { w: 600, h: 1800 },
-        "POLAROID": { w: 1200, h: 1500 },
-        "10X15H": { w: 1800, h: 1200 },
-        "10X15V": { w: 1200, h: 1800 }
-    };
 
     function debug(msg) {
         console.log('[GALERIA]', msg);
@@ -127,58 +127,6 @@
         return formato; 
     }
 
-    // Carrega uma imagem e retorna o elemento Image
-    function carregarImagem(url) {
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => resolve(img);
-            img.onerror = () => reject(new Error('Falha'));
-            img.src = url + '?t=' + Date.now();
-        });
-    }
-
-    // Pré-carrega a moldura
-    async function preCarregarMoldura(eventoId) {
-        const url = `${API}/photo?key=eventos/${eventoId}/moldura.png`;
-        debug('🖼️ Carregando moldura: ' + url);
-        try {
-            molduraImg = await carregarImagem(url);
-            debug('✅ Moldura carregada! ' + molduraImg.width + 'x' + molduraImg.height);
-            return true;
-        } catch(e) {
-            debug('❌ Moldura não carregou: ' + e.message);
-            molduraImg = null;
-            return false;
-        }
-    }
-
-    // Monta foto + moldura
-    function montar(fotoImg) {
-        const fmt = FORMATOS[formatoAtual] || FORMATOS['10X15V'];
-        const canvas = document.createElement('canvas');
-        canvas.width = fmt.w;
-        canvas.height = fmt.h;
-        const ctx = canvas.getContext('2d');
-        
-        // Fundo branco
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Foto
-        const scale = Math.max(canvas.width / fotoImg.width, canvas.height / fotoImg.height);
-        const w = fotoImg.width * scale;
-        const h = fotoImg.height * scale;
-        ctx.drawImage(fotoImg, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
-        
-        // Moldura
-        if (molduraImg) {
-            ctx.drawImage(molduraImg, 0, 0, canvas.width, canvas.height);
-        }
-        
-        return canvas.toDataURL('image/jpeg', 0.9);
-    }
-
     async function atualizar() {
         try {
             const resStatus = await fetch(`${API}/get-all-states?t=${Date.now()}`);
@@ -189,18 +137,20 @@
             formatoAtual = (config.config && config.config.formato) ? config.config.formato.toUpperCase().trim() : "10X15V";
             
             if (eventoIdAtual !== novoEventoId) {
-                debug(`🔄 Evento: ${novoEvento} (ID: ${novoEventoId}) | ${formatoAtual}`);
+                debug(`🔄 Evento: ${novoEvento} (ID: ${novoEventoId})`);
                 eventoAtual = novoEvento;
                 eventoIdAtual = novoEventoId;
                 todasFotos = [];
                 chavesLocais.clear();
                 printQueue = []; 
                 primeiraCarga = true;
-                molduraImg = null;
                 document.getElementById('grid-fotos').innerHTML = "";
                 
                 if (novoEventoId) {
-                    await preCarregarMoldura(novoEventoId);
+                    molduraUrl = `${API}/photo?key=eventos/${novoEventoId}/moldura.png`;
+                    debug('🖼️ Moldura: ' + molduraUrl);
+                } else {
+                    molduraUrl = "";
                 }
             }
             
@@ -208,7 +158,6 @@
             document.getElementById('tipo-formato').innerText = traduzirFormato(formatoAtual);
 
             if (!eventoIdAtual) { debug('Nenhum evento ativo'); return; }
-            if (!molduraImg) { debug('⏳ Aguardando moldura...'); return; }
 
             const resF = await fetch(`${API}/list-photos?evento=${encodeURIComponent(eventoAtual)}&t=${Date.now()}`);
             const dados = await resF.json();
@@ -217,7 +166,7 @@
             const novasFotos = fotosValidas.filter(f => !chavesLocais.has(f.key));
 
             if (novasFotos.length > 0) {
-                debug(`🖨️ Montando ${novasFotos.length} foto(s)...`);
+                debug(`📷 ${novasFotos.length} nova(s) foto(s)`);
                 for (let f of novasFotos) {
                     const keyLower = f.key.toLowerCase();
                     const fotoUrl = `${API}/photo?key=${encodeURIComponent(f.key)}`;
@@ -227,29 +176,21 @@
                     else if (keyLower.includes("_2c_")) copiasDoCard = 2;
                     const possuiLivro = keyLower.includes("_livro_") || keyLower.includes("guestbook");
 
-                    try {
-                        const fotoImg = await carregarImagem(fotoUrl);
-                        const urlMontada = montar(fotoImg);
-                        
-                        todasFotos.push({ 
-                            id: todasFotos.length + 1, 
-                            url: fotoUrl,
-                            urlMontada: urlMontada,
-                            key: f.key,
-                            copias: copiasDoCard,
-                            livro: possuiLivro
-                        });
-                        chavesLocais.add(f.key);
-                        
-                        if (!primeiraCarga) {
-                            for (let i = 0; i < copiasDoCard; i++) addToPrintQueue(urlMontada);
-                        }
-                    } catch(e) {
-                        debug('❌ Erro: ' + f.key);
+                    todasFotos.push({ 
+                        id: todasFotos.length + 1, 
+                        url: fotoUrl,
+                        key: f.key,
+                        copias: copiasDoCard,
+                        livro: possuiLivro
+                    });
+                    chavesLocais.add(f.key);
+                    
+                    if (!primeiraCarga) {
+                        for (let i = 0; i < copiasDoCard; i++) addToPrintQueue(fotoUrl);
                     }
                 }
                 render();
-                debug(`✅ ${todasFotos.length} fotos com moldura`);
+                debug(`✅ ${todasFotos.length} fotos na galeria`);
             }
             primeiraCarga = false;
         } catch(e) { debug('Erro: ' + e.message); }
@@ -265,11 +206,14 @@
             return;
         }
         grid.innerHTML = todasFotos.slice().reverse().map(f => `
-            <div class="card" onclick="abrirZoom('${f.urlMontada}', '${f.key}')">
+            <div class="card" onclick="abrirZoom('${f.url}', '${f.key}')">
                 <span class="badge">#${f.id}</span>
                 ${f.copias > 1 ? `<span class="print-badge"><i class="fa-solid fa-print"></i> ${f.copias}x</span>` : ''}
                 ${f.livro ? `<span class="guestbook-badge"><i class="fa-solid fa-book-open"></i> Livro de Assinaturas</span>` : ''}
-                <img src="${f.urlMontada}" loading="lazy">
+                <div class="foto-container">
+                    <img src="${f.url}" loading="lazy">
+                    ${molduraUrl ? `<img class="moldura-overlay" src="${molduraUrl}" loading="lazy">` : ''}
+                </div>
             </div>
         `).join('');
     }
@@ -283,8 +227,9 @@
         imgP.src = printQueue.shift();
     }
 
-    function abrirZoom(urlMontada, key) {
-        document.getElementById('img-zoom').src = urlMontada;
+    function abrirZoom(fotoUrl, key) {
+        document.getElementById('img-zoom').src = fotoUrl;
+        document.getElementById('moldura-zoom').src = molduraUrl || '';
         document.getElementById('modal-zoom').style.display = 'flex';
         document.getElementById('btn-excluir-zoom').onclick = () => excluirFoto(key);
     }
@@ -300,7 +245,7 @@
 
     async function baixarZip() {
         const zip = new JSZip();
-        for(let f of todasFotos) { const blob = await fetch(f.urlMontada).then(r => r.blob()); zip.file(`foto_${f.id}.jpg`, blob); }
+        for(let f of todasFotos) { const blob = await fetch(f.url).then(r => r.blob()); zip.file(`foto_${f.id}.jpg`, blob); }
         const content = await zip.generateAsync({type:"blob"}); saveAs(content, "galeria.zip");
     }
 
@@ -313,7 +258,7 @@
     function executarBusca() {
         const idBusca = document.getElementById('input-busca').value;
         const foto = todasFotos.find(f => f.id == idBusca);
-        if(foto) abrirZoom(foto.urlMontada, foto.key); else alert("ID não encontrado!");
+        if(foto) abrirZoom(foto.url, foto.key); else alert("ID não encontrado!");
     }
 
     setInterval(atualizar, 4000);

@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>WEBCAM - PHOTO PRINT v9.0</title>
+<title>WEBCAM - PHOTO PRINT v9.1</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 :root{ --neon:#39ff14; --dark:#050505; --danger:#ff3131; }
@@ -75,32 +75,25 @@ const funText=document.getElementById('fun-text');
 const optionsOverlay=document.getElementById('options-overlay');
 let stream=null,lastState='start',captureInProgress=false,initialLoad=true;
 let eventoAtual=null,eventoId=null,formatoAtual='10X15V',molduraUrl=null;
-const FORMATOS={"TIRINHA":{w:600,h:1800},"POLAROID":{w:1200,h:1500},"10X15H":{w:1800,h:1200},"10X15V":{w:1200,h:1800}};
 function debug(msg){console.log('[WEBCAM]',msg);const el=document.getElementById('debug-info');if(el)el.innerText=msg;}
 
 async function initCamera(){
-    try{
-        stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:1920,height:1080}});
-        videoFeed.srcObject=stream;
-        debug('✅ Câmera OK');
-    }catch(err){debug('❌ Câmera: '+err.message);}
+    try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:1920,height:1080}});videoFeed.srcObject=stream;debug('✅ Câmera OK');}
+    catch(err){debug('❌ Câmera: '+err.message);}
 }
 
 async function syncEvento(){
     try{
         const res=await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`);
-        if(res.ok){
-            const data=await res.json();
+        if(res.ok){const data=await res.json();
             if(data.config&&data.config.evento&&data.config.evento!=='Geral'){
                 if(eventoAtual!==data.config.evento||!eventoId){
-                    eventoAtual=data.config.evento;
-                    eventoId=data.config.eventoId;
+                    eventoAtual=data.config.evento;eventoId=data.config.eventoId;
                     formatoAtual=(data.config.formato||'10X15V').toUpperCase().trim();
-                    debug(`📡 Evento: ${eventoAtual} | ID: ${eventoId} | ${formatoAtual}`);
+                    molduraUrl=`${API_BASE}/photo?key=eventos/${eventoId}/moldura.png`;
+                    debug(`📡 Evento: ${eventoAtual} | ID: ${eventoId} | Moldura: ${molduraUrl}`);
                     updateEventoUI();
-                    await loadMoldura();
                 }
-                return;
             }
         }
     }catch(e){}
@@ -110,12 +103,6 @@ function updateEventoUI(){
     const el=document.getElementById('active-event-name');
     if(eventoAtual){el.style.display='block';el.innerText=`🎉 ${eventoAtual} | ${formatoAtual}`;}
     else el.style.display='none';
-}
-
-async function loadMoldura(){
-    if(!eventoId)return;
-    molduraUrl=`${API_BASE}/photo?key=eventos/${eventoId}/moldura.png`;
-    debug(`🖼️ Moldura: ${molduraUrl}`);
 }
 
 function capturePhoto(){
@@ -140,81 +127,85 @@ function capturePhoto(){
     },4000);
 }
 
+// ==================== COMPOSIÇÃO E UPLOAD COM MOLDURA ====================
+function carregarImagem(url) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error('Falha ao carregar'));
+        img.src = url + '?t=' + Date.now();
+    });
+}
+
 async function composeAndUpload(copias){
-    debug(`🖨️ Compondo ${copias} cópias...`);
-    const fmt=FORMATOS[formatoAtual]||FORMATOS['10X15V'];
-    const outCanvas=document.createElement('canvas');
-    outCanvas.width=fmt.w; outCanvas.height=fmt.h;
-    const octx=outCanvas.getContext('2d');
+    if(!molduraUrl){debug('❌ Sem moldura!');return;}
+    debug('🖨️ Compondo foto + moldura...');
     
-    octx.fillStyle='white';
-    octx.fillRect(0,0,outCanvas.width,outCanvas.height);
-    
-    const fotoImg=await imgFromCanvas(canvasCapture);
-    const sc=Math.max(outCanvas.width/fotoImg.width,outCanvas.height/fotoImg.height);
-    octx.drawImage(fotoImg,(outCanvas.width-fotoImg.width*sc)/2,(outCanvas.height-fotoImg.height*sc)/2,fotoImg.width*sc,fotoImg.height*sc);
-    
-    if(molduraUrl){
-        try{
-            const molduraImg=await loadImg(molduraUrl);
-            octx.drawImage(molduraImg,0,0,outCanvas.width,outCanvas.height);
-            debug('✅ Moldura aplicada');
-        }catch(e){debug('⚠️ Moldura falhou: '+e.message);}
+    try {
+        // Carrega a foto do canvas
+        const fotoImg = await new Promise(r => {
+            const img = new Image();
+            img.onload = () => r(img);
+            img.src = canvasCapture.toDataURL('image/jpeg', 0.92);
+        });
+        
+        // Carrega a moldura
+        const molduraImg = await carregarImagem(molduraUrl);
+        
+        // Cria canvas no tamanho da foto
+        const canvas = document.createElement('canvas');
+        canvas.width = fotoImg.width;
+        canvas.height = fotoImg.height;
+        const cctx = canvas.getContext('2d');
+        
+        // Fundo branco
+        cctx.fillStyle = '#FFFFFF';
+        cctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Foto
+        cctx.drawImage(fotoImg, 0, 0);
+        
+        // Moldura
+        cctx.drawImage(molduraImg, 0, 0, canvas.width, canvas.height);
+        
+        // Converte para blob JPEG
+        const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.95));
+        
+        // Upload
+        await uploadBlob(blob, copias);
+        debug('✅ Foto montada enviada!');
+    } catch(e) {
+        debug('❌ Erro na composição: ' + e.message);
     }
-    
-    const blob=await new Promise(r=>outCanvas.toBlob(r,'image/jpeg',0.95));
-    await uploadBlob(blob,copias);
 }
 
-function imgFromCanvas(c){
-    return new Promise((rs,rj)=>{
-        const i=new Image();
-        i.onload=()=>rs(i);
-        i.onerror=rj;
-        i.src=c.toDataURL('image/jpeg',0.92);
-    });
-}
-
-function loadImg(s){
-    return new Promise((rs,rj)=>{
-        const i=new Image();
-        i.crossOrigin='anonymous';
-        i.onload=()=>rs(i);
-        i.onerror=rj;
-        i.src=s+'?t='+Date.now();
-    });
-}
-
-async function uploadBlob(blob,copias){
+async function uploadBlob(blob, copias){
     if(!eventoId){debug('❌ Sem eventoId');return;}
     
-    // Garantir nome .jpg
-    let nome='foto.jpg', cf=1;
+    let nome = 'foto.jpg', cf = 1;
     if(copias===2){nome='foto_2c.jpg';cf=2;}
     else if(copias===3){nome='foto_2c_guestbook.jpg';cf=2;}
     else if(copias===4){nome='foto_3c_guestbook.jpg';cf=3;}
     
-    const fd=new FormData();
-    fd.append('foto',blob,nome);
-    fd.append('eventoId',eventoId);
-    fd.append('timestamp',String(Date.now()));
+    const fd = new FormData();
+    fd.append('foto', blob, nome);
+    fd.append('eventoId', eventoId);
+    fd.append('timestamp', String(Date.now()));
     
     debug(`⬆️ Upload: ${nome} -> eventoId=${eventoId}`);
     
-    try{
-        const res=await fetch(`${API_BASE}/salvar-foto`,{method:'POST',body:fd});
-        if(res.ok)debug('✅ Upload OK');
-        else debug('❌ Upload status: '+res.status);
-    }catch(e){debug('❌ Upload err: '+e.message);}
+    try {
+        const res = await fetch(`${API_BASE}/salvar-foto`, {method:'POST', body:fd});
+        if(res.ok) debug('✅ Upload OK');
+        else debug('❌ Upload: ' + res.status);
+    } catch(e) { debug('❌ Upload err: ' + e.message); }
 }
 
 async function waitForPrint(){
     debug('⏳ Aguardando totem...');
     for(let i=0;i<120;i++){
-        try{
-            const res=await fetch(`${API_BASE}/check-print?t=${Date.now()}`);
-            if(res.ok){const d=await res.json();if(d.printTriggered){return d.copias||1;}}
-        }catch(e){}
+        try{const res=await fetch(`${API_BASE}/check-print?t=${Date.now()}`);if(res.ok){const d=await res.json();if(d.printTriggered)return d.copias||1;}}catch(e){}
         await new Promise(r=>setTimeout(r,500));
     }
     return null;
@@ -256,20 +247,14 @@ function updateScreenState(state){
 }
 
 async function pollServerState(){
-    try{
-        const res=await fetch(`${API_BASE}/get-state?t=${Date.now()}`);
-        if(!res.ok)return;
-        const d=await res.json();
+    try{const res=await fetch(`${API_BASE}/get-state?t=${Date.now()}`);if(!res.ok)return;const d=await res.json();
         if(initialLoad){initialLoad=false;if(d.state!=='start'){await fetch(`${API_BASE}/set-state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:'start'})});return;}}
-        if(d.state&&d.state!==lastState)updateScreenState(d.state);
-    }catch(e){}
+        if(d.state&&d.state!==lastState)updateScreenState(d.state);}catch(e){}
 }
 
 window.addEventListener('storage',e=>{if(e.key==='booth_state')updateScreenState(e.newValue);});
-
 let clickCount=0,clickTimer=null;
 document.getElementById('secret-logo').addEventListener('click',()=>{clickCount++;clearTimeout(clickTimer);clickTimer=setTimeout(()=>{clickCount=0},2000);if(clickCount>=7){document.getElementById('bg-menu').classList.toggle('active');clickCount=0;}});
-
 function updateVisualMode(){const bg=localStorage.getItem('photoprint_bg');if(bg)document.body.classList.add('bg-active');else document.body.classList.remove('bg-active');}
 document.getElementById('bg-input').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{document.getElementById('dynamic-bg').style.backgroundImage=`url('${ev.target.result}')`;document.getElementById('dynamic-bg').classList.add('active');localStorage.setItem('photoprint_bg',ev.target.result);updateVisualMode();document.getElementById('bg-menu').classList.remove('active');};r.readAsDataURL(f);});
 function removeBackground(){localStorage.removeItem('photoprint_bg');document.getElementById('dynamic-bg').style.backgroundImage="";document.getElementById('dynamic-bg').classList.remove('active');updateVisualMode();document.getElementById('bg-menu').classList.remove('active');}
@@ -277,7 +262,7 @@ function removeBackground(){localStorage.removeItem('photoprint_bg');document.ge
 
 localStorage.setItem('booth_state','start');updateScreenState('start');initCamera();
 setInterval(pollServerState,800);setInterval(syncEvento,5000);syncEvento();
-debug('🚀 PHOTO PRINT v9.0 pronta');
+debug('🚀 WEBCAM v9.1 pronta');
 </script>
 </body>
 </html>

@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>WEBCAM - PHOTO PRINT v8.8</title>
+<title>WEBCAM - AUTOGRAPH CAM v8.9</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 :root{ --neon:#39ff14; --dark:#050505; --danger:#ff3131; }
@@ -63,7 +63,7 @@ body.bg-active .corner-glow{ display:none; }
 <div id="debug-info">INICIANDO...</div>
 <div id="bg-menu"><label class="bg-btn" for="bg-input">🖼 ALTERAR FUNDO</label><div class="bg-btn" onclick="removeBackground()">✖ SEM FUNDO</div></div>
 <input type="file" id="bg-input" accept="image/*"/>
-<div id="screen-start" class="screen"><div class="btn-start" id="main-start-btn"><div class="start-content"><div class="start-icon">📸</div><div class="start-title">AUTOGRAPH CAM</div><div class="start-subtitle">Aguardando comando...</div></div></div></div>
+<div id="screen-start" class="screen"><div class="btn-start"><div class="start-content"><div class="start-icon">📸</div><div class="start-title">AUTOGRAPH CAM</div><div class="start-subtitle">Aguardando comando...</div></div></div></div>
 <div id="screen-camera" class="screen" style="display:none;z-index:40;"><div id="camera-wrapper"><video id="camera-feed" autoplay playsinline muted></video><canvas id="camera-canvas" style="display:none;"></canvas><div id="fun-text" class="fun-text" style="display:none;"></div><div id="options-overlay" style="display:none;"><div class="options-text">ACESSE O TOTEM PARA IMPRIMIR SUA FOTO</div></div></div></div>
 <div id="screen-thanks" class="screen" style="display:none;"><div class="status-text" id="thanks-text">🖨️ AGUARDE A IMPRESSÃO...</div></div>
 <script>
@@ -78,17 +78,14 @@ let eventoAtual=null,eventoId=null,formatoAtual='10X15V',molduraUrl=null;
 const FORMATOS={"TIRINHA":{w:600,h:1800},"POLAROID":{w:1200,h:1500},"10X15H":{w:1800,h:1200},"10X15V":{w:1200,h:1800}};
 function debug(msg){console.log('[WEBCAM]',msg);const el=document.getElementById('debug-info');if(el)el.innerText=msg;}
 
-// ==================== CÂMERA (SEM PAUSE INICIAL) ====================
 async function initCamera(){
     try{
         stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:1920,height:1080}});
         videoFeed.srcObject=stream;
-        // NÃO pausa - deixa rodando para evitar tela preta
-        debug('✅ Câmera OK - stream ativo');
+        debug('✅ Câmera OK');
     }catch(err){debug('❌ Câmera: '+err.message);}
 }
 
-// ==================== SINCRONIZAÇÃO ====================
 async function syncEvento(){
     try{
         const res=await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`);
@@ -121,7 +118,6 @@ async function loadMoldura(){
     debug(`🖼️ Moldura: ${molduraUrl}`);
 }
 
-// ==================== CAPTURA ====================
 function capturePhoto(){
     if(captureInProgress)return;
     captureInProgress=true;
@@ -145,31 +141,84 @@ function capturePhoto(){
     },4000);
 }
 
-// ==================== COMPOSIÇÃO E UPLOAD ====================
+// ==================== COMPOSIÇÃO COM MOLDURA E UPLOAD COMO JPG ====================
 async function composeAndUpload(copias){
     debug(`🖨️ Compondo ${copias} cópias...`);
     const fmt=FORMATOS[formatoAtual]||FORMATOS['10X15V'];
-    const oc=document.createElement('canvas');oc.width=fmt.w;oc.height=fmt.h;const octx=oc.getContext('2d');
-    octx.fillStyle='white';octx.fillRect(0,0,oc.width,oc.height);
-    const fi=await imgFromCanvas(canvasCapture);
-    const sc=Math.max(oc.width/fi.width,oc.height/fi.height);const w=fi.width*sc,h=fi.height*sc;
-    octx.drawImage(fi,(oc.width-w)/2,(oc.height-h)/2,w,h);
-    if(molduraUrl){try{const mi=await loadImg(molduraUrl);octx.drawImage(mi,0,0,oc.width,oc.height);debug('✅ Moldura aplicada');}catch(e){debug('⚠️ Moldura falhou');}}
-    const blob=await new Promise(r=>oc.toBlob(r,'image/jpeg',0.95));
+    const outCanvas=document.createElement('canvas');
+    outCanvas.width=fmt.w; outCanvas.height=fmt.h;
+    const octx=outCanvas.getContext('2d');
+    
+    // Fundo branco
+    octx.fillStyle='white';
+    octx.fillRect(0,0,outCanvas.width,outCanvas.height);
+    
+    // Desenha a foto
+    const fotoImg=await imgFromCanvas(canvasCapture);
+    const sc=Math.max(outCanvas.width/fotoImg.width,outCanvas.height/fotoImg.height);
+    const w=fotoImg.width*sc, h=fotoImg.height*sc;
+    octx.drawImage(fotoImg,(outCanvas.width-w)/2,(outCanvas.height-h)/2,w,h);
+    
+    // Aplica a moldura
+    if(molduraUrl){
+        try{
+            const molduraImg=await loadImg(molduraUrl);
+            octx.drawImage(molduraImg,0,0,outCanvas.width,outCanvas.height);
+            debug('✅ Moldura aplicada');
+        }catch(e){debug('⚠️ Moldura falhou: '+e.message);}
+    }
+    
+    // Converte para BLOB JPEG (não PNG!)
+    const blob=await new Promise(r=>outCanvas.toBlob(r,'image/jpeg',0.95));
+    
+    // Upload como JPEG
     await uploadBlob(blob,copias);
 }
-function imgFromCanvas(c){return new Promise((rs,rj)=>{const i=new Image();i.onload=()=>rs(i);i.onerror=rj;i.src=c.toDataURL('image/jpeg',0.92);});}
-function loadImg(s){return new Promise((rs,rj)=>{const i=new Image();i.crossOrigin='anonymous';i.onload=()=>rs(i);i.onerror=rj;i.src=s+'?t='+Date.now();});}
 
+function imgFromCanvas(c){
+    return new Promise((rs,rj)=>{
+        const i=new Image();
+        i.onload=()=>rs(i);
+        i.onerror=rj;
+        i.src=c.toDataURL('image/jpeg',0.92);
+    });
+}
+
+function loadImg(s){
+    return new Promise((rs,rj)=>{
+        const i=new Image();
+        i.crossOrigin='anonymous';
+        i.onload=()=>rs(i);
+        i.onerror=rj;
+        i.src=s+'?t='+Date.now();
+    });
+}
+
+// ==================== UPLOAD COMO JPEG ====================
 async function uploadBlob(blob,copias){
     if(!eventoId){debug('❌ Sem eventoId');return;}
-    let nome='foto.jpg',cf=1;
-    if(copias===2){nome='foto_2c.jpg';cf=2;}else if(copias===3){nome='foto_2c_guestbook.jpg';cf=2;}else if(copias===4){nome='foto_3c_guestbook.jpg';cf=3;}
-    const fd=new FormData();fd.append('foto',blob,nome);fd.append('eventoId',eventoId);fd.append('timestamp',String(Date.now()));
-    debug(`⬆️ Upload: ${nome} -> eventoId=${eventoId}`);
+    
+    let nome='foto.jpg', cf=1;
+    if(copias===2){nome='foto_2c.jpg';cf=2;}
+    else if(copias===3){nome='foto_2c_guestbook.jpg';cf=2;}
+    else if(copias===4){nome='foto_3c_guestbook.jpg';cf=3;}
+    
+    // Força o nome do arquivo como .jpg
+    if(!nome.toLowerCase().endsWith('.jpg')){
+        nome=nome.replace(/\.png$/i,'.jpg');
+    }
+    
+    const fd=new FormData();
+    fd.append('foto',blob,nome);
+    fd.append('eventoId',eventoId);
+    fd.append('timestamp',String(Date.now()));
+    
+    debug(`⬆️ Upload: ${nome} (${cf} cópias) -> eventoId=${eventoId}`);
+    
     try{
         const res=await fetch(`${API_BASE}/salvar-foto`,{method:'POST',body:fd});
-        if(res.ok)debug('✅ Upload OK');else debug('❌ Upload: '+res.status);
+        if(res.ok)debug('✅ Upload OK');
+        else debug('❌ Upload: '+res.status);
     }catch(e){debug('❌ Upload err: '+e.message);}
 }
 
@@ -177,7 +226,10 @@ async function uploadBlob(blob,copias){
 async function waitForPrint(){
     debug('⏳ Aguardando totem...');
     for(let i=0;i<120;i++){
-        try{const res=await fetch(`${API_BASE}/check-print?t=${Date.now()}`);if(res.ok){const d=await res.json();if(d.printTriggered){debug(`🖨️ ${d.copias} cópia(s)`);return d.copias||1;}}}catch(e){}
+        try{
+            const res=await fetch(`${API_BASE}/check-print?t=${Date.now()}`);
+            if(res.ok){const d=await res.json();if(d.printTriggered){debug(`🖨️ ${d.copias} cópia(s)`);return d.copias||1;}}
+        }catch(e){}
         await new Promise(r=>setTimeout(r,500));
     }
     debug('⏰ Timeout');return null;
@@ -208,7 +260,6 @@ function resetToStart(){
     debug('🏁 Reset');
 }
 
-// ==================== MÁQUINA DE ESTADO ====================
 function updateScreenState(state){
     if(state===lastState&&state!=='capturing')return;
     if(state==='start'&&lastState==='options'){finishCycle();lastState=state;return;}
@@ -242,7 +293,7 @@ function removeBackground(){localStorage.removeItem('photoprint_bg');document.ge
 
 localStorage.setItem('booth_state','start');updateScreenState('start');initCamera();
 setInterval(pollServerState,800);setInterval(syncEvento,5000);syncEvento();
-debug('🚀 WEBCAM v8.8 pronta');
+debug('🚀 WEBCAM v8.9 pronta');
 </script>
 </body>
 </html>

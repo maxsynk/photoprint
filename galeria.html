@@ -3,27 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT - GALLERY v6.1</title>
+    <title>PHOTO PRINT - GALLERY v6.2</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
-        :root {
-            --bg: #020202; --surface: rgba(18, 18, 18, 0.9); 
-            --accent: #39ff14; --danger: #ff3131; --text: #ffffff;
-            --info-blue: #00e5ff;
-            --neon-shadow: 0 0 15px rgba(57, 255, 20, 0.5);
-            --glass-border: 1px solid rgba(57, 255, 20, 0.3);
-        }
+        :root { --bg: #020202; --surface: rgba(18, 18, 18, 0.9); --accent: #39ff14; --danger: #ff3131; --text: #ffffff; --info-blue: #00e5ff; --neon-shadow: 0 0 15px rgba(57, 255, 20, 0.5); --glass-border: 1px solid rgba(57, 255, 20, 0.3); }
         body { background: radial-gradient(circle at center, #0a1a05 0%, #000 100%); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; overflow-x: hidden; }
         #modal-print { display: none; }
-        @media print {
-            @page { margin: 0; size: auto; }
-            body * { visibility: hidden; display: none !important; }
-            #modal-print, #modal-print img { display: block !important; visibility: visible !important; }
-            #modal-print { position: absolute; inset: 0; width: 100vw; height: 100vh; display: flex !important; justify-content: center; align-items: center; background: white !important; }
-            #img-print { max-width: 100% !important; max-height: 100% !important; width: auto !important; height: auto !important; object-fit: contain; }
-        }
+        @media print { @page { margin: 0; size: auto; } body * { visibility: hidden; display: none !important; } #modal-print, #modal-print img { display: flex !important; visibility: visible; } #modal-print { position: absolute; inset: 0; width: 100vw; height: 100vh; justify-content: center; align-items: center; background: white !important; } #img-print { max-width: 100% !important; max-height: 100% !important; width: auto !important; height: auto !important; } }
         header { padding: 30px 40px 10px; display: flex; flex-direction: column; align-items: center; position: relative; }
         .status-container { position: absolute; left: 40px; top: 40px; text-align: left; border-left: 3px solid var(--accent); padding-left: 15px; }
         .status-label { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; opacity: 0.6; margin-bottom: 2px; }
@@ -38,272 +26,43 @@
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; padding: 30px 60px; }
         .card { background: var(--surface); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; position: relative; }
         .card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: var(--neon-shadow); }
-        .card .foto-container { position: relative; width: 100%; line-height: 0; }
-        .card .foto-container img { width: 100%; display: block; height: auto; }
-        .card .foto-container .moldura-overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-        .card .badge { position: absolute; top: 8px; left: 8px; background: var(--accent); color: #000; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 3; }
-        .card .print-badge { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.8); border: 1px solid var(--accent); color: var(--accent); padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 3; }
-        .card .guestbook-badge { position: absolute; bottom: 8px; left: 8px; right: 8px; background: rgba(0,0,0,0.85); border: 1px solid var(--info-blue); color: var(--info-blue); padding: 5px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 3; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .card img { width: 100%; display: block; height: auto; }
+        .card .badge { position: absolute; top: 8px; left: 8px; background: var(--accent); color: #000; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 2; }
+        .card .print-badge { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.8); border: 1px solid var(--accent); color: var(--accent); padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 2; }
+        .card .guestbook-badge { position: absolute; bottom: 8px; left: 8px; right: 8px; background: rgba(0,0,0,0.85); border: 1px solid var(--info-blue); color: var(--info-blue); padding: 5px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 2; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .sidebar { position: fixed; right: -350px; top: 0; width: 300px; height: 100%; background: rgba(10, 10, 10, 0.95); z-index: 5000; transition: 0.5s; padding: 120px 25px; border-left: var(--glass-border); }
         .sidebar.active { right: 0; }
         .sidebar-btn { width: 100%; padding: 18px; margin-bottom: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 15px; font-weight: bold; }
         .menu-trigger { position: absolute; right: 40px; top: 40px; cursor: pointer; z-index: 5001; }
         .menu-trigger span { display: block; width: 30px; height: 3px; background: var(--accent); margin: 5px 0; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 6000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .modal .modal-foto-container { position: relative; display: inline-block; }
-        .modal .modal-foto-container img { max-width: 90vw; max-height: 70vh; border: 2px solid var(--accent); border-radius: 10px; display: block; }
-        .modal .modal-foto-container .moldura-overlay { position: absolute; inset: 0; pointer-events: none; }
-        .modal-controls { display: flex; gap: 15px; margin-top: 20px; }
+        .modal img { max-width: 90%; max-height: 70vh; border: 2px solid var(--accent); border-radius: 10px; margin-bottom: 25px; }
+        .modal-controls { display: flex; gap: 15px; }
         .btn-act { border: none; padding: 15px 30px; border-radius: 30px; font-weight: 900; cursor: pointer; text-transform: uppercase; }
         .debug-info { position: fixed; bottom: 10px; left: 10px; right: 10px; z-index: 999; background: rgba(0,0,0,0.9); color: var(--accent); font-size: 11px; padding: 8px 12px; border-radius: 6px; font-family: monospace; text-align: center; border: 1px solid rgba(57,255,20,0.3); }
     </style>
 </head>
 <body>
-
     <div class="menu-trigger" onclick="document.getElementById('sidebar').classList.toggle('active')"><span></span><span></span><span></span></div>
-
     <header>
-        <div class="status-container">
-            <div class="status-label">Status Evento</div>
-            <div id="nome-evento">Carregando...</div>
-            <div id="tipo-formato">--</div>
-        </div>
-        <div class="brand-center">
-            <h1>PHOTO PRINT</h1>
-            <div class="brand-subtitle">colecionando momentos</div>
-            <div class="search-box">
-                <input type="number" id="input-busca" placeholder="DIGITE O ID">
-                <button class="search-btn" onclick="executarBusca()"><i class="fa-solid fa-magnifying-glass"></i></button>
-            </div>
+        <div class="status-container"><div class="status-label">Status Evento</div><div id="nome-evento">Carregando...</div><div id="tipo-formato">--</div></div>
+        <div class="brand-center"><h1>PHOTO PRINT</h1><div class="brand-subtitle">colecionando momentos</div>
+            <div class="search-box"><input type="number" id="input-busca" placeholder="DIGITE O ID"><button class="search-btn" onclick="executarBusca()"><i class="fa-solid fa-magnifying-glass"></i></button></div>
         </div>
     </header>
-
     <div class="sidebar" id="sidebar">
         <button class="sidebar-btn" onclick="baixarZip()"><i class="fa-solid fa-download"></i> Baixar Galeria</button>
         <button class="sidebar-btn" style="color:var(--danger)" onclick="limparTudo()"><i class="fa-solid fa-trash"></i> Apagar Servidor</button>
     </div>
-
     <main class="grid" id="grid-fotos"></main>
-
-    <div class="modal" id="modal-zoom">
-        <div class="modal-foto-container">
-            <img id="img-zoom" src="">
-            <img id="moldura-zoom" class="moldura-overlay" src="">
-        </div>
-        <div class="modal-controls">
-            <button class="btn-act" style="background:#333; color:#fff" onclick="fecharZoom()">Voltar</button>
-            <button class="btn-act" style="background:var(--accent); color:#000" onclick="reimprimirAtual()">Reimprimir</button>
-            <button class="btn-act" style="background:var(--danger); color:#fff" id="btn-excluir-zoom">Excluir</button>
-        </div>
-    </div>
-
+    <div class="modal" id="modal-zoom"><img id="img-zoom" src=""><div class="modal-controls"><button class="btn-act" style="background:#333; color:#fff" onclick="fecharZoom()">Voltar</button><button class="btn-act" style="background:var(--accent); color:#000" onclick="reimprimirAtual()">Reimprimir</button><button class="btn-act" style="background:var(--danger); color:#fff" id="btn-excluir-zoom">Excluir</button></div></div>
     <div id="modal-print"><img id="img-print"></div>
     <div class="debug-info" id="debug-info">INICIANDO...</div>
 
 <script>
     const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
-    let todasFotos = [];
-    let chavesLocais = new Set();
-    let eventoAtual = "";
-    let eventoIdAtual = "";
-    let formatoAtual = "10X15V";
-    let molduraUrl = "";
-    let printQueue = [];
-    let isPrinting = false;
-    let primeiraCarga = true;
+    let todasFotos = [], chavesLocais = new Set(), eventoAtual = "", eventoIdAtual = "", formatoAtual = "10X15V";
+    let printQueue = [], isPrinting = false, primeiraCarga = true;
 
-    function debug(msg) {
-        console.log('[GALERIA]', msg);
-        document.getElementById('debug-info').innerText = msg;
-    }
-
-    function traduzirFormato(formato) {
-        if (!formato) return "--";
-        const f = formato.toUpperCase().trim();
-        if (f.includes("10X15H")) return "10x15 Horizontal";
-        if (f.includes("10X15V")) return "10x15 Vertical";
-        if (f.includes("STRIP") || f.includes("TIRINHA")) return "Tirinha";
-        if (f.includes("POLAROID")) return "Polaroid";
-        return formato; 
-    }
-
-    // ==================== IMPRESSÃO COM MOLDURA ====================
-    function imprimirComMoldura(fotoUrl) {
-        debug('🖨️ Preparando impressão...');
-        const canvas = document.createElement('canvas');
-        const foto = new Image();
-        foto.crossOrigin = 'anonymous';
-        
-        foto.onload = function() {
-            canvas.width = foto.width;
-            canvas.height = foto.height;
-            const ctx = canvas.getContext('2d');
-            
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(foto, 0, 0);
-            
-            if (molduraUrl) {
-                const moldura = new Image();
-                moldura.crossOrigin = 'anonymous';
-                moldura.onload = function() {
-                    ctx.drawImage(moldura, 0, 0, canvas.width, canvas.height);
-                    finalizarImpressao(canvas);
-                };
-                moldura.onerror = function() {
-                    finalizarImpressao(canvas);
-                };
-                moldura.src = molduraUrl + '?t=' + Date.now();
-            } else {
-                finalizarImpressao(canvas);
-            }
-        };
-        
-        foto.onerror = function() {
-            const img = document.getElementById('img-print');
-            img.src = fotoUrl;
-            img.onload = function() {
-                window.focus();
-                setTimeout(function() { window.print(); setTimeout(processQueue, 3000); }, 500);
-            };
-        };
-        
-        foto.src = fotoUrl + '?t=' + Date.now();
-    }
-
-    function finalizarImpressao(canvas) {
-        const img = document.getElementById('img-print');
-        img.src = canvas.toDataURL('image/jpeg', 0.95);
-        img.onload = function() {
-            window.focus();
-            debug('✅ Impressão enviada');
-            setTimeout(function() { window.print(); setTimeout(processQueue, 3000); }, 500);
-        };
-    }
-
-    function addToPrintQueue(src) { 
-        printQueue.push(src); 
-        if (!isPrinting) processQueue(); 
-    }
-
-    function processQueue() {
-        if (printQueue.length === 0) { isPrinting = false; return; }
-        isPrinting = true;
-        imprimirComMoldura(printQueue.shift());
-    }
-
-    // ==================== ATUALIZAR GALERIA ====================
-    async function atualizar() {
-        try {
-            const resStatus = await fetch(`${API}/get-all-states?t=${Date.now()}`);
-            const config = await resStatus.json();
-            
-            const novoEvento = (config.config && config.config.evento) ? config.config.evento : "Geral";
-            const novoEventoId = (config.config && config.config.eventoId) ? config.config.eventoId : "";
-            formatoAtual = (config.config && config.config.formato) ? config.config.formato.toUpperCase().trim() : "10X15V";
-            
-            if (eventoIdAtual !== novoEventoId) {
-                eventoAtual = novoEvento;
-                eventoIdAtual = novoEventoId;
-                todasFotos = [];
-                chavesLocais.clear();
-                printQueue = []; 
-                primeiraCarga = true;
-                document.getElementById('grid-fotos').innerHTML = "";
-                molduraUrl = novoEventoId ? `${API}/photo?key=eventos/${novoEventoId}/moldura.png` : "";
-                debug('🔄 Evento: ' + novoEvento);
-            }
-            
-            document.getElementById('nome-evento').innerText = eventoAtual;
-            document.getElementById('tipo-formato').innerText = traduzirFormato(formatoAtual);
-            if (!eventoIdAtual) return;
-
-            const resF = await fetch(`${API}/list-photos?evento=${encodeURIComponent(eventoAtual)}&t=${Date.now()}`);
-            const dados = await resF.json();
-            
-            const fotosValidas = Array.isArray(dados) ? dados.filter(f => !f.key.toLowerCase().includes('moldura')) : [];
-            const novasFotos = fotosValidas.filter(f => !chavesLocais.has(f.key));
-
-            if (novasFotos.length > 0) {
-                debug(`📷 +${novasFotos.length} foto(s)`);
-                for (let f of novasFotos) {
-                    const keyLower = f.key.toLowerCase();
-                    const fotoUrl = `${API}/photo?key=${encodeURIComponent(f.key)}`;
-                    
-                    let copiasDoCard = 1;
-                    if (keyLower.includes("_3c_")) copiasDoCard = 3;
-                    else if (keyLower.includes("_2c_")) copiasDoCard = 2;
-                    const possuiLivro = keyLower.includes("_livro_") || keyLower.includes("guestbook");
-
-                    todasFotos.push({ id: todasFotos.length + 1, url: fotoUrl, key: f.key, copias: copiasDoCard, livro: possuiLivro });
-                    chavesLocais.add(f.key);
-                    
-                    if (!primeiraCarga) {
-                        for (let i = 0; i < copiasDoCard; i++) addToPrintQueue(fotoUrl);
-                    }
-                }
-                render();
-                debug(`✅ ${todasFotos.length} fotos`);
-            }
-            primeiraCarga = false;
-        } catch(e) { debug('Erro: ' + e.message); }
-    }
-
-    function render() {
-        const grid = document.getElementById('grid-fotos');
-        if (todasFotos.length === 0) {
-            grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:#555;"><i class="fa-solid fa-camera-retro" style="font-size:64px;display:block;margin-bottom:20px;opacity:0.3;"></i>Nenhuma foto ainda</div>`;
-            return;
-        }
-        grid.innerHTML = todasFotos.slice().reverse().map(f => `
-            <div class="card" onclick="abrirZoom('${f.url}', '${f.key}')">
-                <span class="badge">#${f.id}</span>
-                ${f.copias > 1 ? `<span class="print-badge"><i class="fa-solid fa-print"></i> ${f.copias}x</span>` : ''}
-                ${f.livro ? `<span class="guestbook-badge"><i class="fa-solid fa-book-open"></i> Livro de Assinaturas</span>` : ''}
-                <div class="foto-container">
-                    <img src="${f.url}" loading="lazy">
-                    ${molduraUrl ? `<img class="moldura-overlay" src="${molduraUrl}" loading="lazy">` : ''}
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function abrirZoom(fotoUrl, key) {
-        document.getElementById('img-zoom').src = fotoUrl;
-        document.getElementById('moldura-zoom').src = molduraUrl || '';
-        document.getElementById('modal-zoom').style.display = 'flex';
-        document.getElementById('btn-excluir-zoom').onclick = () => excluirFoto(key);
-    }
-    function fecharZoom() { document.getElementById('modal-zoom').style.display = 'none'; }
-    function reimprimirAtual() { imprimirComMoldura(document.getElementById('img-zoom').src); }
-
-    async function excluirFoto(key) {
-        if(confirm("Excluir esta foto?")) {
-            await fetch(`${API}/photo?key=${encodeURIComponent(key)}`, { method: 'DELETE' });
-            fecharZoom(); location.reload();
-        }
-    }
-
-    async function baixarZip() {
-        const zip = new JSZip();
-        for(let f of todasFotos) { const blob = await fetch(f.url).then(r => r.blob()); zip.file(`foto_${f.id}.jpg`, blob); }
-        const content = await zip.generateAsync({type:"blob"}); saveAs(content, "galeria.zip");
-    }
-
-    async function limparTudo() {
-        if(confirm("Apagar todas as fotos?") && prompt("Senha:") === "1234") {
-            await fetch(`${API}/photo?key=all`, { method: 'DELETE' }); location.reload();
-        }
-    }
-
-    function executarBusca() {
-        const idBusca = document.getElementById('input-busca').value;
-        const foto = todasFotos.find(f => f.id == idBusca);
-        if(foto) abrirZoom(foto.url, foto.key); else alert("ID não encontrado!");
-    }
-
-    setInterval(atualizar, 4000);
-    atualizar();
-</script>
-</body>
-</html>
+    function debug(msg) { console.log('[GALERIA]', msg); document.getElementById('debug-info').innerText = msg; }
+    function traduzirFormato(f) { if(!f) return "--"; f=f.toUpperCase().trim(); if(f.includes("10X15H")) return "10x15 Horizontal"; if(f.includes("10X15V")) return "10x15 Vertical"; if(f.includes("TIRINHA")) return "T

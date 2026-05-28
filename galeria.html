@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT - GALLERY v5.6</title>
+    <title>PHOTO PRINT - GALLERY v5.7</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -36,7 +36,7 @@
         .search-box input { background: rgba(255,255,255,0.05); border: var(--glass-border); color: #fff; padding: 10px 15px; border-radius: 8px; width: 180px; outline: none; }
         .search-btn { background: var(--accent); color: #000; border: none; padding: 0 20px; border-radius: 8px; font-weight: 900; cursor: pointer; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; padding: 30px 60px; }
-        .card { background: var(--surface); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; position: relative; min-height: 250px; display: flex; align-items: center; justify-content: center; }
+        .card { background: var(--surface); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; position: relative; }
         .card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: var(--neon-shadow); }
         .card img { width: 100%; display: block; height: auto; }
         .card .badge { position: absolute; top: 8px; left: 8px; background: var(--accent); color: #000; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 2; }
@@ -100,11 +100,10 @@
     let eventoAtual = "";
     let eventoIdAtual = "";
     let formatoAtual = "";
-    let molduraUrl = "";
+    let molduraDataUrl = null; // moldura como dataURL (sem CORS)
     let printQueue = [];
     let isPrinting = false;
     let primeiraCarga = true;
-    let molduraPronta = false;
     
     const FORMATOS = {
         "TIRINHA": { w: 600, h: 1800 },
@@ -128,8 +127,26 @@
         return formato; 
     }
 
-    // ==================== MONTAGEM DIRETA NO CANVAS ====================
-    async function montarFoto(fotoUrl) {
+    // ==================== CARREGAR MOLDURA VIA FETCH (SEM CORS) ====================
+    async function carregarMolduraComoDataURL(eventoId) {
+        const url = `${API}/photo?key=eventos/${eventoId}/moldura.png`;
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Status: ' + response.status);
+            const blob = await response.blob();
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.readAsDataURL(blob);
+            });
+        } catch(e) {
+            debug('❌ Moldura não encontrada: ' + e.message);
+            return null;
+        }
+    }
+
+    // ==================== MONTAR FOTO + MOLDURA ====================
+    function montarFotoComMoldura(fotoImg, molduraImg) {
         const fmt = FORMATOS[formatoAtual] || FORMATOS['10X15V'];
         const canvas = document.createElement('canvas');
         canvas.width = fmt.w;
@@ -140,54 +157,28 @@
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        try {
-            // 1. Carrega a foto
-            const foto = await carregarImagem(fotoUrl);
-            if (!foto) throw new Error('Foto não carregou');
-            
-            // Calcula escala para cobrir o canvas
-            const scale = Math.max(canvas.width / foto.width, canvas.height / foto.height);
-            const w = foto.width * scale;
-            const h = foto.height * scale;
-            const x = (canvas.width - w) / 2;
-            const y = (canvas.height - h) / 2;
-            
-            ctx.drawImage(foto, x, y, w, h);
-            
-            // 2. Carrega e aplica a moldura (se existir)
-            if (molduraUrl && molduraPronta) {
-                const moldura = await carregarImagem(molduraUrl);
-                if (moldura) {
-                    ctx.drawImage(moldura, 0, 0, canvas.width, canvas.height);
-                }
-            }
-            
-            return canvas.toDataURL('image/jpeg', 0.85);
-        } catch(e) {
-            console.error('Erro na montagem:', e);
-            return fotoUrl; // fallback: foto pura
+        // Foto centralizada
+        const scale = Math.max(canvas.width / fotoImg.width, canvas.height / fotoImg.height);
+        const w = fotoImg.width * scale;
+        const h = fotoImg.height * scale;
+        ctx.drawImage(fotoImg, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
+        
+        // Moldura por cima
+        if (molduraImg) {
+            ctx.drawImage(molduraImg, 0, 0, canvas.width, canvas.height);
         }
+        
+        return canvas.toDataURL('image/jpeg', 0.9);
     }
-    
+
     function carregarImagem(src) {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             const img = new Image();
             img.crossOrigin = 'anonymous';
             img.onload = () => resolve(img);
-            img.onerror = () => resolve(null);
-            img.src = src + '?t=' + Date.now();
+            img.onerror = () => reject(new Error('Falha ao carregar: ' + src));
+            img.src = src;
         });
-    }
-    
-    // Pré-carrega a moldura
-    async function preCarregarMoldura(url) {
-        if (!url) {
-            molduraPronta = false;
-            return;
-        }
-        const img = await carregarImagem(url);
-        molduraPronta = (img !== null);
-        debug(molduraPronta ? '✅ Moldura carregada' : '⚠️ Moldura indisponível');
     }
 
     async function atualizar() {
@@ -199,32 +190,35 @@
             const novoEventoId = (config.config && config.config.eventoId) ? config.config.eventoId : "";
             formatoAtual = (config.config && config.config.formato) ? config.config.formato.toUpperCase().trim() : "10X15V";
             
-            // Atualiza moldura se mudou o evento
             if (eventoIdAtual !== novoEventoId) {
-                debug(`Evento: ${eventoAtual} -> ${novoEvento} (ID: ${novoEventoId})`);
+                debug(`Evento: ${novoEvento} (ID: ${novoEventoId}) | Formato: ${formatoAtual}`);
                 eventoAtual = novoEvento;
                 eventoIdAtual = novoEventoId;
                 todasFotos = [];
                 chavesLocais.clear();
                 printQueue = []; 
                 primeiraCarga = true;
-                molduraPronta = false;
                 document.getElementById('grid-fotos').innerHTML = "";
                 
-                // Pré-carrega a moldura
+                // Carrega moldura como dataURL (sem CORS)
                 if (novoEventoId) {
-                    molduraUrl = `${API}/photo?key=eventos/${novoEventoId}/moldura.png`;
-                    await preCarregarMoldura(molduraUrl);
+                    debug('🖼️ Carregando moldura...');
+                    molduraDataUrl = await carregarMolduraComoDataURL(novoEventoId);
+                    if (molduraDataUrl) {
+                        debug('✅ Moldura pronta para montagem');
+                    } else {
+                        debug('❌ ERRO: Moldura não carregada!');
+                    }
                 } else {
-                    molduraUrl = "";
+                    molduraDataUrl = null;
                 }
             }
             
             document.getElementById('nome-evento').innerText = eventoAtual;
             document.getElementById('tipo-formato').innerText = traduzirFormato(formatoAtual);
 
-            if (!eventoIdAtual) {
-                debug('Nenhum evento ativo');
+            if (!eventoIdAtual || !molduraDataUrl) {
+                if (!molduraDataUrl) debug('⏳ Aguardando moldura...');
                 return;
             }
 
@@ -232,14 +226,17 @@
             const dados = await resF.json();
             
             const fotosValidas = Array.isArray(dados) ? dados.filter(f => {
-                const k = f.key.toLowerCase();
-                return !k.includes('moldura');
+                return !f.key.toLowerCase().includes('moldura');
             }) : [];
             
             const novasFotos = fotosValidas.filter(f => !chavesLocais.has(f.key));
 
             if (novasFotos.length > 0) {
-                debug(`Montando ${novasFotos.length} foto(s)...`);
+                debug(`🖨️ Montando ${novasFotos.length} foto(s) com moldura...`);
+                
+                // Carrega a moldura como Image
+                const molduraImg = await carregarImagem(molduraDataUrl);
+                
                 for (let f of novasFotos) {
                     const keyLower = f.key.toLowerCase();
                     const fotoUrl = `${API}/photo?key=${encodeURIComponent(f.key)}`;
@@ -250,28 +247,34 @@
 
                     const possuiLivro = keyLower.includes("_livro_") || keyLower.includes("guestbook");
 
-                    // Monta a foto com moldura
-                    const urlMontada = await montarFoto(fotoUrl);
+                    try {
+                        // Carrega a foto
+                        const fotoImg = await carregarImagem(fotoUrl);
+                        // Monta com moldura
+                        const urlMontada = montarFotoComMoldura(fotoImg, molduraImg);
 
-                    todasFotos.push({ 
-                        id: todasFotos.length + 1, 
-                        url: fotoUrl,
-                        urlMontada: urlMontada,
-                        key: f.key,
-                        copias: copiasDoCard,
-                        livro: possuiLivro
-                    });
-                    
-                    chavesLocais.add(f.key);
-                    
-                    if (primeiraCarga === false) {
-                        for (let i = 0; i < copiasDoCard; i++) {
-                            addToPrintQueue(urlMontada);
+                        todasFotos.push({ 
+                            id: todasFotos.length + 1, 
+                            url: fotoUrl,
+                            urlMontada: urlMontada,
+                            key: f.key,
+                            copias: copiasDoCard,
+                            livro: possuiLivro
+                        });
+                        
+                        chavesLocais.add(f.key);
+                        
+                        if (primeiraCarga === false) {
+                            for (let i = 0; i < copiasDoCard; i++) {
+                                addToPrintQueue(urlMontada);
+                            }
                         }
+                    } catch(e) {
+                        debug('❌ Falha ao processar: ' + f.key);
                     }
                 }
                 render();
-                debug(`✅ ${todasFotos.length} fotos na galeria`);
+                debug(`✅ ${todasFotos.length} fotos montadas com moldura`);
             }
             primeiraCarga = false;
         } catch(e) { 

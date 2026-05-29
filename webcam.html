@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>WEBCAM - PHOTO PRINT v9.5</title>
+<title>WEBCAM - PHOTO PRINT v9.6</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 :root{ --neon:#39ff14; --dark:#050505; --danger:#ff3131; }
@@ -75,6 +75,15 @@ const funText=document.getElementById('fun-text');
 const optionsOverlay=document.getElementById('options-overlay');
 let stream=null,lastState='start',captureInProgress=false,initialLoad=true;
 let eventoAtual=null,eventoId=null,formatoAtual='10X15V',molduraBase64=null;
+
+// ==================== FORMATOS CORRETOS ====================
+const FORMATOS = {
+    "TIRINHA": { w: 591, h: 1819 },
+    "POLAROID": { w: 1041, h: 1311 },
+    "10X15V": { w: 1181, h: 1819 },
+    "10X15H": { w: 1772, h: 1228 }
+};
+
 function debug(msg){console.log('[WEBCAM]',msg);const el=document.getElementById('debug-info');if(el)el.innerText=msg;}
 
 async function initCamera(){
@@ -82,22 +91,16 @@ async function initCamera(){
     catch(err){debug('❌ Câmera: '+err.message);}
 }
 
-// ==================== SINCRONIZAÇÃO - MOLDURA VIA BASE64 ====================
 async function syncEvento(){
     try{
         const res=await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`);
         if(res.ok){
             const data=await res.json();
-            debug('📡 Dados recebidos');
             if(data.config&&data.config.evento&&data.config.evento!=='Geral'){
                 eventoAtual=data.config.evento;
                 eventoId=data.config.eventoId;
                 formatoAtual=(data.config.formato||'10X15V').toUpperCase().trim();
-                // A moldura já vem em base64 na resposta!
-                if(data.moldura){
-                    molduraBase64=data.moldura;
-                    debug('✅ Moldura carregada (base64)');
-                }
+                if(data.moldura){molduraBase64=data.moldura;debug('✅ Moldura carregada');}
                 updateEventoUI();
             }
         }
@@ -132,34 +135,42 @@ function capturePhoto(){
     },4000);
 }
 
-// ==================== COMPOSIÇÃO COM MOLDURA BASE64 (SEM CORS!) ====================
+// ==================== COMPOSIÇÃO COM FORMATO CORRETO ====================
 async function composeAndUpload(copias){
     if(!molduraBase64){debug('❌ Moldura não carregada!');return;}
-    debug('🖨️ Compondo foto + moldura...');
+    debug('🖨️ Compondo foto + moldura (' + formatoAtual + ')...');
     try {
-        // Foto do canvas
         const fotoImg = await new Promise(r => {const img=new Image();img.onload=()=>r(img);img.src=canvasCapture.toDataURL('image/jpeg',0.92);});
-        
-        // Moldura a partir do base64 (já recebido do /get-all-states)
         const molduraImg = await new Promise((resolve, reject) => {
             const img = new Image();
             img.onload = () => resolve(img);
-            img.onerror = () => reject(new Error('Falha ao decodificar moldura'));
+            img.onerror = () => reject(new Error('Falha'));
             img.src = molduraBase64;
         });
         
-        // Composição
+        // Usa o formato correto
+        const fmt = FORMATOS[formatoAtual] || FORMATOS['POLAROID'];
         const canvas = document.createElement('canvas');
-        canvas.width = fotoImg.width; canvas.height = fotoImg.height;
+        canvas.width = fmt.w;
+        canvas.height = fmt.h;
         const cctx = canvas.getContext('2d');
-        cctx.fillStyle='#FFFFFF';cctx.fillRect(0,0,canvas.width,canvas.height);
-        cctx.drawImage(fotoImg,0,0);
-        cctx.drawImage(molduraImg,0,0,canvas.width,canvas.height);
         
-        // Upload
+        // Fundo branco
+        cctx.fillStyle = '#FFFFFF';
+        cctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Centraliza a foto
+        const scale = Math.max(canvas.width / fotoImg.width, canvas.height / fotoImg.height);
+        const w = fotoImg.width * scale;
+        const h = fotoImg.height * scale;
+        cctx.drawImage(fotoImg, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
+        
+        // Moldura
+        cctx.drawImage(molduraImg, 0, 0, canvas.width, canvas.height);
+        
         const blob = await new Promise(r=>canvas.toBlob(r,'image/jpeg',0.95));
-        await uploadBlob(blob,copias);
-        debug('✅ Foto com moldura enviada!');
+        await uploadBlob(blob, copias);
+        debug(`✅ Foto ${formatoAtual} (${fmt.w}x${fmt.h}) enviada!`);
     } catch(e) { debug('❌ Erro: '+e.message); }
 }
 
@@ -228,7 +239,7 @@ function removeBackground(){localStorage.removeItem('photoprint_bg');document.ge
 
 localStorage.setItem('booth_state','start');updateScreenState('start');initCamera();
 setInterval(pollServerState,800);setInterval(syncEvento,5000);syncEvento();
-debug('🚀 WEBCAM v9.5 pronta');
+debug('🚀 WEBCAM v9.6 pronta');
 </script>
 </body>
 </html>

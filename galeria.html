@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT - GALLERY v6.2</title>
+    <title>PHOTO PRINT - GALLERY v6.3</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -65,4 +65,117 @@
     let printQueue = [], isPrinting = false, primeiraCarga = true;
 
     function debug(msg) { console.log('[GALERIA]', msg); document.getElementById('debug-info').innerText = msg; }
-    function traduzirFormato(f) { if(!f) return "--"; f=f.toUpperCase().trim(); if(f.includes("10X15H")) return "10x15 Horizontal"; if(f.includes("10X15V")) return "10x15 Vertical"; if(f.includes("TIRINHA")) return "T
+
+    function traduzirFormato(f) { 
+        if(!f) return "--"; 
+        f = f.toUpperCase().trim(); 
+        if(f.includes("10X15H")) return "10x15 Horizontal"; 
+        if(f.includes("10X15V")) return "10x15 Vertical"; 
+        if(f.includes("TIRINHA")) return "Tirinha"; 
+        if(f.includes("POLAROID")) return "Polaroid"; 
+        return f; 
+    }
+
+    async function atualizar() {
+        try {
+            const resStatus = await fetch(`${API}/get-all-states?t=${Date.now()}`);
+            if (!resStatus.ok) { debug('Erro API: ' + resStatus.status); return; }
+            
+            const config = await resStatus.json();
+            const novoEvento = (config.config && config.config.evento) ? config.config.evento : "Geral";
+            const novoEventoId = (config.config && config.config.eventoId) ? config.config.eventoId : "";
+            formatoAtual = (config.config && config.config.formato) ? config.config.formato.toUpperCase().trim() : "10X15V";
+            
+            if (eventoIdAtual !== novoEventoId) {
+                debug(`Evento: ${novoEvento} | Formato: ${formatoAtual}`);
+                eventoAtual = novoEvento;
+                eventoIdAtual = novoEventoId;
+                todasFotos = []; chavesLocais.clear(); printQueue = []; primeiraCarga = true;
+                document.getElementById('grid-fotos').innerHTML = "";
+            }
+            
+            document.getElementById('nome-evento').innerText = eventoAtual;
+            document.getElementById('tipo-formato').innerText = traduzirFormato(formatoAtual);
+            if (!eventoIdAtual) { debug('Sem evento ativo'); return; }
+
+            const resF = await fetch(`${API}/list-photos?evento=${encodeURIComponent(eventoAtual)}&t=${Date.now()}`);
+            const dados = await resF.json();
+            
+            const fotosValidas = Array.isArray(dados) ? dados.filter(f => !f.key.toLowerCase().includes('moldura')) : [];
+            const novasFotos = fotosValidas.filter(f => !chavesLocais.has(f.key));
+
+            if (novasFotos.length > 0) {
+                debug(`+${novasFotos.length} foto(s)`);
+                for (let f of novasFotos) {
+                    const fotoUrl = `${API}/photo?key=${encodeURIComponent(f.key)}`;
+                    const kl = f.key.toLowerCase();
+                    let copiasDoCard = 1;
+                    if (kl.includes("_3c_")) copiasDoCard = 3;
+                    else if (kl.includes("_2c_")) copiasDoCard = 2;
+                    const possuiLivro = kl.includes("_livro_") || kl.includes("guestbook");
+                    
+                    todasFotos.push({ id: todasFotos.length + 1, url: fotoUrl, key: f.key, copias: copiasDoCard, livro: possuiLivro });
+                    chavesLocais.add(f.key);
+                    if (!primeiraCarga) { for (let i = 0; i < copiasDoCard; i++) addToPrintQueue(fotoUrl); }
+                }
+                render();
+                debug(`${todasFotos.length} fotos na galeria`);
+            }
+            primeiraCarga = false;
+        } catch(e) { debug('Erro: ' + e.message); }
+    }
+
+    function render() {
+        const grid = document.getElementById('grid-fotos');
+        if (todasFotos.length === 0) {
+            grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:#555;"><i class="fa-solid fa-camera-retro" style="font-size:64px;display:block;margin-bottom:20px;opacity:0.3;"></i>Nenhuma foto ainda</div>`;
+            return;
+        }
+        grid.innerHTML = todasFotos.slice().reverse().map(f => `
+            <div class="card" onclick="abrirZoom('${f.url}', '${f.key}')">
+                <span class="badge">#${f.id}</span>
+                ${f.copias > 1 ? `<span class="print-badge"><i class="fa-solid fa-print"></i> ${f.copias}x</span>` : ''}
+                ${f.livro ? `<span class="guestbook-badge"><i class="fa-solid fa-book-open"></i> Livro de Assinaturas</span>` : ''}
+                <img src="${f.url}" loading="lazy">
+            </div>
+        `).join('');
+    }
+
+    function addToPrintQueue(src) { printQueue.push(src); if (!isPrinting) processQueue(); }
+    function processQueue() {
+        if (printQueue.length === 0) { isPrinting = false; return; }
+        isPrinting = true;
+        const imgP = document.getElementById('img-print');
+        imgP.onload = () => { window.focus(); setTimeout(() => { window.print(); setTimeout(processQueue, 3000); }, 500); };
+        imgP.src = printQueue.shift();
+    }
+
+    function abrirZoom(url, key) { document.getElementById('img-zoom').src = url; document.getElementById('modal-zoom').style.display = 'flex'; document.getElementById('btn-excluir-zoom').onclick = () => excluirFoto(key); }
+    function fecharZoom() { document.getElementById('modal-zoom').style.display = 'none'; }
+    function reimprimirAtual() { addToPrintQueue(document.getElementById('img-zoom').src); }
+
+    async function excluirFoto(key) {
+        if(confirm("Excluir esta foto?")) { await fetch(`${API}/photo?key=${encodeURIComponent(key)}`, { method: 'DELETE' }); fecharZoom(); location.reload(); }
+    }
+
+    async function baixarZip() {
+        const zip = new JSZip();
+        for(let f of todasFotos) { const blob = await fetch(f.url).then(r => r.blob()); zip.file(`foto_${f.id}.jpg`, blob); }
+        const content = await zip.generateAsync({type:"blob"}); saveAs(content, "galeria.zip");
+    }
+
+    async function limparTudo() {
+        if(confirm("Apagar todas as fotos?") && prompt("Senha:") === "1234") { await fetch(`${API}/photo?key=all`, { method: 'DELETE' }); location.reload(); }
+    }
+
+    function executarBusca() {
+        const idBusca = document.getElementById('input-busca').value;
+        const foto = todasFotos.find(f => f.id == idBusca);
+        if(foto) abrirZoom(foto.url, foto.key); else alert("ID não encontrado!");
+    }
+
+    setInterval(atualizar, 4000);
+    atualizar();
+</script>
+</body>
+</html>

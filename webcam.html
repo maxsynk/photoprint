@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>WEBCAM - PHOTO PRINT v9.7</title>
+<title>WEBCAM - PHOTO PRINT v9.8</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 :root{ --neon:#39ff14; --dark:#050505; --danger:#ff3131; }
@@ -90,17 +90,31 @@ async function initCamera(){
     catch(err){debug('❌ Câmera: '+err.message);}
 }
 
+// ==================== syncEvento CORRIGIDO ====================
 async function syncEvento(){
     try{
         const res=await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`);
         if(res.ok){
             const data=await res.json();
             if(data.config&&data.config.evento&&data.config.evento!=='Geral'){
-                eventoAtual=data.config.evento;
-                eventoId=data.config.eventoId;
-                formatoAtual=(data.config.formato||'10X15V').toUpperCase().trim();
-                if(data.moldura){molduraBase64=data.moldura;debug('✅ Moldura carregada');}
-                updateEventoUI();
+                const novoEventoId = data.config.eventoId;
+                const novoFormato = (data.config.formato||'10X15V').toUpperCase().trim();
+                
+                // Atualiza se mudou evento, ID, formato OU se moldura ainda não foi carregada
+                if(eventoAtual !== data.config.evento || eventoId !== novoEventoId || formatoAtual !== novoFormato || !molduraBase64){
+                    eventoAtual = data.config.evento;
+                    eventoId = novoEventoId;
+                    formatoAtual = novoFormato;
+                    
+                    if(data.moldura){
+                        molduraBase64 = data.moldura;
+                        debug('✅ Moldura carregada: ' + formatoAtual);
+                    } else {
+                        molduraBase64 = null;
+                        debug('⚠️ Moldura não encontrada para: ' + formatoAtual);
+                    }
+                    updateEventoUI();
+                }
             }
         }
     }catch(e){debug('⚠️ Sync: '+e.message);}
@@ -228,7 +242,7 @@ function removeBackground(){localStorage.removeItem('photoprint_bg');document.ge
 
 localStorage.setItem('booth_state','start');updateScreenState('start');initCamera();
 setInterval(pollServerState,800);setInterval(syncEvento,5000);syncEvento();
-debug('🚀 WEBCAM v9.7 pronta');
+debug('🚀 WEBCAM v9.8 pronta');
 </script>
 </body>
 </html>

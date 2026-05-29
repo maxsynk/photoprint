@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>WEBCAM - PHOTO PRINT v9.4</title>
+<title>WEBCAM - PHOTO PRINT v9.5</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 :root{ --neon:#39ff14; --dark:#050505; --danger:#ff3131; }
@@ -74,7 +74,7 @@ const ctx=canvasCapture.getContext('2d');
 const funText=document.getElementById('fun-text');
 const optionsOverlay=document.getElementById('options-overlay');
 let stream=null,lastState='start',captureInProgress=false,initialLoad=true;
-let eventoAtual=null,eventoId=null,formatoAtual='10X15V',molduraUrl=null;
+let eventoAtual=null,eventoId=null,formatoAtual='10X15V',molduraBase64=null;
 function debug(msg){console.log('[WEBCAM]',msg);const el=document.getElementById('debug-info');if(el)el.innerText=msg;}
 
 async function initCamera(){
@@ -82,22 +82,28 @@ async function initCamera(){
     catch(err){debug('❌ Câmera: '+err.message);}
 }
 
+// ==================== SINCRONIZAÇÃO - MOLDURA VIA BASE64 ====================
 async function syncEvento(){
     try{
         const res=await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`);
-        if(res.ok){const data=await res.json();
+        if(res.ok){
+            const data=await res.json();
+            debug('📡 Dados recebidos');
             if(data.config&&data.config.evento&&data.config.evento!=='Geral'){
-                if(eventoAtual!==data.config.evento||!eventoId){
-                    eventoAtual=data.config.evento;eventoId=data.config.eventoId;
-                    formatoAtual=(data.config.formato||'10X15V').toUpperCase().trim();
-                    molduraUrl=`${API_BASE}/photo?key=eventos/${eventoId}/moldura.png`;
-                    debug(`📡 Evento: ${eventoAtual} | ID: ${eventoId} | ${formatoAtual}`);
-                    updateEventoUI();
+                eventoAtual=data.config.evento;
+                eventoId=data.config.eventoId;
+                formatoAtual=(data.config.formato||'10X15V').toUpperCase().trim();
+                // A moldura já vem em base64 na resposta!
+                if(data.moldura){
+                    molduraBase64=data.moldura;
+                    debug('✅ Moldura carregada (base64)');
                 }
+                updateEventoUI();
             }
         }
-    }catch(e){}
+    }catch(e){debug('⚠️ Sync: '+e.message);}
 }
+
 function updateEventoUI(){
     const el=document.getElementById('active-event-name');
     if(eventoAtual){el.style.display='block';el.innerText=`🎉 ${eventoAtual} | ${formatoAtual}`;}
@@ -126,35 +132,21 @@ function capturePhoto(){
     },4000);
 }
 
-// ==================== CARREGA MOLDURA VIA FETCH (SEM CORS) ====================
-async function carregarMolduraComoImagem(url) {
-    debug('🖼️ Baixando moldura via fetch...');
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('HTTP ' + response.status);
-    const blob = await response.blob();
-    const dataUrl = await new Promise(resolve => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.readAsDataURL(blob);
-    });
-    // Agora carrega como Image (dataURL não tem CORS)
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error('Falha ao decodificar moldura'));
-        img.src = dataUrl;
-    });
-}
-
+// ==================== COMPOSIÇÃO COM MOLDURA BASE64 (SEM CORS!) ====================
 async function composeAndUpload(copias){
-    if(!molduraUrl){debug('❌ Moldura não configurada!');return;}
+    if(!molduraBase64){debug('❌ Moldura não carregada!');return;}
     debug('🖨️ Compondo foto + moldura...');
     try {
         // Foto do canvas
         const fotoImg = await new Promise(r => {const img=new Image();img.onload=()=>r(img);img.src=canvasCapture.toDataURL('image/jpeg',0.92);});
         
-        // Moldura via fetch (sem CORS)
-        const molduraImg = await carregarMolduraComoImagem(molduraUrl);
+        // Moldura a partir do base64 (já recebido do /get-all-states)
+        const molduraImg = await new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = () => reject(new Error('Falha ao decodificar moldura'));
+            img.src = molduraBase64;
+        });
         
         // Composição
         const canvas = document.createElement('canvas');
@@ -181,7 +173,6 @@ async function uploadBlob(blob,copias){
 }
 
 async function waitForPrint(){
-    debug('⏳ Aguardando totem...');
     for(let i=0;i<120;i++){try{const res=await fetch(`${API_BASE}/check-print?t=${Date.now()}`);if(res.ok){const d=await res.json();if(d.printTriggered)return d.copias||1;}}catch(e){}await new Promise(r=>setTimeout(r,500));}
     return null;
 }
@@ -237,7 +228,7 @@ function removeBackground(){localStorage.removeItem('photoprint_bg');document.ge
 
 localStorage.setItem('booth_state','start');updateScreenState('start');initCamera();
 setInterval(pollServerState,800);setInterval(syncEvento,5000);syncEvento();
-debug('🚀 WEBCAM v9.4 pronta');
+debug('🚀 WEBCAM v9.5 pronta');
 </script>
 </body>
 </html>

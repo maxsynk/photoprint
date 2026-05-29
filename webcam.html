@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>WEBCAM - PHOTO PRINT v9.2</title>
+<title>WEBCAM - PHOTO PRINT v9.4</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 :root{ --neon:#39ff14; --dark:#050505; --danger:#ff3131; }
@@ -77,17 +77,11 @@ let stream=null,lastState='start',captureInProgress=false,initialLoad=true;
 let eventoAtual=null,eventoId=null,formatoAtual='10X15V',molduraUrl=null;
 function debug(msg){console.log('[WEBCAM]',msg);const el=document.getElementById('debug-info');if(el)el.innerText=msg;}
 
-// ==================== CÂMERA ====================
 async function initCamera(){
-    try{
-        stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:1920,height:1080}});
-        videoFeed.srcObject=stream;
-        // NUNCA pausar - deixa o vídeo rodando sempre
-        debug('✅ Câmera OK');
-    }catch(err){debug('❌ Câmera: '+err.message);}
+    try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:1920,height:1080}});videoFeed.srcObject=stream;debug('✅ Câmera OK');}
+    catch(err){debug('❌ Câmera: '+err.message);}
 }
 
-// ==================== SINCRONIZAÇÃO ====================
 async function syncEvento(){
     try{
         const res=await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`);
@@ -97,7 +91,7 @@ async function syncEvento(){
                     eventoAtual=data.config.evento;eventoId=data.config.eventoId;
                     formatoAtual=(data.config.formato||'10X15V').toUpperCase().trim();
                     molduraUrl=`${API_BASE}/photo?key=eventos/${eventoId}/moldura.png`;
-                    debug(`📡 Evento: ${eventoAtual} | ID: ${eventoId}`);
+                    debug(`📡 Evento: ${eventoAtual} | ID: ${eventoId} | ${formatoAtual}`);
                     updateEventoUI();
                 }
             }
@@ -110,7 +104,6 @@ function updateEventoUI(){
     else el.style.display='none';
 }
 
-// ==================== CAPTURA ====================
 function capturePhoto(){
     if(captureInProgress)return;
     captureInProgress=true;
@@ -133,32 +126,48 @@ function capturePhoto(){
     },4000);
 }
 
-// ==================== COMPOSIÇÃO COM MOLDURA ====================
-function carregarImagem(url) {
+// ==================== CARREGA MOLDURA VIA FETCH (SEM CORS) ====================
+async function carregarMolduraComoImagem(url) {
+    debug('🖼️ Baixando moldura via fetch...');
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    const blob = await response.blob();
+    const dataUrl = await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
+    });
+    // Agora carrega como Image (dataURL não tem CORS)
     return new Promise((resolve, reject) => {
         const img = new Image();
-        img.crossOrigin = 'anonymous';
         img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error('Falha'));
-        img.src = url + '?t=' + Date.now();
+        img.onerror = () => reject(new Error('Falha ao decodificar moldura'));
+        img.src = dataUrl;
     });
 }
 
 async function composeAndUpload(copias){
-    if(!molduraUrl){debug('❌ Sem moldura!');return;}
+    if(!molduraUrl){debug('❌ Moldura não configurada!');return;}
     debug('🖨️ Compondo foto + moldura...');
     try {
+        // Foto do canvas
         const fotoImg = await new Promise(r => {const img=new Image();img.onload=()=>r(img);img.src=canvasCapture.toDataURL('image/jpeg',0.92);});
-        const molduraImg = await carregarImagem(molduraUrl);
+        
+        // Moldura via fetch (sem CORS)
+        const molduraImg = await carregarMolduraComoImagem(molduraUrl);
+        
+        // Composição
         const canvas = document.createElement('canvas');
         canvas.width = fotoImg.width; canvas.height = fotoImg.height;
         const cctx = canvas.getContext('2d');
         cctx.fillStyle='#FFFFFF';cctx.fillRect(0,0,canvas.width,canvas.height);
         cctx.drawImage(fotoImg,0,0);
         cctx.drawImage(molduraImg,0,0,canvas.width,canvas.height);
+        
+        // Upload
         const blob = await new Promise(r=>canvas.toBlob(r,'image/jpeg',0.95));
         await uploadBlob(blob,copias);
-        debug('✅ Foto montada enviada!');
+        debug('✅ Foto com moldura enviada!');
     } catch(e) { debug('❌ Erro: '+e.message); }
 }
 
@@ -228,7 +237,7 @@ function removeBackground(){localStorage.removeItem('photoprint_bg');document.ge
 
 localStorage.setItem('booth_state','start');updateScreenState('start');initCamera();
 setInterval(pollServerState,800);setInterval(syncEvento,5000);syncEvento();
-debug('🚀 WEBCAM v9.2 pronta');
+debug('🚀 WEBCAM v9.4 pronta');
 </script>
 </body>
 </html>

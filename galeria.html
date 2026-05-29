@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT - GALLERY v6.3</title>
+    <title>PHOTO PRINT - GALLERY v7.1</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -61,74 +61,70 @@
 
 <script>
     const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
-    let todasFotos = [], chavesLocais = new Set(), eventoAtual = "", eventoIdAtual = "", formatoAtual = "10X15V";
-    let printQueue = [], isPrinting = false, primeiraCarga = true;
+    let todasFotos = [];
+    let chavesLocais = new Set();
+    let eventoAtual = "";
+    let eventoIdAtual = "";
+    let formatoAtual = "10X15V";
+    let printQueue = [];
+    let isPrinting = false;
+    let primeiraCarga = true;
 
     function debug(msg) { console.log('[GALERIA]', msg); document.getElementById('debug-info').innerText = msg; }
-
-    function traduzirFormato(f) { 
-        if(!f) return "--"; 
-        f = f.toUpperCase().trim(); 
-        if(f.includes("10X15H")) return "10x15 Horizontal"; 
-        if(f.includes("10X15V")) return "10x15 Vertical"; 
-        if(f.includes("TIRINHA")) return "Tirinha"; 
-        if(f.includes("POLAROID")) return "Polaroid"; 
-        return f; 
-    }
+    function traduzirFormato(f) { if(!f) return "--"; f = f.toUpperCase().trim(); if(f.includes("10X15H")) return "10x15 Horizontal"; if(f.includes("10X15V")) return "10x15 Vertical"; if(f.includes("TIRINHA")) return "Tirinha"; if(f.includes("POLAROID")) return "Polaroid"; return f; }
 
     async function atualizar() {
         try {
-            const resStatus = await fetch(`${API}/get-all-states?t=${Date.now()}`);
-            if (!resStatus.ok) { debug('Erro API: ' + resStatus.status); return; }
+            debug('🔄 Buscando...');
+            const r1 = await fetch(API + '/get-all-states?t=' + Date.now());
+            if (!r1.ok) throw new Error('API status: ' + r1.status);
+            const config = await r1.json();
             
-            const config = await resStatus.json();
-            const novoEvento = (config.config && config.config.evento) ? config.config.evento : "Geral";
-            const novoEventoId = (config.config && config.config.eventoId) ? config.config.eventoId : "";
+            const evt = (config.config && config.config.evento) ? config.config.evento : "Geral";
+            const evtId = (config.config && config.config.eventoId) ? config.config.eventoId : "";
             formatoAtual = (config.config && config.config.formato) ? config.config.formato.toUpperCase().trim() : "10X15V";
-            
-            if (eventoIdAtual !== novoEventoId) {
-                debug(`Evento: ${novoEvento} | Formato: ${formatoAtual}`);
-                eventoAtual = novoEvento;
-                eventoIdAtual = novoEventoId;
+
+            if (eventoIdAtual !== evtId) {
+                debug('Evento: ' + evt + ' | ' + formatoAtual);
+                eventoAtual = evt; eventoIdAtual = evtId;
                 todasFotos = []; chavesLocais.clear(); printQueue = []; primeiraCarga = true;
                 document.getElementById('grid-fotos').innerHTML = "";
             }
-            
             document.getElementById('nome-evento').innerText = eventoAtual;
             document.getElementById('tipo-formato').innerText = traduzirFormato(formatoAtual);
-            if (!eventoIdAtual) { debug('Sem evento ativo'); return; }
+            if (!eventoIdAtual) { debug('Sem evento'); return; }
 
-            const resF = await fetch(`${API}/list-photos?evento=${encodeURIComponent(eventoAtual)}&t=${Date.now()}`);
-            const dados = await resF.json();
+            const r2 = await fetch(API + '/list-photos?evento=' + encodeURIComponent(eventoAtual) + '&t=' + Date.now());
+            const dados = await r2.json();
+            debug(dados.length + ' arquivos');
             
             const fotosValidas = Array.isArray(dados) ? dados.filter(f => !f.key.toLowerCase().includes('moldura')) : [];
-            const novasFotos = fotosValidas.filter(f => !chavesLocais.has(f.key));
+            const novas = fotosValidas.filter(f => !chavesLocais.has(f.key));
 
-            if (novasFotos.length > 0) {
-                debug(`+${novasFotos.length} foto(s)`);
-                for (let f of novasFotos) {
-                    const fotoUrl = `${API}/photo?key=${encodeURIComponent(f.key)}`;
+            if (novas.length > 0) {
+                debug('+' + novas.length + ' nova(s)');
+                for (let f of novas) {
+                    const url = API + '/photo?key=' + encodeURIComponent(f.key);
                     const kl = f.key.toLowerCase();
                     let copiasDoCard = 1;
                     if (kl.includes("_3c_")) copiasDoCard = 3;
                     else if (kl.includes("_2c_")) copiasDoCard = 2;
-                    const possuiLivro = kl.includes("_livro_") || kl.includes("guestbook");
-                    
-                    todasFotos.push({ id: todasFotos.length + 1, url: fotoUrl, key: f.key, copias: copiasDoCard, livro: possuiLivro });
+                    const livro = kl.includes("_livro_") || kl.includes("guestbook");
+                    todasFotos.push({ id: todasFotos.length + 1, url: url, key: f.key, copias: copiasDoCard, livro: livro });
                     chavesLocais.add(f.key);
-                    if (!primeiraCarga) { for (let i = 0; i < copiasDoCard; i++) addToPrintQueue(fotoUrl); }
+                    if (!primeiraCarga) { for (let i = 0; i < copiasDoCard; i++) addToPrintQueue(url); }
                 }
                 render();
-                debug(`${todasFotos.length} fotos na galeria`);
             }
             primeiraCarga = false;
+            debug(todasFotos.length + ' fotos');
         } catch(e) { debug('Erro: ' + e.message); }
     }
 
     function render() {
         const grid = document.getElementById('grid-fotos');
         if (todasFotos.length === 0) {
-            grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:#555;"><i class="fa-solid fa-camera-retro" style="font-size:64px;display:block;margin-bottom:20px;opacity:0.3;"></i>Nenhuma foto ainda</div>`;
+            grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:#555;"><i class="fa-solid fa-camera-retro" style="font-size:64px;display:block;margin-bottom:20px;opacity:0.3;"></i>Nenhuma foto ainda</div>';
             return;
         }
         grid.innerHTML = todasFotos.slice().reverse().map(f => `
@@ -155,17 +151,17 @@
     function reimprimirAtual() { addToPrintQueue(document.getElementById('img-zoom').src); }
 
     async function excluirFoto(key) {
-        if(confirm("Excluir esta foto?")) { await fetch(`${API}/photo?key=${encodeURIComponent(key)}`, { method: 'DELETE' }); fecharZoom(); location.reload(); }
+        if(confirm("Excluir esta foto?")) { await fetch(API + '/photo?key=' + encodeURIComponent(key), { method: 'DELETE' }); fecharZoom(); location.reload(); }
     }
 
     async function baixarZip() {
         const zip = new JSZip();
-        for(let f of todasFotos) { const blob = await fetch(f.url).then(r => r.blob()); zip.file(`foto_${f.id}.jpg`, blob); }
+        for(let f of todasFotos) { const blob = await fetch(f.url).then(r => r.blob()); zip.file('foto_' + f.id + '.jpg', blob); }
         const content = await zip.generateAsync({type:"blob"}); saveAs(content, "galeria.zip");
     }
 
     async function limparTudo() {
-        if(confirm("Apagar todas as fotos?") && prompt("Senha:") === "1234") { await fetch(`${API}/photo?key=all`, { method: 'DELETE' }); location.reload(); }
+        if(confirm("Apagar todas as fotos?") && prompt("Senha:") === "1234") { await fetch(API + '/photo?key=all', { method: 'DELETE' }); location.reload(); }
     }
 
     function executarBusca() {

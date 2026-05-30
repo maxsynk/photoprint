@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT - GALLERY v7.6</title>
+    <title>PHOTO PRINT - GALLERY v7.7</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -57,7 +57,7 @@
     <main class="grid" id="grid-fotos"></main>
     <div class="modal" id="modal-zoom"><img id="img-zoom" src=""><div class="modal-controls"><button class="btn-act" style="background:#333; color:#fff" onclick="fecharZoom()">Voltar</button><button class="btn-act" style="background:var(--accent); color:#000" onclick="reimprimirAtual()">Reimprimir</button><button class="btn-act" style="background:var(--danger); color:#fff" id="btn-excluir-zoom">Excluir</button></div></div>
     <div id="modal-print"><img id="img-print"></div>
-    <div class="debug-info" id="debug-info">INICIANDO...</div>
+    <div class="debug-info" id="debug-info">SISTEMA PRONTO</div>
 <script>
     const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
     let todasFotos = [], chavesLocais = new Set(), eventoAtual = "", eventoIdAtual = "", formatoAtual = "10X15V";
@@ -74,14 +74,19 @@
             const evt = (config.config && config.config.evento) ? config.config.evento : "Geral";
             const evtId = (config.config && config.config.eventoId) ? config.config.eventoId : "";
             formatoAtual = (config.config && config.config.formato) ? config.config.formato.toUpperCase().trim() : "10X15V";
+            
+            // Detecta se o evento tem guestbook ativo
+            const temLivro = (config.config && config.config.livro) ? true : false;
+            
             if (eventoIdAtual !== evtId) {
                 eventoAtual = evt; eventoIdAtual = evtId;
                 todasFotos = []; chavesLocais.clear(); printQueue = []; primeiraCarga = true;
                 document.getElementById('grid-fotos').innerHTML = "";
+                debug('🔄 Evento: ' + evt + (temLivro ? ' 📖 Guestbook' : ''));
             }
             document.getElementById('nome-evento').innerText = eventoAtual;
             document.getElementById('tipo-formato').innerText = traduzirFormato(formatoAtual);
-            if (!eventoIdAtual) return;
+            if (!eventoIdAtual) { debug('⏳ Aguardando evento...'); return; }
 
             const r2 = await fetch(API + '/list-photos?evento=' + encodeURIComponent(eventoAtual) + '&t=' + Date.now()).catch(() => null);
             if (!r2 || !r2.ok) return;
@@ -89,21 +94,24 @@
             const fotosValidas = Array.isArray(dados) ? dados.filter(f => !f.key.toLowerCase().includes('moldura')) : [];
             const novas = fotosValidas.filter(f => !chavesLocais.has(f.key));
             if (novas.length > 0) {
+                debug('📷 ' + novas.length + ' nova(s) foto(s)');
                 for (let f of novas) {
                     const url = API + '/photo?key=' + encodeURIComponent(f.key);
                     const kl = f.key.toLowerCase();
                     let copiasDoCard = 1;
                     if (kl.includes('_3c')) copiasDoCard = 3;
                     else if (kl.includes('_2c')) copiasDoCard = 2;
-                    const livro = kl.includes("_livro_") || kl.includes("guestbook");
+                    // Guestbook detectado pelo nome do arquivo OU pelo config
+                    const livro = kl.includes("_livro_") || kl.includes("guestbook") || temLivro;
                     todasFotos.push({ id: todasFotos.length + 1, url: url, key: f.key, copias: copiasDoCard, livro: livro });
                     chavesLocais.add(f.key);
                     if (!primeiraCarga) { for (let i = 0; i < copiasDoCard; i++) addToPrintQueue(url); }
                 }
                 render();
+                debug('✅ ' + todasFotos.length + ' fotos na galeria');
             }
             primeiraCarga = false;
-        } catch(e) {}
+        } catch(e) { debug('⚠️ ' + e.message); }
     }
 
     function render() {
@@ -126,6 +134,7 @@
     function processQueue() {
         if (printQueue.length === 0) { isPrinting = false; return; }
         isPrinting = true;
+        debug('🖨️ Imprimindo... (' + printQueue.length + ' na fila)');
         const imgP = document.getElementById('img-print');
         imgP.onload = () => { window.focus(); setTimeout(() => { window.print(); setTimeout(processQueue, 3000); }, 500); };
         imgP.src = printQueue.shift();

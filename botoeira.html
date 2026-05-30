@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>BOTOEIRA - PHOTO PRINT v3.7</title>
+    <title>BOTOEIRA - PHOTO PRINT v3.8</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
         :root { --neon: #39ff14; --dark: #050505; --danger: #ff3131; --info-blue: #00e5ff; }
@@ -21,6 +21,7 @@
         .logo-title { font-family:'Orbitron',sans-serif; color:var(--neon); font-size:22px; font-weight:900; letter-spacing:4px; text-shadow: 0 0 10px var(--neon); }
         .logo-sub { margin-top:2px; color:white; opacity:0.7; letter-spacing:3px; font-size:10px; text-transform:uppercase; }
         #active-event-name { margin-top:6px; color:var(--neon); font-size:12px; font-weight:bold; letter-spacing:1px; text-shadow: 0 0 5px var(--neon); display:none; }
+        #modo-guestbook { margin-top:2px; color:var(--info-blue); font-size:10px; font-weight:bold; display:none; }
         #bg-menu { position:fixed; top:80px; left:20px; z-index:100; display:none; flex-direction:column; gap:12px; }
         #bg-menu.active { display:flex; }
         .bg-btn { padding:12px 20px; border-radius:14px; border:1px solid rgba(57,255,20,0.45); background:rgba(0,0,0,0.85); color:white; font-size:14px; font-weight:bold; letter-spacing:1px; cursor:pointer; backdrop-filter:blur(10px); text-align:center; }
@@ -55,23 +56,31 @@
         <div class="logo-title">BOTOEIRA</div>
         <div class="logo-sub">Controle da Câmera</div>
         <div id="active-event-name"></div>
+        <div id="modo-guestbook">📖 Modo Guestbook Ativo</div>
     </div>
     <div id="bg-menu"><label class="bg-btn" for="bg-input">🖼 ALTERAR FUNDO</label><div class="bg-btn" onclick="removeBackground()">✖ SEM FUNDO</div></div>
     <input type="file" id="bg-input" accept="image/*"/>
     <div id="screen-start" class="screen"><div class="btn-start" onclick="triggerPhoto()"><div class="start-content"><div class="start-icon">📸</div><div class="start-title">TIRAR FOTO</div></div></div></div>
     <div id="screen-triggered" class="screen" style="display:none"><div class="triggered-text" id="status-text">CAPTURANDO... 📸</div></div>
-    <div id="screen-options" class="screen" style="display:none"><div class="options-container"><div class="copies-label">COMO DESEJA IMPRIMIR?</div><div class="print-grid"><button class="btn-print-mobile btn-neon-style selected" onclick="selectOption(this,1)">🖨️ 1 Cópia</button><button class="btn-print-mobile btn-neon-style" onclick="selectOption(this,2)">🖨️ 2 Cópias</button><button class="btn-print-mobile btn-blue-style" onclick="selectOption(this,3)">📖 1 Cópia + Guestbook</button><button class="btn-print-mobile btn-blue-style" onclick="selectOption(this,4)">📖 2 Cópias + Guestbook</button></div><button class="btn-send" onclick="sendPrint()">ENVIAR ✈️</button></div></div>
+    <div id="screen-options" class="screen" style="display:none">
+        <div class="options-container">
+            <div class="copies-label">COMO DESEJA IMPRIMIR?</div>
+            <div class="print-grid" id="print-grid">
+                <button class="btn-print-mobile btn-neon-style selected" data-opcao="1" onclick="selectOption(this,1)">🖨️ 1 Cópia</button>
+                <button class="btn-print-mobile btn-neon-style" data-opcao="2" onclick="selectOption(this,2)">🖨️ 2 Cópias</button>
+                <button class="btn-print-mobile btn-blue-style guestbook-only" data-opcao="3" onclick="selectOption(this,3)">📖 1 Cópia + Guestbook</button>
+                <button class="btn-print-mobile btn-blue-style guestbook-only" data-opcao="4" onclick="selectOption(this,4)">📖 2 Cópias + Guestbook</button>
+            </div>
+            <button class="btn-send" onclick="sendPrint()">ENVIAR ✈️</button>
+        </div>
+    </div>
     <div id="monitor-status">SISTEMA PRONTO</div>
 <script>
 const API="https://photoprint-api.maxprimefotovideo.workers.dev";
 let selectedCopiesValue=1;
+let guestbookAtivo=false;
 const monitor=document.getElementById('monitor-status');
 
-// ================== MAPEAMENTO CORRETO DE CÓPIAS ==================
-// Opção 1: 1 Cópia → 1 foto
-// Opção 2: 2 Cópias → 2 fotos
-// Opção 3: 1 Cópia + Guestbook → 2 fotos (1 normal + 1 guestbook)
-// Opção 4: 2 Cópias + Guestbook → 3 fotos (2 normais + 1 guestbook)
 function getCopiasFisicas(opcao) {
     if (opcao === 1) return 1;
     if (opcao === 2) return 2;
@@ -80,22 +89,55 @@ function getCopiasFisicas(opcao) {
     return 1;
 }
 
-// ================== SINCRONIZA EVENTO ATIVO ==================
+// ================== SINCRONIZA COM PAINEL ==================
 async function syncEvento(){
     try{
         const res=await fetch(`${API}/get-all-states?t=${Date.now()}`);
         if(res.ok){
             const data=await res.json();
             const el=document.getElementById('active-event-name');
+            const elGuestbook=document.getElementById('modo-guestbook');
+            
             if(data.config&&data.config.evento&&data.config.evento!=='Geral'){
                 el.style.display='block';
                 el.innerText=`📸 ${data.config.evento}`;
+                
+                // Verifica se Guestbook está ativo no Painel
+                guestbookAtivo = (data.config.livro === true || data.config.livro === 1);
+                
+                if(guestbookAtivo){
+                    elGuestbook.style.display='block';
+                }else{
+                    elGuestbook.style.display='none';
+                }
+                
+                // Atualiza visibilidade dos botões
+                atualizarBotoesGuestbook();
             }else{
                 el.style.display='none';
+                elGuestbook.style.display='none';
+                guestbookAtivo=false;
+                atualizarBotoesGuestbook();
             }
         }
     }catch(e){}
 }
+
+function atualizarBotoesGuestbook(){
+    const botoesGuestbook = document.querySelectorAll('.guestbook-only');
+    botoesGuestbook.forEach(btn => {
+        btn.style.display = guestbookAtivo ? 'block' : 'none';
+    });
+    
+    // Se guestbook não está ativo e a opção selecionada é 3 ou 4, volta para 1
+    if(!guestbookAtivo && (selectedCopiesValue === 3 || selectedCopiesValue === 4)){
+        selectedCopiesValue = 1;
+        document.querySelectorAll('.btn-print-mobile').forEach(b => b.classList.remove('selected'));
+        const primeiro = document.querySelector('.btn-print-mobile[data-opcao="1"]');
+        if(primeiro) primeiro.classList.add('selected');
+    }
+}
+
 syncEvento();
 setInterval(syncEvento,10000);
 
@@ -139,12 +181,10 @@ async function waitPhotoFinish(){
 function resetUI(){document.getElementById('screen-triggered').style.display="none";document.getElementById('screen-options').style.display="none";document.getElementById('screen-start').style.display="flex";localStorage.setItem('booth_state','start');}
 function selectOption(b,v){document.querySelectorAll('.btn-print-mobile').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');selectedCopiesValue=v;}
 
-// ================== ENVIAR IMPRESSÃO COM CÓPIAS CORRETAS ==================
 async function sendPrint(){
     const copiasFisicas = getCopiasFisicas(selectedCopiesValue);
     monitor.innerText=`Enviando ${copiasFisicas} cópia(s) (opção ${selectedCopiesValue})...`;
     try{
-        // Envia a opção selecionada para o Worker (1, 2, 3 ou 4)
         await fetch(`${API}/trigger-print`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({copias: selectedCopiesValue})});
         await fetch(`${API}/set-state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:'start'})}).catch(()=>{});
         localStorage.setItem('booth_state','start');

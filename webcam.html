@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>WEBCAM - PHOTO PRINT v9.9</title>
+<title>WEBCAM - PHOTO PRINT v9.9.1</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 :root{ --neon:#39ff14; --dark:#050505; --danger:#ff3131; }
@@ -85,7 +85,6 @@ const FORMATOS = {
 
 function debug(msg){console.log('[WEBCAM]',msg);const el=document.getElementById('debug-info');if(el)el.innerText=msg;}
 
-// ==================== MAPEAMENTO DE CÓPIAS ====================
 function getCopiasFisicas(opcao) {
     if (opcao === 1) return 1;
     if (opcao === 2) return 2;
@@ -155,14 +154,10 @@ async function composeAndUpload(opcaoCopias){
     try {
         const fotoImg = await new Promise(r => {const img=new Image();img.onload=()=>r(img);img.src=canvasCapture.toDataURL('image/jpeg',0.92);});
         const molduraImg = await new Promise((resolve, reject) => {
-            const img = new Image();
-            img.onload = () => resolve(img);
-            img.onerror = () => reject(new Error('Falha'));
-            img.src = molduraBase64;
+            const img = new Image(); img.onload = () => resolve(img); img.onerror = () => reject(new Error('Falha')); img.src = molduraBase64;
         });
         const fmt = FORMATOS[formatoAtual] || FORMATOS['POLAROID'];
-        const canvas = document.createElement('canvas');
-        canvas.width = fmt.w; canvas.height = fmt.h;
+        const canvas = document.createElement('canvas'); canvas.width = fmt.w; canvas.height = fmt.h;
         const cctx = canvas.getContext('2d');
         cctx.fillStyle = '#FFFFFF'; cctx.fillRect(0,0,canvas.width,canvas.height);
         const scale = Math.max(canvas.width/fotoImg.width, canvas.height/fotoImg.height);
@@ -170,36 +165,32 @@ async function composeAndUpload(opcaoCopias){
         cctx.drawImage(molduraImg,0,0,canvas.width,canvas.height);
         const blob = await new Promise(r=>canvas.toBlob(r,'image/jpeg',0.95));
         
-        // Envia apenas 1 arquivo (a Galeria mostra 1)
-        await uploadBlob(blob, copiasFisicas);
-        debug(`✅ 1 foto enviada (${copiasFisicas} cópias para imprimir)`);
+        // 🔥 ENVIA MÚLTIPLOS ARQUIVOS (1 por cópia)
+        await uploadMultiplos(blob, copiasFisicas);
+        debug(`✅ ${copiasFisicas} arquivo(s) enviado(s)`);
     } catch(e) { debug('❌ Erro: '+e.message); }
 }
 
-async function uploadBlob(blob, copiasFisicas){
+async function uploadMultiplos(blob, total){
     if(!eventoId){debug('❌ Sem eventoId');return;}
-    const nome = 'foto.jpg';
-    const fd = new FormData();
-    fd.append('foto', blob, nome);
-    fd.append('eventoId', eventoId);
-    fd.append('timestamp', String(Date.now()));
-    fd.append('copias', String(copiasFisicas));
-    debug(`⬆️ Upload: ${nome} (${copiasFisicas} cópias)`);
-    try {
-        const res = await fetch(`${API_BASE}/salvar-foto`, {method:'POST', body:fd});
-        if(res.ok) debug('✅ OK');
-        else debug('❌ ' + res.status);
-    } catch(e) { debug('❌ ' + e.message); }
+    for (let i = 0; i < total; i++) {
+        const ts = Date.now() + i;
+        const nome = `foto_${ts}.jpg`;
+        const fd = new FormData();
+        fd.append('foto', blob, nome);
+        fd.append('eventoId', eventoId);
+        fd.append('timestamp', String(ts));
+        debug(`⬆️ ${i+1}/${total}: ${nome}`);
+        try {
+            const res = await fetch(`${API_BASE}/salvar-foto`, {method:'POST', body:fd});
+            if(res.ok) debug(`✅ ${i+1} OK`);
+            else debug(`❌ ${i+1}: ${res.status}`);
+        } catch(e) { debug(`❌ ${i+1}: ${e.message}`); }
+    }
 }
 
 async function waitForPrint(){
-    for(let i=0;i<120;i++){
-        try{
-            const res=await fetch(`${API_BASE}/check-print?t=${Date.now()}`);
-            if(res.ok){const d=await res.json();if(d.printTriggered)return d.copias||1;}
-        }catch(e){}
-        await new Promise(r=>setTimeout(r,500));
-    }
+    for(let i=0;i<120;i++){try{const res=await fetch(`${API_BASE}/check-print?t=${Date.now()}`);if(res.ok){const d=await res.json();if(d.printTriggered)return d.copias||1;}}catch(e){}await new Promise(r=>setTimeout(r,500));}
     return null;
 }
 
@@ -254,7 +245,7 @@ function removeBackground(){localStorage.removeItem('photoprint_bg');document.ge
 
 localStorage.setItem('booth_state','start');updateScreenState('start');initCamera();
 setInterval(pollServerState,800);setInterval(syncEvento,5000);syncEvento();
-debug('🚀 WEBCAM v9.9 pronta');
+debug('🚀 WEBCAM v9.9.1 pronta');
 </script>
 </body>
 </html>

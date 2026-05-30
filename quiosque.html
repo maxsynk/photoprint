@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHOTO CLOUD | QUIOSQUE PRO</title>
+    <title>PHOTO CLOUD | QUIOSQUE PRO V1.0</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root { 
@@ -302,8 +302,6 @@
             document.getElementById('conteudo-quiosque').style.display = 'none';
             document.getElementById('mobile-download-screen').style.display = 'flex';
             document.getElementById('mobile-img').src = decodeURIComponent(fotoUrl);
-            
-            // CONFIGURA O BOTÃO DE DOWNLOAD FORÇADO
             document.getElementById('btn-forcar-download').onclick = () => forcarDownload(decodeURIComponent(fotoUrl));
         } else {
             syncDados();
@@ -311,34 +309,23 @@
         }
     };
 
-    // FUNÇÃO QUE RESOLVE O PROBLEMA DO DOWNLOAD NO CELULAR
     async function forcarDownload(url) {
         const btn = document.getElementById('btn-forcar-download');
         const status = document.getElementById('msg-status');
-        
         try {
             btn.disabled = true;
             btn.innerText = "Processando...";
             status.innerText = "Preparando arquivo para o sistema...";
-
-            // 1. Busca os dados da imagem (Fetch)
             const response = await fetch(url);
             const blob = await response.blob();
-            
-            // 2. Cria um link temporário interno
             const blobUrl = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = blobUrl;
             link.download = "foto_photocloud_" + Date.now() + ".jpg";
-            
-            // 3. Simula o clique
             document.body.appendChild(link);
             link.click();
-            
-            // 4. Limpa a memória
             document.body.removeChild(link);
             window.URL.revokeObjectURL(blobUrl);
-
             btn.disabled = false;
             btn.innerText = "⬇️ Confirmar Download";
             status.innerText = "Download concluído!";
@@ -376,7 +363,7 @@
         const fotosComId = todasFotos.map((f, i) => ({ ...f, displayId: todasFotos.length - i }));
         const filtradas = termo === "" ? fotosComId : fotosComId.filter(f => f.displayId.toString().includes(termo));
         container.innerHTML = filtradas.map(f => {
-            const urlImg = `${API_URL}/photo/${encodeURIComponent(f.key)}`;
+            const urlImg = `${API_URL}/photo?key=${encodeURIComponent(f.key)}`;
             return `<div class="foto-item" onclick="abrirModal('${urlImg}', '${f.displayId}')">
                     <div class="foto-id">#${f.displayId}</div>
                     <img src="${urlImg}" loading="lazy" crossorigin="anonymous">
@@ -400,7 +387,7 @@
         if (todasFotos.length === 0) return;
         const img = document.getElementById('ss-img');
         const f = todasFotos[Math.floor(Math.random() * todasFotos.length)];
-        img.src = `${API_URL}/photo/${encodeURIComponent(f.key)}`;
+        img.src = `${API_URL}/photo?key=${encodeURIComponent(f.key)}`;
     }
 
     function stopScreensaver() {
@@ -431,7 +418,7 @@
         const achada = fotosComId.find(f => f.displayId.toString() === termo);
         if (achada) {
             toggleNumpad(false);
-            abrirModal(`${API_URL}/photo/${encodeURIComponent(achada.key)}`, achada.displayId);
+            abrirModal(`${API_URL}/photo?key=${encodeURIComponent(achada.key)}`, achada.displayId);
         } else {
             alert("NÃO ENCONTRADA");
             limparBusca();

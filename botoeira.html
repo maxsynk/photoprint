@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>BOTOEIRA - PHOTO PRINT v3.8</title>
+    <title>BOTOEIRA - PHOTO PRINT v3.9</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
         :root { --neon: #39ff14; --dark: #050505; --danger: #ff3131; --info-blue: #00e5ff; }
@@ -26,6 +26,9 @@
         #bg-menu.active { display:flex; }
         .bg-btn { padding:12px 20px; border-radius:14px; border:1px solid rgba(57,255,20,0.45); background:rgba(0,0,0,0.85); color:white; font-size:14px; font-weight:bold; letter-spacing:1px; cursor:pointer; backdrop-filter:blur(10px); text-align:center; }
         #bg-input { display:none; }
+        #offline-overlay{ position:fixed; inset:0; background:#000; z-index:9999; display:none; align-items:center; justify-content:center; flex-direction:column; }
+        #offline-overlay .offline-text{ font-size:30px; font-weight:900; color:var(--danger); text-shadow:0 0 20px var(--danger); animation:pulseOff 1.5s infinite; text-transform:uppercase; letter-spacing:4px; text-align:center; }
+        @keyframes pulseOff{ 0%,100%{ opacity:1; } 50%{ opacity:0.3; } }
         .screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; }
         .btn-start { position:relative; width:260px; height:260px; border-radius:50%; border:4px solid var(--neon); background: radial-gradient(circle at center, rgba(57,255,20,0.18), rgba(0,0,0,0.96)); cursor:pointer; overflow:hidden; transition:0.1s; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow: 0 0 30px rgba(57,255,20,0.8), inset 0 0 60px rgba(57,255,20,0.15); backdrop-filter:blur(4px); z-index:30; }
         .btn-start::before { content:''; position:absolute; width:250%; height:250%; background:conic-gradient( transparent, rgba(57,255,20,1), rgba(57,255,20,0.25), transparent ); animation:rotateGlow 3s linear infinite; filter:blur(20px); opacity:1; }
@@ -52,6 +55,7 @@
 </head>
 <body>
     <div id="dynamic-bg"></div>
+    <div id="offline-overlay"><div class="offline-text">SISTEMA EM<br>MANUTENÇÃO</div></div>
     <div class="top-logo" id="secret-logo">
         <div class="logo-title">BOTOEIRA</div>
         <div class="logo-sub">Controle da Câmera</div>
@@ -77,81 +81,59 @@
     <div id="monitor-status">SISTEMA PRONTO</div>
 <script>
 const API="https://photoprint-api.maxprimefotovideo.workers.dev";
-let selectedCopiesValue=1;
-let guestbookAtivo=false;
+let selectedCopiesValue=1,guestbookAtivo=false,sistemaOnline=true;
 const monitor=document.getElementById('monitor-status');
 
-function getCopiasFisicas(opcao) {
-    if (opcao === 1) return 1;
-    if (opcao === 2) return 2;
-    if (opcao === 3) return 2;
-    if (opcao === 4) return 3;
-    return 1;
-}
+function getCopiasFisicas(o){if(o===1)return 1;if(o===2)return 2;if(o===3)return 2;if(o===4)return 3;return 1;}
 
-// ================== SINCRONIZA COM PAINEL ==================
-async function syncEvento(){
+async function verificarStatus(){
     try{
         const res=await fetch(`${API}/get-all-states?t=${Date.now()}`);
-        if(res.ok){
-            const data=await res.json();
-            const el=document.getElementById('active-event-name');
-            const elGuestbook=document.getElementById('modo-guestbook');
-            
-            if(data.config&&data.config.evento&&data.config.evento!=='Geral'){
-                el.style.display='block';
-                el.innerText=`📸 ${data.config.evento}`;
-                
-                // Verifica se Guestbook está ativo no Painel
-                guestbookAtivo = (data.config.livro === true || data.config.livro === 1);
-                
-                if(guestbookAtivo){
-                    elGuestbook.style.display='block';
-                }else{
-                    elGuestbook.style.display='none';
-                }
-                
-                // Atualiza visibilidade dos botões
-                atualizarBotoesGuestbook();
-            }else{
-                el.style.display='none';
-                elGuestbook.style.display='none';
-                guestbookAtivo=false;
-                atualizarBotoesGuestbook();
-            }
-        }
-    }catch(e){}
+        if(!res||!res.ok){sistemaOnline=false;mostrarOffline();return null;}
+        const data=await res.json();
+        const status=(data.config&&data.config.status)?data.config.status:'OFFLINE';
+        if(status==='OFFLINE'){sistemaOnline=false;mostrarOffline();}
+        else{sistemaOnline=true;esconderOffline();}
+        return data;
+    }catch(e){sistemaOnline=false;mostrarOffline();return null;}
 }
+function mostrarOffline(){document.getElementById('offline-overlay').style.display='flex';}
+function esconderOffline(){document.getElementById('offline-overlay').style.display='none';}
 
-function atualizarBotoesGuestbook(){
-    const botoesGuestbook = document.querySelectorAll('.guestbook-only');
-    botoesGuestbook.forEach(btn => {
-        btn.style.display = guestbookAtivo ? 'block' : 'none';
-    });
-    
-    // Se guestbook não está ativo e a opção selecionada é 3 ou 4, volta para 1
-    if(!guestbookAtivo && (selectedCopiesValue === 3 || selectedCopiesValue === 4)){
-        selectedCopiesValue = 1;
-        document.querySelectorAll('.btn-print-mobile').forEach(b => b.classList.remove('selected'));
-        const primeiro = document.querySelector('.btn-print-mobile[data-opcao="1"]');
-        if(primeiro) primeiro.classList.add('selected');
+async function syncEvento(){
+    const data=await verificarStatus();
+    if(!data||!sistemaOnline)return;
+    const el=document.getElementById('active-event-name');
+    const elGuestbook=document.getElementById('modo-guestbook');
+    if(data.config&&data.config.evento&&data.config.evento!=='Geral'){
+        el.style.display='block';el.innerText=`📸 ${data.config.evento}`;
+        guestbookAtivo=(data.config.livro===true||data.config.livro===1);
+        elGuestbook.style.display=guestbookAtivo?'block':'none';
+        atualizarBotoesGuestbook();
+    }else{
+        el.style.display='none';elGuestbook.style.display='none';
+        guestbookAtivo=false;atualizarBotoesGuestbook();
     }
 }
+function atualizarBotoesGuestbook(){
+    document.querySelectorAll('.guestbook-only').forEach(btn=>{btn.style.display=guestbookAtivo?'block':'none';});
+    if(!guestbookAtivo&&(selectedCopiesValue===3||selectedCopiesValue===4)){
+        selectedCopiesValue=1;
+        document.querySelectorAll('.btn-print-mobile').forEach(b=>b.classList.remove('selected'));
+        const p=document.querySelector('.btn-print-mobile[data-opcao="1"]');
+        if(p)p.classList.add('selected');
+    }
+}
+syncEvento();setInterval(syncEvento,10000);
 
-syncEvento();
-setInterval(syncEvento,10000);
-
-// Menu secreto
 let cc=0,ct=null;
 document.getElementById('secret-logo').addEventListener('click',()=>{cc++;clearTimeout(ct);ct=setTimeout(()=>{cc=0},2000);if(cc>=7){document.getElementById('bg-menu').classList.toggle('active');cc=0;}});
-
-// Fundo
 document.getElementById('bg-input').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{document.getElementById('dynamic-bg').style.backgroundImage=`url('${ev.target.result}')`;document.getElementById('dynamic-bg').classList.add('active');document.body.classList.add('bg-active');localStorage.setItem('photoprint_bg_mobile',ev.target.result);document.getElementById('bg-menu').classList.remove('active');};r.readAsDataURL(f);});
 function removeBackground(){localStorage.removeItem('photoprint_bg_mobile');document.getElementById('dynamic-bg').style.backgroundImage="";document.getElementById('dynamic-bg').classList.remove('active');document.body.classList.remove('bg-active');document.getElementById('bg-menu').classList.remove('active');}
 (function(){const bg=localStorage.getItem('photoprint_bg_mobile');if(bg){document.getElementById('dynamic-bg').style.backgroundImage=`url('${bg}')`;document.getElementById('dynamic-bg').classList.add('active');document.body.classList.add('bg-active');}})();
 
-// ================== AÇÕES ==================
 async function triggerPhoto(){
+    if(!sistemaOnline){monitor.innerText="Sistema Offline";return;}
     document.getElementById('screen-start').style.display="none";
     document.getElementById('screen-triggered').style.display="flex";
     document.getElementById('status-text').innerText="CAPTURANDO... 📸";
@@ -164,7 +146,6 @@ async function triggerPhoto(){
         else monitor.innerText=`Erro API: ${rs.status}`;
     }catch(e){monitor.innerText="Falha ao conectar.";}
 }
-
 async function waitPhotoFinish(){
     let t=0;
     const iv=setInterval(async()=>{t++;
@@ -177,21 +158,21 @@ async function waitPhotoFinish(){
         }catch(e){monitor.innerText=`Tentando... (${t}s)`;}
     },1000);
 }
-
 function resetUI(){document.getElementById('screen-triggered').style.display="none";document.getElementById('screen-options').style.display="none";document.getElementById('screen-start').style.display="flex";localStorage.setItem('booth_state','start');}
 function selectOption(b,v){document.querySelectorAll('.btn-print-mobile').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');selectedCopiesValue=v;}
 
 async function sendPrint(){
-    const copiasFisicas = getCopiasFisicas(selectedCopiesValue);
-    monitor.innerText=`Enviando ${copiasFisicas} cópia(s) (opção ${selectedCopiesValue})...`;
+    if(!sistemaOnline){monitor.innerText="Sistema Offline";return;}
+    const copiasFisicas=getCopiasFisicas(selectedCopiesValue);
+    monitor.innerText=`Enviando ${copiasFisicas} cópia(s)...`;
     try{
-        await fetch(`${API}/trigger-print`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({copias: selectedCopiesValue})});
+        await fetch(`${API}/trigger-print`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({copias:selectedCopiesValue})});
         await fetch(`${API}/set-state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:'start'})}).catch(()=>{});
         localStorage.setItem('booth_state','start');
         document.getElementById('screen-options').innerHTML='<div class="triggered-text">ENVIADO! ✅</div>';
         monitor.innerText=`${copiasFisicas} cópia(s) enviada(s)!`;
         setTimeout(()=>location.reload(),2000);
-    }catch(e){monitor.innerText="Erro ao enviar";alert("Erro ao enviar impressão.");}
+    }catch(e){monitor.innerText="Erro ao enviar";}
 }
 </script>
 </body>

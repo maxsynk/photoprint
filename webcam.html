@@ -177,13 +177,25 @@ async function composeAndUpload(copias){
     } catch(e) { debug('❌ Erro: '+e.message); }
 }
 
-async function uploadBlob(blob,copias){
+async function uploadBlob(blob, copiasFisicas){
     if(!eventoId){debug('❌ Sem eventoId');return;}
-    let nome='foto.jpg',cf=1;
-    if(copias===2){nome='foto_2c.jpg';cf=2;}else if(copias===3){nome='foto_2c_guestbook.jpg';cf=2;}else if(copias===4){nome='foto_3c_guestbook.jpg';cf=3;}
-    const fd=new FormData();fd.append('foto',blob,nome);fd.append('eventoId',eventoId);fd.append('timestamp',String(Date.now()));
-    debug(`⬆️ Upload: ${nome}`);
-    try{const res=await fetch(`${API_BASE}/salvar-foto`,{method:'POST',body:fd});if(res.ok)debug('✅ OK');else debug('❌ '+res.status);}catch(e){debug('❌ '+e.message);}
+    
+    // Envia N cópias (cada uma como arquivo separado)
+    for (let i = 0; i < copiasFisicas; i++) {
+        let nome = `foto_${Date.now()}_${i}.jpg`;
+        const fd = new FormData();
+        fd.append('foto', blob, nome);
+        fd.append('eventoId', eventoId);
+        fd.append('timestamp', String(Date.now() + i));
+        
+        debug(`⬆️ Cópia ${i+1}/${copiasFisicas}: ${nome}`);
+        try {
+            const res = await fetch(`${API_BASE}/salvar-foto`, {method:'POST', body:fd});
+            if(res.ok) debug(`✅ Cópia ${i+1} OK`);
+            else debug(`❌ Cópia ${i+1}: ${res.status}`);
+        } catch(e) { debug(`❌ Cópia ${i+1}: ${e.message}`); }
+    }
+    debug(`✅ Total: ${copiasFisicas} cópia(s) enviada(s)`);
 }
 
 async function waitForPrint(){

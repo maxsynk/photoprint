@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT - GALLERY v7.1</title>
+    <title>PHOTO PRINT - GALLERY v7.2</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -58,17 +58,10 @@
     <div class="modal" id="modal-zoom"><img id="img-zoom" src=""><div class="modal-controls"><button class="btn-act" style="background:#333; color:#fff" onclick="fecharZoom()">Voltar</button><button class="btn-act" style="background:var(--accent); color:#000" onclick="reimprimirAtual()">Reimprimir</button><button class="btn-act" style="background:var(--danger); color:#fff" id="btn-excluir-zoom">Excluir</button></div></div>
     <div id="modal-print"><img id="img-print"></div>
     <div class="debug-info" id="debug-info">INICIANDO...</div>
-
 <script>
     const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
-    let todasFotos = [];
-    let chavesLocais = new Set();
-    let eventoAtual = "";
-    let eventoIdAtual = "";
-    let formatoAtual = "10X15V";
-    let printQueue = [];
-    let isPrinting = false;
-    let primeiraCarga = true;
+    let todasFotos = [], chavesLocais = new Set(), eventoAtual = "", eventoIdAtual = "", formatoAtual = "10X15V";
+    let printQueue = [], isPrinting = false, primeiraCarga = true;
 
     function debug(msg) { console.log('[GALERIA]', msg); document.getElementById('debug-info').innerText = msg; }
     function traduzirFormato(f) { if(!f) return "--"; f = f.toUpperCase().trim(); if(f.includes("10X15H")) return "10x15 Horizontal"; if(f.includes("10X15V")) return "10x15 Vertical"; if(f.includes("TIRINHA")) return "Tirinha"; if(f.includes("POLAROID")) return "Polaroid"; return f; }
@@ -77,18 +70,16 @@
         try {
             debug('🔄 Buscando...');
             const r1 = await fetch(API + '/get-all-states?t=' + Date.now());
-            if (!r1.ok) throw new Error('API status: ' + r1.status);
+            if (!r1.ok) throw new Error('API: ' + r1.status);
             const config = await r1.json();
-            
             const evt = (config.config && config.config.evento) ? config.config.evento : "Geral";
             const evtId = (config.config && config.config.eventoId) ? config.config.eventoId : "";
             formatoAtual = (config.config && config.config.formato) ? config.config.formato.toUpperCase().trim() : "10X15V";
-
             if (eventoIdAtual !== evtId) {
-                debug('Evento: ' + evt + ' | ' + formatoAtual);
                 eventoAtual = evt; eventoIdAtual = evtId;
                 todasFotos = []; chavesLocais.clear(); printQueue = []; primeiraCarga = true;
                 document.getElementById('grid-fotos').innerHTML = "";
+                debug('Evento: ' + evt);
             }
             document.getElementById('nome-evento').innerText = eventoAtual;
             document.getElementById('tipo-formato').innerText = traduzirFormato(formatoAtual);
@@ -96,11 +87,8 @@
 
             const r2 = await fetch(API + '/list-photos?evento=' + encodeURIComponent(eventoAtual) + '&t=' + Date.now());
             const dados = await r2.json();
-            debug(dados.length + ' arquivos');
-            
             const fotosValidas = Array.isArray(dados) ? dados.filter(f => !f.key.toLowerCase().includes('moldura')) : [];
             const novas = fotosValidas.filter(f => !chavesLocais.has(f.key));
-
             if (novas.length > 0) {
                 debug('+' + novas.length + ' nova(s)');
                 for (let f of novas) {
@@ -112,7 +100,10 @@
                     const livro = kl.includes("_livro_") || kl.includes("guestbook");
                     todasFotos.push({ id: todasFotos.length + 1, url: url, key: f.key, copias: copiasDoCard, livro: livro });
                     chavesLocais.add(f.key);
-                    if (!primeiraCarga) { for (let i = 0; i < copiasDoCard; i++) addToPrintQueue(url); }
+                    // Auto-impressão com número correto de cópias
+                    if (!primeiraCarga) {
+                        for (let i = 0; i < copiasDoCard; i++) addToPrintQueue(url);
+                    }
                 }
                 render();
             }

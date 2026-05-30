@@ -175,15 +175,14 @@ async function uploadBlob(blob, copiasFisicas, opcao){
     if(!eventoId){debug('❌ Sem eventoId');return;}
     const ts = Date.now();
     const temGuestbook = (opcao === 3 || opcao === 4);
-    // O timestamp carrega a informação: 1234567890_3c ou 1234567890_3c_guestbook
-    const tsComInfo = String(ts) + '_' + copiasFisicas + 'c' + (temGuestbook ? '_guestbook' : '');
-    const nome = `foto_${ts}.jpg`;
+    // Exemplo: 1717000000000_2c ou 1717000000000_2c_guestbook
+    const tsCompleto = String(ts) + '_' + copiasFisicas + 'c' + (temGuestbook ? '_guestbook' : '');
     const fd = new FormData();
-    fd.append('foto', blob, nome);
+    fd.append('foto', blob, 'foto.jpg');
     fd.append('eventoId', eventoId);
-    fd.append('timestamp', tsComInfo);
+    fd.append('timestamp', tsCompleto);
     fd.append('copias', String(copiasFisicas));
-    debug(`⬆️ Upload: ${tsComInfo} (${copiasFisicas} cópias${temGuestbook ? ', Guestbook' : ''})`);
+    debug(`⬆️ Upload: ${tsCompleto} (${copiasFisicas} cópias${temGuestbook ? ', Guestbook' : ''})`);
     try {
         const res = await fetch(`${API_BASE}/salvar-foto`, {method:'POST', body:fd});
         if(res.ok) debug('✅ OK');

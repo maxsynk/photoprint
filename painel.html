@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT - Master Panel v2.3</title>
+    <title>PHOTO PRINT - Master Panel v3.0</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --neon: #39ff14; --red: #ff3131; --dark: #000000; --card: rgba(255, 255, 255, 0.03); --border: rgba(57, 255, 20, 0.2); }
@@ -26,7 +26,8 @@
         .form-group-inline { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; border: 1px solid #222; margin-bottom: 15px; }
         label { font-size: 10px; color: var(--neon); font-weight: 900; text-transform: uppercase; display: block; margin-bottom: 5px; }
         .form-group-inline label { margin-bottom: 0; }
-        input[type="text"], input[type="date"], select { width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid #222; color: white; border-radius: 6px; outline: none; }
+        input[type="text"], input[type="date"], input[type="color"], select { width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid #222; color: white; border-radius: 6px; outline: none; }
+        input[type="color"] { height: 40px; cursor: pointer; padding: 3px; }
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
         .btn-neon-style { background: transparent; border: 1px solid var(--neon); color: white; padding: 12px; border-radius: 6px; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; border-left: 5px solid var(--neon); display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; font-size: 11px; }
         .btn-neon-style:hover { background: rgba(57, 255, 20, 0.1); }
@@ -55,6 +56,7 @@
         .moldura-upload-item .status-moldura { font-size: 9px; padding: 2px 6px; border-radius: 4px; }
         .moldura-upload-item .status-moldura.ok { background: rgba(57,255,20,0.2); color: var(--neon); }
         .moldura-upload-item .status-moldura.falta { background: rgba(255,49,49,0.2); color: var(--red); }
+        .cor-preview { display: inline-block; width: 20px; height: 20px; border-radius: 4px; border: 1px solid #555; vertical-align: middle; margin-left: 8px; }
         .version-tag { position: fixed; bottom: 15px; right: 20px; font-size: 10px; color: #333; font-weight: 900; z-index: 9999; }
         .loading { display: none; text-align: center; padding: 10px; color: var(--neon); font-size: 12px; }
         .error-message { background: rgba(255,49,49,0.1); border: 1px solid var(--red); color: var(--red); padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 12px; display: none; }
@@ -65,60 +67,53 @@
     </style>
 </head>
 <body>
-
-    <div class="version-tag">v2.3</div>
-
+    <div class="version-tag">v3.0</div>
     <div id="tela-inicial">
-        <div>
-            <h1 class="splash-brand">PHOTO PRINT</h1>
-            <p class="splash-subtitle">Colecionando Momentos</p>
-        </div>
-        <button class="btn-neon-style" style="padding: 20px 60px; margin-top: 30px; font-size: 16px; width: auto;" onclick="abrirModalSenha()">
-            <i class="fas fa-lock"></i> Acessar Terminal
-        </button>
+        <div><h1 class="splash-brand">PHOTO PRINT</h1><p class="splash-subtitle">Colecionando Momentos</p></div>
+        <button class="btn-neon-style" style="padding:20px 60px;margin-top:30px;font-size:16px;width:auto;" onclick="abrirModalSenha()"><i class="fas fa-lock"></i> Acessar Terminal</button>
     </div>
-
     <div id="modal-senha">
         <div class="pass-box">
-            <div style="font-size: 9px; color: var(--neon); letter-spacing: 2px;">SECURITY PROTOCOL</div>
-            <input type="password" id="input-pass" placeholder="••••" maxlength="4" onkeydown="if(event.key === 'Enter') confirmarSenha()">
+            <div style="font-size:9px;color:var(--neon);letter-spacing:2px;">SECURITY PROTOCOL</div>
+            <input type="password" id="input-pass" placeholder="••••" maxlength="4" onkeydown="if(event.key==='Enter')confirmarSenha()">
             <button class="btn-neon-style" onclick="confirmarSenha()"><i class="fas fa-key"></i> Autenticar</button>
-            <div style="margin-top: 20px; color: #333; font-size: 9px; cursor: pointer;" onclick="fecharModalSenha()">ABORTAR</div>
+            <div style="margin-top:20px;color:#333;font-size:9px;cursor:pointer;" onclick="fecharModalSenha()">ABORTAR</div>
         </div>
     </div>
-
     <div class="top-nav" id="header">
-        <div>
-            <h2 class="internal-brand">PHOTO PRINT</h2>
-            <div class="internal-subtitle">colecionando momentos</div>
-        </div>
+        <div><h2 class="internal-brand">PHOTO PRINT</h2><div class="internal-subtitle">colecionando momentos</div></div>
         <div class="status-container">
-            <span id="label-status" style="font-size: 9px; font-weight: 900; color: var(--red);">OFFLINE</span>
-            <label class="switch-mega">
-                <input type="checkbox" id="server-status" onchange="salvarStatusRede()">
-                <span class="slider-mega"></span>
-            </label>
+            <span id="label-status" style="font-size:9px;font-weight:900;color:var(--red);">OFFLINE</span>
+            <label class="switch-mega"><input type="checkbox" id="server-status" onchange="salvarStatusRede()"><span class="slider-mega"></span></label>
         </div>
     </div>
-
     <div class="main-layout" id="layout">
         <div class="card">
             <div class="card-header" id="card-form-title"><i class="fas fa-plus-circle"></i> NOVO EVENTO</div>
             <div class="card-body">
                 <input type="hidden" id="edit-id" value="">
+                <div class="form-group"><label><i class="fas fa-tag"></i> Nome do Evento</label><input type="text" id="input-evento" placeholder="Ex: Casamento João e Maria"></div>
+                <div class="form-group"><label><i class="fas fa-calendar"></i> Data do Evento</label><input type="date" id="input-data"></div>
                 
+                <!-- SELETOR DE COR -->
                 <div class="form-group">
-                    <label><i class="fas fa-tag"></i> Nome do Evento</label>
-                    <input type="text" id="input-evento" placeholder="Ex: Casamento João e Maria">
+                    <label><i class="fas fa-palette"></i> Cor do Sistema</label>
+                    <div style="display:flex;gap:10px;align-items:center;">
+                        <input type="color" id="input-cor" value="#39ff14" style="width:60px;height:40px;flex-shrink:0;">
+                        <select id="select-cor" onchange="atualizarCor(this.value)" style="flex:1;">
+                            <option value="#39ff14">🟢 Verde Neon (Original)</option>
+                            <option value="#00e5ff">🔵 Azul Ciano</option>
+                            <option value="#ff0080">🩷 Rosa Pink</option>
+                            <option value="#ffd700">🟡 Dourado</option>
+                            <option value="#ff3131">🔴 Vermelho</option>
+                            <option value="#bf40ff">🟣 Roxo</option>
+                            <option value="#ff6600">🟠 Laranja</option>
+                        </select>
+                        <span class="cor-preview" id="cor-preview" style="background-color:#39ff14;"></span>
+                    </div>
                 </div>
                 
-                <div class="form-group">
-                    <label><i class="fas fa-calendar"></i> Data do Evento</label>
-                    <input type="date" id="input-data">
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-crop"></i> Formato Padrão</label>
+                <div class="form-group"><label><i class="fas fa-crop"></i> Formato Padrão</label>
                     <select id="select-formato">
                         <option value="10X15V">10x15 Vertical</option>
                         <option value="10X15H">10x15 Horizontal</option>
@@ -126,311 +121,65 @@
                         <option value="POLAROID">Polaroid</option>
                     </select>
                 </div>
-                
-                <div class="form-group-inline">
-                    <label><i class="fas fa-book"></i> Modo Guestbook</label>
-                    <label class="switch-mega">
-                        <input type="checkbox" id="input-livro">
-                        <span class="slider-mega"></span>
-                    </label>
+                <div class="form-group-inline"><label><i class="fas fa-book"></i> Modo Guestbook</label><label class="switch-mega"><input type="checkbox" id="input-livro"><span class="slider-mega"></span></label></div>
+                <div class="form-group"><label><i class="fas fa-images"></i> Molduras por Formato (.PNG)</label>
+                    <div class="moldura-upload-item"><span>POLAROID (1041x1311px)</span><span class="status-moldura falta" id="status-polaroid">Falta</span><input type="file" id="moldura-polaroid" accept="image/png" style="display:none" onchange="previewMoldura(this,'polaroid')"><button class="btn-neon-style small" onclick="document.getElementById('moldura-polaroid').click()">📁</button></div>
+                    <div class="moldura-upload-item"><span>10x15 Vertical (1181x1819px)</span><span class="status-moldura falta" id="status-10x15v">Falta</span><input type="file" id="moldura-10x15v" accept="image/png" style="display:none" onchange="previewMoldura(this,'10x15v')"><button class="btn-neon-style small" onclick="document.getElementById('moldura-10x15v').click()">📁</button></div>
+                    <div class="moldura-upload-item"><span>10x15 Horizontal (1772x1228px)</span><span class="status-moldura falta" id="status-10x15h">Falta</span><input type="file" id="moldura-10x15h" accept="image/png" style="display:none" onchange="previewMoldura(this,'10x15h')"><button class="btn-neon-style small" onclick="document.getElementById('moldura-10x15h').click()">📁</button></div>
+                    <div class="moldura-upload-item"><span>TIRINHA (591x1819px)</span><span class="status-moldura falta" id="status-tirinha">Falta</span><input type="file" id="moldura-tirinha" accept="image/png" style="display:none" onchange="previewMoldura(this,'tirinha')"><button class="btn-neon-style small" onclick="document.getElementById('moldura-tirinha').click()">📁</button></div>
                 </div>
-
-                <!-- UPLOAD DE MOLDURA POR FORMATO -->
-                <div class="form-group">
-                    <label><i class="fas fa-images"></i> Molduras por Formato (.PNG)</label>
-                    
-                    <div class="moldura-upload-item">
-                        <span>POLAROID (1041x1311px)</span>
-                        <span class="status-moldura falta" id="status-polaroid">Falta</span>
-                        <input type="file" id="moldura-polaroid" accept="image/png" style="display:none" onchange="previewMoldura(this, 'polaroid')">
-                        <button class="btn-neon-style small" onclick="document.getElementById('moldura-polaroid').click()">📁</button>
-                    </div>
-                    
-                    <div class="moldura-upload-item">
-                        <span>10x15 Vertical (1181x1819px)</span>
-                        <span class="status-moldura falta" id="status-10x15v">Falta</span>
-                        <input type="file" id="moldura-10x15v" accept="image/png" style="display:none" onchange="previewMoldura(this, '10x15v')">
-                        <button class="btn-neon-style small" onclick="document.getElementById('moldura-10x15v').click()">📁</button>
-                    </div>
-                    
-                    <div class="moldura-upload-item">
-                        <span>10x15 Horizontal (1772x1228px)</span>
-                        <span class="status-moldura falta" id="status-10x15h">Falta</span>
-                        <input type="file" id="moldura-10x15h" accept="image/png" style="display:none" onchange="previewMoldura(this, '10x15h')">
-                        <button class="btn-neon-style small" onclick="document.getElementById('moldura-10x15h').click()">📁</button>
-                    </div>
-                    
-                    <div class="moldura-upload-item">
-                        <span>TIRINHA (591x1819px)</span>
-                        <span class="status-moldura falta" id="status-tirinha">Falta</span>
-                        <input type="file" id="moldura-tirinha" accept="image/png" style="display:none" onchange="previewMoldura(this, 'tirinha')">
-                        <button class="btn-neon-style small" onclick="document.getElementById('moldura-tirinha').click()">📁</button>
-                    </div>
-                </div>
-                
                 <div id="error-message" class="error-message"></div>
                 <div id="success-message" class="success-message"></div>
                 <div id="loading-indicator" class="loading"><i class="fas fa-spinner fa-spin"></i> Processando...</div>
-                
-                <button class="btn-neon-style" onclick="salvarEvento()" id="btn-submit">
-                    <i class="fas fa-save"></i> <span id="btn-text">CRIAR EVENTO</span>
-                </button>
-                <button class="btn-neon-style" style="margin-top: 10px; border-left: 5px solid #0096ff; display: none;" onclick="cancelarEdicao()" id="btn-cancelar">
-                    <i class="fas fa-times"></i> CANCELAR EDIÇÃO
-                </button>
+                <button class="btn-neon-style" onclick="salvarEvento()" id="btn-submit"><i class="fas fa-save"></i> <span id="btn-text">CRIAR EVENTO</span></button>
+                <button class="btn-neon-style" style="margin-top:10px;border-left:5px solid #0096ff;display:none;" onclick="cancelarEdicao()" id="btn-cancelar"><i class="fas fa-times"></i> CANCELAR EDIÇÃO</button>
             </div>
         </div>
-
         <div class="card">
-            <div class="card-header">
-                <i class="fas fa-list"></i> Eventos Registrados
-                <button class="btn-neon-style" style="margin-left: auto; width: auto; padding: 5px 15px; font-size: 9px;" onclick="carregarEventosDoServidor()">
-                    <i class="fas fa-sync-alt"></i> SINCRONIZAR
-                </button>
-            </div>
-            <div class="card-body" id="corpo-lista">
-                <div style="color: #555; text-align: center; padding: 40px;">
-                    <i class="fas fa-inbox" style="font-size: 48px; display: block; margin-bottom: 15px;"></i>
-                    Clique em SINCRONIZAR para carregar eventos
-                </div>
-            </div>
+            <div class="card-header"><i class="fas fa-list"></i> Eventos Registrados<button class="btn-neon-style" style="margin-left:auto;width:auto;padding:5px 15px;font-size:9px;" onclick="carregarEventosDoServidor()"><i class="fas fa-sync-alt"></i> SINCRONIZAR</button></div>
+            <div class="card-body" id="corpo-lista"><div style="color:#555;text-align:center;padding:40px;"><i class="fas fa-inbox" style="font-size:48px;display:block;margin-bottom:15px;"></i>Clique em SINCRONIZAR para carregar eventos</div></div>
         </div>
     </div>
 
     <script>
         const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
         const SENHA_MESTRA = "1234";
-        let eventos = [];
-        // Arquivos de moldura por formato
-        let molduras = {
-            polaroid: null,
-            '10x15v': null,
-            '10x15h': null,
-            tirinha: null
-        };
+        let eventos = [], corSelecionada = "#39ff14";
+        let molduras = { polaroid: null, '10x15v': null, '10x15h': null, tirinha: null };
 
-        function abrirModalSenha() { document.getElementById('modal-senha').style.display = 'flex'; setTimeout(() => document.getElementById('input-pass').focus(), 200); }
-        function fecharModalSenha() { document.getElementById('modal-senha').style.display = 'none'; document.getElementById('input-pass').value = ''; }
-        function confirmarSenha() { 
-            if(document.getElementById('input-pass').value === SENHA_MESTRA) { fecharModalSenha(); ativarPainel(); } 
-            else { alert("❌ Senha Incorreta!"); document.getElementById('input-pass').value = ''; document.getElementById('input-pass').focus(); }
+        function atualizarCor(valor) {
+            corSelecionada = valor;
+            document.getElementById('input-cor').value = valor;
+            document.getElementById('cor-preview').style.backgroundColor = valor;
         }
+        document.getElementById('input-cor').addEventListener('input', function() {
+            corSelecionada = this.value;
+            document.getElementById('cor-preview').style.backgroundColor = this.value;
+            document.getElementById('select-cor').value = '';
+        });
 
-        async function ativarPainel() {
-            document.getElementById('tela-inicial').style.display = 'none';
-            document.getElementById('header').style.display = 'flex';
-            document.getElementById('layout').style.display = 'grid';
-            await carregarEventosDoServidor();
-            await verificarEstadoAtual();
-        }
-
-        async function carregarEventosDoServidor() {
-            mostrarLoading(true);
-            try {
-                const resp = await fetch(`${API_URL}/eventos`);
-                const data = await resp.json();
-                if (data.success && data.eventos) {
-                    eventos = data.eventos.map(ev => ({
-                        id: ev.id, nome: ev.nome, data: ev.data, dataRaw: ev.data,
-                        formato: ev.formato || '10X15V',
-                        livro: ev.livro === 1 || ev.livro === true,
-                        ativo: ev.ativo === 1 || ev.ativo === true,
-                        temMoldura: ev.tem_moldura === 1 || ev.tem_moldura === true
-                    }));
-                    mostrarSucesso(`${eventos.length} eventos carregados`);
-                } else { eventos = []; }
-            } catch(e) { eventos = []; } 
-            finally { mostrarLoading(false); renderizarLista(); checarEventoAtivo(); }
-        }
-
-        async function verificarEstadoAtual() {
-            try {
-                const resp = await fetch(`${API_URL}/get-all-states`);
-                const data = await resp.json();
-                if (data.config) {
-                    atualizarUIStatus(data.config.status === "ONLINE");
-                    document.getElementById('server-status').checked = (data.config.status === "ONLINE");
-                }
-            } catch(e) {}
-        }
-
-        function mostrarErro(msg) { const el = document.getElementById('error-message'); el.textContent = msg; el.style.display = 'block'; document.getElementById('success-message').style.display = 'none'; setTimeout(() => el.style.display = 'none', 5000); }
-        function mostrarSucesso(msg) { const el = document.getElementById('success-message'); el.textContent = msg; el.style.display = 'block'; document.getElementById('error-message').style.display = 'none'; setTimeout(() => el.style.display = 'none', 3000); }
-        function mostrarLoading(show) { document.getElementById('loading-indicator').style.display = show ? 'block' : 'none'; document.getElementById('btn-submit').disabled = show; }
-        function atualizarUIStatus(on) { const lb = document.getElementById('label-status'); lb.innerText = on ? "ONLINE" : "OFFLINE"; lb.style.color = on ? "var(--neon)" : "var(--red)"; }
-
-        function previewMoldura(input, formato) {
-            if(input.files && input.files[0]) {
-                if (input.files[0].type !== 'image/png') { mostrarErro('Apenas PNG!'); input.value = ''; return; }
-                molduras[formato] = input.files[0];
-                const statusEl = document.getElementById('status-' + formato);
-                if (statusEl) { statusEl.textContent = 'OK'; statusEl.className = 'status-moldura ok'; }
-            }
-        }
-
-        async function fazerUploadMolduras(eventoId) {
-            for (const [formato, arquivo] of Object.entries(molduras)) {
-                if (!arquivo) continue;
-                const formData = new FormData();
-                formData.append('moldura', arquivo);
-                formData.append('eventoId', eventoId);
-                formData.append('formato', formato);
-                try { await fetch(`${API_URL}/upload-moldura`, { method: 'POST', body: formData }); console.log(`✅ Moldura ${formato} enviada`); } 
-                catch(e) { console.error(`❌ ${formato}:`, e); }
-            }
-        }
-
-        async function salvarEvento() {
-            const nome = document.getElementById('input-evento').value.trim();
-            const data = document.getElementById('input-data').value;
-            const formato = document.getElementById('select-formato').value;
-            const livro = document.getElementById('input-livro').checked;
-            const editId = document.getElementById('edit-id').value;
-            
-            if(!nome || !data) { mostrarErro("Preencha todos os campos!"); return; }
-            mostrarLoading(true);
-            
-            try {
-                let eventId = editId;
-                if (editId) {
-                    await fetch(`${API_URL}/atualizar-evento/${editId}`, {
-                        method: 'PUT', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ nome, data, formato, livro, ativo: false })
-                    });
-                } else {
-                    const resp = await fetch(`${API_URL}/criar-evento`, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ nome, data, formato, livro })
-                    });
-                    const result = await resp.json();
-                    if (!result.success) throw new Error(result.error || 'Erro');
-                    eventId = result.id;
-                    eventos.unshift({ id: eventId, nome, data, dataRaw: data, formato, livro, ativo: false, temMoldura: true });
-                }
-                
-                // Upload das molduras
-                const temAlgumaMoldura = Object.values(molduras).some(f => f !== null);
-                if (temAlgumaMoldura) await fazerUploadMolduras(eventId);
-                
-                mostrarSucesso("✅ Evento salvo!");
-                resetarFormulario();
-                renderizarLista();
-                checarEventoAtivo();
-                setTimeout(() => carregarEventosDoServidor(), 1000);
-            } catch(e) { mostrarErro("Erro: " + e.message); } 
-            finally { mostrarLoading(false); }
-        }
-
-        function resetarFormulario() {
-            document.getElementById('input-evento').value = "";
-            document.getElementById('input-data').value = "";
-            document.getElementById('input-livro').checked = false;
-            document.getElementById('select-formato').value = "10X15V";
-            document.getElementById('edit-id').value = "";
-            document.getElementById('card-form-title').innerHTML = '<i class="fas fa-plus-circle"></i> NOVO EVENTO';
-            document.getElementById('btn-text').innerText = "CRIAR EVENTO";
-            document.getElementById('btn-cancelar').style.display = 'none';
-            // Reset status
-            ['polaroid','10x15v','10x15h','tirinha'].forEach(f => {
-                molduras[f] = null;
-                const el = document.getElementById('status-' + f);
-                if (el) { el.textContent = 'Falta'; el.className = 'status-moldura falta'; }
-                const inp = document.getElementById('moldura-' + f);
-                if (inp) inp.value = '';
-            });
-        }
-
+        function abrirModalSenha() { document.getElementById('modal-senha').style.display='flex';setTimeout(()=>document.getElementById('input-pass').focus(),200); }
+        function fecharModalSenha() { document.getElementById('modal-senha').style.display='none';document.getElementById('input-pass').value=''; }
+        function confirmarSenha() { if(document.getElementById('input-pass').value===SENHA_MESTRA){fecharModalSenha();ativarPainel();}else{alert("❌ Senha Incorreta!");document.getElementById('input-pass').value='';document.getElementById('input-pass').focus();} }
+        async function ativarPainel() { document.getElementById('tela-inicial').style.display='none';document.getElementById('header').style.display='flex';document.getElementById('layout').style.display='grid';await carregarEventosDoServidor();await verificarEstadoAtual(); }
+        async function carregarEventosDoServidor() { mostrarLoading(true); try { const resp = await fetch(`${API_URL}/eventos`); const data = await resp.json(); if (data.success && data.eventos) { eventos = data.eventos.map(ev=>({ id:ev.id, nome:ev.nome, data:ev.data, dataRaw:ev.data, formato:ev.formato||'10X15V', livro:ev.livro===1||ev.livro===true, ativo:ev.ativo===1||ev.ativo===true, temMoldura:ev.tem_moldura===1||ev.tem_moldura===true, cor:ev.cor||'#39ff14' })); mostrarSucesso(`${eventos.length} eventos carregados`); } else { eventos=[]; } } catch(e) { eventos=[]; } finally { mostrarLoading(false); renderizarLista(); checarEventoAtivo(); } }
+        async function verificarEstadoAtual() { try { const resp = await fetch(`${API_URL}/get-all-states`); const data = await resp.json(); if (data.config) { atualizarUIStatus(data.config.status==="ONLINE"); document.getElementById('server-status').checked=(data.config.status==="ONLINE"); } } catch(e) {} }
+        function mostrarErro(msg) { const el=document.getElementById('error-message');el.textContent=msg;el.style.display='block';document.getElementById('success-message').style.display='none';setTimeout(()=>el.style.display='none',5000); }
+        function mostrarSucesso(msg) { const el=document.getElementById('success-message');el.textContent=msg;el.style.display='block';document.getElementById('error-message').style.display='none';setTimeout(()=>el.style.display='none',3000); }
+        function mostrarLoading(show) { document.getElementById('loading-indicator').style.display=show?'block':'none';document.getElementById('btn-submit').disabled=show; }
+        function atualizarUIStatus(on) { const lb=document.getElementById('label-status');lb.innerText=on?"ONLINE":"OFFLINE";lb.style.color=on?"var(--neon)":"var(--red)"; }
+        function previewMoldura(input,formato) { if(input.files&&input.files[0]){if(input.files[0].type!=='image/png'){mostrarErro('Apenas PNG!');input.value='';return;}molduras[formato]=input.files[0];const statusEl=document.getElementById('status-'+formato);if(statusEl){statusEl.textContent='OK';statusEl.className='status-moldura ok';}} }
+        async function fazerUploadMolduras(eventoId) { for(const[formato,arquivo]of Object.entries(molduras)){if(!arquivo)continue;const formData=new FormData();formData.append('moldura',arquivo);formData.append('eventoId',eventoId);formData.append('formato',formato);try{await fetch(`${API_URL}/upload-moldura`,{method:'POST',body:formData});}catch(e){}} }
+        async function salvarEvento() { const nome=document.getElementById('input-evento').value.trim();const data=document.getElementById('input-data').value;const formato=document.getElementById('select-formato').value;const livro=document.getElementById('input-livro').checked;const editId=document.getElementById('edit-id').value;if(!nome||!data){mostrarErro("Preencha todos os campos!");return;}mostrarLoading(true);try{let eventId=editId;if(editId){await fetch(`${API_URL}/atualizar-evento/${editId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome,data,formato,livro,cor:corSelecionada,ativo:false})});}else{const resp=await fetch(`${API_URL}/criar-evento`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome,data,formato,livro,cor:corSelecionada})});const result=await resp.json();if(!result.success)throw new Error(result.error||'Erro');eventId=result.id;eventos.unshift({id:eventId,nome,data,dataRaw:data,formato,livro,ativo:false,temMoldura:true,cor:corSelecionada});}const temAlgumaMoldura=Object.values(molduras).some(f=>f!==null);if(temAlgumaMoldura)await fazerUploadMolduras(eventId);mostrarSucesso("✅ Evento salvo!");resetarFormulario();renderizarLista();checarEventoAtivo();setTimeout(()=>carregarEventosDoServidor(),1000);}catch(e){mostrarErro("Erro: "+e.message);}finally{mostrarLoading(false);} }
+        function resetarFormulario() { document.getElementById('input-evento').value="";document.getElementById('input-data').value="";document.getElementById('input-livro').checked=false;document.getElementById('select-formato').value="10X15V";document.getElementById('input-cor').value="#39ff14";document.getElementById('select-cor').value="#39ff14";corSelecionada="#39ff14";document.getElementById('cor-preview').style.backgroundColor="#39ff14";document.getElementById('edit-id').value="";document.getElementById('card-form-title').innerHTML='<i class="fas fa-plus-circle"></i> NOVO EVENTO';document.getElementById('btn-text').innerText="CRIAR EVENTO";document.getElementById('btn-cancelar').style.display='none';['polaroid','10x15v','10x15h','tirinha'].forEach(f=>{molduras[f]=null;const el=document.getElementById('status-'+f);if(el){el.textContent='Falta';el.className='status-moldura falta';}const inp=document.getElementById('moldura-'+f);if(inp)inp.value='';}); }
         function cancelarEdicao() { resetarFormulario(); }
-
-        async function ativarEvento(index) {
-            const ev = eventos[index];
-            if (!ev || !ev.id) { mostrarErro("❌ Evento inválido!"); return; }
-            const novoEstado = !ev.ativo;
-            mostrarLoading(true);
-            try {
-                await fetch(`${API_URL}/atualizar-evento/${ev.id}`, {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nome: ev.nome, data: ev.dataRaw || ev.data, formato: ev.formato, livro: ev.livro, ativo: novoEstado })
-                });
-                eventos.forEach((e, i) => e.ativo = (i === index && novoEstado));
-                renderizarLista(); checarEventoAtivo();
-                await sincronizarWorker(novoEstado ? ev.nome : "Geral", novoEstado ? ev.formato : "10X15V", novoEstado ? "ONLINE" : "OFFLINE", novoEstado ? ev.livro : false, novoEstado ? String(ev.id) : "", novoEstado ? ev.temMoldura : false);
-                mostrarSucesso(`✅ Evento ${novoEstado ? 'ATIVADO' : 'DESATIVADO'}!`);
-            } catch(e) { mostrarErro("Erro: " + e.message); } 
-            finally { mostrarLoading(false); }
-        }
-
-        async function sincronizarWorker(nome, formato, status, livro, eventoId, temMoldura) {
-            try {
-                await fetch(`${API_URL}/set-config`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ evento: nome, status, formato, livro, eventoId, temMoldura })
-                });
-                atualizarUIStatus(status === "ONLINE");
-            } catch(e) {}
-        }
-
-        function salvarStatusRede() {
-            const on = document.getElementById('server-status').checked;
-            const ativo = eventos.find(e => e.ativo);
-            if(ativo) sincronizarWorker(ativo.nome, ativo.formato, on ? "ONLINE" : "OFFLINE", ativo.livro, String(ativo.id), ativo.temMoldura);
-        }
-
-        function editarEvento(index) {
-            const ev = eventos[index];
-            document.getElementById('input-evento').value = ev.nome;
-            document.getElementById('input-data').value = ev.dataRaw || ev.data || "";
-            document.getElementById('select-formato').value = ev.formato;
-            document.getElementById('input-livro').checked = ev.livro;
-            document.getElementById('edit-id').value = ev.id;
-            document.getElementById('card-form-title').innerHTML = '<i class="fas fa-edit"></i> EDITAR EVENTO';
-            document.getElementById('btn-text').innerText = "SALVAR ALTERAÇÕES";
-            document.getElementById('btn-cancelar').style.display = 'block';
-        }
-
-        async function excluirEvento(index) {
-            const ev = eventos[index];
-            if(!confirm(`⚠️ Excluir "${ev.nome}"?`)) return;
-            mostrarLoading(true);
-            try {
-                await fetch(`${API_URL}/deletar-evento/${ev.id}`, { method: 'DELETE' });
-                eventos.splice(index, 1);
-                if (ev.ativo) await sincronizarWorker("Geral", "10X15V", "OFFLINE", false, "", false);
-                renderizarLista(); checarEventoAtivo();
-            } catch(e) { mostrarErro("Erro: " + e.message); } 
-            finally { mostrarLoading(false); }
-        }
-
-        function renderizarLista() {
-            const container = document.getElementById('corpo-lista');
-            if (!eventos || eventos.length === 0) {
-                container.innerHTML = `<div style="color: #555; text-align: center; padding: 40px;"><i class="fas fa-inbox" style="font-size: 48px; display: block; margin-bottom: 15px;"></i>Nenhum evento</div>`;
-                return;
-            }
-            container.innerHTML = eventos.map((ev, i) => `
-                <div class="evento-item ${ev.ativo ? 'ativo' : ''}">
-                    <div style="display:flex; align-items:center; gap:10px; flex:1;">
-                        <i class="fas ${ev.ativo ? 'fa-check-circle status-icon ativo' : 'fa-circle status-icon inativo'}"></i>
-                        <div style="flex:1;">
-                            <div style="font-size:12px; font-weight:900; color: ${ev.ativo ? 'var(--neon)' : '#fff'}">${ev.nome} ${ev.livro ? '<span class="badge badge-info">📖 Guestbook</span>' : ''} ${ev.temMoldura ? '<span class="badge badge-success">🖼️ Moldura</span>' : ''}</div>
-                            <div style="font-size:9px; color:#555; margin-top: 3px;">${ev.data || 'Sem data'} • ${ev.formato} • ID: ${ev.id}</div>
-                        </div>
-                    </div>
-                    <div style="display:flex; gap:8px;">
-                        <i class="fas fa-edit btn-acao edit" onclick="editarEvento(${i})"></i>
-                        <i class="fas fa-trash btn-acao delete" onclick="excluirEvento(${i})"></i>
-                        <button class="btn-neon-style ${ev.ativo ? 'success' : ''}" style="font-size:9px; padding: 6px 12px; width: auto;" onclick="ativarEvento(${i})">${ev.ativo ? 'ATIVADO' : 'ATIVAR'}</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function checarEventoAtivo() {
-            const ativo = eventos.find(e => e.ativo);
-            const checkbox = document.getElementById('server-status');
-            if(ativo) { checkbox.checked = true; checkbox.disabled = false; atualizarUIStatus(true); }
-            else { checkbox.checked = false; checkbox.disabled = true; atualizarUIStatus(false); }
-        }
+        async function ativarEvento(index) { const ev=eventos[index];if(!ev||!ev.id){mostrarErro("❌ Evento inválido!");return;}const novoEstado=!ev.ativo;mostrarLoading(true);try{await fetch(`${API_URL}/atualizar-evento/${ev.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:ev.nome,data:ev.dataRaw||ev.data,formato:ev.formato,livro:ev.livro,cor:ev.cor||'#39ff14',ativo:novoEstado})});eventos.forEach((e,i)=>e.ativo=(i===index&&novoEstado));renderizarLista();checarEventoAtivo();await sincronizarWorker(novoEstado?ev.nome:"Geral",novoEstado?ev.formato:"10X15V",novoEstado?"ONLINE":"OFFLINE",novoEstado?ev.livro:false,novoEstado?String(ev.id):"",novoEstado?ev.temMoldura:false,ev.cor||'#39ff14');mostrarSucesso(`✅ Evento ${novoEstado?'ATIVADO':'DESATIVADO'}!`);}catch(e){mostrarErro("Erro: "+e.message);}finally{mostrarLoading(false);} }
+        async function sincronizarWorker(nome,formato,status,livro,eventoId,temMoldura,cor) { try { await fetch(`${API_URL}/set-config`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({evento:nome,status,formato,livro,eventoId,temMoldura,cor})});atualizarUIStatus(status==="ONLINE"); } catch(e) {} }
+        function salvarStatusRede() { const on=document.getElementById('server-status').checked;const ativo=eventos.find(e=>e.ativo);if(ativo)sincronizarWorker(ativo.nome,ativo.formato,on?"ONLINE":"OFFLINE",ativo.livro,String(ativo.id),ativo.temMoldura,ativo.cor||'#39ff14'); }
+        function editarEvento(index) { const ev=eventos[index];document.getElementById('input-evento').value=ev.nome;document.getElementById('input-data').value=ev.dataRaw||ev.data||"";document.getElementById('select-formato').value=ev.formato;document.getElementById('input-livro').checked=ev.livro;document.getElementById('input-cor').value=ev.cor||'#39ff14';corSelecionada=ev.cor||'#39ff14';document.getElementById('cor-preview').style.backgroundColor=ev.cor||'#39ff14';document.getElementById('edit-id').value=ev.id;document.getElementById('card-form-title').innerHTML='<i class="fas fa-edit"></i> EDITAR EVENTO';document.getElementById('btn-text').innerText="SALVAR ALTERAÇÕES";document.getElementById('btn-cancelar').style.display='block'; }
+        async function excluirEvento(index) { const ev=eventos[index];if(!confirm(`⚠️ Excluir "${ev.nome}"?`))return;mostrarLoading(true);try{await fetch(`${API_URL}/deletar-evento/${ev.id}`,{method:'DELETE'});eventos.splice(index,1);if(ev.ativo)await sincronizarWorker("Geral","10X15V","OFFLINE",false,"",false,'#39ff14');renderizarLista();checarEventoAtivo();}catch(e){mostrarErro("Erro: "+e.message);}finally{mostrarLoading(false);} }
+        function renderizarLista() { const container=document.getElementById('corpo-lista');if(!eventos||eventos.length===0){container.innerHTML=`<div style="color:#555;text-align:center;padding:40px;"><i class="fas fa-inbox" style="font-size:48px;display:block;margin-bottom:15px;"></i>Nenhum evento</div>`;return;}container.innerHTML=eventos.map((ev,i)=>`<div class="evento-item ${ev.ativo?'ativo':''}"><div style="display:flex;align-items:center;gap:10px;flex:1;"><i class="fas ${ev.ativo?'fa-check-circle status-icon ativo':'fa-circle status-icon inativo'}"></i><div style="flex:1;"><div style="font-size:12px;font-weight:900;color:${ev.ativo?'var(--neon)':'#fff'}">${ev.nome} ${ev.livro?'<span class="badge badge-info">📖 Guestbook</span>':''} ${ev.temMoldura?'<span class="badge badge-success">🖼️ Moldura</span>':''} <span class="cor-preview" style="background-color:${ev.cor||'#39ff14'};width:12px;height:12px;display:inline-block;border-radius:50%;"></span></div><div style="font-size:9px;color:#555;margin-top:3px;">${ev.data||'Sem data'} • ${ev.formato} • ID: ${ev.id}</div></div></div><div style="display:flex;gap:8px;"><i class="fas fa-edit btn-acao edit" onclick="editarEvento(${i})"></i><i class="fas fa-trash btn-acao delete" onclick="excluirEvento(${i})"></i><button class="btn-neon-style ${ev.ativo?'success':''}" style="font-size:9px;padding:6px 12px;width:auto;" onclick="ativarEvento(${i})">${ev.ativo?'ATIVADO':'ATIVAR'}</button></div></div>`).join(''); }
+        function checarEventoAtivo() { const ativo=eventos.find(e=>e.ativo);const checkbox=document.getElementById('server-status');if(ativo){checkbox.checked=true;checkbox.disabled=false;atualizarUIStatus(true);}else{checkbox.checked=false;checkbox.disabled=true;atualizarUIStatus(false);} }
     </script>
 </body>
 </html>

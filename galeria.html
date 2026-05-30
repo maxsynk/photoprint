@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT - GALLERY v7.2</title>
+    <title>PHOTO PRINT - GALLERY v7.3</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -30,6 +30,7 @@
         .card .badge { position: absolute; top: 8px; left: 8px; background: var(--accent); color: #000; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 2; }
         .card .print-badge { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.8); border: 1px solid var(--accent); color: var(--accent); padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 2; }
         .card .guestbook-badge { position: absolute; bottom: 8px; left: 8px; right: 8px; background: rgba(0,0,0,0.85); border: 1px solid var(--info-blue); color: var(--info-blue); padding: 5px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 2; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .card .copias-badge { position: absolute; bottom: 8px; right: 8px; background: rgba(0,150,255,0.85); border: 1px solid #0096ff; color: #ffffff; padding: 5px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 2; display: flex; align-items: center; gap: 4px; }
         .sidebar { position: fixed; right: -350px; top: 0; width: 300px; height: 100%; background: rgba(10, 10, 10, 0.95); z-index: 5000; transition: 0.5s; padding: 120px 25px; border-left: var(--glass-border); }
         .sidebar.active { right: 0; }
         .sidebar-btn { width: 100%; padding: 18px; margin-bottom: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 15px; font-weight: bold; }
@@ -68,7 +69,6 @@
 
     async function atualizar() {
         try {
-            debug('🔄 Buscando...');
             const r1 = await fetch(API + '/get-all-states?t=' + Date.now());
             if (!r1.ok) throw new Error('API: ' + r1.status);
             const config = await r1.json();
@@ -79,7 +79,6 @@
                 eventoAtual = evt; eventoIdAtual = evtId;
                 todasFotos = []; chavesLocais.clear(); printQueue = []; primeiraCarga = true;
                 document.getElementById('grid-fotos').innerHTML = "";
-                debug('Evento: ' + evt);
             }
             document.getElementById('nome-evento').innerText = eventoAtual;
             document.getElementById('tipo-formato').innerText = traduzirFormato(formatoAtual);
@@ -90,7 +89,6 @@
             const fotosValidas = Array.isArray(dados) ? dados.filter(f => !f.key.toLowerCase().includes('moldura')) : [];
             const novas = fotosValidas.filter(f => !chavesLocais.has(f.key));
             if (novas.length > 0) {
-                debug('+' + novas.length + ' nova(s)');
                 for (let f of novas) {
                     const url = API + '/photo?key=' + encodeURIComponent(f.key);
                     const kl = f.key.toLowerCase();
@@ -100,7 +98,7 @@
                     const livro = kl.includes("_livro_") || kl.includes("guestbook");
                     todasFotos.push({ id: todasFotos.length + 1, url: url, key: f.key, copias: copiasDoCard, livro: livro });
                     chavesLocais.add(f.key);
-                    // Auto-impressão com número correto de cópias
+                    // Auto-impressão: adiciona N cópias à fila
                     if (!primeiraCarga) {
                         for (let i = 0; i < copiasDoCard; i++) addToPrintQueue(url);
                     }
@@ -123,6 +121,7 @@
                 <span class="badge">#${f.id}</span>
                 ${f.copias > 1 ? `<span class="print-badge"><i class="fa-solid fa-print"></i> ${f.copias}x</span>` : ''}
                 ${f.livro ? `<span class="guestbook-badge"><i class="fa-solid fa-book-open"></i> Livro de Assinaturas</span>` : ''}
+                <span class="copias-badge"><i class="fa-solid fa-print"></i> ${f.copias}</span>
                 <img src="${f.url}" loading="lazy">
             </div>
         `).join('');
@@ -132,6 +131,7 @@
     function processQueue() {
         if (printQueue.length === 0) { isPrinting = false; return; }
         isPrinting = true;
+        debug(`🖨️ Imprimindo... (${printQueue.length} na fila)`);
         const imgP = document.getElementById('img-print');
         imgP.onload = () => { window.focus(); setTimeout(() => { window.print(); setTimeout(processQueue, 3000); }, 500); };
         imgP.src = printQueue.shift();

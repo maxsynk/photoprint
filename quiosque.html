@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHOTO CLOUD | QUIOSQUE PRO V1.1</title>
+    <title>PHOTO CLOUD | QUIOSQUE PRO V1.2</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root { 
@@ -299,7 +299,7 @@
         if (fotoUrl) {
             document.getElementById('conteudo-quiosque').style.display = 'none';
             document.getElementById('mobile-download-screen').style.display = 'flex';
-            document.getElementById('mobile-img').src = decodeURIComponent(fotoUrl) + '&t=' + Date.now();
+            document.getElementById('mobile-img').src = decodeURIComponent(fotoUrl);
             document.getElementById('btn-forcar-download').onclick = () => forcarDownload(decodeURIComponent(fotoUrl));
         } else {
             syncDados();
@@ -314,7 +314,7 @@
             btn.disabled = true;
             btn.innerText = "Processando...";
             status.innerText = "Preparando arquivo...";
-            const response = await fetch(url + '&t=' + Date.now());
+            const response = await fetch(url);
             const blob = await response.blob();
             const blobUrl = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -361,7 +361,7 @@
         const filtradas = termo === "" ? fotosComId : fotosComId.filter(f => f.displayId.toString().includes(termo));
         container.innerHTML = filtradas.map(f => {
             const urlImg = `${API_URL}/photo?key=${encodeURIComponent(f.key)}&t=${Date.now()}`;
-            return `<div class="foto-item" onclick="abrirModal('${API_URL}/photo?key=${encodeURIComponent(f.key)}&t=${Date.now()}', '${f.displayId}')">
+            return `<div class="foto-item" onclick="abrirModal('${f.key}', '${f.displayId}')">
                     <div class="foto-id">#${f.displayId}</div>
                     <img src="${urlImg}" loading="lazy">
                 </div>`;
@@ -415,17 +415,19 @@
         const achada = fotosComId.find(f => f.displayId.toString() === termo);
         if (achada) {
             toggleNumpad(false);
-            abrirModal(`${API_URL}/photo?key=${encodeURIComponent(achada.key)}&t=${Date.now()}`, achada.displayId);
+            abrirModal(achada.key, achada.displayId);
         } else {
             alert("NÃO ENCONTRADA");
             limparBusca();
         }
     }
 
-    function abrirModal(url, id) {
+    function abrirModal(key, id) {
         stopScreensaver();
+        const url = `${API_URL}/photo?key=${encodeURIComponent(key)}&t=${Date.now()}`;
         document.getElementById('full-photo').src = url;
         document.getElementById('photo-id-label').innerText = "#" + id;
+        
         const linkParaOCliente = new URL(window.location.href);
         linkParaOCliente.searchParams.set('dl', url);
         qr.clear();

@@ -96,14 +96,12 @@
                     const url = API + '/photo?key=' + encodeURIComponent(f.key);
                     // No for (let f of novas), substituir:
 const kl = f.key.toLowerCase();
+
+// Detecta padrão: 1717000000000_3c ou 1717000000000_2c_guestbook
 let copiasDoCard = 1;
-// Detecta pelo key: eventos/1/fotos/1234567890.jpg (não tem _3c)
-// Mas temos o campo uploaded que não ajuda
-// Solução: usar o timestamp do nome
-const match = kl.match(/(\d+)_(\d+)c(?:_guestbook)?/);
-if (match) {
-    copiasDoCard = parseInt(match[2]) || 1;
-}
+const matchCopias = kl.match(/_(\d+)c/);
+if (matchCopias) copiasDoCard = parseInt(matchCopias[1]) || 1;
+
 const livro = kl.includes('_guestbook');
                     
                     todasFotos.push({ id: todasFotos.length + 1, url: url, key: f.key, copias: copiasDoCard, livro: livro });

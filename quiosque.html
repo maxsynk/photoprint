@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHOTO CLOUD | QUIOSQUE PRO V1.0</title>
+    <title>PHOTO CLOUD | QUIOSQUE PRO V1.1</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root { 
@@ -191,7 +191,6 @@
             letter-spacing: 5px; border-left: 12px solid var(--neon);
         }
 
-        /* TELA MOBILE CORRIGIDA */
         #mobile-download-screen {
             display: none; position: fixed; inset: 0;
             background: radial-gradient(circle at 50% 50%, #1a3a12 0%, #000 100%);
@@ -222,7 +221,6 @@
     <div style="font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: 3px; font-weight: bold; margin-bottom: 5px;">SISTEMA PRONTO</div>
     <h2 style="color: var(--neon); letter-spacing: 4px; margin: 0 0 25px; font-size: 1.8rem; text-transform: uppercase;">Baixar Foto</h2>
     <img id="mobile-img" src="" style="max-width: 100%; max-height: 55vh; border-radius: 8px; border: 1px solid var(--border);">
-    
     <button id="btn-forcar-download" class="btn-baixar">⬇️ Confirmar Download</button>
     <p id="msg-status" style="font-size: 10px; color: #444; margin-top: 15px;"></p>
 </div>
@@ -272,7 +270,7 @@
 
     <div id="modal">
         <div class="modal-container">
-            <img id="full-photo" src="" crossorigin="anonymous">
+            <img id="full-photo" src="">
             <div class="qr-panel">
                 <div class="instr-header">Ponte Digital</div>
                 <div class="instr-text">Escaneie para salvar<br>no seu celular</div>
@@ -301,7 +299,7 @@
         if (fotoUrl) {
             document.getElementById('conteudo-quiosque').style.display = 'none';
             document.getElementById('mobile-download-screen').style.display = 'flex';
-            document.getElementById('mobile-img').src = decodeURIComponent(fotoUrl);
+            document.getElementById('mobile-img').src = decodeURIComponent(fotoUrl) + '&t=' + Date.now();
             document.getElementById('btn-forcar-download').onclick = () => forcarDownload(decodeURIComponent(fotoUrl));
         } else {
             syncDados();
@@ -315,8 +313,8 @@
         try {
             btn.disabled = true;
             btn.innerText = "Processando...";
-            status.innerText = "Preparando arquivo para o sistema...";
-            const response = await fetch(url);
+            status.innerText = "Preparando arquivo...";
+            const response = await fetch(url + '&t=' + Date.now());
             const blob = await response.blob();
             const blobUrl = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -330,7 +328,6 @@
             btn.innerText = "⬇️ Confirmar Download";
             status.innerText = "Download concluído!";
         } catch (e) {
-            console.error(e);
             btn.disabled = false;
             btn.innerText = "Erro ao baixar";
             status.innerText = "Tente segurar na imagem e 'Salvar Foto'";
@@ -358,18 +355,18 @@
     }
 
     function renderizarGaleria() {
-    const container = document.getElementById('galeria');
-    const termo = document.getElementById('input-busca').value;
-    const fotosComId = todasFotos.map((f, i) => ({ ...f, displayId: todasFotos.length - i }));
-    const filtradas = termo === "" ? fotosComId : fotosComId.filter(f => f.displayId.toString().includes(termo));
-    container.innerHTML = filtradas.map(f => {
-        const urlImg = `${API_URL}/photo?key=${encodeURIComponent(f.key)}&t=${Date.now()}`;
-        return `<div class="foto-item" onclick="abrirModal('${API_URL}/photo?key=${encodeURIComponent(f.key)}', '${f.displayId}')">
-                <div class="foto-id">#${f.displayId}</div>
-                <img src="${urlImg}" loading="lazy">
-            </div>`;
-    }).join('');
-}
+        const container = document.getElementById('galeria');
+        const termo = document.getElementById('input-busca').value;
+        const fotosComId = todasFotos.map((f, i) => ({ ...f, displayId: todasFotos.length - i }));
+        const filtradas = termo === "" ? fotosComId : fotosComId.filter(f => f.displayId.toString().includes(termo));
+        container.innerHTML = filtradas.map(f => {
+            const urlImg = `${API_URL}/photo?key=${encodeURIComponent(f.key)}&t=${Date.now()}`;
+            return `<div class="foto-item" onclick="abrirModal('${API_URL}/photo?key=${encodeURIComponent(f.key)}&t=${Date.now()}', '${f.displayId}')">
+                    <div class="foto-id">#${f.displayId}</div>
+                    <img src="${urlImg}" loading="lazy">
+                </div>`;
+        }).join('');
+    }
 
     function resetInactivityTimer() {
         clearTimeout(inactivityTimer);
@@ -387,7 +384,7 @@
         if (todasFotos.length === 0) return;
         const img = document.getElementById('ss-img');
         const f = todasFotos[Math.floor(Math.random() * todasFotos.length)];
-        img.src = `${API_URL}/photo?key=${encodeURIComponent(f.key)}`;
+        img.src = `${API_URL}/photo?key=${encodeURIComponent(f.key)}&t=${Date.now()}`;
     }
 
     function stopScreensaver() {
@@ -418,7 +415,7 @@
         const achada = fotosComId.find(f => f.displayId.toString() === termo);
         if (achada) {
             toggleNumpad(false);
-            abrirModal(`${API_URL}/photo?key=${encodeURIComponent(achada.key)}`, achada.displayId);
+            abrirModal(`${API_URL}/photo?key=${encodeURIComponent(achada.key)}&t=${Date.now()}`, achada.displayId);
         } else {
             alert("NÃO ENCONTRADA");
             limparBusca();

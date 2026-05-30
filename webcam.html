@@ -174,11 +174,13 @@ async function composeAndUpload(opcaoCopias){
 
 async function uploadBlob(blob, copiasFisicas){
     if(!eventoId){debug('❌ Sem eventoId');return;}
-    const nome = `foto_${copiasFisicas}c.jpg`;
+    // Inclui o número de cópias no timestamp para a Galeria detectar
+    const ts = Date.now();
+    const nome = `foto_${ts}_${copiasFisicas}c.jpg`;
     const fd = new FormData();
     fd.append('foto', blob, nome);
     fd.append('eventoId', eventoId);
-    fd.append('timestamp', String(Date.now()));
+    fd.append('timestamp', String(ts) + '_' + copiasFisicas + 'c');
     fd.append('copias', String(copiasFisicas));
     debug(`⬆️ Upload: ${nome} (${copiasFisicas} cópias)`);
     try {
@@ -187,7 +189,6 @@ async function uploadBlob(blob, copiasFisicas){
         else debug('❌ ' + res.status);
     } catch(e) { debug('❌ ' + e.message); }
 }
-
 async function waitForPrint(){
     for(let i=0;i<120;i++){try{const res=await fetch(`${API_BASE}/check-print?t=${Date.now()}`);if(res.ok){const d=await res.json();if(d.printTriggered)return d.copias||1;}}catch(e){}await new Promise(r=>setTimeout(r,500));}
     return null;

@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>BOTOEIRA - PHOTO PRINT v3.6</title>
+    <title>BOTOEIRA - PHOTO PRINT v3.7</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
         :root { --neon: #39ff14; --dark: #050505; --danger: #ff3131; --info-blue: #00e5ff; }
@@ -67,6 +67,19 @@ const API="https://photoprint-api.maxprimefotovideo.workers.dev";
 let selectedCopiesValue=1;
 const monitor=document.getElementById('monitor-status');
 
+// ================== MAPEAMENTO CORRETO DE CÓPIAS ==================
+// Opção 1: 1 Cópia → 1 foto
+// Opção 2: 2 Cópias → 2 fotos
+// Opção 3: 1 Cópia + Guestbook → 2 fotos (1 normal + 1 guestbook)
+// Opção 4: 2 Cópias + Guestbook → 3 fotos (2 normais + 1 guestbook)
+function getCopiasFisicas(opcao) {
+    if (opcao === 1) return 1;
+    if (opcao === 2) return 2;
+    if (opcao === 3) return 2;
+    if (opcao === 4) return 3;
+    return 1;
+}
+
 // ================== SINCRONIZA EVENTO ATIVO ==================
 async function syncEvento(){
     try{
@@ -126,14 +139,17 @@ async function waitPhotoFinish(){
 function resetUI(){document.getElementById('screen-triggered').style.display="none";document.getElementById('screen-options').style.display="none";document.getElementById('screen-start').style.display="flex";localStorage.setItem('booth_state','start');}
 function selectOption(b,v){document.querySelectorAll('.btn-print-mobile').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');selectedCopiesValue=v;}
 
+// ================== ENVIAR IMPRESSÃO COM CÓPIAS CORRETAS ==================
 async function sendPrint(){
-    monitor.innerText="Enviando comando de impressão...";
+    const copiasFisicas = getCopiasFisicas(selectedCopiesValue);
+    monitor.innerText=`Enviando ${copiasFisicas} cópia(s) (opção ${selectedCopiesValue})...`;
     try{
-        await fetch(`${API}/trigger-print`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({copias:selectedCopiesValue})});
+        // Envia a opção selecionada para o Worker (1, 2, 3 ou 4)
+        await fetch(`${API}/trigger-print`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({copias: selectedCopiesValue})});
         await fetch(`${API}/set-state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:'start'})}).catch(()=>{});
         localStorage.setItem('booth_state','start');
         document.getElementById('screen-options').innerHTML='<div class="triggered-text">ENVIADO! ✅</div>';
-        monitor.innerText="Impressão enviada!";
+        monitor.innerText=`${copiasFisicas} cópia(s) enviada(s)!`;
         setTimeout(()=>location.reload(),2000);
     }catch(e){monitor.innerText="Erro ao enviar";alert("Erro ao enviar impressão.");}
 }

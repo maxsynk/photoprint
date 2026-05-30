@@ -89,22 +89,26 @@
             const fotosValidas = Array.isArray(dados) ? dados.filter(f => !f.key.toLowerCase().includes('moldura')) : [];
             const novas = fotosValidas.filter(f => !chavesLocais.has(f.key));
             if (novas.length > 0) {
-                for (let f of novas) {
-                    const url = API + '/photo?key=' + encodeURIComponent(f.key);
-                    const kl = f.key.toLowerCase();
-                    let copiasDoCard = 1;
-                    if (kl.includes("_3c_")) copiasDoCard = 3;
-                    else if (kl.includes("_2c_")) copiasDoCard = 2;
-                    const livro = kl.includes("_livro_") || kl.includes("guestbook");
-                    todasFotos.push({ id: todasFotos.length + 1, url: url, key: f.key, copias: copiasDoCard, livro: livro });
-                    chavesLocais.add(f.key);
-                    // Auto-impressão: adiciona N cópias à fila
-                    if (!primeiraCarga) {
-                        for (let i = 0; i < copiasDoCard; i++) addToPrintQueue(url);
-                    }
-                }
-                render();
-            }
+    for (let f of novas) {
+        const url = API + '/photo?key=' + encodeURIComponent(f.key);
+        const kl = f.key.toLowerCase();
+        
+        // Detecta número de cópias pelo nome do arquivo
+        let copiasDoCard = 1;
+        if (kl.includes('_3c')) copiasDoCard = 3;
+        else if (kl.includes('_2c')) copiasDoCard = 2;
+        
+        const livro = kl.includes("_livro_") || kl.includes("guestbook");
+        todasFotos.push({ id: todasFotos.length + 1, url: url, key: f.key, copias: copiasDoCard, livro: livro });
+        chavesLocais.add(f.key);
+        
+        // Auto-impressão com N cópias
+        if (!primeiraCarga) {
+            for (let i = 0; i < copiasDoCard; i++) addToPrintQueue(url);
+        }
+    }
+    render();
+}
             primeiraCarga = false;
             debug(todasFotos.length + ' fotos');
         } catch(e) { debug('Erro: ' + e.message); }

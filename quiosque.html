@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHOTO CLOUD | QUIOSQUE PRO V1.3</title>
+    <title>PHOTO CLOUD | QUIOSQUE PRO V1.4</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root { 
@@ -122,12 +122,25 @@
     window.onload = () => {
         const params = new URLSearchParams(window.location.search);
         const fotoUrl = params.get('dl');
+        const fotoKey = params.get('key');
+        
         if (fotoUrl) {
             document.getElementById('conteudo-quiosque').style.display = 'none';
             document.getElementById('mobile-download-screen').style.display = 'flex';
             document.getElementById('mobile-img').src = decodeURIComponent(fotoUrl);
             document.getElementById('btn-forcar-download').onclick = () => forcarDownload(decodeURIComponent(fotoUrl));
-        } else { syncDados(); resetInactivityTimer(); }
+        } else if (fotoKey) {
+            syncDados().then(() => {
+                const url = `${API_URL}/photo?key=${encodeURIComponent(fotoKey)}&t=${Date.now()}`;
+                document.getElementById('mobile-download-screen').style.display = 'flex';
+                document.getElementById('conteudo-quiosque').style.display = 'none';
+                document.getElementById('mobile-img').src = url;
+                document.getElementById('btn-forcar-download').onclick = () => forcarDownload(url);
+            });
+        } else {
+            syncDados();
+            resetInactivityTimer();
+        }
     };
 
     async function forcarDownload(url) {
@@ -205,8 +218,10 @@
         img.onerror = function() { this.src = url + '&retry=1'; };
         img.src = url;
         document.getElementById('photo-id-label').innerText = "#" + id;
-        const linkCli = new URL(window.location.href); linkCli.searchParams.set('dl', url);
-        qr.clear(); qr.makeCode(linkCli.toString());
+        const linkCurto = new URL(window.location.href.split('?')[0]);
+        linkCurto.searchParams.set('key', key);
+        qr.clear();
+        qr.makeCode(linkCurto.toString());
         document.getElementById('modal').style.display = 'flex';
     }
 

@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>WEBCAM - PHOTO PRINT v9.9.4</title>
+<title>WEBCAM - PHOTO PRINT v10.0</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 :root{ --neon:#39ff14; --dark:#050505; --danger:#ff3131; }
@@ -44,7 +44,7 @@ body.bg-active .corner-glow{ display:none; }
 #camera-wrapper{ position:absolute; inset:0; width:100vw; height:100vh; background:#000; overflow:hidden; z-index:40; }
 #camera-feed{ width:100%; height:100%; object-fit:cover; transform:scaleX(-1); }
 #camera-canvas{ width:100%; height:100%; object-fit:cover; }
-.fun-text{ position:absolute; top:75%; left:50%; transform:translate(-50%,-50%); font-family:'Comic Sans MS','Arial Rounded MT Bold',sans-serif; font-size:90px; font-weight:900; text-align:center; color:#fff; white-space:nowrap; text-transform:uppercase; text-shadow:0px 0px 15px #ff0080,0px 0px 30px #ff8c00,0px 0px 45px #ffff00; animation:funPulse 0.6s infinite alternate, hueShift 3s linear infinite; z-index:50; pointer-events:none; }
+.fun-text{ position:absolute; top:60%; left:50%; transform:translate(-50%,-50%); font-family:'Comic Sans MS','Arial Rounded MT Bold',sans-serif; font-size:70px; font-weight:900; text-align:center; color:#fff; white-space:nowrap; text-transform:uppercase; text-shadow:0px 0px 15px #ff0080,0px 0px 30px #ff8c00,0px 0px 45px #ffff00; animation:funPulse 0.6s infinite alternate, hueShift 3s linear infinite; z-index:50; pointer-events:none; }
 @keyframes funPulse{ 0%{ transform:translate(-50%,-50%) scale(0.9); } 100%{ transform:translate(-50%,-50%) scale(1.15); } }
 @keyframes hueShift{ 0%{ filter:hue-rotate(0deg); } 100%{ filter:hue-rotate(360deg); } }
 #options-overlay{ position:absolute; bottom:50px; left:50%; transform:translateX(-50%); background:rgba(255,255,255,0.95); padding:20px 45px; border-radius:50px; box-shadow:0 10px 30px rgba(0,0,0,0.5); z-index:60; text-align:center; }
@@ -75,6 +75,7 @@ const funText=document.getElementById('fun-text');
 const optionsOverlay=document.getElementById('options-overlay');
 let stream=null,lastState='start',captureInProgress=false,initialLoad=true;
 let eventoAtual=null,eventoId=null,formatoAtual='10X15V',molduraBase64=null;
+let fotosTirinha=[]; // Array para guardar as 3 fotos da tirinha
 
 const FORMATOS = {
     "TIRINHA": { w: 591, h: 1819 },
@@ -124,6 +125,86 @@ function updateEventoUI(){
     else el.style.display='none';
 }
 
+// ==================== TIRINHA: 3 FOTOS ====================
+function capturePhotoTirinha(numero){
+    return new Promise(resolve => {
+        videoFeed.style.display='block';canvasCapture.style.display='none';
+        funText.style.display='block';
+        funText.innerHTML=`📸 FOTO ${numero} DE 3<br>✨ PREPARE-SE! ✨`;
+        setTimeout(()=>{
+            let cd=3;
+            funText.innerHTML=`📸 FOTO ${numero} DE 3<br>😁 SORRIA! 😁<br>⏳ ${cd}`;
+            const t=setInterval(()=>{cd--;
+                if(cd>0)funText.innerHTML=`📸 FOTO ${numero} DE 3<br>😁 SORRIA! 😁<br>⏳ ${cd}`;
+                else{funText.style.display='none';clearInterval(t);
+                    canvasCapture.width=videoFeed.videoWidth||1920;canvasCapture.height=videoFeed.videoHeight||1080;
+                    ctx.save();ctx.scale(-1,1);ctx.drawImage(videoFeed,-canvasCapture.width,0,canvasCapture.width,canvasCapture.height);ctx.restore();
+                    // Salva a foto no array
+                    fotosTirinha.push(canvasCapture.toDataURL('image/jpeg',0.92));
+                    debug(`✅ Foto ${numero}/3 capturada`);
+                    resolve();
+                }
+            },1000);
+        },2500);
+    });
+}
+
+async function sequenciaTirinha(){
+    fotosTirinha=[];
+    debug('🎞️ Iniciando sequência TIRINHA (3 fotos)');
+    videoFeed.style.display='block';
+    
+    await capturePhotoTirinha(1);
+    await new Promise(r=>setTimeout(r,1500)); // pausa entre fotos
+    
+    await capturePhotoTirinha(2);
+    await new Promise(r=>setTimeout(r,1500));
+    
+    await capturePhotoTirinha(3);
+    
+    videoFeed.style.display='none';
+    debug('✅ 3 fotos capturadas!');
+}
+
+async function montarTirinha(opcaoCopias){
+    if(!molduraBase64){debug('❌ Moldura não carregada!');return;}
+    if(fotosTirinha.length<3){debug('❌ Faltam fotos!');return;}
+    
+    const copiasFisicas=getCopiasFisicas(opcaoCopias);
+    debug(`🖨️ Montando TIRINHA (${copiasFisicas} cópias)...`);
+    
+    try{
+        const molduraImg=await new Promise((rs,rj)=>{const img=new Image();img.onload=()=>rs(img);img.onerror=()=>rj(new Error('Falha'));img.src=molduraBase64;});
+        const fmt=FORMATOS['TIRINHA'];
+        const canvas=document.createElement('canvas');canvas.width=fmt.w;canvas.height=fmt.h;
+        const cctx=canvas.getContext('2d');
+        cctx.fillStyle='#FFFFFF';cctx.fillRect(0,0,canvas.width,canvas.height);
+        
+        // Carrega e desenha as 3 fotos em slots
+        const slots=[{y:0.030,h:0.254},{y:0.296,h:0.254},{y:0.559,h:0.254}];
+        for(let i=0;i<3;i++){
+            const fotoImg=await new Promise(r=>{const img=new Image();img.onload=()=>r(img);img.src=fotosTirinha[i];});
+            const slot=slots[i];
+            const dx=canvas.width*0.06, dw=canvas.width*0.88;
+            const dy=canvas.height*slot.y, dh=canvas.height*slot.h;
+            cctx.save();
+            cctx.beginPath();cctx.rect(dx,dy,dw,dh);cctx.clip();
+            const scale=Math.max(dw/fotoImg.width,dh/fotoImg.height);
+            const w=fotoImg.width*scale, h=fotoImg.height*scale;
+            cctx.drawImage(fotoImg,dx+(dw-w)/2,dy+(dh-h)/2,w,h);
+            cctx.restore();
+        }
+        
+        // Moldura por cima
+        cctx.drawImage(molduraImg,0,0,canvas.width,canvas.height);
+        
+        const blob=await new Promise(r=>canvas.toBlob(r,'image/jpeg',0.95));
+        await uploadBlob(blob,copiasFisicas,opcaoCopias);
+        debug(`✅ Tirinha enviada (${copiasFisicas} cópias)`);
+    }catch(e){debug('❌ Erro: '+e.message);}
+}
+
+// ==================== CAPTURA NORMAL (1 foto) ====================
 function capturePhoto(){
     if(captureInProgress)return;
     captureInProgress=true;
@@ -146,47 +227,38 @@ function capturePhoto(){
     },4000);
 }
 
-// ==================== ENVIA 1 ARQUIVO COM METADADO E GUESTBOOK ====================
 async function composeAndUpload(opcaoCopias){
     if(!molduraBase64){debug('❌ Moldura não carregada!');return;}
-    const copiasFisicas = getCopiasFisicas(opcaoCopias);
+    const copiasFisicas=getCopiasFisicas(opcaoCopias);
     debug(`🖨️ ${copiasFisicas} cópia(s) - opção ${opcaoCopias}`);
-    try {
-        const fotoImg = await new Promise(r => {const img=new Image();img.onload=()=>r(img);img.src=canvasCapture.toDataURL('image/jpeg',0.92);});
-        const molduraImg = await new Promise((resolve, reject) => {
-            const img = new Image(); img.onload = () => resolve(img); img.onerror = () => reject(new Error('Falha')); img.src = molduraBase64;
-        });
-        const fmt = FORMATOS[formatoAtual] || FORMATOS['POLAROID'];
-        const canvas = document.createElement('canvas'); canvas.width = fmt.w; canvas.height = fmt.h;
-        const cctx = canvas.getContext('2d');
-        cctx.fillStyle = '#FFFFFF'; cctx.fillRect(0,0,canvas.width,canvas.height);
-        const scale = Math.max(canvas.width/fotoImg.width, canvas.height/fotoImg.height);
-        cctx.drawImage(fotoImg, (canvas.width-fotoImg.width*scale)/2, (canvas.height-fotoImg.height*scale)/2, fotoImg.width*scale, fotoImg.height*scale);
+    try{
+        const fotoImg=await new Promise(r=>{const img=new Image();img.onload=()=>r(img);img.src=canvasCapture.toDataURL('image/jpeg',0.92);});
+        const molduraImg=await new Promise((rs,rj)=>{const img=new Image();img.onload=()=>rs(img);img.onerror=()=>rj(new Error('Falha'));img.src=molduraBase64;});
+        const fmt=FORMATOS[formatoAtual]||FORMATOS['POLAROID'];
+        const canvas=document.createElement('canvas');canvas.width=fmt.w;canvas.height=fmt.h;
+        const cctx=canvas.getContext('2d');
+        cctx.fillStyle='#FFFFFF';cctx.fillRect(0,0,canvas.width,canvas.height);
+        const scale=Math.max(canvas.width/fotoImg.width,canvas.height/fotoImg.height);
+        cctx.drawImage(fotoImg,(canvas.width-fotoImg.width*scale)/2,(canvas.height-fotoImg.height*scale)/2,fotoImg.width*scale,fotoImg.height*scale);
         cctx.drawImage(molduraImg,0,0,canvas.width,canvas.height);
-        const blob = await new Promise(r=>canvas.toBlob(r,'image/jpeg',0.95));
-        
-        // Envia 1 arquivo com metadado e guestbook se for opção 3 ou 4
-        await uploadBlob(blob, copiasFisicas, opcaoCopias);
+        const blob=await new Promise(r=>canvas.toBlob(r,'image/jpeg',0.95));
+        await uploadBlob(blob,copiasFisicas,opcaoCopias);
         debug(`✅ Foto enviada (${copiasFisicas} cópias)`);
-    } catch(e) { debug('❌ Erro: '+e.message); }
+    }catch(e){debug('❌ Erro: '+e.message);}
 }
 
-async function uploadBlob(blob, copiasFisicas, opcao){
+async function uploadBlob(blob,copiasFisicas,opcao){
     if(!eventoId){debug('❌ Sem eventoId');return;}
-    const ts = Date.now();
-    const temGuestbook = (opcao === 3 || opcao === 4);
-    // Exemplo: 1717000000000_2c ou 1717000000000_2c_guestbook
-    const tsCompleto = String(ts) + '_' + copiasFisicas + 'c' + (temGuestbook ? '_guestbook' : '');
-    const fd = new FormData();
-    fd.append('foto', blob, 'foto.jpg');
-    fd.append('eventoId', eventoId);
-    fd.append('timestamp', tsCompleto);
-    fd.append('copias', String(copiasFisicas));
-    debug(`⬆️ Upload: ${tsCompleto} (${copiasFisicas} cópias${temGuestbook ? ', Guestbook' : ''})`);
-    try {
-        const res = await fetch(`${API_BASE}/salvar-foto`, {method:'POST', body:fd});
-        if(res.ok) debug('✅ OK');
-    } catch(e) {}
+    const ts=Date.now();
+    const temGuestbook=(opcao===3||opcao===4);
+    const sufixo=temGuestbook?'_guestbook':'';
+    const nome=`foto_${ts}_${copiasFisicas}c${sufixo}.jpg`;
+    const fd=new FormData();
+    fd.append('foto',blob,nome);
+    fd.append('eventoId',eventoId);
+    fd.append('timestamp',String(ts)+'_'+copiasFisicas+'c'+sufixo);
+    fd.append('copias',String(copiasFisicas));
+    try{const res=await fetch(`${API_BASE}/salvar-foto`,{method:'POST',body:fd});if(res.ok)debug('✅ OK');}catch(e){}
 }
 
 async function waitForPrint(){
@@ -198,7 +270,14 @@ async function finishCycle(){
     const copias=await waitForPrint();
     if(!copias){resetToStart();return;}
     optionsOverlay.querySelector('.options-text').innerText='Compondo foto...';
-    await composeAndUpload(copias);
+    
+    // Se for TIRINHA, monta as 3 fotos
+    if(formatoAtual==='TIRINHA'){
+        await montarTirinha(copias);
+    }else{
+        await composeAndUpload(copias);
+    }
+    
     await fetch(`${API_BASE}/clear-print`,{method:'POST'}).catch(()=>{});
     showThanks();
 }
@@ -215,6 +294,7 @@ function resetToStart(){
     document.getElementById('screen-start').style.display='flex';
     ctx.clearRect(0,0,canvasCapture.width,canvasCapture.height);
     captureInProgress=false;lastState='start';
+    fotosTirinha=[];
     fetch(`${API_BASE}/set-state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:'start'})}).catch(()=>{});
 }
 
@@ -225,7 +305,16 @@ function updateScreenState(state){
     document.querySelectorAll('.screen').forEach(e=>e.style.display='none');
     if(state==='capturing'){
         document.getElementById('screen-camera').style.display='flex';
-        capturePhoto();
+        if(formatoAtual==='TIRINHA'){
+            // TIRINHA: tira 3 fotos e vai direto para options
+            sequenciaTirinha().then(()=>{
+                canvasCapture.style.display='none';
+                fetch(`${API_BASE}/set-state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:'options'})}).catch(()=>{});
+                updateScreenState('options');
+            });
+        }else{
+            capturePhoto();
+        }
     }
     else if(state==='options'){document.getElementById('screen-camera').style.display='flex';videoFeed.style.display='none';canvasCapture.style.display='block';funText.style.display='none';optionsOverlay.style.display='block';}
     else{document.getElementById('screen-start').style.display='flex';}
@@ -233,13 +322,9 @@ function updateScreenState(state){
 }
 
 async function pollServerState(){
-    try{
-        const res=await fetch(`${API_BASE}/get-state?t=${Date.now()}`);
-        if(!res||!res.ok)return;
-        const d=await res.json();
+    try{const res=await fetch(`${API_BASE}/get-state?t=${Date.now()}`);if(!res||!res.ok)return;const d=await res.json();
         if(initialLoad){initialLoad=false;if(d.state!=='start'){await fetch(`${API_BASE}/set-state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:'start'})}).catch(()=>{});return;}}
-        if(d.state&&d.state!==lastState)updateScreenState(d.state);
-    }catch(e){}
+        if(d.state&&d.state!==lastState)updateScreenState(d.state);}catch(e){}
 }
 
 window.addEventListener('storage',e=>{if(e.key==='booth_state')updateScreenState(e.newValue);});
@@ -252,7 +337,7 @@ function removeBackground(){localStorage.removeItem('photoprint_bg');document.ge
 
 localStorage.setItem('booth_state','start');updateScreenState('start');initCamera();
 setInterval(pollServerState,800);setInterval(syncEvento,5000);syncEvento();
-debug('🚀 WEBCAM v9.9.4 pronta');
+debug('🚀 WEBCAM v10.0 pronta');
 </script>
 </body>
 </html>

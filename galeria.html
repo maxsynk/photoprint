@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT - GALLERY v7.7</title>
+    <title>PHOTO PRINT - GALLERY v7.8</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -75,14 +75,11 @@
             const evtId = (config.config && config.config.eventoId) ? config.config.eventoId : "";
             formatoAtual = (config.config && config.config.formato) ? config.config.formato.toUpperCase().trim() : "10X15V";
             
-            // Detecta se o evento tem guestbook ativo
-            const temLivro = (config.config && config.config.livro) ? true : false;
-            
             if (eventoIdAtual !== evtId) {
                 eventoAtual = evt; eventoIdAtual = evtId;
                 todasFotos = []; chavesLocais.clear(); printQueue = []; primeiraCarga = true;
                 document.getElementById('grid-fotos').innerHTML = "";
-                debug('🔄 Evento: ' + evt + (temLivro ? ' 📖 Guestbook' : ''));
+                debug('🔄 Evento: ' + evt);
             }
             document.getElementById('nome-evento').innerText = eventoAtual;
             document.getElementById('tipo-formato').innerText = traduzirFormato(formatoAtual);
@@ -98,11 +95,15 @@
                 for (let f of novas) {
                     const url = API + '/photo?key=' + encodeURIComponent(f.key);
                     const kl = f.key.toLowerCase();
+                    
+                    // Detecta número de cópias pelo nome do arquivo
                     let copiasDoCard = 1;
                     if (kl.includes('_3c')) copiasDoCard = 3;
                     else if (kl.includes('_2c')) copiasDoCard = 2;
-                    // Guestbook detectado pelo nome do arquivo OU pelo config
-                    const livro = kl.includes("_livro_") || kl.includes("guestbook") || temLivro;
+                    
+                    // Guestbook APENAS pelo nome do arquivo (ignora config.livro)
+                    const livro = kl.includes("_livro_") || kl.includes("guestbook");
+                    
                     todasFotos.push({ id: todasFotos.length + 1, url: url, key: f.key, copias: copiasDoCard, livro: livro });
                     chavesLocais.add(f.key);
                     if (!primeiraCarga) { for (let i = 0; i < copiasDoCard; i++) addToPrintQueue(url); }

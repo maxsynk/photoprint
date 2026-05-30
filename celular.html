@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHOTO PRINT - MOBILE v2.4</title>
+    <title>PHOTO PRINT - MOBILE v2.5</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --neon: #39ff14; --error: #ff0000; --blue-cyan: #00e5ff; }
@@ -19,28 +19,20 @@
         #flash { position: fixed; inset: 0; background: white; display: none; z-index: 2000; }
         .spin { width: 60px; height: 60px; border: 5px solid rgba(57, 255, 20, 0.1); border-top-color: var(--neon); border-radius: 50%; animation: s 1s linear infinite; }
         @keyframes s { to { transform: rotate(360deg); } }
-
         @keyframes pulse-neon {
             0% { box-shadow: 0 0 0 0 rgba(57, 255, 20, 0.7); transform: scale(1); }
             70% { box-shadow: 0 0 0 20px rgba(57, 255, 20, 0); transform: scale(1.05); }
             100% { box-shadow: 0 0 0 0 rgba(57, 255, 20, 0); transform: scale(1); }
         }
-
         .icon-rotate { width: 80px; height: 80px; margin-bottom: 20px; animation: rotateAnim 2s infinite; }
         @keyframes rotateAnim { 0% { transform: rotate(0deg); } 50% { transform: rotate(-90deg); } 100% { transform: rotate(0deg); } }
-
         .header { margin-top: 40px; z-index: 10; border-left: 4px solid var(--neon); padding-left: 20px; align-self: flex-start; margin-left: 30px; text-align: left; }
         .brand-title { font-size: 38px; font-weight: 900; color: var(--neon); text-shadow: 0 0 15px var(--neon); letter-spacing: 5px; margin: 0; text-transform: uppercase; }
         .subtitle { color: white; font-size: 14px; letter-spacing: 3px; margin-top: 5px; opacity: 0.7; font-weight: bold; text-transform: uppercase; }
         #nome-evento-capa { font-size: 22px; font-weight: bold; color: var(--neon); text-transform: uppercase; margin: 20px 0; min-height: 25px; }
-
-        .btn-eye {
-            width: 140px; height: 140px; border-radius: 50%; border: 4px solid var(--neon);
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            animation: pulse-neon 2s infinite; background: rgba(0,0,0,0.5);
-        }
+        #modo-guestbook { color: var(--blue-cyan); font-size: 12px; font-weight: bold; display: none; }
+        .btn-eye { width: 140px; height: 140px; border-radius: 50%; border: 4px solid var(--neon); cursor: pointer; display: flex; align-items: center; justify-content: center; animation: pulse-neon 2s infinite; background: rgba(0,0,0,0.5); }
         .eye-inner { width: 45px; height: 45px; border-radius: 50%; border: 3px solid var(--neon); }
-
         #cam-container { position: fixed; inset: 0; background: #000; display: none; z-index: 1000; }
         video { width: 100%; height: 100%; object-fit: cover; }
         .mirror { transform: scaleX(-1); }
@@ -49,23 +41,16 @@
         #info-topo { font-size: 12px; font-weight: 900; color: var(--neon); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
         #num-count { font-size: 100px; font-weight: 900; color: white; line-height: 1; display: block; text-shadow: 0 0 30px var(--neon); }
         #sub-count { font-size: 14px; font-weight: bold; color: var(--neon); text-transform: uppercase; letter-spacing: 2px; }
-
         #cam-controls { position: absolute; bottom: 40px; left: 0; right: 0; display: flex; align-items: center; justify-content: space-evenly; width: 100%; pointer-events: auto; }
         .cam-btn { width: 60px; height: 60px; background: rgba(0,0,0,0.6); border: 1px solid var(--neon); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .shutter-btn { width: 85px; height: 85px; background: black; border-radius: 50%; border: 4px solid var(--neon); cursor: pointer; box-shadow: 0 0 20px var(--neon); }
-
         .print-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 90%; max-width: 360px; margin: 12px 0; }
-        .print-capsule-btn { 
-            background: transparent; border: 2px solid var(--neon); color: white; 
-            padding: 10px 15px; font-size: 13px; font-weight: bold; 
-            border-radius: 50px; cursor: pointer; display: flex; 
-            align-items: center; justify-content: center; gap: 8px; transition: 0.2s; 
-        }
-        .print-capsule-btn .fa-print, .print-capsule-btn .fa-book { font-size: 14px; }
+        .print-capsule-btn { background: transparent; border: 2px solid var(--neon); color: white; padding: 10px 15px; font-size: 13px; font-weight: bold; border-radius: 50px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
         .print-capsule-btn.color-green { border-color: var(--neon); }
         .print-capsule-btn.color-green.active { background: var(--neon); color: black; }
         .print-capsule-btn.color-blue { border-color: var(--blue-cyan); }
         .print-capsule-btn.color-blue.active { background: var(--blue-cyan); color: black; }
+        .guestbook-only-btn { display: none; }
         .mantencao-txt { font-size: 30px; font-weight: 900; color: var(--error); text-shadow: 0 0 15px var(--error); letter-spacing: 2px; }
     </style>
 </head>
@@ -73,10 +58,8 @@
 
     <div id="rotate-warning">
         <svg class="icon-rotate" viewBox="0 0 24 24" fill="var(--neon)"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h2l-3.5 3.5-3.5-3.5h2c-.34-3.19-2.32-5.85-5.08-7.1l1.11-1.88M12.06 19c-1.38 0-2.61-.56-3.5-1.47l-1.41 1.41C8.36 20.15 10.09 21 12.06 21c3.97 0 7.32-2.8 8.16-6.5h-2.07c-.77 2.58-3.17 4.5-5.99 4.5M2.06 11h2c.34 3.19 2.32 5.85 5.08 7.1l-1.11 1.88C4.76 18.43 2.42 15.26 2.06 11.5M12.06 5c1.38 0 2.61.56 3.5 1.47l1.41-1.41C15.76 3.85 14.03 3 12.06 3 8.09 3 4.74 5.8 3.9 9.5h2.07C6.74 6.92 9.14 5 12.06 5Z"/></svg>
-        <h2>GIRE O APARELHO</h2>
-        <p>Necessário posição Horizontal (Deitado)</p>
+        <h2>GIRE O APARELHO</h2><p>Necessário posição Horizontal (Deitado)</p>
     </div>
-
     <div id="offline-screen"><div class="mantencao-txt">SISTEMA EM MANUTENÇÃO</div></div>
     <div id="flash"></div>
     <div id="loader"><div class="spin"></div><p id="loader-text" style="color:var(--neon);margin-top:20px;font-weight:bold;">PROCESSANDO...</p></div>
@@ -84,21 +67,11 @@
     <div id="cam-container">
         <video id="v" autoplay playsinline muted></video>
         <div id="overlay">
-            <div class="topo-grupo">
-                <div id="info-topo">CARREGANDO...</div>
-                <span id="num-count"></span>
-                <span id="sub-count">AGUARDANDO START</span>
-            </div>
+            <div class="topo-grupo"><div id="info-topo">CARREGANDO...</div><span id="num-count"></span><span id="sub-count">AGUARDANDO START</span></div>
             <div id="cam-controls">
-                <div class="cam-btn" onclick="voltarHome()">
-                    <svg viewBox="0 0 24 24" width="25" fill="var(--neon)"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
-                </div>
-                <div id="shutter-placeholder">
-                    <div class="shutter-btn" onclick="iniciarSequencia()"></div>
-                </div>
-                <div class="cam-btn" onclick="switchCam()">
-                    <svg viewBox="0 0 24 24" width="28" fill="var(--neon)"><path d="M15.5,14L20.5,19L19.08,20.42L14.08,15.42L15.5,14M3,3.27L4.27,22,19.73L20.73,21L18.11,18.39C17.09,19.38 15.62,20 14,20H10V17H14C14.7,17 15.35,16.79 15.9,16.42L12,12.52V15L7,10L8.1,8.9L3,3.27M17,10V7H13V10.18L11,8.18V5H17V2L22,7L17,12V10Z" /></svg>
-                </div>
+                <div class="cam-btn" onclick="voltarHome()"><svg viewBox="0 0 24 24" width="25" fill="var(--neon)"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/></svg></div>
+                <div id="shutter-placeholder"><div class="shutter-btn" onclick="iniciarSequencia()"></div></div>
+                <div class="cam-btn" onclick="switchCam()"><svg viewBox="0 0 24 24" width="28" fill="var(--neon)"><path d="M15.5,14L20.5,19L19.08,20.42L14.08,15.42L15.5,14M3,3.27L4.27,22,19.73L20.73,21L18.11,18.39C17.09,19.38 15.62,20 14,20H10V17H14C14.7,17 15.35,16.79 15.9,16.42L12,12.52V15L7,10L8.1,8.9L3,3.27M17,10V7H13V10.18L11,8.18V5H17V2L22,7L17,12V10Z"/></svg></div>
             </div>
         </div>
     </div>
@@ -107,12 +80,11 @@
         <h1 class="brand-title">PHOTO PRINT</h1>
         <div class="subtitle">colecionando momentos</div>
         <div id="nome-evento-capa">...</div>
+        <div id="modo-guestbook">📖 Modo Guestbook Ativo</div>
     </div>
 
     <div class="main-ui" style="flex-grow:1; display:flex; align-items:center; justify-content:center; padding-bottom:60px;">
-        <div id="main-action-btn" class="btn-eye" onclick="ligar()">
-            <div class="eye-inner"></div>
-        </div>
+        <div id="main-action-btn" class="btn-eye" onclick="ligar()"><div class="eye-inner"></div></div>
     </div>
 
     <canvas id="c-snap" style="display:none"></canvas>
@@ -120,37 +92,50 @@
 
     <script>
         const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
-        let ev = "", formatStr = "", frame = "", pics = [], stream = null, facingMode = "user";
-        let configAtual = null;
-        let quantidadeCopias = 1;
+        let ev = "", formatStr = "", molduraBase64 = "", eventoId = "", guestbookAtivo = false;
+        let pics = [], stream = null, facingMode = "user", configAtual = null, quantidadeCopias = 1;
 
         const FORMATOS = {
-            "TIRINHA": { w: 600, h: 1800, fotos: 3, key: "TIRINHA", exigeH: false },
-            "POLAROID": { w: 1200, h: 1500, fotos: 1, key: "POLAROID", exigeH: false },
-            "10X15H": { w: 1800, h: 1200, fotos: 1, key: "10X15H", exigeH: true },
-            "10X15V": { w: 1200, h: 1800, fotos: 1, key: "10X15V", exigeH: false }
+            "TIRINHA": { w: 591, h: 1819, fotos: 3, key: "TIRINHA", exigeH: false },
+            "POLAROID": { w: 1041, h: 1311, fotos: 1, key: "POLAROID", exigeH: false },
+            "10X15H": { w: 1772, h: 1228, fotos: 1, key: "10X15H", exigeH: true },
+            "10X15V": { w: 1181, h: 1819, fotos: 1, key: "10X15V", exigeH: false }
         };
+
+        function getCopiasFisicas(opcao) {
+            if (opcao === 1) return 1;
+            if (opcao === 2) return 2;
+            if (opcao === 3) return 2;
+            if (opcao === 4) return 3;
+            return 1;
+        }
 
         async function sync() {
             try {
-                const r = await fetch(`${API}/status?t=${Date.now()}`);
+                const r = await fetch(`${API}/get-all-states?t=${Date.now()}`);
                 const d = await r.json();
-                ev = d.evento || "Geral";
-                formatStr = d.formato || "POLAROID";
+                if (d.config && d.config.evento && d.config.evento !== 'Geral') {
+                    ev = d.config.evento;
+                    formatStr = d.config.formato || 'POLAROID';
+                    eventoId = d.config.eventoId;
+                    guestbookAtivo = (d.config.livro === true || d.config.livro === 1);
+                    molduraBase64 = d.moldura || '';
+                } else {
+                    ev = "Geral"; formatStr = "POLAROID"; eventoId = ""; molduraBase64 = ""; guestbookAtivo = false;
+                }
                 document.getElementById('nome-evento-capa').innerText = ev;
+                document.getElementById('modo-guestbook').style.display = guestbookAtivo ? 'block' : 'none';
                 configAtual = FORMATOS[formatStr.toUpperCase()] || FORMATOS["POLAROID"];
-                await getFrame();
+                atualizarBotoesGuestbook();
             } catch (e) { console.error(e); }
         }
 
-        async function getFrame() {
-            try {
-                const r = await fetch(`${API}/list-photos?evento=${encodeURIComponent(ev)}&t=${Date.now()}`);
-                const arquivos = await r.json();
-                const p = arquivos.find(x => x.key.toLowerCase().endsWith('.png'));
-                // CORRIGIDO: usa ?key= em vez de /photo/
-                frame = p ? `${API}/photo?key=${encodeURIComponent(p.key)}` : "";
-            } catch(e) {}
+        function atualizarBotoesGuestbook() {
+            const botoes = document.querySelectorAll('.guestbook-only-btn');
+            botoes.forEach(btn => { btn.style.display = guestbookAtivo ? 'flex' : 'none'; });
+            if (!guestbookAtivo && (quantidadeCopias === 3 || quantidadeCopias === 4)) {
+                quantidadeCopias = 1;
+            }
         }
 
         function checkOrientation() {
@@ -158,8 +143,7 @@
                 document.getElementById('rotate-warning').style.display = "none";
                 return;
             }
-            const isLandscape = window.innerWidth > window.innerHeight;
-            document.getElementById('rotate-warning').style.display = isLandscape ? "none" : "flex";
+            document.getElementById('rotate-warning').style.display = (window.innerWidth <= window.innerHeight) ? "flex" : "none";
         }
         window.addEventListener("resize", checkOrientation);
 
@@ -169,16 +153,15 @@
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: { ideal: facingMode }, width: { ideal: 1920 }, height: { ideal: 1080 } }
                 });
-                const v = document.getElementById('v');
-                v.srcObject = stream;
-                v.className = (facingMode === "user") ? "mirror" : "";
-            } catch (e) { console.error(e); alert("Câmera não disponível ou permissão negada."); }
+                document.getElementById('v').srcObject = stream;
+                document.getElementById('v').className = (facingMode === "user") ? "mirror" : "";
+            } catch (e) { alert("Câmera não disponível."); }
         }
 
         async function switchCam() { facingMode = (facingMode === "user") ? "environment" : "user"; await startStream(); }
 
         async function ligar() {
-            if (!frame) return alert("Moldura não carregada no Painel!");
+            if (!molduraBase64) return alert("Moldura não carregada! Sincronize com o Painel.");
             document.getElementById('cam-container').style.display = "block";
             document.getElementById('info-topo').innerText = `${ev} | ${configAtual.key}`;
             document.getElementById('num-count').innerText = "";
@@ -198,37 +181,41 @@
             if (configAtual.exigeH && window.innerWidth <= window.innerHeight) return;
             document.getElementById('shutter-placeholder').style.visibility = "hidden";
             pics = [];
-            for(let n=1; n<=configAtual.fotos; n++) {
+            for (let n = 1; n <= configAtual.fotos; n++) {
                 document.getElementById('sub-count').innerText = `FOTO ${n} DE ${configAtual.fotos}`;
-                for(let i=5; i>0; i--) {
+                for (let i = 5; i > 0; i--) {
                     document.getElementById('num-count').innerText = i;
                     await new Promise(r => setTimeout(r, 1000));
                 }
                 document.getElementById('num-count').innerText = "SORRIA!";
                 snap();
-                await new Promise(r => setTimeout(r, 1000));
+                await new Promise(r => setTimeout(r, 1500));
             }
             processar();
         }
 
         function snap() {
-            const f = document.getElementById('flash');
-            f.style.display = "block"; setTimeout(() => f.style.display = "none", 100);
+            document.getElementById('flash').style.display = "block";
+            setTimeout(() => document.getElementById('flash').style.display = "none", 100);
             const v = document.getElementById('v'), cv = document.getElementById('c-snap'), ctx = cv.getContext('2d');
             cv.width = v.videoWidth; cv.height = v.videoHeight;
             if (facingMode === "user") { ctx.translate(cv.width, 0); ctx.scale(-1, 1); }
             ctx.drawImage(v, 0, 0);
-            pics.push(cv.toDataURL('image/jpeg', 0.9));
+            pics.push(cv.toDataURL('image/jpeg', 0.92));
         }
 
         function processar() {
             voltarHome();
             document.getElementById('loader').style.display = "flex";
-            const cv = document.getElementById('c-strip'), ctx = cv.getContext('2d'), m = new Image();
-            m.crossOrigin = "anonymous";
-            m.onload = () => {
-                cv.width = configAtual.w; cv.height = configAtual.h;
-                ctx.fillStyle = "white"; ctx.fillRect(0,0,cv.width, cv.height);
+            const cv = document.getElementById('c-strip'), ctx = cv.getContext('2d');
+            
+            const molduraImg = new Image();
+            molduraImg.onload = () => {
+                cv.width = configAtual.w;
+                cv.height = configAtual.h;
+                ctx.fillStyle = "white";
+                ctx.fillRect(0, 0, cv.width, cv.height);
+
                 if (configAtual.key === "TIRINHA") {
                     const slots = [{y:0.030, h:0.254}, {y:0.296, h:0.254}, {y:0.559, h:0.254}];
                     let count = 0;
@@ -243,8 +230,8 @@
                             ctx.drawImage(img, dx+(dw-img.width*r)/2, dy+(dh-img.height*r)/2, img.width*r, img.height*r);
                             ctx.restore();
                             count++;
-                            if(count === 3) {
-                                ctx.drawImage(m, 0, 0, cv.width, cv.height);
+                            if (count === 3) {
+                                ctx.drawImage(molduraImg, 0, 0, cv.width, cv.height);
                                 exibir(cv.toDataURL('image/jpeg', 0.95));
                             }
                         };
@@ -253,63 +240,65 @@
                 } else {
                     const img = new Image();
                     img.onload = () => {
-                        const r = Math.max(cv.width/img.width, cv.height/img.height);
-                        ctx.drawImage(img, (cv.width-img.width*r)/2, (cv.height-img.height*r)/2, img.width*r, img.height*r);
-                        ctx.drawImage(m, 0, 0, cv.width, cv.height);
+                        const scale = Math.max(cv.width/img.width, cv.height/img.height);
+                        const w = img.width * scale, h = img.height * scale;
+                        ctx.drawImage(img, (cv.width-w)/2, (cv.height-h)/2, w, h);
+                        ctx.drawImage(molduraImg, 0, 0, cv.width, cv.height);
                         exibir(cv.toDataURL('image/jpeg', 0.95));
                     };
                     img.src = pics[0];
                 }
             };
-            m.src = frame + "&t=" + Date.now();
+            molduraImg.src = molduraBase64;
         }
 
         function alterarCopias(qtd) {
             quantidadeCopias = qtd;
-            document.getElementById('btn-opt-1').className = 'print-capsule-btn color-green' + (qtd === 1 ? ' active' : '');
-            document.getElementById('btn-opt-2').className = 'print-capsule-btn color-green' + (qtd === 2 ? ' active' : '');
-            document.getElementById('btn-opt-3').className = 'print-capsule-btn color-blue' + (qtd === 3 ? ' active' : '');
-            document.getElementById('btn-opt-4').className = 'print-capsule-btn color-blue' + (qtd === 4 ? ' active' : '');
+            document.querySelectorAll('.print-capsule-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-opt-' + qtd).classList.add('active');
         }
 
         function exibir(url) {
             quantidadeCopias = 1;
+            const botoesGuestbook = guestbookAtivo ? `
+                <button id="btn-opt-3" class="print-capsule-btn color-blue guestbook-only-btn" onclick="alterarCopias(3)"><i class="fa-solid fa-book"></i> 1 Cópia + Guestbook</button>
+                <button id="btn-opt-4" class="print-capsule-btn color-blue guestbook-only-btn" onclick="alterarCopias(4)"><i class="fa-solid fa-book"></i> 2 Cópias + Guestbook</button>
+            ` : '';
+
             document.getElementById('loader').innerHTML = `
                 <img src="${url}" style="max-height:45vh; border:2px solid var(--neon); box-shadow: 0 0 20px var(--neon);">
-                <span style="font-size:14px; color:var(--neon); font-weight:bold; margin-top:15px; letter-spacing:1px;">Quantas cópias deseja imprimir?</span>
+                <span style="font-size:14px; color:var(--neon); font-weight:bold; margin-top:15px;">Quantas cópias deseja imprimir?</span>
                 <div class="print-grid">
                     <button id="btn-opt-1" class="print-capsule-btn color-green active" onclick="alterarCopias(1)"><i class="fa-solid fa-print"></i> 1 Cópia</button>
                     <button id="btn-opt-2" class="print-capsule-btn color-green" onclick="alterarCopias(2)"><i class="fa-solid fa-print"></i> 2 Cópias</button>
-                    <button id="btn-opt-3" class="print-capsule-btn color-blue" onclick="alterarCopias(3)"><i class="fa-solid fa-book"></i> 1 Cópia + Guestbook</button>
-                    <button id="btn-opt-4" class="print-capsule-btn color-blue" onclick="alterarCopias(4)"><i class="fa-solid fa-book"></i> 2 Cópias + Guestbook</button>
+                    ${botoesGuestbook}
                 </div>
                 <div style="margin-top:5px; display:flex; flex-direction:column; gap:8px; align-items:center;">
-                    <button class="btn-eye" style="width:65px; height:65px; animation:none;" onclick="enviar()"><i class="fas fa-paper-plane" style="color:var(--neon); font-size: 20px;"></i></button>
-                    <span style="font-size:11px; color:var(--neon); font-weight:bold; letter-spacing:1px; text-transform: uppercase;">Enviar e Imprimir</span>
+                    <button class="btn-eye" style="width:65px; height:65px; animation:none;" onclick="enviar()"><i class="fas fa-paper-plane" style="color:var(--neon); font-size:20px;"></i></button>
+                    <span style="font-size:11px; color:var(--neon); font-weight:bold;">Enviar e Imprimir</span>
                     <button style="background:transparent; border:none; color:#555; font-size:12px; font-weight:bold; text-decoration:underline; margin-top:5px; cursor:pointer;" onclick="location.reload()">CANCELAR</button>
                 </div>`;
         }
 
         async function enviar() {
-            document.getElementById('loader').innerHTML = `<div class="spin"></div><p style="color:var(--neon); font-weight:bold; margin-top:20px;">ENVIANDO PARA NUVEM...</p>`;
+            document.getElementById('loader').innerHTML = `<div class="spin"></div><p style="color:var(--neon); font-weight:bold; margin-top:20px;">ENVIANDO...</p>`;
             document.getElementById('c-strip').toBlob(async b => {
-                const fd = new FormData();
-                let nomeArquivo = 'foto.jpg';
-                let copiasFisicas = 1;
-                if (quantidadeCopias === 1) { nomeArquivo = 'foto.jpg'; copiasFisicas = 1; }
-                else if (quantidadeCopias === 2) { nomeArquivo = 'foto_2c.jpg'; copiasFisicas = 2; }
-                else if (quantidadeCopias === 3) { nomeArquivo = 'foto_2c_guestbook.jpg'; copiasFisicas = 2; }
-                else if (quantidadeCopias === 4) { nomeArquivo = 'foto_3c_guestbook.jpg'; copiasFisicas = 3; }
+                const copiasFisicas = getCopiasFisicas(quantidadeCopias);
+                const ts = Date.now();
+                const temGuestbook = (quantidadeCopias === 3 || quantidadeCopias === 4);
+                const sufixo = temGuestbook ? '_guestbook' : '';
+                const nome = `foto_${ts}_${copiasFisicas}c${sufixo}.jpg`;
                 
-                fd.append('foto', b, nomeArquivo);
-                fd.append('eventoId', '1'); // Precisa do eventoId correto
-                fd.append('timestamp', String(Date.now()));
+                const fd = new FormData();
+                fd.append('foto', b, nome);
+                fd.append('eventoId', eventoId);
+                fd.append('timestamp', String(ts) + '_' + copiasFisicas + 'c' + sufixo);
                 fd.append('copias', String(copiasFisicas));
                 
                 try {
-                    // CORRIGIDO: usa /salvar-foto em vez de /upload
-                    await fetch(`${API}/salvar-foto`, { method: 'POST', body: fd });
-                    location.reload();
+                    const res = await fetch(`${API}/salvar-foto`, { method: 'POST', body: fd });
+                    if (res.ok) location.reload();
+                    else alert("Erro ao enviar!");
                 } catch (e) { alert("Erro ao enviar!"); location.reload(); }
             }, 'image/jpeg', 0.95);
         }

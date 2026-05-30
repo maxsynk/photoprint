@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>WEBCAM - PHOTO PRINT v9.9.1</title>
+<title>WEBCAM - PHOTO PRINT v9.9.2</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 :root{ --neon:#39ff14; --dark:#050505; --danger:#ff3131; }
@@ -147,6 +147,7 @@ function capturePhoto(){
     },4000);
 }
 
+// ==================== ENVIA 1 ARQUIVO COM METADADO ====================
 async function composeAndUpload(opcaoCopias){
     if(!molduraBase64){debug('❌ Moldura não carregada!');return;}
     const copiasFisicas = getCopiasFisicas(opcaoCopias);
@@ -165,28 +166,26 @@ async function composeAndUpload(opcaoCopias){
         cctx.drawImage(molduraImg,0,0,canvas.width,canvas.height);
         const blob = await new Promise(r=>canvas.toBlob(r,'image/jpeg',0.95));
         
-        // 🔥 ENVIA MÚLTIPLOS ARQUIVOS (1 por cópia)
-        await uploadMultiplos(blob, copiasFisicas);
-        debug(`✅ ${copiasFisicas} arquivo(s) enviado(s)`);
+        // Envia 1 arquivo com o número de cópias no metadado
+        await uploadBlob(blob, copiasFisicas);
+        debug(`✅ 1 foto enviada (${copiasFisicas} cópias)`);
     } catch(e) { debug('❌ Erro: '+e.message); }
 }
 
-async function uploadMultiplos(blob, total){
+async function uploadBlob(blob, copiasFisicas){
     if(!eventoId){debug('❌ Sem eventoId');return;}
-    for (let i = 0; i < total; i++) {
-        const ts = Date.now() + i;
-        const nome = `foto_${ts}.jpg`;
-        const fd = new FormData();
-        fd.append('foto', blob, nome);
-        fd.append('eventoId', eventoId);
-        fd.append('timestamp', String(ts));
-        debug(`⬆️ ${i+1}/${total}: ${nome}`);
-        try {
-            const res = await fetch(`${API_BASE}/salvar-foto`, {method:'POST', body:fd});
-            if(res.ok) debug(`✅ ${i+1} OK`);
-            else debug(`❌ ${i+1}: ${res.status}`);
-        } catch(e) { debug(`❌ ${i+1}: ${e.message}`); }
-    }
+    const nome = `foto_${copiasFisicas}c.jpg`;
+    const fd = new FormData();
+    fd.append('foto', blob, nome);
+    fd.append('eventoId', eventoId);
+    fd.append('timestamp', String(Date.now()));
+    fd.append('copias', String(copiasFisicas));
+    debug(`⬆️ Upload: ${nome} (${copiasFisicas} cópias)`);
+    try {
+        const res = await fetch(`${API_BASE}/salvar-foto`, {method:'POST', body:fd});
+        if(res.ok) debug('✅ OK');
+        else debug('❌ ' + res.status);
+    } catch(e) { debug('❌ ' + e.message); }
 }
 
 async function waitForPrint(){
@@ -245,7 +244,7 @@ function removeBackground(){localStorage.removeItem('photoprint_bg');document.ge
 
 localStorage.setItem('booth_state','start');updateScreenState('start');initCamera();
 setInterval(pollServerState,800);setInterval(syncEvento,5000);syncEvento();
-debug('🚀 WEBCAM v9.9.1 pronta');
+debug('🚀 WEBCAM v9.9.2 pronta');
 </script>
 </body>
 </html>

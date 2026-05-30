@@ -3,16 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHOTO PRINT - MOBILE v2.5</title>
+    <title>PHOTO PRINT - MOBILE v2.6</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --neon: #39ff14; --error: #ff0000; --blue-cyan: #00e5ff; }
         body {
             font-family: 'Segoe UI', sans-serif; text-align: center;
-            background: radial-gradient(circle at 50% 0%, #1a3a12 0%, #000 100%);
+            background: radial-gradient(circle at top, rgba(57,255,20,0.10), transparent 35%), radial-gradient(circle at bottom right, rgba(57,255,20,0.08), transparent 30%), linear-gradient(135deg, #020202 0%, #050505 40%, #071107 100%);
             color: white; margin: 0; overflow: hidden; height: 100vh;
             display: flex; flex-direction: column;
         }
+        #dynamic-bg { position:fixed; inset:0; z-index:0; background-size:cover; background-position:center; background-repeat:no-repeat; opacity:0; transition:opacity 0.6s ease; }
+        #dynamic-bg.active { opacity:0.45; }
+        #dynamic-bg::after { content:''; position:absolute; inset:0; background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.75)); }
+        body::before { content:''; position:fixed; inset:0; background-image: linear-gradient(rgba(57,255,20,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(57,255,20,0.03) 1px, transparent 1px); background-size:40px 40px; z-index:0; animation:gridMove 12s linear infinite; }
+        body.bg-active::before { display:none; }
+        @keyframes gridMove{ from{ transform:translateY(0px); } to{ transform:translateY(40px); } }
         #offline-screen { position: fixed; inset: 0; background: #000; z-index: 10000; display: none; align-items: center; justify-content: center; }
         #rotate-warning { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 5000; color: var(--neon); }
         #loader { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
@@ -31,7 +37,11 @@
         .subtitle { color: white; font-size: 14px; letter-spacing: 3px; margin-top: 5px; opacity: 0.7; font-weight: bold; text-transform: uppercase; }
         #nome-evento-capa { font-size: 22px; font-weight: bold; color: var(--neon); text-transform: uppercase; margin: 20px 0; min-height: 25px; }
         #modo-guestbook { color: var(--blue-cyan); font-size: 12px; font-weight: bold; display: none; }
-        .btn-eye { width: 140px; height: 140px; border-radius: 50%; border: 4px solid var(--neon); cursor: pointer; display: flex; align-items: center; justify-content: center; animation: pulse-neon 2s infinite; background: rgba(0,0,0,0.5); }
+        #bg-menu { position:fixed; top:80px; left:20px; z-index:100; display:none; flex-direction:column; gap:12px; }
+        #bg-menu.active { display:flex; }
+        .bg-btn { padding:12px 20px; border-radius:14px; border:1px solid rgba(57,255,20,0.45); background:rgba(0,0,0,0.85); color:white; font-size:14px; font-weight:bold; letter-spacing:1px; cursor:pointer; backdrop-filter:blur(10px); text-align:center; }
+        #bg-input { display:none; }
+        .btn-eye { width: 140px; height: 140px; border-radius: 50%; border: 4px solid var(--neon); cursor: pointer; display: flex; align-items: center; justify-content: center; animation: pulse-neon 2s infinite; background: rgba(0,0,0,0.5); z-index: 10; }
         .eye-inner { width: 45px; height: 45px; border-radius: 50%; border: 3px solid var(--neon); }
         #cam-container { position: fixed; inset: 0; background: #000; display: none; z-index: 1000; }
         video { width: 100%; height: 100%; object-fit: cover; }
@@ -56,6 +66,8 @@
 </head>
 <body>
 
+    <div id="dynamic-bg"></div>
+
     <div id="rotate-warning">
         <svg class="icon-rotate" viewBox="0 0 24 24" fill="var(--neon)"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h2l-3.5 3.5-3.5-3.5h2c-.34-3.19-2.32-5.85-5.08-7.1l1.11-1.88M12.06 19c-1.38 0-2.61-.56-3.5-1.47l-1.41 1.41C8.36 20.15 10.09 21 12.06 21c3.97 0 7.32-2.8 8.16-6.5h-2.07c-.77 2.58-3.17 4.5-5.99 4.5M2.06 11h2c.34 3.19 2.32 5.85 5.08 7.1l-1.11 1.88C4.76 18.43 2.42 15.26 2.06 11.5M12.06 5c1.38 0 2.61.56 3.5 1.47l1.41-1.41C15.76 3.85 14.03 3 12.06 3 8.09 3 4.74 5.8 3.9 9.5h2.07C6.74 6.92 9.14 5 12.06 5Z"/></svg>
         <h2>GIRE O APARELHO</h2><p>Necessário posição Horizontal (Deitado)</p>
@@ -63,6 +75,12 @@
     <div id="offline-screen"><div class="mantencao-txt">SISTEMA EM MANUTENÇÃO</div></div>
     <div id="flash"></div>
     <div id="loader"><div class="spin"></div><p id="loader-text" style="color:var(--neon);margin-top:20px;font-weight:bold;">PROCESSANDO...</p></div>
+
+    <div id="bg-menu">
+        <label class="bg-btn" for="bg-input">🖼 ALTERAR FUNDO</label>
+        <div class="bg-btn" onclick="removeBackground()">✖ SEM FUNDO</div>
+    </div>
+    <input type="file" id="bg-input" accept="image/*"/>
 
     <div id="cam-container">
         <video id="v" autoplay playsinline muted></video>
@@ -76,7 +94,7 @@
         </div>
     </div>
 
-    <div class="header">
+    <div class="header" id="secret-logo">
         <h1 class="brand-title">PHOTO PRINT</h1>
         <div class="subtitle">colecionando momentos</div>
         <div id="nome-evento-capa">...</div>
@@ -110,6 +128,50 @@
             return 1;
         }
 
+        // ==================== FUNDO E MENU SECRETO ====================
+        const dynamicBg = document.getElementById('dynamic-bg');
+        const bgMenu = document.getElementById('bg-menu');
+        const secretLogo = document.getElementById('secret-logo');
+        let clickCount = 0, clickTimer = null;
+
+        secretLogo.addEventListener('click', () => {
+            clickCount++; clearTimeout(clickTimer);
+            clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
+            if (clickCount >= 7) { bgMenu.classList.toggle('active'); clickCount = 0; }
+        });
+
+        document.getElementById('bg-input').addEventListener('change', (e) => {
+            const file = e.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                dynamicBg.style.backgroundImage = `url('${ev.target.result}')`;
+                dynamicBg.classList.add('active');
+                document.body.classList.add('bg-active');
+                localStorage.setItem('photoprint_bg_mobile', ev.target.result);
+                bgMenu.classList.remove('active');
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function removeBackground() {
+            localStorage.removeItem('photoprint_bg_mobile');
+            dynamicBg.style.backgroundImage = "";
+            dynamicBg.classList.remove('active');
+            document.body.classList.remove('bg-active');
+            bgMenu.classList.remove('active');
+        }
+
+        function loadSavedBackground() {
+            const savedBg = localStorage.getItem('photoprint_bg_mobile');
+            if (savedBg) {
+                dynamicBg.style.backgroundImage = `url('${savedBg}')`;
+                dynamicBg.classList.add('active');
+                document.body.classList.add('bg-active');
+            }
+        }
+        loadSavedBackground();
+
+        // ==================== SINCRONIZAÇÃO ====================
         async function sync() {
             try {
                 const r = await fetch(`${API}/get-all-states?t=${Date.now()}`);
@@ -126,23 +188,11 @@
                 document.getElementById('nome-evento-capa').innerText = ev;
                 document.getElementById('modo-guestbook').style.display = guestbookAtivo ? 'block' : 'none';
                 configAtual = FORMATOS[formatStr.toUpperCase()] || FORMATOS["POLAROID"];
-                atualizarBotoesGuestbook();
             } catch (e) { console.error(e); }
         }
 
-        function atualizarBotoesGuestbook() {
-            const botoes = document.querySelectorAll('.guestbook-only-btn');
-            botoes.forEach(btn => { btn.style.display = guestbookAtivo ? 'flex' : 'none'; });
-            if (!guestbookAtivo && (quantidadeCopias === 3 || quantidadeCopias === 4)) {
-                quantidadeCopias = 1;
-            }
-        }
-
         function checkOrientation() {
-            if (!configAtual || !configAtual.exigeH) {
-                document.getElementById('rotate-warning').style.display = "none";
-                return;
-            }
+            if (!configAtual || !configAtual.exigeH) { document.getElementById('rotate-warning').style.display = "none"; return; }
             document.getElementById('rotate-warning').style.display = (window.innerWidth <= window.innerHeight) ? "flex" : "none";
         }
         window.addEventListener("resize", checkOrientation);
@@ -208,14 +258,10 @@
             voltarHome();
             document.getElementById('loader').style.display = "flex";
             const cv = document.getElementById('c-strip'), ctx = cv.getContext('2d');
-            
             const molduraImg = new Image();
             molduraImg.onload = () => {
-                cv.width = configAtual.w;
-                cv.height = configAtual.h;
-                ctx.fillStyle = "white";
-                ctx.fillRect(0, 0, cv.width, cv.height);
-
+                cv.width = configAtual.w; cv.height = configAtual.h;
+                ctx.fillStyle = "white"; ctx.fillRect(0, 0, cv.width, cv.height);
                 if (configAtual.key === "TIRINHA") {
                     const slots = [{y:0.030, h:0.254}, {y:0.296, h:0.254}, {y:0.559, h:0.254}];
                     let count = 0;
@@ -230,10 +276,7 @@
                             ctx.drawImage(img, dx+(dw-img.width*r)/2, dy+(dh-img.height*r)/2, img.width*r, img.height*r);
                             ctx.restore();
                             count++;
-                            if (count === 3) {
-                                ctx.drawImage(molduraImg, 0, 0, cv.width, cv.height);
-                                exibir(cv.toDataURL('image/jpeg', 0.95));
-                            }
+                            if (count === 3) { ctx.drawImage(molduraImg, 0, 0, cv.width, cv.height); exibir(cv.toDataURL('image/jpeg', 0.95)); }
                         };
                         img.src = src;
                     });
@@ -255,14 +298,15 @@
         function alterarCopias(qtd) {
             quantidadeCopias = qtd;
             document.querySelectorAll('.print-capsule-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('btn-opt-' + qtd).classList.add('active');
+            const btn = document.getElementById('btn-opt-' + qtd);
+            if (btn) btn.classList.add('active');
         }
 
         function exibir(url) {
             quantidadeCopias = 1;
             const botoesGuestbook = guestbookAtivo ? `
-                <button id="btn-opt-3" class="print-capsule-btn color-blue guestbook-only-btn" onclick="alterarCopias(3)"><i class="fa-solid fa-book"></i> 1 Cópia + Guestbook</button>
-                <button id="btn-opt-4" class="print-capsule-btn color-blue guestbook-only-btn" onclick="alterarCopias(4)"><i class="fa-solid fa-book"></i> 2 Cópias + Guestbook</button>
+                <button id="btn-opt-3" class="print-capsule-btn color-blue guestbook-only-btn" style="display:flex;" onclick="alterarCopias(3)"><i class="fa-solid fa-book"></i> 1 Cópia + Guestbook</button>
+                <button id="btn-opt-4" class="print-capsule-btn color-blue guestbook-only-btn" style="display:flex;" onclick="alterarCopias(4)"><i class="fa-solid fa-book"></i> 2 Cópias + Guestbook</button>
             ` : '';
 
             document.getElementById('loader').innerHTML = `
@@ -288,13 +332,11 @@
                 const temGuestbook = (quantidadeCopias === 3 || quantidadeCopias === 4);
                 const sufixo = temGuestbook ? '_guestbook' : '';
                 const nome = `foto_${ts}_${copiasFisicas}c${sufixo}.jpg`;
-                
                 const fd = new FormData();
                 fd.append('foto', b, nome);
                 fd.append('eventoId', eventoId);
                 fd.append('timestamp', String(ts) + '_' + copiasFisicas + 'c' + sufixo);
                 fd.append('copias', String(copiasFisicas));
-                
                 try {
                     const res = await fetch(`${API}/salvar-foto`, { method: 'POST', body: fd });
                     if (res.ok) location.reload();

@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>WEBCAM - PHOTO PRINT v9.9.2</title>
+<title>WEBCAM - PHOTO PRINT v9.9.4</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 :root{ --neon:#39ff14; --dark:#050505; --danger:#ff3131; }
@@ -60,7 +60,7 @@ body.bg-active .corner-glow{ display:none; }
 <div class="bg-brand"><div class="bg-brand-title">PHOTO PRINT</div><div class="bg-brand-sub">Colecionando momentos</div></div>
 <div class="top-logo"><div class="logo-title" id="secret-logo">PHOTO PRINT</div><div class="logo-sub">Colecionando momentos</div></div>
 <div id="active-event-name"></div>
-<div id="debug-info">INICIANDO...</div>
+<div id="debug-info">SISTEMA PRONTO</div>
 <div id="bg-menu"><label class="bg-btn" for="bg-input">🖼 ALTERAR FUNDO</label><div class="bg-btn" onclick="removeBackground()">✖ SEM FUNDO</div></div>
 <input type="file" id="bg-input" accept="image/*"/>
 <div id="screen-start" class="screen"><div class="btn-start"><div class="start-content"><div class="start-icon">📸</div><div class="start-title">PHOTO PRINT</div><div class="start-subtitle">Aguardando comando...</div></div></div></div>
@@ -101,22 +101,21 @@ async function initCamera(){
 async function syncEvento(){
     try{
         const res=await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`);
-        if(res.ok){
-            const data=await res.json();
-            if(data.config&&data.config.evento&&data.config.evento!=='Geral'){
-                const novoEventoId = data.config.eventoId;
-                const novoFormato = (data.config.formato||'10X15V').toUpperCase().trim();
-                if(eventoAtual !== data.config.evento || eventoId !== novoEventoId || formatoAtual !== novoFormato || !molduraBase64){
-                    eventoAtual = data.config.evento;
-                    eventoId = novoEventoId;
-                    formatoAtual = novoFormato;
-                    if(data.moldura){molduraBase64 = data.moldura;debug('✅ Moldura: '+formatoAtual);}
-                    else{molduraBase64 = null;debug('⚠️ Sem moldura para: '+formatoAtual);}
-                    updateEventoUI();
-                }
+        if(!res||!res.ok)return;
+        const data=await res.json();
+        if(data.config&&data.config.evento&&data.config.evento!=='Geral'){
+            const novoEventoId=data.config.eventoId;
+            const novoFormato=(data.config.formato||'10X15V').toUpperCase().trim();
+            if(eventoAtual!==data.config.evento||eventoId!==novoEventoId||formatoAtual!==novoFormato||!molduraBase64){
+                eventoAtual=data.config.evento;
+                eventoId=novoEventoId;
+                formatoAtual=novoFormato;
+                if(data.moldura){molduraBase64=data.moldura;debug('✅ Moldura: '+formatoAtual);}
+                else{molduraBase64=null;debug('⚠️ Sem moldura');}
+                updateEventoUI();
             }
         }
-    }catch(e){debug('⚠️ Sync: '+e.message);}
+    }catch(e){}
 }
 
 function updateEventoUI(){
@@ -147,7 +146,7 @@ function capturePhoto(){
     },4000);
 }
 
-// ==================== ENVIA 1 ARQUIVO COM METADADO ====================
+// ==================== ENVIA 1 ARQUIVO COM METADADO E GUESTBOOK ====================
 async function composeAndUpload(opcaoCopias){
     if(!molduraBase64){debug('❌ Moldura não carregada!');return;}
     const copiasFisicas = getCopiasFisicas(opcaoCopias);
@@ -166,31 +165,33 @@ async function composeAndUpload(opcaoCopias){
         cctx.drawImage(molduraImg,0,0,canvas.width,canvas.height);
         const blob = await new Promise(r=>canvas.toBlob(r,'image/jpeg',0.95));
         
-        // Envia 1 arquivo com o número de cópias no metadado
-        await uploadBlob(blob, copiasFisicas);
-        debug(`✅ 1 foto enviada (${copiasFisicas} cópias)`);
+        // Envia 1 arquivo com metadado e guestbook se for opção 3 ou 4
+        await uploadBlob(blob, copiasFisicas, opcaoCopias);
+        debug(`✅ Foto enviada (${copiasFisicas} cópias)`);
     } catch(e) { debug('❌ Erro: '+e.message); }
 }
 
-async function uploadBlob(blob, copiasFisicas){
+async function uploadBlob(blob, copiasFisicas, opcao){
     if(!eventoId){debug('❌ Sem eventoId');return;}
-    // Inclui o número de cópias no timestamp para a Galeria detectar
     const ts = Date.now();
-    const nome = `foto_${ts}_${copiasFisicas}c.jpg`;
+    // Opções 3 e 4 são Guestbook
+    const temGuestbook = (opcao === 3 || opcao === 4);
+    const sufixo = temGuestbook ? '_guestbook' : '';
+    const nome = `foto_${ts}_${copiasFisicas}c${sufixo}.jpg`;
     const fd = new FormData();
     fd.append('foto', blob, nome);
     fd.append('eventoId', eventoId);
-    fd.append('timestamp', String(ts) + '_' + copiasFisicas + 'c');
+    fd.append('timestamp', String(ts) + '_' + copiasFisicas + 'c' + sufixo);
     fd.append('copias', String(copiasFisicas));
-    debug(`⬆️ Upload: ${nome} (${copiasFisicas} cópias)`);
+    debug(`⬆️ Upload: ${nome} (${copiasFisicas} cópias${temGuestbook ? ', Guestbook' : ''})`);
     try {
         const res = await fetch(`${API_BASE}/salvar-foto`, {method:'POST', body:fd});
         if(res.ok) debug('✅ OK');
-        else debug('❌ ' + res.status);
-    } catch(e) { debug('❌ ' + e.message); }
+    } catch(e) {}
 }
+
 async function waitForPrint(){
-    for(let i=0;i<120;i++){try{const res=await fetch(`${API_BASE}/check-print?t=${Date.now()}`);if(res.ok){const d=await res.json();if(d.printTriggered)return d.copias||1;}}catch(e){}await new Promise(r=>setTimeout(r,500));}
+    for(let i=0;i<120;i++){try{const res=await fetch(`${API_BASE}/check-print?t=${Date.now()}`);if(res&&res.ok){const d=await res.json();if(d.printTriggered)return d.copias||1;}}catch(e){}await new Promise(r=>setTimeout(r,500));}
     return null;
 }
 
@@ -223,16 +224,23 @@ function updateScreenState(state){
     if(state==='start'&&lastState==='options'){finishCycle();lastState=state;return;}
     if(state==='capturing'&&lastState==='options')return;
     document.querySelectorAll('.screen').forEach(e=>e.style.display='none');
-    if(state==='capturing'){document.getElementById('screen-camera').style.display='flex';capturePhoto();}
+    if(state==='capturing'){
+        document.getElementById('screen-camera').style.display='flex';
+        capturePhoto();
+    }
     else if(state==='options'){document.getElementById('screen-camera').style.display='flex';videoFeed.style.display='none';canvasCapture.style.display='block';funText.style.display='none';optionsOverlay.style.display='block';}
     else{document.getElementById('screen-start').style.display='flex';}
     lastState=state;
 }
 
 async function pollServerState(){
-    try{const res=await fetch(`${API_BASE}/get-state?t=${Date.now()}`);if(!res.ok)return;const d=await res.json();
-        if(initialLoad){initialLoad=false;if(d.state!=='start'){await fetch(`${API_BASE}/set-state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:'start'})});return;}}
-        if(d.state&&d.state!==lastState)updateScreenState(d.state);}catch(e){}
+    try{
+        const res=await fetch(`${API_BASE}/get-state?t=${Date.now()}`);
+        if(!res||!res.ok)return;
+        const d=await res.json();
+        if(initialLoad){initialLoad=false;if(d.state!=='start'){await fetch(`${API_BASE}/set-state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:'start'})}).catch(()=>{});return;}}
+        if(d.state&&d.state!==lastState)updateScreenState(d.state);
+    }catch(e){}
 }
 
 window.addEventListener('storage',e=>{if(e.key==='booth_state')updateScreenState(e.newValue);});
@@ -245,7 +253,7 @@ function removeBackground(){localStorage.removeItem('photoprint_bg');document.ge
 
 localStorage.setItem('booth_state','start');updateScreenState('start');initCamera();
 setInterval(pollServerState,800);setInterval(syncEvento,5000);syncEvento();
-debug('🚀 WEBCAM v9.9.2 pronta');
+debug('🚀 WEBCAM v9.9.4 pronta');
 </script>
 </body>
 </html>

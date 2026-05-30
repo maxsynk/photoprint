@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT | TV SLIDESHOW PRO</title>
+    <title>PHOTO PRINT | TV SLIDESHOW PRO v1.1</title>
     <style>
         :root { 
             --neon: #39ff14; 
@@ -199,13 +199,12 @@
         if (fotos.length === 0) return;
         const display = document.getElementById('display');
         const fotoObjeto = fotos[currentIndex];
-        const keyLimpa = fotoObjeto.key.startsWith('/') ? fotoObjeto.key.substring(1) : fotoObjeto.key;
-        const urlFinal = `${API_URL}/photo/${encodeURIComponent(keyLimpa)}?t=${Date.now()}`;
+        // CORRIGIDO: usa ?key= em vez de /photo/
+        const urlFinal = `${API_URL}/photo?key=${encodeURIComponent(fotoObjeto.key)}&t=${Date.now()}`;
         
         const slideContainer = document.createElement('div');
         slideContainer.className = 'slide-container';
         const imgMain = new Image();
-        imgMain.crossOrigin = "anonymous";
         imgMain.className = 'slide-main';
         const imgBg = new Image();
         imgBg.className = 'slide-bg';
@@ -225,7 +224,7 @@
 
         imgMain.onerror = () => {
             currentIndex = (currentIndex + 1) % fotos.length;
-            renderNextSlide(); 
+            setTimeout(() => renderNextSlide(), 1000); 
         };
         imgMain.src = urlFinal;
     }

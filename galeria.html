@@ -94,15 +94,17 @@
                 debug('📷 ' + novas.length + ' nova(s) foto(s)');
                 for (let f of novas) {
                     const url = API + '/photo?key=' + encodeURIComponent(f.key);
-                    const kl = f.key.toLowerCase();
-                    
-                    // Detecta número de cópias pelo nome do arquivo
-                    let copiasDoCard = 1;
-                    if (kl.includes('_3c')) copiasDoCard = 3;
-                    else if (kl.includes('_2c')) copiasDoCard = 2;
-                    
-                    // Guestbook APENAS pelo nome do arquivo (ignora config.livro)
-                    const livro = kl.includes("_livro_") || kl.includes("guestbook");
+                    // No for (let f of novas), substituir:
+const kl = f.key.toLowerCase();
+let copiasDoCard = 1;
+// Detecta pelo key: eventos/1/fotos/1234567890.jpg (não tem _3c)
+// Mas temos o campo uploaded que não ajuda
+// Solução: usar o timestamp do nome
+const match = kl.match(/(\d+)_(\d+)c(?:_guestbook)?/);
+if (match) {
+    copiasDoCard = parseInt(match[2]) || 1;
+}
+const livro = kl.includes('_guestbook');
                     
                     todasFotos.push({ id: todasFotos.length + 1, url: url, key: f.key, copias: copiasDoCard, livro: livro });
                     chavesLocais.add(f.key);

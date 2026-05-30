@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT - GALLERY v7.3</title>
+    <title>PHOTO PRINT - GALLERY v7.6</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -27,10 +27,9 @@
         .card { background: var(--surface); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; position: relative; }
         .card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: var(--neon-shadow); }
         .card img { width: 100%; display: block; height: auto; }
-        .card .badge { position: absolute; top: 8px; left: 8px; background: var(--accent); color: #000; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 2; }
-        .card .print-badge { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.8); border: 1px solid var(--accent); color: var(--accent); padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 2; }
-        .card .guestbook-badge { position: absolute; bottom: 8px; left: 8px; right: 8px; background: rgba(0,0,0,0.85); border: 1px solid var(--info-blue); color: var(--info-blue); padding: 5px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 2; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .card .copias-badge { position: absolute; bottom: 8px; right: 8px; background: rgba(0,150,255,0.85); border: 1px solid #0096ff; color: #ffffff; padding: 5px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 2; display: flex; align-items: center; gap: 4px; }
+        .card .badge-id { position: absolute; top: 8px; left: 8px; background: var(--accent); color: #000; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 2; }
+        .card .badge-copias { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.8); border: 1px solid var(--accent); color: var(--accent); padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 2; }
+        .card .badge-guestbook { position: absolute; bottom: 8px; right: 8px; background: rgba(0,150,255,0.85); border: 1px solid #0096ff; color: #ffffff; padding: 5px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 2; display: flex; align-items: center; gap: 4px; }
         .sidebar { position: fixed; right: -350px; top: 0; width: 300px; height: 100%; background: rgba(10, 10, 10, 0.95); z-index: 5000; transition: 0.5s; padding: 120px 25px; border-left: var(--glass-border); }
         .sidebar.active { right: 0; }
         .sidebar-btn { width: 100%; padding: 18px; margin-bottom: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 15px; font-weight: bold; }
@@ -69,8 +68,8 @@
 
     async function atualizar() {
         try {
-            const r1 = await fetch(API + '/get-all-states?t=' + Date.now());
-            if (!r1.ok) throw new Error('API: ' + r1.status);
+            const r1 = await fetch(API + '/get-all-states?t=' + Date.now()).catch(() => null);
+            if (!r1 || !r1.ok) return;
             const config = await r1.json();
             const evt = (config.config && config.config.evento) ? config.config.evento : "Geral";
             const evtId = (config.config && config.config.eventoId) ? config.config.eventoId : "";
@@ -82,37 +81,29 @@
             }
             document.getElementById('nome-evento').innerText = eventoAtual;
             document.getElementById('tipo-formato').innerText = traduzirFormato(formatoAtual);
-            if (!eventoIdAtual) { debug('Sem evento'); return; }
+            if (!eventoIdAtual) return;
 
-            const r2 = await fetch(API + '/list-photos?evento=' + encodeURIComponent(eventoAtual) + '&t=' + Date.now());
+            const r2 = await fetch(API + '/list-photos?evento=' + encodeURIComponent(eventoAtual) + '&t=' + Date.now()).catch(() => null);
+            if (!r2 || !r2.ok) return;
             const dados = await r2.json();
             const fotosValidas = Array.isArray(dados) ? dados.filter(f => !f.key.toLowerCase().includes('moldura')) : [];
             const novas = fotosValidas.filter(f => !chavesLocais.has(f.key));
             if (novas.length > 0) {
-    for (let f of novas) {
-        const url = API + '/photo?key=' + encodeURIComponent(f.key);
-        const kl = f.key.toLowerCase();
-        
-        // Dentro do for (let f of novas) - substituir:
-let copiasDoCard = 1;
-// Detecta pelo nome do arquivo: ..._2c ou ..._3c
-if (kl.includes('_3c')) copiasDoCard = 3;
-else if (kl.includes('_2c')) copiasDoCard = 2;
-        
-        const livro = kl.includes("_livro_") || kl.includes("guestbook");
-        todasFotos.push({ id: todasFotos.length + 1, url: url, key: f.key, copias: copiasDoCard, livro: livro });
-        chavesLocais.add(f.key);
-        
-        // Auto-impressão com N cópias
-        if (!primeiraCarga) {
-            for (let i = 0; i < copiasDoCard; i++) addToPrintQueue(url);
-        }
-    }
-    render();
-}
+                for (let f of novas) {
+                    const url = API + '/photo?key=' + encodeURIComponent(f.key);
+                    const kl = f.key.toLowerCase();
+                    let copiasDoCard = 1;
+                    if (kl.includes('_3c')) copiasDoCard = 3;
+                    else if (kl.includes('_2c')) copiasDoCard = 2;
+                    const livro = kl.includes("_livro_") || kl.includes("guestbook");
+                    todasFotos.push({ id: todasFotos.length + 1, url: url, key: f.key, copias: copiasDoCard, livro: livro });
+                    chavesLocais.add(f.key);
+                    if (!primeiraCarga) { for (let i = 0; i < copiasDoCard; i++) addToPrintQueue(url); }
+                }
+                render();
+            }
             primeiraCarga = false;
-            debug(todasFotos.length + ' fotos');
-        } catch(e) { debug('Erro: ' + e.message); }
+        } catch(e) {}
     }
 
     function render() {
@@ -123,10 +114,9 @@ else if (kl.includes('_2c')) copiasDoCard = 2;
         }
         grid.innerHTML = todasFotos.slice().reverse().map(f => `
             <div class="card" onclick="abrirZoom('${f.url}', '${f.key}')">
-                <span class="badge">#${f.id}</span>
-                ${f.copias > 1 ? `<span class="print-badge"><i class="fa-solid fa-print"></i> ${f.copias}x</span>` : ''}
-                ${f.livro ? `<span class="guestbook-badge"><i class="fa-solid fa-book-open"></i> Livro de Assinaturas</span>` : ''}
-                <span class="copias-badge"><i class="fa-solid fa-print"></i> ${f.copias}</span>
+                <span class="badge-id">#${f.id}</span>
+                <span class="badge-copias">${f.copias}x</span>
+                ${f.livro ? `<span class="badge-guestbook"><i class="fa-solid fa-book-open"></i> GUESTBOOK</span>` : ''}
                 <img src="${f.url}" loading="lazy">
             </div>
         `).join('');
@@ -136,7 +126,6 @@ else if (kl.includes('_2c')) copiasDoCard = 2;
     function processQueue() {
         if (printQueue.length === 0) { isPrinting = false; return; }
         isPrinting = true;
-        debug(`🖨️ Imprimindo... (${printQueue.length} na fila)`);
         const imgP = document.getElementById('img-print');
         imgP.onload = () => { window.focus(); setTimeout(() => { window.print(); setTimeout(processQueue, 3000); }, 500); };
         imgP.src = printQueue.shift();
@@ -147,17 +136,17 @@ else if (kl.includes('_2c')) copiasDoCard = 2;
     function reimprimirAtual() { addToPrintQueue(document.getElementById('img-zoom').src); }
 
     async function excluirFoto(key) {
-        if(confirm("Excluir esta foto?")) { await fetch(API + '/photo?key=' + encodeURIComponent(key), { method: 'DELETE' }); fecharZoom(); location.reload(); }
+        if(confirm("Excluir esta foto?")) { await fetch(API + '/photo?key=' + encodeURIComponent(key), { method: 'DELETE' }).catch(() => {}); fecharZoom(); location.reload(); }
     }
 
     async function baixarZip() {
         const zip = new JSZip();
-        for(let f of todasFotos) { const blob = await fetch(f.url).then(r => r.blob()); zip.file('foto_' + f.id + '.jpg', blob); }
+        for(let f of todasFotos) { const blob = await fetch(f.url).then(r => r.blob()).catch(() => null); if(blob) zip.file('foto_' + f.id + '.jpg', blob); }
         const content = await zip.generateAsync({type:"blob"}); saveAs(content, "galeria.zip");
     }
 
     async function limparTudo() {
-        if(confirm("Apagar todas as fotos?") && prompt("Senha:") === "1234") { await fetch(API + '/photo?key=all', { method: 'DELETE' }); location.reload(); }
+        if(confirm("Apagar todas as fotos?") && prompt("Senha:") === "1234") { await fetch(API + '/photo?key=all', { method: 'DELETE' }).catch(() => {}); location.reload(); }
     }
 
     function executarBusca() {

@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>WEBCAM - PHOTO PRINT v9.8</title>
+<title>WEBCAM - PHOTO PRINT v9.9</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 :root{ --neon:#39ff14; --dark:#050505; --danger:#ff3131; }
@@ -85,12 +85,20 @@ const FORMATOS = {
 
 function debug(msg){console.log('[WEBCAM]',msg);const el=document.getElementById('debug-info');if(el)el.innerText=msg;}
 
+// ==================== MAPEAMENTO DE CÓPIAS ====================
+function getCopiasFisicas(opcao) {
+    if (opcao === 1) return 1;
+    if (opcao === 2) return 2;
+    if (opcao === 3) return 2;
+    if (opcao === 4) return 3;
+    return 1;
+}
+
 async function initCamera(){
     try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:1920,height:1080}});videoFeed.srcObject=stream;debug('✅ Câmera OK');}
     catch(err){debug('❌ Câmera: '+err.message);}
 }
 
-// ==================== syncEvento CORRIGIDO ====================
 async function syncEvento(){
     try{
         const res=await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`);
@@ -99,20 +107,12 @@ async function syncEvento(){
             if(data.config&&data.config.evento&&data.config.evento!=='Geral'){
                 const novoEventoId = data.config.eventoId;
                 const novoFormato = (data.config.formato||'10X15V').toUpperCase().trim();
-                
-                // Atualiza se mudou evento, ID, formato OU se moldura ainda não foi carregada
                 if(eventoAtual !== data.config.evento || eventoId !== novoEventoId || formatoAtual !== novoFormato || !molduraBase64){
                     eventoAtual = data.config.evento;
                     eventoId = novoEventoId;
                     formatoAtual = novoFormato;
-                    
-                    if(data.moldura){
-                        molduraBase64 = data.moldura;
-                        debug('✅ Moldura carregada: ' + formatoAtual);
-                    } else {
-                        molduraBase64 = null;
-                        debug('⚠️ Moldura não encontrada para: ' + formatoAtual);
-                    }
+                    if(data.moldura){molduraBase64 = data.moldura;debug('✅ Moldura: '+formatoAtual);}
+                    else{molduraBase64 = null;debug('⚠️ Sem moldura para: '+formatoAtual);}
                     updateEventoUI();
                 }
             }
@@ -148,9 +148,10 @@ function capturePhoto(){
     },4000);
 }
 
-async function composeAndUpload(copias){
+async function composeAndUpload(opcaoCopias){
     if(!molduraBase64){debug('❌ Moldura não carregada!');return;}
-    debug('🖨️ Compondo foto + moldura (' + formatoAtual + ')...');
+    const copiasFisicas = getCopiasFisicas(opcaoCopias);
+    debug(`🖨️ ${copiasFisicas} cópia(s) - opção ${opcaoCopias}`);
     try {
         const fotoImg = await new Promise(r => {const img=new Image();img.onload=()=>r(img);img.src=canvasCapture.toDataURL('image/jpeg',0.92);});
         const molduraImg = await new Promise((resolve, reject) => {
@@ -161,45 +162,44 @@ async function composeAndUpload(copias){
         });
         const fmt = FORMATOS[formatoAtual] || FORMATOS['POLAROID'];
         const canvas = document.createElement('canvas');
-        canvas.width = fmt.w;
-        canvas.height = fmt.h;
+        canvas.width = fmt.w; canvas.height = fmt.h;
         const cctx = canvas.getContext('2d');
-        cctx.fillStyle = '#FFFFFF';
-        cctx.fillRect(0, 0, canvas.width, canvas.height);
-        const scale = Math.max(canvas.width / fotoImg.width, canvas.height / fotoImg.height);
-        const w = fotoImg.width * scale;
-        const h = fotoImg.height * scale;
-        cctx.drawImage(fotoImg, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
-        cctx.drawImage(molduraImg, 0, 0, canvas.width, canvas.height);
+        cctx.fillStyle = '#FFFFFF'; cctx.fillRect(0,0,canvas.width,canvas.height);
+        const scale = Math.max(canvas.width/fotoImg.width, canvas.height/fotoImg.height);
+        cctx.drawImage(fotoImg, (canvas.width-fotoImg.width*scale)/2, (canvas.height-fotoImg.height*scale)/2, fotoImg.width*scale, fotoImg.height*scale);
+        cctx.drawImage(molduraImg,0,0,canvas.width,canvas.height);
         const blob = await new Promise(r=>canvas.toBlob(r,'image/jpeg',0.95));
-        await uploadBlob(blob, copias);
-        debug(`✅ Foto ${formatoAtual} (${fmt.w}x${fmt.h}) enviada!`);
+        
+        // Envia apenas 1 arquivo (a Galeria mostra 1)
+        await uploadBlob(blob, copiasFisicas);
+        debug(`✅ 1 foto enviada (${copiasFisicas} cópias para imprimir)`);
     } catch(e) { debug('❌ Erro: '+e.message); }
 }
 
 async function uploadBlob(blob, copiasFisicas){
     if(!eventoId){debug('❌ Sem eventoId');return;}
-    
-    // Envia N cópias (cada uma como arquivo separado)
-    for (let i = 0; i < copiasFisicas; i++) {
-        let nome = `foto_${Date.now()}_${i}.jpg`;
-        const fd = new FormData();
-        fd.append('foto', blob, nome);
-        fd.append('eventoId', eventoId);
-        fd.append('timestamp', String(Date.now() + i));
-        
-        debug(`⬆️ Cópia ${i+1}/${copiasFisicas}: ${nome}`);
-        try {
-            const res = await fetch(`${API_BASE}/salvar-foto`, {method:'POST', body:fd});
-            if(res.ok) debug(`✅ Cópia ${i+1} OK`);
-            else debug(`❌ Cópia ${i+1}: ${res.status}`);
-        } catch(e) { debug(`❌ Cópia ${i+1}: ${e.message}`); }
-    }
-    debug(`✅ Total: ${copiasFisicas} cópia(s) enviada(s)`);
+    const nome = 'foto.jpg';
+    const fd = new FormData();
+    fd.append('foto', blob, nome);
+    fd.append('eventoId', eventoId);
+    fd.append('timestamp', String(Date.now()));
+    fd.append('copias', String(copiasFisicas));
+    debug(`⬆️ Upload: ${nome} (${copiasFisicas} cópias)`);
+    try {
+        const res = await fetch(`${API_BASE}/salvar-foto`, {method:'POST', body:fd});
+        if(res.ok) debug('✅ OK');
+        else debug('❌ ' + res.status);
+    } catch(e) { debug('❌ ' + e.message); }
 }
 
 async function waitForPrint(){
-    for(let i=0;i<120;i++){try{const res=await fetch(`${API_BASE}/check-print?t=${Date.now()}`);if(res.ok){const d=await res.json();if(d.printTriggered)return d.copias||1;}}catch(e){}await new Promise(r=>setTimeout(r,500));}
+    for(let i=0;i<120;i++){
+        try{
+            const res=await fetch(`${API_BASE}/check-print?t=${Date.now()}`);
+            if(res.ok){const d=await res.json();if(d.printTriggered)return d.copias||1;}
+        }catch(e){}
+        await new Promise(r=>setTimeout(r,500));
+    }
     return null;
 }
 
@@ -254,7 +254,7 @@ function removeBackground(){localStorage.removeItem('photoprint_bg');document.ge
 
 localStorage.setItem('booth_state','start');updateScreenState('start');initCamera();
 setInterval(pollServerState,800);setInterval(syncEvento,5000);syncEvento();
-debug('🚀 WEBCAM v9.8 pronta');
+debug('🚀 WEBCAM v9.9 pronta');
 </script>
 </body>
 </html>

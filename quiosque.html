@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHOTO CLOUD | QUIOSQUE PRO V1.2</title>
+    <title>PHOTO CLOUD | QUIOSQUE PRO V1.3</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root { 
@@ -13,206 +13,61 @@
             --border: rgba(57, 255, 20, 0.2);
             --neon-shadow: 0 0 15px rgba(57, 255, 20, 0.5);
         }
-
         body { 
             font-family: 'Segoe UI', sans-serif; 
             background-color: var(--bg); 
             background: radial-gradient(circle at 50% -20%, #1a3a12 0%, #000 75%);
-            color: #fff; 
-            margin: 0; 
-            padding: 0; 
-            overflow: hidden; 
-            height: 100vh;
+            color: #fff; margin: 0; padding: 0; overflow: hidden; height: 100vh;
         }
-        
         header { 
-            background: rgba(0,0,0,0.5); 
-            padding: 40px 40px 20px; 
-            border-bottom: 1px solid var(--border); 
-            position: relative;
-            backdrop-filter: blur(10px);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            background: rgba(0,0,0,0.5); padding: 40px 40px 20px; 
+            border-bottom: 1px solid var(--border); position: relative;
+            backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center;
         }
-
         .event-label { 
             position: absolute; left: 40px; top: 45px; 
             border-left: 4px solid var(--neon); padding-left: 15px; 
             display: flex; flex-direction: column; align-items: flex-start;
         }
         .event-prefix { font-size: 9px; color: #555; text-transform: uppercase; letter-spacing: 2px; font-weight: bold; }
-        .event-name { 
-            margin: 0; font-size: 18px; text-transform: uppercase; 
-            color: var(--neon); letter-spacing: 2px;
-            text-shadow: 0 0 10px var(--neon);
-        }
-
+        .event-name { margin: 0; font-size: 18px; text-transform: uppercase; color: var(--neon); letter-spacing: 2px; text-shadow: 0 0 10px var(--neon); }
         .brand-center { text-align: center; margin-bottom: 15px; }
-        .brand-center h1 { 
-            margin: 0; font-size: 52px; color: var(--neon); 
-            font-weight: 900; letter-spacing: 10px; text-transform: uppercase;
-            animation: glitch 4s infinite, pulse-shadow 2s infinite alternate;
-        }
+        .brand-center h1 { margin: 0; font-size: 52px; color: var(--neon); font-weight: 900; letter-spacing: 10px; text-transform: uppercase; animation: glitch 4s infinite, pulse-shadow 2s infinite alternate; }
         .brand-center p { margin: 5px 0 0; font-size: 11px; color: #666; letter-spacing: 5px; font-weight: bold; text-transform: uppercase; }
-
-        @keyframes glitch {
-            0% { transform: skew(0deg); }
-            1% { transform: skew(5deg); opacity: 0.8; }
-            2% { transform: skew(-5deg); opacity: 1; }
-            3% { transform: skew(0deg); }
-        }
-        @keyframes pulse-shadow {
-            from { text-shadow: 0 0 10px rgba(57, 255, 20, 0.5); }
-            to { text-shadow: 0 0 30px rgba(57, 255, 20, 0.8), 0 0 50px rgba(57, 255, 20, 0.4); }
-        }
-        
-        .search-trigger {
-            background: rgba(0,0,0,0.7); 
-            border: 1px solid var(--border); 
-            color: var(--neon); 
-            width: 85%; max-width: 400px;
-            padding: 15px; 
-            border-radius: 4px; 
-            margin-top: 20px;
-            display: flex;
-            align-items: center; 
-            justify-content: center; 
-            gap: 12px; 
-            font-size: 14px; 
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            transition: 0.3s;
-            border-bottom: 3px solid var(--neon);
-        }
-
-        #galeria { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
-            gap: 20px; 
-            padding: 30px; 
-            height: calc(100vh - 210px); 
-            overflow-y: auto; 
-            align-items: start;
-        }
-        .foto-item { 
-            background: var(--surface); 
-            border-radius: 12px; 
-            overflow: hidden; 
-            position: relative; 
-            border: 1px solid rgba(255,255,255,0.05); 
-            backdrop-filter: blur(10px);
-            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
+        @keyframes glitch { 0% { transform: skew(0deg); } 1% { transform: skew(5deg); opacity: 0.8; } 2% { transform: skew(-5deg); opacity: 1; } 3% { transform: skew(0deg); } }
+        @keyframes pulse-shadow { from { text-shadow: 0 0 10px rgba(57, 255, 20, 0.5); } to { text-shadow: 0 0 30px rgba(57, 255, 20, 0.8), 0 0 50px rgba(57, 255, 20, 0.4); } }
+        .search-trigger { background: rgba(0,0,0,0.7); border: 1px solid var(--border); color: var(--neon); width: 85%; max-width: 400px; padding: 15px; border-radius: 4px; margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 14px; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; border-bottom: 3px solid var(--neon); }
+        #galeria { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; padding: 30px; height: calc(100vh - 210px); overflow-y: auto; align-items: start; }
+        .foto-item { background: var(--surface); border-radius: 12px; overflow: hidden; position: relative; border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px); transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         .foto-item:active { transform: scale(0.95); border-color: var(--neon); }
         .foto-item img { width: 100%; display: block; aspect-ratio: 1/1; object-fit: cover; }
-        .foto-id { 
-            position: absolute; top: 12px; left: 12px; 
-            background: rgba(0,0,0,0.85); color: var(--neon); 
-            padding: 5px 12px; border-radius: 4px; 
-            font-size: 11px; font-weight: 900; z-index: 10;
-            border-left: 3px solid var(--neon);
-        }
-
-        #numpad-overlay {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,0.96); z-index: 2000; 
-            flex-direction: column; align-items: center; justify-content: center; 
-            backdrop-filter: blur(15px);
-        }
+        .foto-id { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.85); color: var(--neon); padding: 5px 12px; border-radius: 4px; font-size: 11px; font-weight: 900; z-index: 10; border-left: 3px solid var(--neon); }
+        #numpad-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 2000; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(15px); }
         .numpad-content { width: 300px; text-align: center; }
-        #input-busca { 
-            width: 100%; background: rgba(0,0,0,0.8); border: 1px solid #222; 
-            color: var(--neon); font-size: 60px; font-weight: 900; 
-            text-align: center; margin-bottom: 30px; outline: none; 
-            text-shadow: 0 0 25px var(--neon);
-            font-family: monospace; border-radius: 8px;
-        }
+        #input-busca { width: 100%; background: rgba(0,0,0,0.8); border: 1px solid #222; color: var(--neon); font-size: 60px; font-weight: 900; text-align: center; margin-bottom: 30px; outline: none; text-shadow: 0 0 25px var(--neon); font-family: monospace; border-radius: 8px; }
         .numpad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        .num-btn { 
-            background: rgba(255,255,255,0.03); border: 1px solid #222; 
-            color: #fff; width: 80px; height: 80px; border-radius: 8px; 
-            font-size: 28px; font-weight: bold; display: flex; 
-            align-items: center; justify-content: center; margin: 0 auto; 
-            cursor: pointer; transition: 0.1s; outline: none;
-        }
+        .num-btn { background: rgba(255,255,255,0.03); border: 1px solid #222; color: #fff; width: 80px; height: 80px; border-radius: 8px; font-size: 28px; font-weight: bold; display: flex; align-items: center; justify-content: center; margin: 0 auto; cursor: pointer; transition: 0.1s; outline: none; }
         .num-btn:active { background: var(--neon); color: #000; box-shadow: 0 0 30px var(--neon); transform: scale(0.95); }
         .btn-ok { background: var(--neon) !important; color: #000 !important; border: none; }
         .btn-c { color: #ff3131; border-color: rgba(255, 49, 49, 0.3); }
-
-        #modal { 
-            display: none; position: fixed; inset: 0; 
-            background: rgba(0,0,0,0.98); z-index: 3000; 
-            align-items: center; justify-content: center; padding: 20px;
-            backdrop-filter: blur(20px);
-        }
-        .modal-container { 
-            display: flex; flex-direction: column; align-items: center; gap: 30px; 
-            width: 100%; max-width: 950px; 
-        }
-        #full-photo { 
-            max-height: 55vh; border-radius: 4px; 
-            border: 1px solid var(--border); 
-            box-shadow: 0 0 50px rgba(0,0,0,0.8); 
-        }
-        
-        .qr-panel { 
-            background: rgba(255,255,255,0.98); padding: 35px; 
-            border-radius: 12px; text-align: center; color: #000; 
-            width: 260px; box-shadow: 0 0 60px rgba(57, 255, 20, 0.3);
-            border: 1px solid #fff;
-        }
+        #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 3000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(20px); }
+        .modal-container { display: flex; flex-direction: column; align-items: center; gap: 30px; width: 100%; max-width: 950px; }
+        #full-photo { max-height: 55vh; border-radius: 4px; border: 1px solid var(--border); box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        .qr-panel { background: rgba(255,255,255,0.98); padding: 35px; border-radius: 12px; text-align: center; color: #000; width: 260px; box-shadow: 0 0 60px rgba(57, 255, 20, 0.3); border: 1px solid #fff; }
         .instr-header { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 2px; font-weight: bold; margin-bottom: 5px; }
         .instr-text { font-weight: 900; font-size: 15px; color: #000; margin-bottom: 15px; letter-spacing: 1px; text-transform: uppercase; line-height: 1.3; }
-        
         #qrcode { display: flex; justify-content: center; margin: 15px 0; }
         #qrcode img { border: 4px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        
-        .close-btn { 
-            background: var(--neon); color: #000; border: none; 
-            padding: 18px; border-radius: 4px; font-weight: 900; 
-            font-size: 16px; cursor: pointer; width: 100%; 
-            text-transform: uppercase; letter-spacing: 2px;
-        }
-
-        #screensaver {
-            display: none; position: fixed; inset: 0;
-            background: #000; z-index: 5000; cursor: pointer;
-        }
+        .close-btn { background: var(--neon); color: #000; border: none; padding: 18px; border-radius: 4px; font-weight: 900; font-size: 16px; cursor: pointer; width: 100%; text-transform: uppercase; letter-spacing: 2px; }
+        #screensaver { display: none; position: fixed; inset: 0; background: #000; z-index: 5000; cursor: pointer; }
         #ss-img { width: 100%; height: 100%; object-fit: contain; filter: brightness(0.5) contrast(1.1); }
-        .ss-msg {
-            position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
-            background: transparent; border: 2px solid var(--neon); color: var(--neon); 
-            padding: 22px 60px; border-radius: 4px;
-            font-weight: 900; font-size: 1.6rem; text-transform: uppercase;
-            box-shadow: 0 0 25px var(--neon); animation: pulse-blink 2s infinite;
-            letter-spacing: 5px; border-left: 12px solid var(--neon);
-        }
-
-        #mobile-download-screen {
-            display: none; position: fixed; inset: 0;
-            background: radial-gradient(circle at 50% 50%, #1a3a12 0%, #000 100%);
-            z-index: 9999; flex-direction: column; align-items: center; justify-content: center; 
-            padding: 30px; text-align: center;
-        }
-        .btn-baixar {
-            background: var(--neon); color: #000; padding: 22px 60px; border-radius: 4px;
-            text-decoration: none; font-weight: 900; font-size: 1.2rem; margin-top: 30px;
-            box-shadow: 0 0 25px var(--neon); text-transform: uppercase; letter-spacing: 2px;
-            border: none; cursor: pointer;
-        }
+        .ss-msg { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: transparent; border: 2px solid var(--neon); color: var(--neon); padding: 22px 60px; border-radius: 4px; font-weight: 900; font-size: 1.6rem; text-transform: uppercase; box-shadow: 0 0 25px var(--neon); animation: pulse-blink 2s infinite; letter-spacing: 5px; border-left: 12px solid var(--neon); }
+        #mobile-download-screen { display: none; position: fixed; inset: 0; background: radial-gradient(circle at 50% 50%, #1a3a12 0%, #000 100%); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; }
+        .btn-baixar { background: var(--neon); color: #000; padding: 22px 60px; border-radius: 4px; text-decoration: none; font-weight: 900; font-size: 1.2rem; margin-top: 30px; box-shadow: 0 0 25px var(--neon); text-transform: uppercase; letter-spacing: 2px; border: none; cursor: pointer; }
         .btn-baixar:disabled { background: #333; color: #666; box-shadow: none; cursor: wait; }
-
         @keyframes pulse-blink { 0%, 100% { opacity: 1; text-shadow: 0 0 10px var(--neon); } 50% { opacity: 0.6; text-shadow: 0 0 25px var(--neon); } }
-
         @media (min-width: 768px) { .modal-container { flex-direction: row; } #full-photo { max-height: 80vh; max-width: 65%; } }
-        @media (max-width: 600px) {
-            header { padding: 60px 20px 20px; } 
-            .event-label { top: 15px; left: 20px; }
-            .brand-center h1 { font-size: 32px; letter-spacing: 5px; }
-        }
+        @media (max-width: 600px) { header { padding: 60px 20px 20px; } .event-label { top: 15px; left: 20px; } .brand-center h1 { font-size: 32px; letter-spacing: 5px; } }
     </style>
 </head>
 <body onclick="resetInactivityTimer()" ontouchstart="resetInactivityTimer()">
@@ -227,55 +82,32 @@
 
 <div id="conteudo-quiosque">
     <header id="main-header">
-        <div class="event-label">
-            <div class="event-prefix">Status</div>
-            <h2 class="event-name" id="ev-titulo">SINCRONIZANDO...</h2>
-        </div>
-        <div class="brand-center">
-            <h1>Photo Cloud</h1>
-            <p>colecionando momentos</p>
-        </div>
-        <div class="search-trigger" onclick="toggleNumpad(true)">
-            <span>🔍</span> Digite o ID da sua foto
-        </div>
+        <div class="event-label"><div class="event-prefix">Status</div><h2 class="event-name" id="ev-titulo">SINCRONIZANDO...</h2></div>
+        <div class="brand-center"><h1>Photo Cloud</h1><p>colecionando momentos</p></div>
+        <div class="search-trigger" onclick="toggleNumpad(true)"><span>🔍</span> Digite o ID da sua foto</div>
     </header>
-
     <div id="galeria"></div>
-
-    <div id="screensaver" onclick="stopScreensaver()">
-        <img id="ss-img" src="">
-        <div class="ss-msg">Toque para buscar</div>
-    </div>
-
+    <div id="screensaver" onclick="stopScreensaver()"><img id="ss-img" src=""><div class="ss-msg">Toque para buscar</div></div>
     <div id="numpad-overlay">
         <div class="numpad-content">
             <input type="text" id="input-busca" placeholder="---" readonly>
             <div class="numpad-grid">
-                <button class="num-btn" onclick="addNum(1)">1</button>
-                <button class="num-btn" onclick="addNum(2)">2</button>
-                <button class="num-btn" onclick="addNum(3)">3</button>
-                <button class="num-btn" onclick="addNum(4)">4</button>
-                <button class="num-btn" onclick="addNum(5)">5</button>
-                <button class="num-btn" onclick="addNum(6)">6</button>
-                <button class="num-btn" onclick="addNum(7)">7</button>
-                <button class="num-btn" onclick="addNum(8)">8</button>
-                <button class="num-btn" onclick="addNum(9)">9</button>
-                <button class="num-btn btn-c" onclick="limparBusca()">ESC</button>
-                <button class="num-btn" onclick="addNum(0)">0</button>
-                <button class="num-btn btn-ok" onclick="buscarEAbrirFoto()">OK</button>
+                <button class="num-btn" onclick="addNum(1)">1</button><button class="num-btn" onclick="addNum(2)">2</button><button class="num-btn" onclick="addNum(3)">3</button>
+                <button class="num-btn" onclick="addNum(4)">4</button><button class="num-btn" onclick="addNum(5)">5</button><button class="num-btn" onclick="addNum(6)">6</button>
+                <button class="num-btn" onclick="addNum(7)">7</button><button class="num-btn" onclick="addNum(8)">8</button><button class="num-btn" onclick="addNum(9)">9</button>
+                <button class="num-btn btn-c" onclick="limparBusca()">ESC</button><button class="num-btn" onclick="addNum(0)">0</button><button class="num-btn btn-ok" onclick="buscarEAbrirFoto()">OK</button>
             </div>
             <button class="close-btn" onclick="toggleNumpad(false)" style="margin-top: 35px; background: transparent; border: 1px solid #333; color: #555; font-size: 12px; padding: 12px;">FECHAR</button>
         </div>
     </div>
-
     <div id="modal">
         <div class="modal-container">
-            <img id="full-photo" src="">
+            <img id="full-photo" src="" style="max-width:65%; max-height:80vh; object-fit:contain;">
             <div class="qr-panel">
                 <div class="instr-header">Ponte Digital</div>
                 <div class="instr-text">Escaneie para salvar<br>no seu celular</div>
                 <div id="qrcode"></div>
-                <div id="photo-id-label" style="font-weight:900; font-size:36px; color:#000; margin-top: 5px; font-family: monospace;"></div>
+                <div id="photo-id-label" style="font-weight:900; font-size:36px; color:#000; margin-top:5px; font-family:monospace;"></div>
                 <button class="close-btn" onclick="fecharModal()" style="margin-top:25px">Voltar</button>
             </div>
         </div>
@@ -284,86 +116,55 @@
 
 <script>
     const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
-    let eventoAtivo = "";
-    let todasFotos = [];
-    let inactivityTimer;
-    let ssInterval;
-    let qr = new QRCode(document.getElementById("qrcode"), { 
-        width: 190, height: 190, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H
-    });
+    let eventoAtivo = "", todasFotos = [], inactivityTimer, ssInterval;
+    let qr = new QRCode(document.getElementById("qrcode"), { width: 190, height: 190, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
 
     window.onload = () => {
         const params = new URLSearchParams(window.location.search);
         const fotoUrl = params.get('dl');
-        
         if (fotoUrl) {
             document.getElementById('conteudo-quiosque').style.display = 'none';
             document.getElementById('mobile-download-screen').style.display = 'flex';
             document.getElementById('mobile-img').src = decodeURIComponent(fotoUrl);
             document.getElementById('btn-forcar-download').onclick = () => forcarDownload(decodeURIComponent(fotoUrl));
-        } else {
-            syncDados();
-            resetInactivityTimer();
-        }
+        } else { syncDados(); resetInactivityTimer(); }
     };
 
     async function forcarDownload(url) {
-        const btn = document.getElementById('btn-forcar-download');
-        const status = document.getElementById('msg-status');
+        const btn = document.getElementById('btn-forcar-download'), status = document.getElementById('msg-status');
         try {
-            btn.disabled = true;
-            btn.innerText = "Processando...";
-            status.innerText = "Preparando arquivo...";
-            const response = await fetch(url);
-            const blob = await response.blob();
-            const blobUrl = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = blobUrl;
-            link.download = "foto_photocloud_" + Date.now() + ".jpg";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(blobUrl);
-            btn.disabled = false;
-            btn.innerText = "⬇️ Confirmar Download";
-            status.innerText = "Download concluído!";
-        } catch (e) {
-            btn.disabled = false;
-            btn.innerText = "Erro ao baixar";
-            status.innerText = "Tente segurar na imagem e 'Salvar Foto'";
-        }
+            btn.disabled = true; btn.innerText = "Processando..."; status.innerText = "Preparando...";
+            const r = await fetch(url); const blob = await r.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = blobUrl; a.download = "foto_photocloud_" + Date.now() + ".jpg";
+            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(blobUrl);
+            btn.disabled = false; btn.innerText = "⬇️ Confirmar Download"; status.innerText = "Download concluído!";
+        } catch (e) { btn.disabled = false; btn.innerText = "Erro"; status.innerText = "Tente segurar na imagem e 'Salvar Foto'"; }
     }
 
     async function syncDados() {
         try {
-            const resStatus = await fetch(`${API_URL}/status?t=${Date.now()}`);
-            const config = await resStatus.json();
-            if (config.evento !== eventoAtivo) {
-                eventoAtivo = config.evento;
-                document.getElementById('ev-titulo').innerText = eventoAtivo ? eventoAtivo.toUpperCase() : "RAIZ";
-            }
-            let urlBusca = `${API_URL}/list-photos?t=${Date.now()}`;
-            if (eventoAtivo) urlBusca += `&evento=${encodeURIComponent(eventoAtivo)}`;
-            const resFila = await fetch(urlBusca);
-            const fotos = await resFila.json();
-            const fotosInvertidas = fotos.reverse();
-            if (JSON.stringify(fotosInvertidas) !== JSON.stringify(todasFotos)) {
-                todasFotos = fotosInvertidas;
-                renderizarGaleria();
-            }
+            const r1 = await fetch(`${API_URL}/status?t=${Date.now()}`);
+            const config = await r1.json();
+            if (config.evento !== eventoAtivo) { eventoAtivo = config.evento; document.getElementById('ev-titulo').innerText = eventoAtivo ? eventoAtivo.toUpperCase() : "RAIZ"; }
+            let url = `${API_URL}/list-photos?t=${Date.now()}`;
+            if (eventoAtivo) url += `&evento=${encodeURIComponent(eventoAtivo)}`;
+            const r2 = await fetch(url); const fotos = await r2.json();
+            const invertidas = fotos.reverse();
+            if (JSON.stringify(invertidas) !== JSON.stringify(todasFotos)) { todasFotos = invertidas; renderizarGaleria(); }
         } catch (e) { console.error(e); }
     }
 
     function renderizarGaleria() {
         const container = document.getElementById('galeria');
         const termo = document.getElementById('input-busca').value;
-        const fotosComId = todasFotos.map((f, i) => ({ ...f, displayId: todasFotos.length - i }));
-        const filtradas = termo === "" ? fotosComId : fotosComId.filter(f => f.displayId.toString().includes(termo));
+        const comId = todasFotos.map((f, i) => ({ ...f, displayId: todasFotos.length - i }));
+        const filtradas = termo === "" ? comId : comId.filter(f => f.displayId.toString().includes(termo));
         container.innerHTML = filtradas.map(f => {
-            const urlImg = `${API_URL}/photo?key=${encodeURIComponent(f.key)}&t=${Date.now()}`;
-            return `<div class="foto-item" onclick="abrirModal('${f.key}', '${f.displayId}')">
+            const imgUrl = `${API_URL}/photo?key=${encodeURIComponent(f.key)}&t=${Date.now()}`;
+            return `<div class="foto-item" onclick="abrirModal('${f.key.replace(/'/g, "\\'")}', '${f.displayId}')">
                     <div class="foto-id">#${f.displayId}</div>
-                    <img src="${urlImg}" loading="lazy">
+                    <img src="${imgUrl}" loading="lazy">
                 </div>`;
         }).join('');
     }
@@ -373,74 +174,43 @@
         inactivityTimer = setTimeout(() => {
             if (todasFotos.length > 0 && document.getElementById('modal').style.display !== 'flex') {
                 document.getElementById('screensaver').style.display = 'block';
-                runSlideshow();
-                clearInterval(ssInterval);
-                ssInterval = setInterval(runSlideshow, 5000);
+                runSlideshow(); clearInterval(ssInterval); ssInterval = setInterval(runSlideshow, 5000);
             }
         }, 60000);
     }
 
     function runSlideshow() {
         if (todasFotos.length === 0) return;
-        const img = document.getElementById('ss-img');
         const f = todasFotos[Math.floor(Math.random() * todasFotos.length)];
-        img.src = `${API_URL}/photo?key=${encodeURIComponent(f.key)}&t=${Date.now()}`;
+        document.getElementById('ss-img').src = `${API_URL}/photo?key=${encodeURIComponent(f.key)}&t=${Date.now()}`;
     }
 
-    function stopScreensaver() {
-        document.getElementById('screensaver').style.display = 'none';
-        clearInterval(ssInterval);
-        resetInactivityTimer();
-    }
-
-    function addNum(n) {
-        const input = document.getElementById('input-busca');
-        if(input.value.length < 4) input.value += n;
-        renderizarGaleria();
-    }
-
-    function limparBusca() {
-        document.getElementById('input-busca').value = "";
-        renderizarGaleria();
-    }
-
-    function toggleNumpad(show) {
-        document.getElementById('numpad-overlay').style.display = show ? 'flex' : 'none';
-        if (!show) limparBusca();
-    }
+    function stopScreensaver() { document.getElementById('screensaver').style.display = 'none'; clearInterval(ssInterval); resetInactivityTimer(); }
+    function addNum(n) { const inp = document.getElementById('input-busca'); if (inp.value.length < 4) inp.value += n; renderizarGaleria(); }
+    function limparBusca() { document.getElementById('input-busca').value = ""; renderizarGaleria(); }
+    function toggleNumpad(show) { document.getElementById('numpad-overlay').style.display = show ? 'flex' : 'none'; if (!show) limparBusca(); }
 
     function buscarEAbrirFoto() {
         const termo = document.getElementById('input-busca').value;
-        const fotosComId = todasFotos.map((f, i) => ({ ...f, displayId: todasFotos.length - i }));
-        const achada = fotosComId.find(f => f.displayId.toString() === termo);
-        if (achada) {
-            toggleNumpad(false);
-            abrirModal(achada.key, achada.displayId);
-        } else {
-            alert("NÃO ENCONTRADA");
-            limparBusca();
-        }
+        const comId = todasFotos.map((f, i) => ({ ...f, displayId: todasFotos.length - i }));
+        const achada = comId.find(f => f.displayId.toString() === termo);
+        if (achada) { toggleNumpad(false); abrirModal(achada.key, achada.displayId); }
+        else { alert("NÃO ENCONTRADA"); limparBusca(); }
     }
 
     function abrirModal(key, id) {
         stopScreensaver();
         const url = `${API_URL}/photo?key=${encodeURIComponent(key)}&t=${Date.now()}`;
-        document.getElementById('full-photo').src = url;
+        const img = document.getElementById('full-photo');
+        img.onerror = function() { this.src = url + '&retry=1'; };
+        img.src = url;
         document.getElementById('photo-id-label').innerText = "#" + id;
-        
-        const linkParaOCliente = new URL(window.location.href);
-        linkParaOCliente.searchParams.set('dl', url);
-        qr.clear();
-        qr.makeCode(linkParaOCliente.toString()); 
+        const linkCli = new URL(window.location.href); linkCli.searchParams.set('dl', url);
+        qr.clear(); qr.makeCode(linkCli.toString());
         document.getElementById('modal').style.display = 'flex';
     }
 
-    function fecharModal() {
-        document.getElementById('modal').style.display = 'none';
-        limparBusca();
-        resetInactivityTimer();
-    }
-
+    function fecharModal() { document.getElementById('modal').style.display = 'none'; limparBusca(); resetInactivityTimer(); }
     setInterval(syncDados, 5000);
 </script>
 </body>

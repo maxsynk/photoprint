@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>BOTOEIRA - PHOTO PRINT v4.0</title>
+    <title>BOTOEIRA - PHOTO PRINT v3.9</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
         :root { --neon: #39ff14; --dark: #050505; --danger: #ff3131; --info-blue: #00e5ff; }
@@ -83,21 +83,6 @@
 const API="https://photoprint-api.maxprimefotovideo.workers.dev";
 let selectedCopiesValue=1,guestbookAtivo=false,sistemaOnline=true;
 const monitor=document.getElementById('monitor-status');
-
-// ==================== MANTÉM TELA LIGADA ====================
-if ('wakeLock' in navigator) {
-    let wakeLock = null;
-    async function requestWakeLock() {
-        try {
-            wakeLock = await navigator.wakeLock.request('screen');
-            wakeLock.addEventListener('release', () => {});
-        } catch (err) {}
-    }
-    requestWakeLock();
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') requestWakeLock();
-    });
-}
 
 function getCopiasFisicas(o){if(o===1)return 1;if(o===2)return 2;if(o===3)return 2;if(o===4)return 3;return 1;}
 

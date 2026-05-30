@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHOTO PRINT - MOBILE v2.6</title>
+    <title>PHOTO PRINT - MOBILE v2.7</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --neon: #39ff14; --error: #ff0000; --blue-cyan: #00e5ff; }
@@ -19,17 +19,15 @@
         body::before { content:''; position:fixed; inset:0; background-image: linear-gradient(rgba(57,255,20,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(57,255,20,0.03) 1px, transparent 1px); background-size:40px 40px; z-index:0; animation:gridMove 12s linear infinite; }
         body.bg-active::before { display:none; }
         @keyframes gridMove{ from{ transform:translateY(0px); } to{ transform:translateY(40px); } }
-        #offline-screen { position: fixed; inset: 0; background: #000; z-index: 10000; display: none; align-items: center; justify-content: center; }
         #rotate-warning { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 5000; color: var(--neon); }
         #loader { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
         #flash { position: fixed; inset: 0; background: white; display: none; z-index: 2000; }
+        #offline-overlay{ position:fixed; inset:0; background:#000; z-index:9999; display:none; align-items:center; justify-content:center; flex-direction:column; }
+        #offline-overlay .offline-text{ font-size:30px; font-weight:900; color:var(--error); text-shadow:0 0 20px var(--error); animation:pulseOff 1.5s infinite; text-transform:uppercase; letter-spacing:4px; text-align:center; }
+        @keyframes pulseOff{ 0%,100%{ opacity:1; } 50%{ opacity:0.3; } }
         .spin { width: 60px; height: 60px; border: 5px solid rgba(57, 255, 20, 0.1); border-top-color: var(--neon); border-radius: 50%; animation: s 1s linear infinite; }
         @keyframes s { to { transform: rotate(360deg); } }
-        @keyframes pulse-neon {
-            0% { box-shadow: 0 0 0 0 rgba(57, 255, 20, 0.7); transform: scale(1); }
-            70% { box-shadow: 0 0 0 20px rgba(57, 255, 20, 0); transform: scale(1.05); }
-            100% { box-shadow: 0 0 0 0 rgba(57, 255, 20, 0); transform: scale(1); }
-        }
+        @keyframes pulse-neon { 0% { box-shadow: 0 0 0 0 rgba(57, 255, 20, 0.7); transform: scale(1); } 70% { box-shadow: 0 0 0 20px rgba(57, 255, 20, 0); transform: scale(1.05); } 100% { box-shadow: 0 0 0 0 rgba(57, 255, 20, 0); transform: scale(1); } }
         .icon-rotate { width: 80px; height: 80px; margin-bottom: 20px; animation: rotateAnim 2s infinite; }
         @keyframes rotateAnim { 0% { transform: rotate(0deg); } 50% { transform: rotate(-90deg); } 100% { transform: rotate(0deg); } }
         .header { margin-top: 40px; z-index: 10; border-left: 4px solid var(--neon); padding-left: 20px; align-self: flex-start; margin-left: 30px; text-align: left; }
@@ -60,28 +58,19 @@
         .print-capsule-btn.color-green.active { background: var(--neon); color: black; }
         .print-capsule-btn.color-blue { border-color: var(--blue-cyan); }
         .print-capsule-btn.color-blue.active { background: var(--blue-cyan); color: black; }
-        .guestbook-only-btn { display: none; }
-        .mantencao-txt { font-size: 30px; font-weight: 900; color: var(--error); text-shadow: 0 0 15px var(--error); letter-spacing: 2px; }
     </style>
 </head>
 <body>
-
     <div id="dynamic-bg"></div>
-
+    <div id="offline-overlay"><div class="offline-text">SISTEMA EM<br>MANUTENÇÃO</div></div>
     <div id="rotate-warning">
         <svg class="icon-rotate" viewBox="0 0 24 24" fill="var(--neon)"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h2l-3.5 3.5-3.5-3.5h2c-.34-3.19-2.32-5.85-5.08-7.1l1.11-1.88M12.06 19c-1.38 0-2.61-.56-3.5-1.47l-1.41 1.41C8.36 20.15 10.09 21 12.06 21c3.97 0 7.32-2.8 8.16-6.5h-2.07c-.77 2.58-3.17 4.5-5.99 4.5M2.06 11h2c.34 3.19 2.32 5.85 5.08 7.1l-1.11 1.88C4.76 18.43 2.42 15.26 2.06 11.5M12.06 5c1.38 0 2.61.56 3.5 1.47l1.41-1.41C15.76 3.85 14.03 3 12.06 3 8.09 3 4.74 5.8 3.9 9.5h2.07C6.74 6.92 9.14 5 12.06 5Z"/></svg>
         <h2>GIRE O APARELHO</h2><p>Necessário posição Horizontal (Deitado)</p>
     </div>
-    <div id="offline-screen"><div class="mantencao-txt">SISTEMA EM MANUTENÇÃO</div></div>
     <div id="flash"></div>
     <div id="loader"><div class="spin"></div><p id="loader-text" style="color:var(--neon);margin-top:20px;font-weight:bold;">PROCESSANDO...</p></div>
-
-    <div id="bg-menu">
-        <label class="bg-btn" for="bg-input">🖼 ALTERAR FUNDO</label>
-        <div class="bg-btn" onclick="removeBackground()">✖ SEM FUNDO</div>
-    </div>
+    <div id="bg-menu"><label class="bg-btn" for="bg-input">🖼 ALTERAR FUNDO</label><div class="bg-btn" onclick="removeBackground()">✖ SEM FUNDO</div></div>
     <input type="file" id="bg-input" accept="image/*"/>
-
     <div id="cam-container">
         <video id="v" autoplay playsinline muted></video>
         <div id="overlay">
@@ -101,252 +90,4 @@
         <div id="modo-guestbook">📖 Modo Guestbook Ativo</div>
     </div>
 
-    <div class="main-ui" style="flex-grow:1; display:flex; align-items:center; justify-content:center; padding-bottom:60px;">
-        <div id="main-action-btn" class="btn-eye" onclick="ligar()"><div class="eye-inner"></div></div>
-    </div>
-
-    <canvas id="c-snap" style="display:none"></canvas>
-    <canvas id="c-strip" style="display:none"></canvas>
-
-    <script>
-        const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
-        let ev = "", formatStr = "", molduraBase64 = "", eventoId = "", guestbookAtivo = false;
-        let pics = [], stream = null, facingMode = "user", configAtual = null, quantidadeCopias = 1;
-
-        const FORMATOS = {
-            "TIRINHA": { w: 591, h: 1819, fotos: 3, key: "TIRINHA", exigeH: false },
-            "POLAROID": { w: 1041, h: 1311, fotos: 1, key: "POLAROID", exigeH: false },
-            "10X15H": { w: 1772, h: 1228, fotos: 1, key: "10X15H", exigeH: true },
-            "10X15V": { w: 1181, h: 1819, fotos: 1, key: "10X15V", exigeH: false }
-        };
-
-        function getCopiasFisicas(opcao) {
-            if (opcao === 1) return 1;
-            if (opcao === 2) return 2;
-            if (opcao === 3) return 2;
-            if (opcao === 4) return 3;
-            return 1;
-        }
-
-        // ==================== FUNDO E MENU SECRETO ====================
-        const dynamicBg = document.getElementById('dynamic-bg');
-        const bgMenu = document.getElementById('bg-menu');
-        const secretLogo = document.getElementById('secret-logo');
-        let clickCount = 0, clickTimer = null;
-
-        secretLogo.addEventListener('click', () => {
-            clickCount++; clearTimeout(clickTimer);
-            clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
-            if (clickCount >= 7) { bgMenu.classList.toggle('active'); clickCount = 0; }
-        });
-
-        document.getElementById('bg-input').addEventListener('change', (e) => {
-            const file = e.target.files[0]; if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(ev) {
-                dynamicBg.style.backgroundImage = `url('${ev.target.result}')`;
-                dynamicBg.classList.add('active');
-                document.body.classList.add('bg-active');
-                localStorage.setItem('photoprint_bg_mobile', ev.target.result);
-                bgMenu.classList.remove('active');
-            };
-            reader.readAsDataURL(file);
-        });
-
-        function removeBackground() {
-            localStorage.removeItem('photoprint_bg_mobile');
-            dynamicBg.style.backgroundImage = "";
-            dynamicBg.classList.remove('active');
-            document.body.classList.remove('bg-active');
-            bgMenu.classList.remove('active');
-        }
-
-        function loadSavedBackground() {
-            const savedBg = localStorage.getItem('photoprint_bg_mobile');
-            if (savedBg) {
-                dynamicBg.style.backgroundImage = `url('${savedBg}')`;
-                dynamicBg.classList.add('active');
-                document.body.classList.add('bg-active');
-            }
-        }
-        loadSavedBackground();
-
-        // ==================== SINCRONIZAÇÃO ====================
-        async function sync() {
-            try {
-                const r = await fetch(`${API}/get-all-states?t=${Date.now()}`);
-                const d = await r.json();
-                if (d.config && d.config.evento && d.config.evento !== 'Geral') {
-                    ev = d.config.evento;
-                    formatStr = d.config.formato || 'POLAROID';
-                    eventoId = d.config.eventoId;
-                    guestbookAtivo = (d.config.livro === true || d.config.livro === 1);
-                    molduraBase64 = d.moldura || '';
-                } else {
-                    ev = "Geral"; formatStr = "POLAROID"; eventoId = ""; molduraBase64 = ""; guestbookAtivo = false;
-                }
-                document.getElementById('nome-evento-capa').innerText = ev;
-                document.getElementById('modo-guestbook').style.display = guestbookAtivo ? 'block' : 'none';
-                configAtual = FORMATOS[formatStr.toUpperCase()] || FORMATOS["POLAROID"];
-            } catch (e) { console.error(e); }
-        }
-
-        function checkOrientation() {
-            if (!configAtual || !configAtual.exigeH) { document.getElementById('rotate-warning').style.display = "none"; return; }
-            document.getElementById('rotate-warning').style.display = (window.innerWidth <= window.innerHeight) ? "flex" : "none";
-        }
-        window.addEventListener("resize", checkOrientation);
-
-        async function startStream() {
-            if (stream) { stream.getTracks().forEach(t => t.stop()); }
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: { ideal: facingMode }, width: { ideal: 1920 }, height: { ideal: 1080 } }
-                });
-                document.getElementById('v').srcObject = stream;
-                document.getElementById('v').className = (facingMode === "user") ? "mirror" : "";
-            } catch (e) { alert("Câmera não disponível."); }
-        }
-
-        async function switchCam() { facingMode = (facingMode === "user") ? "environment" : "user"; await startStream(); }
-
-        async function ligar() {
-            if (!molduraBase64) return alert("Moldura não carregada! Sincronize com o Painel.");
-            document.getElementById('cam-container').style.display = "block";
-            document.getElementById('info-topo').innerText = `${ev} | ${configAtual.key}`;
-            document.getElementById('num-count').innerText = "";
-            document.getElementById('sub-count').innerText = "TOQUE NO DISPARADOR";
-            checkOrientation();
-            await startStream();
-        }
-
-        function voltarHome() {
-            if (stream) stream.getTracks().forEach(t => t.stop());
-            document.getElementById('cam-container').style.display = "none";
-            document.getElementById('rotate-warning').style.display = "none";
-            document.getElementById('shutter-placeholder').style.visibility = "visible";
-        }
-
-        async function iniciarSequencia() {
-            if (configAtual.exigeH && window.innerWidth <= window.innerHeight) return;
-            document.getElementById('shutter-placeholder').style.visibility = "hidden";
-            pics = [];
-            for (let n = 1; n <= configAtual.fotos; n++) {
-                document.getElementById('sub-count').innerText = `FOTO ${n} DE ${configAtual.fotos}`;
-                for (let i = 5; i > 0; i--) {
-                    document.getElementById('num-count').innerText = i;
-                    await new Promise(r => setTimeout(r, 1000));
-                }
-                document.getElementById('num-count').innerText = "SORRIA!";
-                snap();
-                await new Promise(r => setTimeout(r, 1500));
-            }
-            processar();
-        }
-
-        function snap() {
-            document.getElementById('flash').style.display = "block";
-            setTimeout(() => document.getElementById('flash').style.display = "none", 100);
-            const v = document.getElementById('v'), cv = document.getElementById('c-snap'), ctx = cv.getContext('2d');
-            cv.width = v.videoWidth; cv.height = v.videoHeight;
-            if (facingMode === "user") { ctx.translate(cv.width, 0); ctx.scale(-1, 1); }
-            ctx.drawImage(v, 0, 0);
-            pics.push(cv.toDataURL('image/jpeg', 0.92));
-        }
-
-        function processar() {
-            voltarHome();
-            document.getElementById('loader').style.display = "flex";
-            const cv = document.getElementById('c-strip'), ctx = cv.getContext('2d');
-            const molduraImg = new Image();
-            molduraImg.onload = () => {
-                cv.width = configAtual.w; cv.height = configAtual.h;
-                ctx.fillStyle = "white"; ctx.fillRect(0, 0, cv.width, cv.height);
-                if (configAtual.key === "TIRINHA") {
-                    const slots = [{y:0.030, h:0.254}, {y:0.296, h:0.254}, {y:0.559, h:0.254}];
-                    let count = 0;
-                    pics.forEach((src, i) => {
-                        const img = new Image();
-                        img.onload = () => {
-                            const s = slots[i];
-                            const dx = cv.width * 0.06, dw = cv.width * 0.88;
-                            const dy = cv.height * s.y, dh = cv.height * s.h;
-                            ctx.save(); ctx.beginPath(); ctx.rect(dx, dy, dw, dh); ctx.clip();
-                            const r = Math.max(dw/img.width, dh/img.height);
-                            ctx.drawImage(img, dx+(dw-img.width*r)/2, dy+(dh-img.height*r)/2, img.width*r, img.height*r);
-                            ctx.restore();
-                            count++;
-                            if (count === 3) { ctx.drawImage(molduraImg, 0, 0, cv.width, cv.height); exibir(cv.toDataURL('image/jpeg', 0.95)); }
-                        };
-                        img.src = src;
-                    });
-                } else {
-                    const img = new Image();
-                    img.onload = () => {
-                        const scale = Math.max(cv.width/img.width, cv.height/img.height);
-                        const w = img.width * scale, h = img.height * scale;
-                        ctx.drawImage(img, (cv.width-w)/2, (cv.height-h)/2, w, h);
-                        ctx.drawImage(molduraImg, 0, 0, cv.width, cv.height);
-                        exibir(cv.toDataURL('image/jpeg', 0.95));
-                    };
-                    img.src = pics[0];
-                }
-            };
-            molduraImg.src = molduraBase64;
-        }
-
-        function alterarCopias(qtd) {
-            quantidadeCopias = qtd;
-            document.querySelectorAll('.print-capsule-btn').forEach(b => b.classList.remove('active'));
-            const btn = document.getElementById('btn-opt-' + qtd);
-            if (btn) btn.classList.add('active');
-        }
-
-        function exibir(url) {
-            quantidadeCopias = 1;
-            const botoesGuestbook = guestbookAtivo ? `
-                <button id="btn-opt-3" class="print-capsule-btn color-blue guestbook-only-btn" style="display:flex;" onclick="alterarCopias(3)"><i class="fa-solid fa-book"></i> 1 Cópia + Guestbook</button>
-                <button id="btn-opt-4" class="print-capsule-btn color-blue guestbook-only-btn" style="display:flex;" onclick="alterarCopias(4)"><i class="fa-solid fa-book"></i> 2 Cópias + Guestbook</button>
-            ` : '';
-
-            document.getElementById('loader').innerHTML = `
-                <img src="${url}" style="max-height:45vh; border:2px solid var(--neon); box-shadow: 0 0 20px var(--neon);">
-                <span style="font-size:14px; color:var(--neon); font-weight:bold; margin-top:15px;">Quantas cópias deseja imprimir?</span>
-                <div class="print-grid">
-                    <button id="btn-opt-1" class="print-capsule-btn color-green active" onclick="alterarCopias(1)"><i class="fa-solid fa-print"></i> 1 Cópia</button>
-                    <button id="btn-opt-2" class="print-capsule-btn color-green" onclick="alterarCopias(2)"><i class="fa-solid fa-print"></i> 2 Cópias</button>
-                    ${botoesGuestbook}
-                </div>
-                <div style="margin-top:5px; display:flex; flex-direction:column; gap:8px; align-items:center;">
-                    <button class="btn-eye" style="width:65px; height:65px; animation:none;" onclick="enviar()"><i class="fas fa-paper-plane" style="color:var(--neon); font-size:20px;"></i></button>
-                    <span style="font-size:11px; color:var(--neon); font-weight:bold;">Enviar e Imprimir</span>
-                    <button style="background:transparent; border:none; color:#555; font-size:12px; font-weight:bold; text-decoration:underline; margin-top:5px; cursor:pointer;" onclick="location.reload()">CANCELAR</button>
-                </div>`;
-        }
-
-        async function enviar() {
-            document.getElementById('loader').innerHTML = `<div class="spin"></div><p style="color:var(--neon); font-weight:bold; margin-top:20px;">ENVIANDO...</p>`;
-            document.getElementById('c-strip').toBlob(async b => {
-                const copiasFisicas = getCopiasFisicas(quantidadeCopias);
-                const ts = Date.now();
-                const temGuestbook = (quantidadeCopias === 3 || quantidadeCopias === 4);
-                const sufixo = temGuestbook ? '_guestbook' : '';
-                const nome = `foto_${ts}_${copiasFisicas}c${sufixo}.jpg`;
-                const fd = new FormData();
-                fd.append('foto', b, nome);
-                fd.append('eventoId', eventoId);
-                fd.append('timestamp', String(ts) + '_' + copiasFisicas + 'c' + sufixo);
-                fd.append('copias', String(copiasFisicas));
-                try {
-                    const res = await fetch(`${API}/salvar-foto`, { method: 'POST', body: fd });
-                    if (res.ok) location.reload();
-                    else alert("Erro ao enviar!");
-                } catch (e) { alert("Erro ao enviar!"); location.reload(); }
-            }, 'image/jpeg', 0.95);
-        }
-
-        sync();
-        setInterval(sync, 10000);
-    </script>
-</body>
-</html>
+    <div class="main-ui" style="flex-grow

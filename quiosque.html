@@ -358,18 +358,18 @@
     }
 
     function renderizarGaleria() {
-        const container = document.getElementById('galeria');
-        const termo = document.getElementById('input-busca').value;
-        const fotosComId = todasFotos.map((f, i) => ({ ...f, displayId: todasFotos.length - i }));
-        const filtradas = termo === "" ? fotosComId : fotosComId.filter(f => f.displayId.toString().includes(termo));
-        container.innerHTML = filtradas.map(f => {
-            const urlImg = `${API_URL}/photo?key=${encodeURIComponent(f.key)}`;
-            return `<div class="foto-item" onclick="abrirModal('${urlImg}', '${f.displayId}')">
-                    <div class="foto-id">#${f.displayId}</div>
-                    <img src="${urlImg}" loading="lazy" crossorigin="anonymous">
-                </div>`;
-        }).join('');
-    }
+    const container = document.getElementById('galeria');
+    const termo = document.getElementById('input-busca').value;
+    const fotosComId = todasFotos.map((f, i) => ({ ...f, displayId: todasFotos.length - i }));
+    const filtradas = termo === "" ? fotosComId : fotosComId.filter(f => f.displayId.toString().includes(termo));
+    container.innerHTML = filtradas.map(f => {
+        const urlImg = `${API_URL}/photo?key=${encodeURIComponent(f.key)}&t=${Date.now()}`;
+        return `<div class="foto-item" onclick="abrirModal('${API_URL}/photo?key=${encodeURIComponent(f.key)}', '${f.displayId}')">
+                <div class="foto-id">#${f.displayId}</div>
+                <img src="${urlImg}" loading="lazy">
+            </div>`;
+    }).join('');
+}
 
     function resetInactivityTimer() {
         clearTimeout(inactivityTimer);

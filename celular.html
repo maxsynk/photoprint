@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHOTO PRINT - MOBILE v2.8</title>
+    <title>PHOTO PRINT - MOBILE v2.9</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --neon: #39ff14; --error: #ff0000; --blue-cyan: #00e5ff; }
@@ -30,16 +30,21 @@
         @keyframes pulse-neon { 0% { box-shadow: 0 0 0 0 rgba(57, 255, 20, 0.7); transform: scale(1); } 70% { box-shadow: 0 0 0 20px rgba(57, 255, 20, 0); transform: scale(1.05); } 100% { box-shadow: 0 0 0 0 rgba(57, 255, 20, 0); transform: scale(1); } }
         .icon-rotate { width: 80px; height: 80px; margin-bottom: 20px; animation: rotateAnim 2s infinite; }
         @keyframes rotateAnim { 0% { transform: rotate(0deg); } 50% { transform: rotate(-90deg); } 100% { transform: rotate(0deg); } }
-        .header { margin-top: 40px; z-index: 10; border-left: 4px solid var(--neon); padding-left: 20px; align-self: flex-start; margin-left: 30px; text-align: left; }
+        .header { margin-top: 30px; z-index: 10; border-left: 4px solid var(--neon); padding-left: 20px; align-self: flex-start; margin-left: 30px; text-align: left; }
         .brand-title { font-size: 38px; font-weight: 900; color: var(--neon); text-shadow: 0 0 15px var(--neon); letter-spacing: 5px; margin: 0; text-transform: uppercase; }
         .subtitle { color: white; font-size: 14px; letter-spacing: 3px; margin-top: 5px; opacity: 0.7; font-weight: bold; text-transform: uppercase; }
-        #nome-evento-capa { font-size: 22px; font-weight: bold; color: var(--neon); text-transform: uppercase; margin: 20px 0; min-height: 25px; }
+        #nome-evento-capa { font-size: 22px; font-weight: bold; color: var(--neon); text-transform: uppercase; margin: 15px 0; min-height: 25px; }
         #modo-guestbook { color: var(--blue-cyan); font-size: 12px; font-weight: bold; display: none; }
+        .modo-selector { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+        .modo-selector span { font-size: 11px; color: #aaa; text-transform: uppercase; }
+        .modo-selector .modo-btn { padding: 5px 12px; border-radius: 15px; font-size: 11px; font-weight: bold; cursor: pointer; background: rgba(255,255,255,0.05); border: 1px solid #333; color: #555; transition: 0.2s; }
+        .modo-selector .modo-btn.activo { background: var(--neon); color: #000; border-color: var(--neon); }
         #bg-menu { position:fixed; top:80px; left:20px; z-index:100; display:none; flex-direction:column; gap:12px; }
         #bg-menu.active { display:flex; }
         .bg-btn { padding:12px 20px; border-radius:14px; border:1px solid rgba(57,255,20,0.45); background:rgba(0,0,0,0.85); color:white; font-size:14px; font-weight:bold; letter-spacing:1px; cursor:pointer; backdrop-filter:blur(10px); text-align:center; }
         #bg-input { display:none; }
         .btn-eye { width: 140px; height: 140px; border-radius: 50%; border: 4px solid var(--neon); cursor: pointer; display: flex; align-items: center; justify-content: center; animation: pulse-neon 2s infinite; background: rgba(0,0,0,0.5); z-index: 10; }
+        .btn-eye.desativado { opacity: 0.3; animation: none; pointer-events: none; }
         .eye-inner { width: 45px; height: 45px; border-radius: 50%; border: 3px solid var(--neon); }
         #cam-container { position: fixed; inset: 0; background: #000; display: none; z-index: 1000; }
         video { width: 100%; height: 100%; object-fit: cover; }
@@ -88,6 +93,11 @@
         <div class="subtitle">colecionando momentos</div>
         <div id="nome-evento-capa">...</div>
         <div id="modo-guestbook">📖 Modo Guestbook Ativo</div>
+        <div class="modo-selector">
+            <span>📱 Modo:</span>
+            <button class="modo-btn activo" id="btn-modo-manual" onclick="setModo('manual')">Manual</button>
+            <button class="modo-btn" id="btn-modo-botoeira" onclick="setModo('botoeira')">Botoeira</button>
+        </div>
     </div>
 
     <div class="main-ui" style="flex-grow:1; display:flex; align-items:center; justify-content:center; padding-bottom:60px;">
@@ -101,6 +111,9 @@
         const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
         let ev = "", formatStr = "", molduraBase64 = "", eventoId = "", guestbookAtivo = false, sistemaOnline = true;
         let pics = [], stream = null, facingMode = "user", configAtual = null, quantidadeCopias = 1;
+        let modoOperacao = "manual"; // "manual" ou "botoeira"
+        let lastState = 'start';
+        let captureInProgress = false;
 
         const FORMATOS = {
             "TIRINHA": { w: 591, h: 1819, fotos: 3, key: "TIRINHA", exigeH: false },
@@ -110,6 +123,21 @@
         };
 
         function getCopiasFisicas(o) { if(o===1)return 1; if(o===2)return 2; if(o===3)return 2; if(o===4)return 3; return 1; }
+
+        // ==================== MODO DE OPERAÇÃO ====================
+        function setModo(modo) {
+            modoOperacao = modo;
+            document.getElementById('btn-modo-manual').classList.toggle('activo', modo === 'manual');
+            document.getElementById('btn-modo-botoeira').classList.toggle('activo', modo === 'botoeira');
+            
+            const btnEye = document.getElementById('main-action-btn');
+            if (modo === 'botoeira') {
+                btnEye.classList.add('desativado');
+            } else {
+                btnEye.classList.remove('desativado');
+            }
+            localStorage.setItem('celular_modo', modo);
+        }
 
         // ==================== FUNDO E MENU SECRETO ====================
         const dynamicBg = document.getElementById('dynamic-bg');
@@ -149,6 +177,100 @@
             configAtual = FORMATOS[formatStr.toUpperCase()] || FORMATOS["POLAROID"];
         }
 
+        // ==================== POLLING DO ESTADO (MODO BOTOEIRA) ====================
+        async function pollServerState() {
+            if (modoOperacao !== 'botoeira') return;
+            try {
+                const res = await fetch(`${API}/get-state?t=${Date.now()}`);
+                if (!res || !res.ok) return;
+                const d = await res.json();
+                if (d.state && d.state !== lastState) {
+                    lastState = d.state;
+                    if (d.state === 'capturing' && !captureInProgress) {
+                        // Botoeira disparou!
+                        if (!molduraBase64) return;
+                        document.getElementById('cam-container').style.display = "block";
+                        document.getElementById('info-topo').innerText = `${ev} | ${configAtual.key}`;
+                        checkOrientation();
+                        await startStream();
+                        iniciarSequenciaAuto();
+                    }
+                }
+            } catch(e) {}
+        }
+
+        async function iniciarSequenciaAuto() {
+            captureInProgress = true;
+            document.getElementById('shutter-placeholder').style.visibility = "hidden";
+            pics = [];
+            for (let n = 1; n <= configAtual.fotos; n++) {
+                document.getElementById('sub-count').innerText = `FOTO ${n} DE ${configAtual.fotos}`;
+                for (let i = 5; i > 0; i--) {
+                    document.getElementById('num-count').innerText = i;
+                    await new Promise(r => setTimeout(r, 1000));
+                }
+                document.getElementById('num-count').innerText = "SORRIA!";
+                snap();
+                await new Promise(r => setTimeout(r, 1500));
+            }
+            processarAuto();
+        }
+
+        function processarAuto() {
+            voltarHome();
+            document.getElementById('loader').style.display = "flex";
+            const cv = document.getElementById('c-strip'), ctx = cv.getContext('2d');
+            const molduraImg = new Image();
+            molduraImg.onload = () => {
+                cv.width = configAtual.w; cv.height = configAtual.h;
+                ctx.fillStyle = "white"; ctx.fillRect(0, 0, cv.width, cv.height);
+                if (configAtual.key === "TIRINHA") {
+                    const slots = [{y:0.030, h:0.254}, {y:0.296, h:0.254}, {y:0.559, h:0.254}];
+                    let count = 0;
+                    pics.forEach((src, i) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const s = slots[i]; const dx = cv.width * 0.06, dw = cv.width * 0.88;
+                            const dy = cv.height * s.y, dh = cv.height * s.h;
+                            ctx.save(); ctx.beginPath(); ctx.rect(dx, dy, dw, dh); ctx.clip();
+                            const r = Math.max(dw/img.width, dh/img.height);
+                            ctx.drawImage(img, dx+(dw-img.width*r)/2, dy+(dh-img.height*r)/2, img.width*r, img.height*r);
+                            ctx.restore(); count++;
+                            if (count === 3) { ctx.drawImage(molduraImg, 0, 0, cv.width, cv.height); enviarAuto(cv.toDataURL('image/jpeg', 0.95)); }
+                        }; img.src = src;
+                    });
+                } else {
+                    const img = new Image();
+                    img.onload = () => {
+                        const scale = Math.max(cv.width/img.width, cv.height/img.height);
+                        const w = img.width * scale, h = img.height * scale;
+                        ctx.drawImage(img, (cv.width-w)/2, (cv.height-h)/2, w, h);
+                        ctx.drawImage(molduraImg, 0, 0, cv.width, cv.height);
+                        enviarAuto(cv.toDataURL('image/jpeg', 0.95));
+                    }; img.src = pics[0];
+                }
+            };
+            molduraImg.src = molduraBase64;
+        }
+
+        async function enviarAuto(dataUrl) {
+            document.getElementById('loader').innerHTML = `<div class="spin"></div><p style="color:var(--neon);">ENVIANDO...</p>`;
+            const blob = await fetch(dataUrl).then(r => r.blob());
+            const ts = Date.now();
+            const nome = `foto_${ts}_1c.jpg`;
+            const fd = new FormData();
+            fd.append('foto', blob, nome);
+            fd.append('eventoId', eventoId);
+            fd.append('timestamp', String(ts) + '_1c');
+            fd.append('copias', '1');
+            try {
+                await fetch(`${API}/salvar-foto`, { method: 'POST', body: fd });
+                await fetch(`${API}/set-state`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state: 'options' }) });
+            } catch(e) {}
+            captureInProgress = false;
+            location.reload();
+        }
+
         function checkOrientation() { if (!configAtual || !configAtual.exigeH) { document.getElementById('rotate-warning').style.display = "none"; return; } document.getElementById('rotate-warning').style.display = (window.innerWidth <= window.innerHeight) ? "flex" : "none"; }
         window.addEventListener("resize", checkOrientation);
 
@@ -156,6 +278,7 @@
         async function switchCam() { facingMode = (facingMode === "user") ? "environment" : "user"; await startStream(); }
 
         async function ligar() {
+            if (modoOperacao === 'botoeira') return; // Não faz nada no modo botoeira
             if (!sistemaOnline) { alert("Sistema em manutenção!"); return; }
             if (!molduraBase64) return alert("Moldura não carregada! Sincronize com o Painel.");
             document.getElementById('cam-container').style.display = "block";
@@ -177,7 +300,13 @@
 
         async function enviar() { document.getElementById('loader').innerHTML = `<div class="spin"></div><p style="color:var(--neon); font-weight:bold; margin-top:20px;">ENVIANDO...</p>`; document.getElementById('c-strip').toBlob(async b => { const copiasFisicas = getCopiasFisicas(quantidadeCopias); const ts = Date.now(); const temGuestbook = (quantidadeCopias === 3 || quantidadeCopias === 4); const sufixo = temGuestbook ? '_guestbook' : ''; const nome = `foto_${ts}_${copiasFisicas}c${sufixo}.jpg`; const fd = new FormData(); fd.append('foto', b, nome); fd.append('eventoId', eventoId); fd.append('timestamp', String(ts) + '_' + copiasFisicas + 'c' + sufixo); fd.append('copias', String(copiasFisicas)); try { const res = await fetch(`${API}/salvar-foto`, { method: 'POST', body: fd }); if (res.ok) location.reload(); else alert("Erro ao enviar!"); } catch (e) { alert("Erro ao enviar!"); location.reload(); } }, 'image/jpeg', 0.95); }
 
-        sync(); setInterval(sync, 10000);
+        // ==================== INICIALIZAÇÃO ====================
+        const savedModo = localStorage.getItem('celular_modo') || 'manual';
+        setModo(savedModo);
+
+        sync();
+        setInterval(sync, 10000);
+        setInterval(pollServerState, 800); // Polling para modo Botoeira
     </script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHOTO PRINT - MOBILE v3.0</title>
+    <title>PHOTO PRINT - MOBILE v3.1</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --neon: #39ff14; --error: #ff0000; --blue-cyan: #00e5ff; }
@@ -82,13 +82,9 @@
         <div id="overlay">
             <div class="topo-grupo"><div id="info-topo">CARREGANDO...</div><span id="num-count"></span><span id="sub-count">AGUARDANDO START</span></div>
             <div id="cam-controls">
-                <div class="cam-btn" onclick="voltarHome()">
-                    <svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/></svg>
-                </div>
+                <div class="cam-btn" onclick="voltarHome()"><svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/></svg></div>
                 <div id="shutter-placeholder"><div class="shutter-btn" onclick="iniciarSequencia()"></div></div>
-                <div class="cam-btn" onclick="switchCam()">
-                    <svg viewBox="0 0 24 24"><path d="M12 9V1L7 6h10l-5-5v8zm0 6v8l5-5H7l5 5zm-5-3H1l5-5v10l-5-5zm10 0h6l-5 5V12l5 5z"/></svg>
-                </div>
+                <div class="cam-btn" onclick="switchCam()"><svg viewBox="0 0 24 24"><path d="M12 9V1L7 6h10l-5-5v8zm0 6v8l5-5H7l5 5zm-5-3H1l5-5v10l-5-5zm10 0h6l-5 5V12l5 5z"/></svg></div>
             </div>
         </div>
     </div>
@@ -149,50 +145,33 @@
         function loadSavedBackground() { const savedBg = localStorage.getItem('photoprint_bg_mobile'); if (savedBg) { dynamicBg.style.backgroundImage = `url('${savedBg}')`; dynamicBg.classList.add('active'); document.body.classList.add('bg-active'); } }
         loadSavedBackground();
 
-// ==================== ONLINE/OFFLINE ====================
-async function verificarStatus() {
-    try {
-        const res = await fetch(`${API}/get-all-states?t=${Date.now()}`);
-        if (!res || !res.ok) {
-            sistemaOnline = false;
-            mostrarOffline();
-            return null;
+        // ==================== ONLINE/OFFLINE (IGUAL BOTOEIRA) ====================
+        async function verificarStatus(){
+            try{
+                const res=await fetch(`${API}/get-all-states?t=${Date.now()}`);
+                if(!res||!res.ok){sistemaOnline=false;mostrarOffline();return null;}
+                const data=await res.json();
+                const status=(data.config&&data.config.status)?data.config.status:'OFFLINE';
+                if(status==='OFFLINE'){sistemaOnline=false;mostrarOffline();}
+                else{sistemaOnline=true;esconderOffline();}
+                return data;
+            }catch(e){sistemaOnline=false;mostrarOffline();return null;}
         }
-        const data = await res.json();
-        const status = (data.config && data.config.status) ? data.config.status : 'OFFLINE';
-        if (status === 'OFFLINE') {
-            sistemaOnline = false;
-            mostrarOffline();
-        } else {
-            sistemaOnline = true;
-            esconderOffline();
-        }
-        return data;
-    } catch (e) {
-        sistemaOnline = false;
-        mostrarOffline();
-        return null;
-    }
-}
+        function mostrarOffline(){document.getElementById('offline-overlay').style.display='flex';}
+        function esconderOffline(){document.getElementById('offline-overlay').style.display='none';}
 
-// ==================== SINCRONIZAÇÃO ====================
-async function sync() {
-    const data = await verificarStatus();
-    if (!data || !sistemaOnline) return;
-    
-    if (data.config && data.config.evento && data.config.evento !== 'Geral') {
-        ev = data.config.evento; 
-        formatStr = data.config.formato || 'POLAROID'; 
-        eventoId = data.config.eventoId;
-        guestbookAtivo = (data.config.livro === true || data.config.livro === 1); 
-        molduraBase64 = data.moldura || '';
-    } else { 
-        ev = "Geral"; formatStr = "POLAROID"; eventoId = ""; molduraBase64 = ""; guestbookAtivo = false; 
-    }
-    document.getElementById('nome-evento-capa').innerText = ev;
-    document.getElementById('modo-guestbook').style.display = guestbookAtivo ? 'block' : 'none';
-    configAtual = FORMATOS[formatStr.toUpperCase()] || FORMATOS["POLAROID"];
-}        
+        // ==================== SINCRONIZAÇÃO (IGUAL BOTOEIRA) ====================
+        async function sync(){
+            const data=await verificarStatus();
+            if(!data||!sistemaOnline)return;
+            if(data.config&&data.config.evento&&data.config.evento!=='Geral'){
+                ev=data.config.evento;formatStr=data.config.formato||'POLAROID';eventoId=data.config.eventoId;
+                guestbookAtivo=(data.config.livro===true||data.config.livro===1);molduraBase64=data.moldura||'';
+            }else{ev="Geral";formatStr="POLAROID";eventoId="";molduraBase64="";guestbookAtivo=false;}
+            document.getElementById('nome-evento-capa').innerText=ev;
+            document.getElementById('modo-guestbook').style.display=guestbookAtivo?'block':'none';
+            configAtual=FORMATOS[formatStr.toUpperCase()]||FORMATOS["POLAROID"];
+        }
 
         // ==================== POLLING DO ESTADO (MODO BOTOEIRA) ====================
         async function pollServerState() {
@@ -274,6 +253,7 @@ async function sync() {
         }
 
         async function ligar() {
+            if (!sistemaOnline) { alert("Sistema em manutenção!"); return; }
             if (modoOperacao === 'botoeira') return;
             if (!molduraBase64) return alert("Moldura não carregada!");
             document.getElementById('cam-container').style.display = "block";

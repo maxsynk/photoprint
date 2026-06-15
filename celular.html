@@ -149,38 +149,50 @@
         function loadSavedBackground() { const savedBg = localStorage.getItem('photoprint_bg_mobile'); if (savedBg) { dynamicBg.style.backgroundImage = `url('${savedBg}')`; dynamicBg.classList.add('active'); document.body.classList.add('bg-active'); } }
         loadSavedBackground();
 
-        // ==================== ONLINE/OFFLINE (CORRIGIDO - sem conflito) ====================
-        async function verificarStatus() {
-            try {
-                const res = await fetch(`${API}/status?t=${Date.now()}`);
-                if (!res || !res.ok) return null;
-                const data = await res.json();
-                sistemaOnline = true;
-                esconderOffline();
-                return data;
-            } catch (e) { return null; }
+// ==================== ONLINE/OFFLINE ====================
+async function verificarStatus() {
+    try {
+        const res = await fetch(`${API}/get-all-states?t=${Date.now()}`);
+        if (!res || !res.ok) {
+            sistemaOnline = false;
+            mostrarOffline();
+            return null;
         }
-        function mostrarOffline() { document.getElementById('offline-overlay').style.display = 'flex'; }
-        function esconderOffline() { document.getElementById('offline-overlay').style.display = 'none'; }
+        const data = await res.json();
+        const status = (data.config && data.config.status) ? data.config.status : 'OFFLINE';
+        if (status === 'OFFLINE') {
+            sistemaOnline = false;
+            mostrarOffline();
+        } else {
+            sistemaOnline = true;
+            esconderOffline();
+        }
+        return data;
+    } catch (e) {
+        sistemaOnline = false;
+        mostrarOffline();
+        return null;
+    }
+}
 
-        // ==================== SINCRONIZAÇÃO ====================
-        async function sync() {
-            const dataStatus = await verificarStatus();
-            if (!dataStatus) return;
-            
-            try {
-                const r = await fetch(`${API}/get-all-states?t=${Date.now()}`);
-                if (!r || !r.ok) return;
-                const d = await r.json();
-                if (d.config && d.config.evento && d.config.evento !== 'Geral') {
-                    ev = d.config.evento; formatStr = d.config.formato || 'POLAROID'; eventoId = d.config.eventoId;
-                    guestbookAtivo = (d.config.livro === true || d.config.livro === 1); molduraBase64 = d.moldura || '';
-                } else { ev = "Geral"; formatStr = "POLAROID"; eventoId = ""; molduraBase64 = ""; guestbookAtivo = false; }
-                document.getElementById('nome-evento-capa').innerText = ev;
-                document.getElementById('modo-guestbook').style.display = guestbookAtivo ? 'block' : 'none';
-                configAtual = FORMATOS[formatStr.toUpperCase()] || FORMATOS["POLAROID"];
-            } catch(e) {}
-        }
+// ==================== SINCRONIZAÇÃO ====================
+async function sync() {
+    const data = await verificarStatus();
+    if (!data || !sistemaOnline) return;
+    
+    if (data.config && data.config.evento && data.config.evento !== 'Geral') {
+        ev = data.config.evento; 
+        formatStr = data.config.formato || 'POLAROID'; 
+        eventoId = data.config.eventoId;
+        guestbookAtivo = (data.config.livro === true || data.config.livro === 1); 
+        molduraBase64 = data.moldura || '';
+    } else { 
+        ev = "Geral"; formatStr = "POLAROID"; eventoId = ""; molduraBase64 = ""; guestbookAtivo = false; 
+    }
+    document.getElementById('nome-evento-capa').innerText = ev;
+    document.getElementById('modo-guestbook').style.display = guestbookAtivo ? 'block' : 'none';
+    configAtual = FORMATOS[formatStr.toUpperCase()] || FORMATOS["POLAROID"];
+}        
 
         // ==================== POLLING DO ESTADO (MODO BOTOEIRA) ====================
         async function pollServerState() {

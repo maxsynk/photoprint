@@ -147,16 +147,23 @@
 
         // ==================== ONLINE/OFFLINE (IGUAL BOTOEIRA) ====================
         async function verificarStatus(){
-            try{
-                const res=await fetch(`${API}/get-all-states?t=${Date.now()}`);
-                if(!res||!res.ok){sistemaOnline=false;mostrarOffline();return null;}
-                const data=await res.json();
-                const status=(data.config&&data.config.status)?data.config.status:'OFFLINE';
-                if(status==='OFFLINE'){sistemaOnline=false;mostrarOffline();}
-                else{sistemaOnline=true;esconderOffline();}
-                return data;
-            }catch(e){sistemaOnline=false;mostrarOffline();return null;}
+    try{
+        const res=await fetch(`${API}/get-all-states?t=${Date.now()}`);
+        if(!res||!res.ok){
+            sistemaOnline=false;
+            mostrarOffline();
+            return null;
         }
+        const texto=await res.text();
+        let data;
+        try{data=JSON.parse(texto);}catch(e){sistemaOnline=false;mostrarOffline();return null;}
+        
+        const status=(data.config&&data.config.status)?data.config.status:'OFFLINE';
+        if(status==='OFFLINE'){sistemaOnline=false;mostrarOffline();}
+        else{sistemaOnline=true;esconderOffline();}
+        return data;
+    }catch(e){sistemaOnline=false;mostrarOffline();return null;}
+}
         function mostrarOffline(){document.getElementById('offline-overlay').style.display='flex';}
         function esconderOffline(){document.getElementById('offline-overlay').style.display='none';}
 

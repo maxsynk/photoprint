@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHOTO PRINT - MOBILE v2.9</title>
+    <title>PHOTO PRINT - MOBILE v3.0</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --neon: #39ff14; --error: #ff0000; --blue-cyan: #00e5ff; }
@@ -56,6 +56,7 @@
         #sub-count { font-size: 14px; font-weight: bold; color: var(--neon); text-transform: uppercase; letter-spacing: 2px; }
         #cam-controls { position: absolute; bottom: 40px; left: 0; right: 0; display: flex; align-items: center; justify-content: space-evenly; width: 100%; pointer-events: auto; }
         .cam-btn { width: 60px; height: 60px; background: rgba(0,0,0,0.6); border: 1px solid var(--neon); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .cam-btn svg { width: 28px; height: 28px; fill: var(--neon); }
         .shutter-btn { width: 85px; height: 85px; background: black; border-radius: 50%; border: 4px solid var(--neon); cursor: pointer; box-shadow: 0 0 20px var(--neon); }
         .print-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 90%; max-width: 360px; margin: 12px 0; }
         .print-capsule-btn { background: transparent; border: 2px solid var(--neon); color: white; padding: 10px 15px; font-size: 13px; font-weight: bold; border-radius: 50px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
@@ -81,9 +82,13 @@
         <div id="overlay">
             <div class="topo-grupo"><div id="info-topo">CARREGANDO...</div><span id="num-count"></span><span id="sub-count">AGUARDANDO START</span></div>
             <div id="cam-controls">
-                <div class="cam-btn" onclick="voltarHome()"><svg viewBox="0 0 24 24" width="25" fill="var(--neon)"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/></svg></div>
+                <div class="cam-btn" onclick="voltarHome()">
+                    <svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/></svg>
+                </div>
                 <div id="shutter-placeholder"><div class="shutter-btn" onclick="iniciarSequencia()"></div></div>
-                <div class="cam-btn" onclick="switchCam()"><svg viewBox="0 0 24 24" width="28" fill="var(--neon)"><path d="M15.5,14L20.5,19L19.08,20.42L14.08,15.42L15.5,14M3,3.27L4.27,22,19.73L20.73,21L18.11,18.39C17.09,19.38 15.62,20 14,20H10V17H14C14.7,17 15.35,16.79 15.9,16.42L12,12.52V15L7,10L8.1,8.9L3,3.27M17,10V7H13V10.18L11,8.18V5H17V2L22,7L17,12V10Z"/></svg></div>
+                <div class="cam-btn" onclick="switchCam()">
+                    <svg viewBox="0 0 24 24"><path d="M12 9V1L7 6h10l-5-5v8zm0 6v8l5-5H7l5 5zm-5-3H1l5-5v10l-5-5zm10 0h6l-5 5V12l5 5z"/></svg>
+                </div>
             </div>
         </div>
     </div>
@@ -110,10 +115,8 @@
     <script>
         const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
         let ev = "", formatStr = "", molduraBase64 = "", eventoId = "", guestbookAtivo = false, sistemaOnline = true;
-        let pics = [], stream = null, facingMode = "user", configAtual = null, quantidadeCopias = 1;
-        let modoOperacao = "manual"; // "manual" ou "botoeira"
-        let lastState = 'start';
-        let captureInProgress = false;
+        let pics = [], stream = null, facingMode = "environment", configAtual = null, quantidadeCopias = 1;
+        let modoOperacao = "manual", lastState = 'start', captureInProgress = false;
 
         const FORMATOS = {
             "TIRINHA": { w: 591, h: 1819, fotos: 3, key: "TIRINHA", exigeH: false },
@@ -129,13 +132,9 @@
             modoOperacao = modo;
             document.getElementById('btn-modo-manual').classList.toggle('activo', modo === 'manual');
             document.getElementById('btn-modo-botoeira').classList.toggle('activo', modo === 'botoeira');
-            
             const btnEye = document.getElementById('main-action-btn');
-            if (modo === 'botoeira') {
-                btnEye.classList.add('desativado');
-            } else {
-                btnEye.classList.remove('desativado');
-            }
+            if (modo === 'botoeira') { btnEye.classList.add('desativado'); } 
+            else { btnEye.classList.remove('desativado'); }
             localStorage.setItem('celular_modo', modo);
         }
 
@@ -150,31 +149,37 @@
         function loadSavedBackground() { const savedBg = localStorage.getItem('photoprint_bg_mobile'); if (savedBg) { dynamicBg.style.backgroundImage = `url('${savedBg}')`; dynamicBg.classList.add('active'); document.body.classList.add('bg-active'); } }
         loadSavedBackground();
 
-        // ==================== ONLINE/OFFLINE ====================
+        // ==================== ONLINE/OFFLINE (CORRIGIDO - sem conflito) ====================
         async function verificarStatus() {
             try {
-                const res = await fetch(`${API}/get-all-states?t=${Date.now()}`);
-                if (!res || !res.ok) { sistemaOnline = false; mostrarOffline(); return null; }
+                const res = await fetch(`${API}/status?t=${Date.now()}`);
+                if (!res || !res.ok) return null;
                 const data = await res.json();
-                const status = (data.config && data.config.status) ? data.config.status : 'OFFLINE';
-                if (status === 'OFFLINE') { sistemaOnline = false; mostrarOffline(); } else { sistemaOnline = true; esconderOffline(); }
+                sistemaOnline = true;
+                esconderOffline();
                 return data;
-            } catch (e) { sistemaOnline = false; mostrarOffline(); return null; }
+            } catch (e) { return null; }
         }
         function mostrarOffline() { document.getElementById('offline-overlay').style.display = 'flex'; }
         function esconderOffline() { document.getElementById('offline-overlay').style.display = 'none'; }
 
         // ==================== SINCRONIZAÇÃO ====================
         async function sync() {
-            const data = await verificarStatus();
-            if (!data || !sistemaOnline) return;
-            if (data.config && data.config.evento && data.config.evento !== 'Geral') {
-                ev = data.config.evento; formatStr = data.config.formato || 'POLAROID'; eventoId = data.config.eventoId;
-                guestbookAtivo = (data.config.livro === true || data.config.livro === 1); molduraBase64 = data.moldura || '';
-            } else { ev = "Geral"; formatStr = "POLAROID"; eventoId = ""; molduraBase64 = ""; guestbookAtivo = false; }
-            document.getElementById('nome-evento-capa').innerText = ev;
-            document.getElementById('modo-guestbook').style.display = guestbookAtivo ? 'block' : 'none';
-            configAtual = FORMATOS[formatStr.toUpperCase()] || FORMATOS["POLAROID"];
+            const dataStatus = await verificarStatus();
+            if (!dataStatus) return;
+            
+            try {
+                const r = await fetch(`${API}/get-all-states?t=${Date.now()}`);
+                if (!r || !r.ok) return;
+                const d = await r.json();
+                if (d.config && d.config.evento && d.config.evento !== 'Geral') {
+                    ev = d.config.evento; formatStr = d.config.formato || 'POLAROID'; eventoId = d.config.eventoId;
+                    guestbookAtivo = (d.config.livro === true || d.config.livro === 1); molduraBase64 = d.moldura || '';
+                } else { ev = "Geral"; formatStr = "POLAROID"; eventoId = ""; molduraBase64 = ""; guestbookAtivo = false; }
+                document.getElementById('nome-evento-capa').innerText = ev;
+                document.getElementById('modo-guestbook').style.display = guestbookAtivo ? 'block' : 'none';
+                configAtual = FORMATOS[formatStr.toUpperCase()] || FORMATOS["POLAROID"];
+            } catch(e) {}
         }
 
         // ==================== POLLING DO ESTADO (MODO BOTOEIRA) ====================
@@ -187,7 +192,6 @@
                 if (d.state && d.state !== lastState) {
                     lastState = d.state;
                     if (d.state === 'capturing' && !captureInProgress) {
-                        // Botoeira disparou!
                         if (!molduraBase64) return;
                         document.getElementById('cam-container').style.display = "block";
                         document.getElementById('info-topo').innerText = `${ev} | ${configAtual.key}`;
@@ -205,13 +209,8 @@
             pics = [];
             for (let n = 1; n <= configAtual.fotos; n++) {
                 document.getElementById('sub-count').innerText = `FOTO ${n} DE ${configAtual.fotos}`;
-                for (let i = 5; i > 0; i--) {
-                    document.getElementById('num-count').innerText = i;
-                    await new Promise(r => setTimeout(r, 1000));
-                }
-                document.getElementById('num-count').innerText = "SORRIA!";
-                snap();
-                await new Promise(r => setTimeout(r, 1500));
+                for (let i = 5; i > 0; i--) { document.getElementById('num-count').innerText = i; await new Promise(r => setTimeout(r, 1000)); }
+                document.getElementById('num-count').innerText = "SORRIA!"; snap(); await new Promise(r => setTimeout(r, 1500));
             }
             processarAuto();
         }
@@ -225,29 +224,12 @@
                 cv.width = configAtual.w; cv.height = configAtual.h;
                 ctx.fillStyle = "white"; ctx.fillRect(0, 0, cv.width, cv.height);
                 if (configAtual.key === "TIRINHA") {
-                    const slots = [{y:0.030, h:0.254}, {y:0.296, h:0.254}, {y:0.559, h:0.254}];
-                    let count = 0;
-                    pics.forEach((src, i) => {
-                        const img = new Image();
-                        img.onload = () => {
-                            const s = slots[i]; const dx = cv.width * 0.06, dw = cv.width * 0.88;
-                            const dy = cv.height * s.y, dh = cv.height * s.h;
-                            ctx.save(); ctx.beginPath(); ctx.rect(dx, dy, dw, dh); ctx.clip();
-                            const r = Math.max(dw/img.width, dh/img.height);
-                            ctx.drawImage(img, dx+(dw-img.width*r)/2, dy+(dh-img.height*r)/2, img.width*r, img.height*r);
-                            ctx.restore(); count++;
-                            if (count === 3) { ctx.drawImage(molduraImg, 0, 0, cv.width, cv.height); enviarAuto(cv.toDataURL('image/jpeg', 0.95)); }
-                        }; img.src = src;
-                    });
+                    const slots = [{y:0.030, h:0.254}, {y:0.296, h:0.254}, {y:0.559, h:0.254}]; let count = 0;
+                    pics.forEach((src, i) => { const img = new Image(); img.onload = () => { const s = slots[i]; const dx = cv.width * 0.06, dw = cv.width * 0.88; const dy = cv.height * s.y, dh = cv.height * s.h; ctx.save(); ctx.beginPath(); ctx.rect(dx, dy, dw, dh); ctx.clip(); const r = Math.max(dw/img.width, dh/img.height); ctx.drawImage(img, dx+(dw-img.width*r)/2, dy+(dh-img.height*r)/2, img.width*r, img.height*r); ctx.restore(); count++; if (count === 3) { ctx.drawImage(molduraImg, 0, 0, cv.width, cv.height); enviarAuto(cv.toDataURL('image/jpeg', 0.95)); } }; img.src = src; });
                 } else {
                     const img = new Image();
-                    img.onload = () => {
-                        const scale = Math.max(cv.width/img.width, cv.height/img.height);
-                        const w = img.width * scale, h = img.height * scale;
-                        ctx.drawImage(img, (cv.width-w)/2, (cv.height-h)/2, w, h);
-                        ctx.drawImage(molduraImg, 0, 0, cv.width, cv.height);
-                        enviarAuto(cv.toDataURL('image/jpeg', 0.95));
-                    }; img.src = pics[0];
+                    img.onload = () => { const scale = Math.max(cv.width/img.width, cv.height/img.height); const w = img.width * scale, h = img.height * scale; ctx.drawImage(img, (cv.width-w)/2, (cv.height-h)/2, w, h); ctx.drawImage(molduraImg, 0, 0, cv.width, cv.height); enviarAuto(cv.toDataURL('image/jpeg', 0.95)); };
+                    img.src = pics[0];
                 }
             };
             molduraImg.src = molduraBase64;
@@ -256,38 +238,39 @@
         async function enviarAuto(dataUrl) {
             document.getElementById('loader').innerHTML = `<div class="spin"></div><p style="color:var(--neon);">ENVIANDO...</p>`;
             const blob = await fetch(dataUrl).then(r => r.blob());
-            const ts = Date.now();
-            const nome = `foto_${ts}_1c.jpg`;
-            const fd = new FormData();
-            fd.append('foto', blob, nome);
-            fd.append('eventoId', eventoId);
-            fd.append('timestamp', String(ts) + '_1c');
-            fd.append('copias', '1');
-            try {
-                await fetch(`${API}/salvar-foto`, { method: 'POST', body: fd });
-                await fetch(`${API}/set-state`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state: 'options' }) });
-            } catch(e) {}
-            captureInProgress = false;
-            location.reload();
+            const ts = Date.now(); const nome = `foto_${ts}_1c.jpg`;
+            const fd = new FormData(); fd.append('foto', blob, nome); fd.append('eventoId', eventoId); fd.append('timestamp', String(ts) + '_1c'); fd.append('copias', '1');
+            try { await fetch(`${API}/salvar-foto`, { method: 'POST', body: fd }); await fetch(`${API}/set-state`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state: 'options' }) }); } catch(e) {}
+            captureInProgress = false; location.reload();
         }
 
         function checkOrientation() { if (!configAtual || !configAtual.exigeH) { document.getElementById('rotate-warning').style.display = "none"; return; } document.getElementById('rotate-warning').style.display = (window.innerWidth <= window.innerHeight) ? "flex" : "none"; }
         window.addEventListener("resize", checkOrientation);
 
-        async function startStream() { if (stream) { stream.getTracks().forEach(t => t.stop()); } try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: facingMode }, width: { ideal: 1920 }, height: { ideal: 1080 } } }); document.getElementById('v').srcObject = stream; document.getElementById('v').className = (facingMode === "user") ? "mirror" : ""; } catch (e) { alert("Câmera não disponível."); } }
-        async function switchCam() { facingMode = (facingMode === "user") ? "environment" : "user"; await startStream(); }
+        async function startStream() { 
+            if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+            try { 
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: facingMode }, width: { ideal: 1920 }, height: { ideal: 1080 } } }); 
+                document.getElementById('v').srcObject = stream; 
+                document.getElementById('v').className = (facingMode === "user") ? "mirror" : ""; 
+            } catch (e) { alert("Câmera não disponível."); } 
+        }
+        
+        async function switchCam() { 
+            facingMode = (facingMode === "user") ? "environment" : "user"; 
+            await startStream(); 
+        }
 
         async function ligar() {
-            if (modoOperacao === 'botoeira') return; // Não faz nada no modo botoeira
-            if (!sistemaOnline) { alert("Sistema em manutenção!"); return; }
-            if (!molduraBase64) return alert("Moldura não carregada! Sincronize com o Painel.");
+            if (modoOperacao === 'botoeira') return;
+            if (!molduraBase64) return alert("Moldura não carregada!");
             document.getElementById('cam-container').style.display = "block";
             document.getElementById('info-topo').innerText = `${ev} | ${configAtual.key}`;
             document.getElementById('num-count').innerText = ""; document.getElementById('sub-count').innerText = "TOQUE NO DISPARADOR";
             checkOrientation(); await startStream();
         }
 
-        function voltarHome() { if (stream) stream.getTracks().forEach(t => t.stop()); document.getElementById('cam-container').style.display = "none"; document.getElementById('rotate-warning').style.display = "none"; document.getElementById('shutter-placeholder').style.visibility = "visible"; }
+        function voltarHome() { if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; } document.getElementById('cam-container').style.display = "none"; document.getElementById('rotate-warning').style.display = "none"; document.getElementById('shutter-placeholder').style.visibility = "visible"; }
 
         async function iniciarSequencia() { if (configAtual.exigeH && window.innerWidth <= window.innerHeight) return; document.getElementById('shutter-placeholder').style.visibility = "hidden"; pics = []; for (let n = 1; n <= configAtual.fotos; n++) { document.getElementById('sub-count').innerText = `FOTO ${n} DE ${configAtual.fotos}`; for (let i = 5; i > 0; i--) { document.getElementById('num-count').innerText = i; await new Promise(r => setTimeout(r, 1000)); } document.getElementById('num-count').innerText = "SORRIA!"; snap(); await new Promise(r => setTimeout(r, 1500)); } processar(); }
         function snap() { document.getElementById('flash').style.display = "block"; setTimeout(() => document.getElementById('flash').style.display = "none", 100); const v = document.getElementById('v'), cv = document.getElementById('c-snap'), ctx = cv.getContext('2d'); cv.width = v.videoWidth; cv.height = v.videoHeight; if (facingMode === "user") { ctx.translate(cv.width, 0); ctx.scale(-1, 1); } ctx.drawImage(v, 0, 0); pics.push(cv.toDataURL('image/jpeg', 0.92)); }
@@ -303,10 +286,9 @@
         // ==================== INICIALIZAÇÃO ====================
         const savedModo = localStorage.getItem('celular_modo') || 'manual';
         setModo(savedModo);
-
         sync();
         setInterval(sync, 10000);
-        setInterval(pollServerState, 800); // Polling para modo Botoeira
+        setInterval(pollServerState, 800);
     </script>
 </body>
 </html>

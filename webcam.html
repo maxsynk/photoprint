@@ -183,11 +183,15 @@ function checkMotion(){
         );
 
 
-        let total = 0;
+
+        let movement = 0;
 
 
 
         if(previousMotionFrame){
+
+
+            let changed = 0;
 
 
             for(
@@ -197,38 +201,91 @@ function checkMotion(){
             ){
 
 
-                total += Math.abs(
+                const diff =
+
+                Math.abs(
                     frame.data[i] -
                     previousMotionFrame.data[i]
+                )
+
+                +
+
+                Math.abs(
+                    frame.data[i+1] -
+                    previousMotionFrame.data[i+1]
+                )
+
+                +
+
+                Math.abs(
+                    frame.data[i+2] -
+                    previousMotionFrame.data[i+2]
                 );
+
+
+
+                if(diff > 45){
+
+                    changed++;
+
+                }
 
 
             }
 
 
 
-            let movement =
-            total /
-            (frame.data.length/40);
+            movement =
+
+            (
+                changed /
+                (frame.data.length/40)
+            ) * 100;
 
 
+
+            /*
+              Mostra somente para ajuste
+            */
 
             debug(
-                "MOVIMENTO: "+
-                movement.toFixed(2)
+                "MOV:"+movement.toFixed(2)
             );
 
 
 
-            if(movement > 5){
+            if(movement > 8){
+
+
+                motionFrames++;
+
+
+            }else{
+
+
+                motionFrames=0;
+
+
+            }
+
+
+
+            if(
+                motionFrames >= 15 &&
+                !personDetected
+            ){
+
+
+                personDetected=true;
 
 
                 debug(
-                    "👤 MOVIMENTO DETECTADO"
+                    "👤 PESSOA DETECTADA"
                 );
 
 
             }
+
 
 
         }
@@ -238,7 +295,9 @@ function checkMotion(){
         previousMotionFrame = frame;
 
 
+
     }
+
 
 
     requestAnimationFrame(checkMotion);

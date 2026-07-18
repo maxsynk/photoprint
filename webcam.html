@@ -2,7 +2,8 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>WEBCAM - PHOTO PRINT v10.4</title>
+<title>WEBCAM - PHOTO PRINT v12.0</title>
+<script src="https://cdn.jsdelivr.net/npm/handtrackjs@0.1.5/dist/handtrack.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 :root{ --neon:#39ff14; --dark:#050505; --danger:#ff3131; }
@@ -35,6 +36,9 @@ body.bg-active .corner-glow{ display:none; }
 #offline-overlay{ position:fixed; inset:0; background:#000; z-index:9999; display:none; align-items:center; justify-content:center; flex-direction:column; }
 #offline-overlay .offline-text{ font-size:40px; font-weight:900; color:var(--danger); text-shadow:0 0 20px var(--danger); animation:pulseOff 1.5s infinite; text-transform:uppercase; letter-spacing:4px; text-align:center; }
 @keyframes pulseOff{ 0%,100%{ opacity:1; } 50%{ opacity:0.3; } }
+#gesto-msg{ position:fixed; bottom:22%; left:50%; transform:translateX(-50%); z-index:45; pointer-events:none; display:none; }
+#gesto-msg .msg-text{ font-size:32px; font-weight:900; color:#fff; text-shadow:0 0 30px var(--neon); animation:pulseGesto 1s infinite; text-transform:uppercase; letter-spacing:3px; text-align:center; background:rgba(0,0,0,0.7); padding:15px 35px; border-radius:30px; border:2px solid var(--neon); }
+@keyframes pulseGesto{ 0%,100%{ opacity:1;transform:scale(1); } 50%{ opacity:0.7;transform:scale(1.05); } }
 .screen{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:20; flex-direction:column; }
 .btn-start{ position:relative; width:380px; height:380px; border-radius:50%; border:4px solid var(--neon); background:radial-gradient(circle at center, rgba(57,255,20,0.18), rgba(0,0,0,0.96)); overflow:hidden; transition:0.3s; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:35px; box-shadow:0 0 30px rgba(57,255,20,0.8), inset 0 0 60px rgba(57,255,20,0.15); backdrop-filter:blur(4px); z-index:30; }
 .btn-start::before{ content:''; position:absolute; width:250%; height:250%; background:conic-gradient(transparent, rgba(57,255,20,1), rgba(57,255,20,0.25), transparent); animation:rotateGlow 3s linear infinite; filter:blur(20px); opacity:1; }
@@ -45,12 +49,13 @@ body.bg-active .corner-glow{ display:none; }
 .start-title{ color:var(--neon); font-family:'Orbitron',sans-serif; font-size:22px; font-weight:900; letter-spacing:4px; text-shadow:0 0 15px var(--neon), 0 0 35px var(--neon); margin-bottom:18px; text-transform:uppercase; line-height:1.4; min-height:40px; }
 .start-subtitle{ font-size:22px; line-height:1.6; }
 #camera-wrapper{ position:absolute; inset:0; width:100vw; height:100vh; background:#000; overflow:hidden; z-index:40; }
-#camera-feed{ width:100%; height:100%; object-fit:cover; transform:scaleX(-1); }
-#camera-canvas{ width:100%; height:100%; object-fit:cover; }
-.fun-text{ position:absolute; bottom:18%; left:50%; transform:translateX(-50%); font-family:'Comic Sans MS','Arial Rounded MT Bold',sans-serif; font-size:38px; font-weight:900; text-align:center; color:#fff; white-space:nowrap; text-transform:uppercase; text-shadow:0px 0px 10px #ff0080,0px 0px 20px #ff8c00,0px 0px 30px #ffff00; animation:funPulse 0.6s infinite alternate, hueShift 3s linear infinite; z-index:50; pointer-events:none; background:rgba(0,0,0,0.5); padding:10px 25px; border-radius:30px; }
+#camera-feed{ width:100%; height:100%; object-fit:cover; transform:scaleX(-1); display:block; }
+#camera-canvas{ width:100%; height:100%; object-fit:cover; display:none; }
+#gesture-canvas{ position:absolute; inset:0; width:100vw; height:100vh; z-index:41; pointer-events:none; }
+.fun-text{ position:absolute; bottom:18%; left:50%; transform:translateX(-50%); font-family:'Comic Sans MS','Arial Rounded MT Bold',sans-serif; font-size:38px; font-weight:900; text-align:center; color:#fff; white-space:nowrap; text-transform:uppercase; text-shadow:0px 0px 10px #ff0080,0px 0px 20px #ff8c00,0px 0px 30px #ffff00; animation:funPulse 0.6s infinite alternate, hueShift 3s linear infinite; z-index:50; pointer-events:none; background:rgba(0,0,0,0.5); padding:10px 25px; border-radius:30px; display:none; }
 @keyframes funPulse{ 0%{ transform:translateX(-50%) scale(0.9); } 100%{ transform:translateX(-50%) scale(1.1); } }
 @keyframes hueShift{ 0%{ filter:hue-rotate(0deg); } 100%{ filter:hue-rotate(360deg); } }
-#options-overlay{ position:absolute; bottom:50px; left:50%; transform:translateX(-50%); background:rgba(255,255,255,0.95); padding:20px 45px; border-radius:50px; box-shadow:0 10px 30px rgba(0,0,0,0.5); z-index:60; text-align:center; }
+#options-overlay{ position:absolute; bottom:50px; left:50%; transform:translateX(-50%); background:rgba(255,255,255,0.95); padding:20px 45px; border-radius:50px; box-shadow:0 10px 30px rgba(0,0,0,0.5); z-index:60; text-align:center; display:none; }
 .options-text{ font-family:'Arial',sans-serif; font-size:28px; color:#222; font-weight:bold; letter-spacing:1px; }
 .status-text{ font-family:'Orbitron',sans-serif; font-size:40px; color:var(--neon); font-weight:900; letter-spacing:4px; text-shadow:0 0 20px var(--neon); text-align:center; animation:pulseText 1.5s infinite; background:rgba(0,0,0,0.8); padding:40px 80px; border-radius:20px; border:2px solid var(--neon); backdrop-filter:blur(10px); }
 @keyframes pulseText{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.05); } }
@@ -66,392 +71,202 @@ body.bg-active .corner-glow{ display:none; }
 <div id="debug-info">SISTEMA PRONTO</div>
 <div id="bg-menu"><label class="bg-btn" for="bg-input">🖼 ALTERAR FUNDO</label><div class="bg-btn" onclick="removeBackground()">✖ SEM FUNDO</div></div>
 <input type="file" id="bg-input" accept="image/*"/>
-
-<!-- OFFLINE OVERLAY -->
 <div id="offline-overlay"><div class="offline-text">SISTEMA EM<br>MANUTENÇÃO</div></div>
+<div id="gesto-msg"><div class="msg-text" id="msg-texto">🖐️ MOSTRE A MÃO ABERTA</div></div>
 
-<div id="screen-start" class="screen"><div class="btn-start"><div class="start-content"><div class="start-icon">📸</div><div class="start-title">PHOTO PRINT</div><div class="start-subtitle">Aguardando comando...</div></div></div></div>
-<div id="screen-camera" class="screen" style="display:none;z-index:40;"><div id="camera-wrapper"><video id="camera-feed" autoplay playsinline muted></video><canvas id="camera-canvas" style="display:none;"></canvas><div id="fun-text" class="fun-text" style="display:none;"></div><div id="options-overlay" style="display:none;"><div class="options-text">ACESSE O TOTEM PARA IMPRIMIR SUA FOTO</div></div></div></div>
+<div id="screen-start" class="screen"><div class="btn-start"><div class="start-content"><div class="start-icon">📸</div><div class="start-title">PHOTO PRINT</div><div class="start-subtitle">Aproxime-se para ativar</div></div></div></div>
+<div id="screen-camera" class="screen" style="display:none;z-index:40;"><div id="camera-wrapper"><video id="camera-feed" autoplay playsinline muted></video><canvas id="camera-canvas"></canvas><canvas id="gesture-canvas"></canvas><div id="fun-text" class="fun-text"></div><div id="options-overlay"><div class="options-text">ACESSE O TOTEM PARA IMPRIMIR SUA FOTO</div></div></div></div>
 <div id="screen-thanks" class="screen" style="display:none;"><div class="status-text" id="thanks-text">🖨️ AGUARDE A IMPRESSÃO...</div></div>
+
 <script>
 const API_BASE='https://photoprint-api.maxprimefotovideo.workers.dev';
 const videoFeed=document.getElementById('camera-feed');
 const canvasCapture=document.getElementById('camera-canvas');
+const gestureCanvas=document.getElementById('gesture-canvas');
+const gctx=gestureCanvas.getContext('2d');
 const ctx=canvasCapture.getContext('2d');
 const funText=document.getElementById('fun-text');
 const optionsOverlay=document.getElementById('options-overlay');
 let stream=null,lastState='start',captureInProgress=false,initialLoad=true,sistemaOnline=true;
 let eventoAtual=null,eventoId=null,formatoAtual='10X15V',molduraBase64=null;
 let fotosTirinha=[];
-let motionActive=false;
-let lastMotionTime=0;
-let lastMovementIdle=0;
-let motionCanvas=null;
-let motionContext=null;
-let previousMotionFrame=null;
-let personDetected=false;
-let motionSensitivity=2.5;
-let motionFrames=0;
-let motionConfirmFrames=8;
-let lastMotionTime=0;
+let model=null,gestureRunning=false,gestureCountdownActive=false;
+let handOpenFrames=0,handClosedFrames=0;
+let motionCanvas=null,motionCtx=null,previousFrame=null;
+let personDetected=false,inactivityTimeout=null;
 
 const FORMATOS={"TIRINHA":{w:591,h:1819},"POLAROID":{w:1041,h:1311},"10X15V":{w:1181,h:1819},"10X15H":{w:1772,h:1228}};
-
 function debug(msg){console.log('[WEBCAM]',msg);const el=document.getElementById('debug-info');if(el)el.innerText=msg;}
-function getCopiasFisicas(o){if(o===1)return 1;if(o===2)return 2;if(o===3)return 2;if(o===4)return 3;return 1;}
 
 async function verificarStatus(){
-    try{
-        const res=await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`);
-        if(!res||!res.ok){sistemaOnline=false;mostrarOffline();return;}
-        const data=await res.json();
-        const status=(data.config&&data.config.status)?data.config.status:'OFFLINE';
-        if(status==='OFFLINE'){sistemaOnline=false;mostrarOffline();}
-        else{sistemaOnline=true;esconderOffline();}
-        return data;
-    }catch(e){sistemaOnline=false;mostrarOffline();return null;}
+    try{const res=await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`);if(!res||!res.ok){sistemaOnline=false;mostrarOffline();return;}const data=await res.json();const status=(data.config&&data.config.status)?data.config.status:'OFFLINE';if(status==='OFFLINE'){sistemaOnline=false;mostrarOffline();}else{sistemaOnline=true;esconderOffline();}return data;}catch(e){sistemaOnline=false;mostrarOffline();return null;}
 }
 function mostrarOffline(){document.getElementById('offline-overlay').style.display='flex';}
 function esconderOffline(){document.getElementById('offline-overlay').style.display='none';}
 
+// ==================== INICIALIZAÇÃO DA CÂMERA ====================
 async function initCamera(){
     try{
-        debug('🔎 Procurando câmera...');
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const cameras = devices.filter(d => d.kind === 'videoinput');
-        let selectedCamera = null;
-        selectedCamera = cameras.find(cam => {
-            const name = cam.label.toLowerCase();
-            return (name.includes('logitech') || name.includes('usb') || name.includes('camera') || name.includes('hd'));
-        });
-        if(!selectedCamera){ selectedCamera = cameras[0]; }
-        const constraints = {
+        const devices=await navigator.mediaDevices.enumerateDevices();
+        const cameras=devices.filter(d=>d.kind==='videoinput');
+        let selectedDevice=null;
+        for(const cam of cameras){
+            const name=cam.label.toLowerCase();
+            if(name.includes('logitech')||name.includes('usb')||name.includes('c920')||name.includes('brio')||name.includes('hd pro')){
+                selectedDevice=cam;break;
+            }
+        }
+        if(!selectedDevice&&cameras.length>0)selectedDevice=cameras[0];
+        
+        stream=await navigator.mediaDevices.getUserMedia({
             video:{
-                deviceId:selectedCamera ? {exact:selectedCamera.deviceId} : undefined,
-                width:{ideal:1920},
-                height:{ideal:1080},
-                frameRate:{ideal:30}
+                deviceId:selectedDevice?{exact:selectedDevice.deviceId}:undefined,
+                width:{ideal:1280},height:{ideal:720}
             },
             audio:false
-        };
-        stream = await navigator.mediaDevices.getUserMedia(constraints);
-        videoFeed.srcObject = stream;
-        await videoFeed.play();
-        debug('✅ Câmera OK: '+ (selectedCamera ? selectedCamera.label : 'padrão'));
-    }catch(err){
-        debug('❌ Câmera: '+ err.message);
-    }
+        });
+        videoFeed.srcObject=stream;
+        debug('✅ Câmera: '+(selectedDevice?selectedDevice.label:'padrão'));
+        startMotionDetection();
+        initGestureDetection();
+    }catch(err){debug('❌ Câmera: '+err.message);}
 }
 
-function initMotionDetector(){
-    if(motionCanvas)return;
+// ==================== DETECÇÃO DE MOVIMENTO ====================
+function startMotionDetection(){
     motionCanvas=document.createElement('canvas');
-    motionCanvas.width=320;
-    motionCanvas.height=180;
-    motionContext=motionCanvas.getContext('2d');
-    motionActive=true;
-    requestAnimationFrame(checkMotion);
+    motionCanvas.width=160;motionCanvas.height=90;
+    motionCtx=motionCanvas.getContext('2d');
+    checkMotion();
     debug('👁️ Detector de movimento ativo');
 }
 
 function checkMotion(){
-
-    if(!motionActive){
-
-        requestAnimationFrame(checkMotion);
-
-        return;
-
-    }
-
-
-
-    if(videoFeed.readyState >= 2){
-
-
-        motionContext.drawImage(
-
-            videoFeed,
-
-            0,
-
-            0,
-
-            motionCanvas.width,
-
-            motionCanvas.height
-
-        );
-
-
-
-        const frame =
-
-        motionContext.getImageData(
-
-            0,
-
-            0,
-
-            motionCanvas.width,
-
-            motionCanvas.height
-
-        );
-
-
-
-        let movement = 0;
-
-
-
-        if(previousMotionFrame){
-
-
-
-            let changedPixels = 0;
-
-
-
-            for(
-
-                let i = 0;
-
-                i < frame.data.length;
-
-                i += 12
-
-            ){
-
-
-
-                const diff =
-
-
-                Math.abs(
-
-                    frame.data[i] -
-
-                    previousMotionFrame.data[i]
-
-                )
-
-                +
-
-                Math.abs(
-
-                    frame.data[i+1] -
-
-                    previousMotionFrame.data[i+1]
-
-                )
-
-                +
-
-                Math.abs(
-
-                    frame.data[i+2] -
-
-                    previousMotionFrame.data[i+2]
-
-                );
-
-
-
-                if(diff > 25){
-
-
-                    changedPixels++;
-
-
+    if(!stream||!motionCtx){requestAnimationFrame(checkMotion);return;}
+    try{
+        if(videoFeed.readyState>=2){
+            motionCtx.drawImage(videoFeed,0,0,160,90);
+            const frame=motionCtx.getImageData(0,0,160,90);
+            if(previousFrame){
+                let changed=0;
+                for(let i=0;i<frame.data.length;i+=16){
+                    const diff=Math.abs(frame.data[i]-previousFrame.data[i])+Math.abs(frame.data[i+1]-previousFrame.data[i+1])+Math.abs(frame.data[i+2]-previousFrame.data[i+2]);
+                    if(diff>30)changed++;
                 }
-
-
-
+                const movement=(changed/(frame.data.length/16))*100;
+                if(movement>3&&!personDetected){
+                    personDetected=true;
+                    debug('👤 Pessoa detectada! Abrindo câmera...');
+                    abrirCameraPorPresenca();
+                    clearTimeout(inactivityTimeout);
+                }
+                if(movement<0.5&&personDetected){
+                    if(!inactivityTimeout){
+                        inactivityTimeout=setTimeout(()=>{
+                            if(lastState==='options'||lastState==='start'){
+                                personDetected=false;
+                                resetToStart();
+                                debug('😴 Pessoa saiu - voltando ao início');
+                            }
+                            inactivityTimeout=null;
+                        },45000);
+                    }
+                }else if(movement>1){clearTimeout(inactivityTimeout);inactivityTimeout=null;}
             }
-
-
-
-
-            movement =
-
-
-            (
-
-                changedPixels /
-
-                (frame.data.length / 12)
-
-            ) * 100;
-
-
-
-
-            /*
-            Guarda referência do estado parado
-            */
-
-
-            if(movement < 1){
-
-
-                lastMovementIdle =
-                movement.toFixed(2);
-
-
-            }
-
-
-
-
-            debug(
-
-                "PARADO: "+
-                lastMovementIdle+
-                " | MOVIMENTO: "+
-                movement.toFixed(2)+
-                " | FRAMES: "+
-                motionFrames
-
-            );
-
-
-
-
-
-            if(movement > 2){
-
-
-
-                motionFrames++;
-
-
-
-            }else{
-
-
-
-                motionFrames = 0;
-
-
-
-            }
-
-
-
-
-
-          if(
-    motionFrames >= 15 &&
-    !personDetected
-){
-
-
-    personDetected=true;
-
-
-    lastMotionTime=Date.now();
-
-
-    debug(
-        "👤 PESSOA DETECTADA"
-    );
-
-
-    abrirCameraPorPresenca();
-
-
-}   
-
-            }
-
-
-
+            previousFrame=frame;
         }
-
-
-
-
-        previousMotionFrame = frame;
-
-
-
-    }
-
-
-
-
+    }catch(e){}
     requestAnimationFrame(checkMotion);
-
-
 }
-// ==================== ABRIR CAMERA POR PRESENÇA ====================
 
 function abrirCameraPorPresenca(){
-
-    if(lastState !== 'start'){
-        return;
-    }
-
-
-    debug("👤 Presença confirmada - abrindo câmera");
-
-
-    document.querySelectorAll('.screen')
-    .forEach(e=>e.style.display='none');
-
-
-    document.getElementById('screen-camera')
-    .style.display='flex';
-
-
-
+    if(lastState!=='start'||captureInProgress)return;
     lastState='capturing';
-
-
-
-    // Aqui futuramente entra o MediaPipe Hands
-
-
-    debug("✋ Aguardando gesto da mão");
-
-
+    document.getElementById('screen-start').style.display='none';
+    document.getElementById('screen-camera').style.display='flex';
+    videoFeed.style.display='block';canvasCapture.style.display='none';
+    document.getElementById('gesto-msg').style.display='block';
+    document.getElementById('msg-texto').innerText='🖐️ MOSTRE A MÃO ABERTA';
 }
-    
+
+// ==================== DETECÇÃO DE GESTOS ====================
+async function initGestureDetection(){
+    try{
+        model=await handTrack.load({flipHorizontal:true,maxNumBoxes:1,scoreThreshold:0.6});
+        debug('🖐️ Gestos ativos!');
+        gestureRunning=true;
+        detectGesture();
+    }catch(e){debug('⚠️ Gestos indisponíveis: '+e.message);}
+}
+
+function detectGesture(){
+    if(!gestureRunning||!model||!stream){requestAnimationFrame(detectGesture);return;}
+    if(document.getElementById('screen-camera').style.display!=='flex'){requestAnimationFrame(detectGesture);return;}
+    model.detect(videoFeed).then(predictions=>{
+        gestureCanvas.width=videoFeed.videoWidth||1280;
+        gestureCanvas.height=videoFeed.videoHeight||720;
+        gctx.clearRect(0,0,gestureCanvas.width,gestureCanvas.height);
+        if(predictions.length>0){
+            const hand=predictions[0];
+            gctx.strokeStyle='#39ff14';gctx.lineWidth=4;
+            gctx.strokeRect(hand.bbox[0],hand.bbox[1],hand.bbox[2],hand.bbox[3]);
+            const ratio=hand.bbox[2]/hand.bbox[3];
+            if(ratio>0.9){
+                handClosedFrames++;handOpenFrames=0;
+                document.getElementById('gesto-msg').style.display='block';
+                document.getElementById('msg-texto').innerText='✊ FOTO!';
+                if(handClosedFrames>15&&!gestureCountdownActive&&!captureInProgress){
+                    gestureCountdownActive=true;
+                    startGestureCountdown();
+                }
+            }else{
+                handOpenFrames++;handClosedFrames=0;
+                document.getElementById('gesto-msg').style.display='block';
+                document.getElementById('msg-texto').innerText='🖐️ FECHE A MÃO PARA FOTO';
+                gestureCountdownActive=false;
+            }
+        }else{
+            handClosedFrames=0;
+            if(handOpenFrames>40){document.getElementById('gesto-msg').style.display='block';document.getElementById('msg-texto').innerText='🖐️ MOSTRE A MÃO ABERTA';}
+        }
+        requestAnimationFrame(detectGesture);
+    }).catch(()=>{requestAnimationFrame(detectGesture);});
+}
+
+function startGestureCountdown(){
+    captureInProgress=true;
+    document.getElementById('gesto-msg').style.display='none';
+    funText.style.display='block';funText.innerHTML="✨ PREPARE-SE! ✨";
+    setTimeout(()=>{
+        let cd=3;funText.innerHTML=`😁 SORRIA! 😁<br>⏳ ${cd}`;
+        const t=setInterval(()=>{cd--;if(cd>0)funText.innerHTML=`😁 SORRIA! 😁<br>⏳ ${cd}`;else{funText.style.display='none';clearInterval(t);
+            canvasCapture.width=videoFeed.videoWidth||1280;canvasCapture.height=videoFeed.videoHeight||720;
+            ctx.save();ctx.scale(-1,1);ctx.drawImage(videoFeed,-canvasCapture.width,0,canvasCapture.width,canvasCapture.height);ctx.restore();
+            videoFeed.style.display='block';canvasCapture.style.display='block';
+            debug('✅ Foto capturada (gesto)');
+            fetch(`${API_BASE}/set-state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:'options'})}).catch(()=>{});
+            captureInProgress=false;gestureCountdownActive=false;
+            optionsOverlay.style.display='block';handClosedFrames=0;handOpenFrames=0;
+            document.getElementById('gesto-msg').style.display='block';
+            document.getElementById('msg-texto').innerText='🖐️ MOSTRE A MÃO ABERTA';
+        }},1000);
+    },2500);
+}
+
+// ==================== SINCRONIZAÇÃO ====================
 async function syncEvento(){
-    const data=await verificarStatus();
-    if(!data||!sistemaOnline)return;
+    const data=await verificarStatus();if(!data||!sistemaOnline)return;
     if(data.config&&data.config.evento&&data.config.evento!=='Geral'){
-        const novoEventoId=data.config.eventoId;
-        const novoFormato=(data.config.formato||'10X15V').toUpperCase().trim();
+        const novoEventoId=data.config.eventoId;const novoFormato=(data.config.formato||'10X15V').toUpperCase().trim();
         if(eventoAtual!==data.config.evento||eventoId!==novoEventoId||formatoAtual!==novoFormato||!molduraBase64){
             eventoAtual=data.config.evento;eventoId=novoEventoId;formatoAtual=novoFormato;
-            if(data.moldura){molduraBase64=data.moldura;debug('✅ Moldura: '+formatoAtual);}
-            else{molduraBase64=null;debug('⚠️ Sem moldura');}
+            if(data.moldura){molduraBase64=data.moldura;debug('✅ Moldura: '+formatoAtual);}else{molduraBase64=null;}
             updateEventoUI();
         }
     }
 }
 function updateEventoUI(){const el=document.getElementById('active-event-name');if(eventoAtual){el.style.display='block';el.innerText=`🎉 ${eventoAtual} | ${formatoAtual}`;}else el.style.display='none';}
-
-function capturePhotoTirinha(numero){return new Promise(resolve=>{videoFeed.style.display='block';canvasCapture.style.display='none';funText.style.display='block';funText.innerHTML=`📸 FOTO ${numero} DE 3`;setTimeout(()=>{let cd=3;funText.innerHTML=`📸 FOTO ${numero} DE 3<br>⏳ ${cd}`;const t=setInterval(()=>{cd--;if(cd>0)funText.innerHTML=`📸 FOTO ${numero} DE 3<br>⏳ ${cd}`;else{funText.style.display='none';clearInterval(t);canvasCapture.width=videoFeed.videoWidth||1920;canvasCapture.height=videoFeed.videoHeight||1080;ctx.save();ctx.scale(-1,1);ctx.drawImage(videoFeed,-canvasCapture.width,0,canvasCapture.width,canvasCapture.height);ctx.restore();fotosTirinha.push(canvasCapture.toDataURL('image/jpeg',0.92));debug(`✅ Foto ${numero}/3`);videoFeed.style.display='none';canvasCapture.style.display='block';funText.style.display='block';funText.innerHTML=`✅ FOTO ${numero} DE 3`;setTimeout(()=>{canvasCapture.style.display='none';funText.style.display='none';videoFeed.style.display='block';resolve();},3000);}},1000);},1500);});}
-async function sequenciaTirinha(){fotosTirinha=[];debug('🎞️ TIRINHA 3 fotos');await capturePhotoTirinha(1);await capturePhotoTirinha(2);await capturePhotoTirinha(3);debug('✅ 3 fotos!');}
-
-async function montarTirinha(opcaoCopias){
-    if(!molduraBase64||fotosTirinha.length<3)return;
-    const copiasFisicas=getCopiasFisicas(opcaoCopias);
-    try{
-        const molduraImg=await new Promise((rs,rj)=>{const img=new Image();img.onload=()=>rs(img);img.onerror=()=>rj(new Error('Falha'));img.src=molduraBase64;});
-        const fmt=FORMATOS['TIRINHA'];const canvas=document.createElement('canvas');canvas.width=fmt.w;canvas.height=fmt.h;const cctx=canvas.getContext('2d');
-        cctx.fillStyle='#FFFFFF';cctx.fillRect(0,0,canvas.width,canvas.height);
-        const slots=[{y:0.030,h:0.254},{y:0.296,h:0.254},{y:0.559,h:0.254}];
-        for(let i=0;i<3;i++){const fotoImg=await new Promise(r=>{const img=new Image();img.onload=()=>r(img);img.src=fotosTirinha[i];});const slot=slots[i];const dx=canvas.width*0.06,dw=canvas.width*0.88,dy=canvas.height*slot.y,dh=canvas.height*slot.h;cctx.save();cctx.beginPath();cctx.rect(dx,dy,dw,dh);cctx.clip();const scale=Math.max(dw/fotoImg.width,dh/fotoImg.height);cctx.drawImage(fotoImg,dx+(dw-fotoImg.width*scale)/2,dy+(dh-fotoImg.height*scale)/2,fotoImg.width*scale,fotoImg.height*scale);cctx.restore();}
-        cctx.drawImage(molduraImg,0,0,canvas.width,canvas.height);
-        const blob=await new Promise(r=>canvas.toBlob(r,'image/jpeg',0.95));await uploadBlob(blob,copiasFisicas,opcaoCopias);
-    }catch(e){debug('❌ TIRINHA: '+e.message);}
-}
-
-function capturePhoto(){if(captureInProgress)return;captureInProgress=true;videoFeed.style.display='block';canvasCapture.style.display='none';optionsOverlay.style.display='none';funText.style.display='block';funText.innerHTML="✨ PREPARE-SE! ✨";setTimeout(()=>{let cd=3;funText.innerHTML=`😁 SORRIA! 😁<br>⏳ ${cd}`;const t=setInterval(()=>{cd--;if(cd>0)funText.innerHTML=`😁 SORRIA! 😁<br>⏳ ${cd}`;else{funText.style.display='none';clearInterval(t);canvasCapture.width=videoFeed.videoWidth||1920;canvasCapture.height=videoFeed.videoHeight||1080;ctx.save();ctx.scale(-1,1);ctx.drawImage(videoFeed,-canvasCapture.width,0,canvasCapture.width,canvasCapture.height);ctx.restore();videoFeed.style.display='none';canvasCapture.style.display='block';debug('✅ Foto capturada');fetch(`${API_BASE}/set-state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:'options'})}).catch(()=>{});captureInProgress=false;optionsOverlay.style.display='block';optionsOverlay.querySelector('.options-text').innerText='ACESSE O TOTEM PARA IMPRIMIR SUA FOTO';}},1000);},3000);}
+function getCopiasFisicas(o){if(o===1)return 1;if(o===2)return 2;if(o===3)return 2;if(o===4)return 3;return 1;}
 
 async function composeAndUpload(opcaoCopias){if(!molduraBase64)return;const copiasFisicas=getCopiasFisicas(opcaoCopias);try{const fotoImg=await new Promise(r=>{const img=new Image();img.onload=()=>r(img);img.src=canvasCapture.toDataURL('image/jpeg',0.92);});const molduraImg=await new Promise((rs,rj)=>{const img=new Image();img.onload=()=>rs(img);img.onerror=()=>rj(new Error('Falha'));img.src=molduraBase64;});const fmt=FORMATOS[formatoAtual]||FORMATOS['POLAROID'];const canvas=document.createElement('canvas');canvas.width=fmt.w;canvas.height=fmt.h;const cctx=canvas.getContext('2d');cctx.fillStyle='#FFFFFF';cctx.fillRect(0,0,canvas.width,canvas.height);const scale=Math.max(canvas.width/fotoImg.width,canvas.height/fotoImg.height);cctx.drawImage(fotoImg,(canvas.width-fotoImg.width*scale)/2,(canvas.height-fotoImg.height*scale)/2,fotoImg.width*scale,fotoImg.height*scale);cctx.drawImage(molduraImg,0,0,canvas.width,canvas.height);const blob=await new Promise(r=>canvas.toBlob(r,'image/jpeg',0.95));await uploadBlob(blob,copiasFisicas,opcaoCopias);}catch(e){debug('❌ Erro: '+e.message);}}
 
@@ -459,12 +274,35 @@ async function uploadBlob(blob,copiasFisicas,opcao){if(!eventoId)return;const ts
 
 async function waitForPrint(){for(let i=0;i<120;i++){try{const res=await fetch(`${API_BASE}/check-print?t=${Date.now()}`);if(res&&res.ok){const d=await res.json();if(d.printTriggered)return d.copias||1;}}catch(e){}await new Promise(r=>setTimeout(r,500));}return null;}
 
-async function finishCycle(){if(!sistemaOnline){resetToStart();return;}const copias=await waitForPrint();if(!copias){resetToStart();return;}optionsOverlay.querySelector('.options-text').innerText='Compondo foto...';if(formatoAtual==='TIRINHA'){await montarTirinha(copias);}else{await composeAndUpload(copias);}await fetch(`${API_BASE}/clear-print`,{method:'POST'}).catch(()=>{});showThanks();}
+async function finishCycle(){if(!sistemaOnline){resetToStart();return;}const copias=await waitForPrint();if(!copias){resetToStart();return;}optionsOverlay.querySelector('.options-text').innerText='Compondo foto...';await composeAndUpload(copias);await fetch(`${API_BASE}/clear-print`,{method:'POST'}).catch(()=>{});showThanks();}
 
 function showThanks(){document.querySelectorAll('.screen').forEach(e=>e.style.display='none');document.getElementById('screen-thanks').style.display='flex';document.getElementById('thanks-text').innerHTML="🖨️ AGUARDE A IMPRESSÃO...";setTimeout(()=>{document.getElementById('thanks-text').innerHTML="💖 OBRIGADO! 💖<br>APROVEITE SUA FOTO!";setTimeout(resetToStart,2500);},2500);}
-function resetToStart(){document.querySelectorAll('.screen').forEach(e=>e.style.display='none');document.getElementById('screen-start').style.display='flex';ctx.clearRect(0,0,canvasCapture.width,canvasCapture.height);captureInProgress=false;lastState='start';fotosTirinha=[];fetch(`${API_BASE}/set-state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:'start'})}).catch(()=>{});}
 
-function updateScreenState(state){if(!sistemaOnline)return;if(state===lastState&&state!=='capturing')return;if(state==='start'&&lastState==='options'){finishCycle();lastState=state;return;}if(state==='capturing'&&lastState==='options')return;document.querySelectorAll('.screen').forEach(e=>e.style.display='none');if(state==='capturing'){document.getElementById('screen-camera').style.display='flex';if(formatoAtual==='TIRINHA'){sequenciaTirinha().then(()=>{canvasCapture.style.display='none';fetch(`${API_BASE}/set-state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:'options'})}).catch(()=>{});updateScreenState('options');});}else{capturePhoto();}}else if(state==='options'){document.getElementById('screen-camera').style.display='flex';videoFeed.style.display='none';canvasCapture.style.display='block';funText.style.display='none';optionsOverlay.style.display='block';}else{document.getElementById('screen-start').style.display='flex';}lastState=state;}
+function resetToStart(){
+    document.querySelectorAll('.screen').forEach(e=>e.style.display='none');
+    document.getElementById('screen-start').style.display='flex';
+    ctx.clearRect(0,0,canvasCapture.width,canvasCapture.height);
+    captureInProgress=false;lastState='start';fotosTirinha=[];
+    personDetected=false;handOpenFrames=0;handClosedFrames=0;gestureCountdownActive=false;
+    document.getElementById('gesto-msg').style.display='none';
+    optionsOverlay.style.display='none';funText.style.display='none';
+    fetch(`${API_BASE}/set-state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:'start'})}).catch(()=>{});
+}
+
+function updateScreenState(state){
+    if(!sistemaOnline)return;
+    if(state===lastState&&state!=='capturing')return;
+    if(state==='start'&&lastState==='options'){finishCycle();lastState=state;return;}
+    if(state==='capturing'&&lastState==='options')return;
+    if(state==='capturing'){
+        document.getElementById('screen-start').style.display='none';
+        document.getElementById('screen-camera').style.display='flex';
+        videoFeed.style.display='block';
+        document.getElementById('gesto-msg').style.display='block';
+        document.getElementById('msg-texto').innerText='🖐️ MOSTRE A MÃO ABERTA';
+    }
+    lastState=state;
+}
 
 async function pollServerState(){try{const res=await fetch(`${API_BASE}/get-state?t=${Date.now()}`);if(!res||!res.ok)return;const d=await res.json();if(initialLoad){initialLoad=false;if(d.state!=='start'){await fetch(`${API_BASE}/set-state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:'start'})}).catch(()=>{});return;}}if(d.state&&d.state!==lastState)updateScreenState(d.state);}catch(e){}}
 
@@ -476,20 +314,9 @@ document.getElementById('bg-input').addEventListener('change',e=>{const f=e.targ
 function removeBackground(){localStorage.removeItem('photoprint_bg');document.getElementById('dynamic-bg').style.backgroundImage="";document.getElementById('dynamic-bg').classList.remove('active');updateVisualMode();document.getElementById('bg-menu').classList.remove('active');}
 (function(){const bg=localStorage.getItem('photoprint_bg');if(bg){document.getElementById('dynamic-bg').style.backgroundImage=`url('${bg}')`;document.getElementById('dynamic-bg').classList.add('active');}updateVisualMode();})();
 
-localStorage.setItem('booth_state','start');
-updateScreenState('start');
-initCamera()
-.then(()=>{
-
-    setTimeout(()=>{
-
-        initMotionDetector();
-
-    },3000);
-
-});
+localStorage.setItem('booth_state','start');updateScreenState('start');initCamera();
 setInterval(pollServerState,800);setInterval(syncEvento,5000);syncEvento();
-debug('🚀 WEBCAM v10.3 pronta');
+debug('🚀 WEBCAM v12.0 pronta (movimento + gestos + botoeira)');
 </script>
 </body>
 </html>

@@ -84,6 +84,7 @@ let stream=null,lastState='start',captureInProgress=false,initialLoad=true,siste
 let eventoAtual=null,eventoId=null,formatoAtual='10X15V',molduraBase64=null;
 let fotosTirinha=[];
 let motionActive=false;
+let lastMovementIdle=0;
 let motionCanvas=null;
 let motionContext=null;
 let previousMotionFrame=null;
@@ -249,11 +250,16 @@ function checkMotion(){
             */
 
             debug(
-                "MOV:"+movement.toFixed(2)
-            );
+    "PARADO: "+(lastMovementIdle || "0.00")+
+    "  |  MOVIMENTO: "+movement.toFixed(2)
+);
 
 
+if(movement < 1){
 
+    lastMovementIdle = movement.toFixed(2);
+
+}
             if(movement > 8){
 
 

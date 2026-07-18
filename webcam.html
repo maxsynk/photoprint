@@ -190,14 +190,78 @@ function abrirCameraPorPresenca(){
     initHandDetector();
 }
 
-// ==================== PLACEHOLDER PARA HAND DETECTOR ====================
-function initHandDetector(){
-    debug('✋ Iniciando MediaPipe Hand Detector...');
-    // A lógica de implementação do MediaPipe virá aqui
+// ==================== DETECTOR DE MÃOS ====================
+async function initHandDetector(){
+    if(gestureActive) return;
+    gestureActive = true;
+    debug("✋ Iniciando detector de mãos...");
+    handDetector = new Hands({
+        locateFile: (file) =>
+            `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    });
+    handDetector.setOptions({
+        maxNumHands:1,
+        modelComplexity:1,
+        minDetectionConfidence:0.70,
+        minTrackingConfidence:0.65
+    });
+    handDetector.onResults(onHandResults);
+    handCamera = new Camera(videoFeed,{
+        onFrame: async ()=>{
+            if(gestureActive){
+                await handDetector.send({
+                    image:videoFeed
+                });
+            }
+        },
+        width:1280,
+        height:720
+    });
+    handCamera.start();
 }
 
-// ==================== CONTROLE DE GESTOS ====================
-function startGestureCountdown(){
+// ==================== ANALISA GESTO ====================
+function onHandResults(results){
+    if(!results.multiHandLandmarks){
+        return;
+    }
+    const hand = results.multiHandLandmarks[0];
+    if(!hand) return;
+
+    /*
+        Pontas dos dedos
+        4  polegar
+        8  indicador
+        12 médio
+        16 anelar
+        20 mínimo
+    */
+
+    const dedosAbertos =
+        (hand[8].y  < hand[6].y ) +
+        (hand[12].y < hand[10].y) +
+        (hand[16].y < hand[14].y) +
+        (hand[20].y < hand[18].y);
+
+    if(dedosAbertos >= 4){
+        if(!handOpen){
+            handOpen = true;
+            handClosed = false;
+            debug("✋ PALMA ABERTA");
+        }
+    }
+
+    if(handOpen && dedosAbertos <=1){
+        if(!handClosed){
+            handClosed=true;
+            debug("✊ MÃO FECHADA");
+            gestureActive=false;
+            capturePhoto();
+        }
+    }
+}
+
+function capturePhoto() {
     captureInProgress=true;
     document.getElementById('gesto-msg').style.display='none';
     funText.style.display='block';funText.innerHTML="✨ PREPARE-SE! ✨";

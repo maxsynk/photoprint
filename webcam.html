@@ -199,7 +199,7 @@ function checkMotion(){
             for(
                 let i=0;
                 i<frame.data.length;
-                i+=40
+                i+=12
             ){
 
 
@@ -226,7 +226,7 @@ function checkMotion(){
 
 
 
-                if(diff > 45){
+                if(diff > 25){
 
                     changed++;
 
@@ -259,9 +259,10 @@ function checkMotion(){
 
 debug(
 "PARADO: "+lastMovementIdle+
-" | MOVIMENTO: "+movement.toFixed(2)
+" | MOVIMENTO: "+movement.toFixed(2)+
+" | FRAMES: "+motionFrames
 );
-            if(movement > 8){
+            if(movement > 2){
 
 
                 motionFrames++;

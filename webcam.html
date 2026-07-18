@@ -296,7 +296,13 @@ localStorage.setItem('booth_state','start');
 updateScreenState('start');
 initCamera()
 .then(()=>{
-    initMotionDetector();
+
+    setTimeout(()=>{
+
+        initMotionDetector();
+
+    },3000);
+
 });
 setInterval(pollServerState,800);setInterval(syncEvento,5000);syncEvento();
 debug('🚀 WEBCAM v10.3 pronta');

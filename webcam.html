@@ -93,7 +93,13 @@ let previousMotionFrame=null;
 
 let personDetected=false;
 
-let motionSensitivity=25;
+let motionSensitivity=8;
+
+let motionFrames=0;
+
+let motionConfirmFrames=5;
+
+let lastMotionTime=0;
     
 const FORMATOS={"TIRINHA":{w:591,h:1819},"POLAROID":{w:1041,h:1311},"10X15V":{w:1181,h:1819},"10X15H":{w:1772,h:1228}};
     function initMotionDetector(){
@@ -126,7 +132,141 @@ function checkMotion(){
 
 if(!motionActive){
 
+requestAnimationFrame(checkMotion);
+
 return;
+
+}
+
+
+if(videoFeed.readyState>=2){
+
+
+motionContext.drawImage(
+videoFeed,
+0,
+0,
+motionCanvas.width,
+motionCanvas.height
+);
+
+
+
+const frame =
+motionContext.getImageData(
+0,
+0,
+motionCanvas.width,
+motionCanvas.height
+);
+
+
+
+let movement=0;
+
+
+
+if(previousMotionFrame){
+
+
+for(
+let i=0;
+i<frame.data.length;
+i+=20
+){
+
+
+let r =
+Math.abs(
+frame.data[i] -
+previousMotionFrame.data[i]
+);
+
+
+let g =
+Math.abs(
+frame.data[i+1] -
+previousMotionFrame.data[i+1]
+);
+
+
+let b =
+Math.abs(
+frame.data[i+2] -
+previousMotionFrame.data[i+2]
+);
+
+
+
+movement +=
+(r+g+b);
+
+
+}
+
+
+
+movement =
+movement /
+(frame.data.length/20);
+
+
+
+}
+
+
+
+previousMotionFrame=frame;
+
+
+
+if(movement > motionSensitivity){
+
+
+motionFrames++;
+
+
+if(motionFrames >= motionConfirmFrames){
+
+
+if(!personDetected){
+
+
+personDetected=true;
+
+
+lastMotionTime=Date.now();
+
+
+debug(
+"👤 Pessoa detectada"
+);
+
+
+}
+
+
+
+}
+
+
+
+}else{
+
+
+motionFrames=0;
+
+
+}
+
+
+
+}
+
+
+
+requestAnimationFrame(checkMotion);
+
 
 }
 
@@ -414,6 +554,8 @@ initCamera()
 .then(()=>{
 
 initMotionDetector();
+    motionCanvas.width=320;
+motionCanvas.height=180;
 
 });
 setInterval(pollServerState,800);setInterval(syncEvento,5000);syncEvento();

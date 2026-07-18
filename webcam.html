@@ -95,6 +95,9 @@ let model=null,gestureRunning=false,gestureCountdownActive=false;
 let handOpenFrames=0,handClosedFrames=0;
 let motionCanvas=null,motionCtx=null,previousFrame=null;
 let personDetected=false,inactivityTimeout=null;
+let handVisibleFrames = 0;
+let openFrames = 0;
+let closedFrames = 0;    
 
 const FORMATOS={"TIRINHA":{w:591,h:1819},"POLAROID":{w:1041,h:1311},"10X15V":{w:1181,h:1819},"10X15H":{w:1772,h:1228}};
 function debug(msg){console.log('[WEBCAM]',msg);const el=document.getElementById('debug-info');if(el)el.innerText=msg;}
@@ -222,45 +225,99 @@ async function initHandDetector(){
 
 // ==================== ANALISA GESTO ====================
 function onHandResults(results){
-    if(!results.multiHandLandmarks){
-        return;
-    }
-    const hand = results.multiHandLandmarks[0];
-    if(!hand) return;
 
-    /*
-        Pontas dos dedos
-        4  polegar
-        8  indicador
-        12 médio
-        16 anelar
-        20 mínimo
-    */
+    if(!gestureActive) return;
+
+    if(!results.multiHandLandmarks || results.multiHandLandmarks.length===0){
+
+        handVisibleFrames = 0;
+        openFrames = 0;
+        closedFrames = 0;
+
+        return;
+
+    }
+
+    handVisibleFrames++;
+
+    const hand = results.multiHandLandmarks[0];
 
     const dedosAbertos =
-        (hand[8].y  < hand[6].y ) +
-        (hand[12].y < hand[10].y) +
-        (hand[16].y < hand[14].y) +
-        (hand[20].y < hand[18].y);
 
-    if(dedosAbertos >= 4){
-        if(!handOpen){
-            handOpen = true;
-            handClosed = false;
+        (hand[8].y  < hand[6].y ? 1 : 0)+
+        (hand[12].y < hand[10].y ? 1 : 0)+
+        (hand[16].y < hand[14].y ? 1 : 0)+
+        (hand[20].y < hand[18].y ? 1 : 0);
+
+
+
+    // Aguarda alguns frames para estabilizar
+
+    if(handVisibleFrames < 8){
+
+        debug("👋 Localizando mão...");
+
+        return;
+
+    }
+
+
+
+    // Palma aberta
+
+    if(dedosAbertos>=4){
+
+        openFrames++;
+
+        closedFrames=0;
+
+        if(openFrames==10){
+
+            handOpen=true;
+
             debug("✋ PALMA ABERTA");
+
         }
+
     }
 
-    if(handOpen && dedosAbertos <=1){
-        if(!handClosed){
-            handClosed=true;
+
+
+    // Mão fechada
+
+    if(handOpen && dedosAbertos<=1){
+
+        closedFrames++;
+
+        if(closedFrames==6){
+
             debug("✊ MÃO FECHADA");
-            gestureActive=false;
-            capturePhoto();
-        }
-    }
-}
 
+            gestureActive=false;
+
+            handOpen=false;
+
+            handClosed=true;
+
+            capturePhoto();
+
+        }
+
+    }
+
+
+
+    // Caso intermediário
+
+    if(dedosAbertos>1 && dedosAbertos<4){
+
+        openFrames=0;
+
+        closedFrames=0;
+
+    }
+
+}
 function capturePhoto() {
     captureInProgress=true;
     document.getElementById('gesto-msg').style.display='none';

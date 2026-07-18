@@ -84,284 +84,20 @@ let stream=null,lastState='start',captureInProgress=false,initialLoad=true,siste
 let eventoAtual=null,eventoId=null,formatoAtual='10X15V',molduraBase64=null;
 let fotosTirinha=[];
 let motionActive=false;
-
 let motionCanvas=null;
-
 let motionContext=null;
-
 let previousMotionFrame=null;
-
 let personDetected=false;
-
 let motionSensitivity=8;
-
 let motionFrames=0;
-
 let motionConfirmFrames=5;
-
 let lastMotionTime=0;
-    
+
 const FORMATOS={"TIRINHA":{w:591,h:1819},"POLAROID":{w:1041,h:1311},"10X15V":{w:1181,h:1819},"10X15H":{w:1772,h:1228}};
-    function initMotionDetector(){
 
-if(motionCanvas)return;
-
-
-motionCanvas=document.createElement('canvas');
-
-motionCanvas.width=160;
-motionCanvas.height=90;
-
-
-motionContext=motionCanvas.getContext('2d');
-
-
-motionActive=true;
-
-
-requestAnimationFrame(checkMotion);
-
-
-debug('👁️ Detector de movimento ativo');
-
-}
-
-
-
-function checkMotion(){
-
-if(!motionActive){
-
-requestAnimationFrame(checkMotion);
-
-return;
-
-}
-
-
-if(videoFeed.readyState>=2){
-
-
-motionContext.drawImage(
-videoFeed,
-0,
-0,
-motionCanvas.width,
-motionCanvas.height
-);
-
-
-
-const frame =
-motionContext.getImageData(
-0,
-0,
-motionCanvas.width,
-motionCanvas.height
-);
-
-
-
-let movement=0;
-
-
-
-if(previousMotionFrame){
-
-
-for(
-let i=0;
-i<frame.data.length;
-i+=20
-){
-
-
-let r =
-Math.abs(
-frame.data[i] -
-previousMotionFrame.data[i]
-);
-
-
-let g =
-Math.abs(
-frame.data[i+1] -
-previousMotionFrame.data[i+1]
-);
-
-
-let b =
-Math.abs(
-frame.data[i+2] -
-previousMotionFrame.data[i+2]
-);
-
-
-
-movement +=
-(r+g+b);
-
-
-}
-
-
-
-movement =
-movement /
-(frame.data.length/20);
-
-
-
-}
-
-
-
-previousMotionFrame=frame;
-
-
-
-if(movement > motionSensitivity){
-
-
-motionFrames++;
-
-
-if(motionFrames >= motionConfirmFrames){
-
-
-if(!personDetected){
-
-
-personDetected=true;
-
-
-lastMotionTime=Date.now();
-
-
-debug(
-"👤 Pessoa detectada"
-);
-
-
-}
-
-
-
-}
-
-
-
-}else{
-
-
-motionFrames=0;
-
-
-}
-
-
-
-}
-
-
-
-requestAnimationFrame(checkMotion);
-
-
-}
-
-
-
-if(videoFeed.readyState>=2){
-
-
-motionContext.drawImage(
-videoFeed,
-0,
-0,
-motionCanvas.width,
-motionCanvas.height
-);
-
-
-
-const frame=
-motionContext.getImageData(
-0,
-0,
-motionCanvas.width,
-motionCanvas.height
-);
-
-
-
-let diff=0;
-
-
-
-if(previousMotionFrame){
-
-
-for(
-let i=0;
-i<frame.data.length;
-i+=16
-){
-
-
-diff+=Math.abs(
-frame.data[i] -
-previousMotionFrame.data[i]
-);
-
-
-}
-
-
-diff =
-diff /
-(frame.data.length/16);
-
-
-
-}
-
-
-
-previousMotionFrame=frame;
-
-
-
-if(diff>motionSensitivity){
-
-
-if(!personDetected){
-
-personDetected=true;
-
-debug(
-'👤 Pessoa detectada'
-);
-
-
-}
-
-}
-
-
-
-}
-
-
-
-requestAnimationFrame(checkMotion);
-
-
-}
 function debug(msg){console.log('[WEBCAM]',msg);const el=document.getElementById('debug-info');if(el)el.innerText=msg;}
 function getCopiasFisicas(o){if(o===1)return 1;if(o===2)return 2;if(o===3)return 2;if(o===4)return 3;return 1;}
 
-// ==================== VERIFICA ONLINE/OFFLINE ====================
 async function verificarStatus(){
     try{
         const res=await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`);
@@ -377,115 +113,78 @@ function mostrarOffline(){document.getElementById('offline-overlay').style.displ
 function esconderOffline(){document.getElementById('offline-overlay').style.display='none';}
 
 async function initCamera(){
-
-try{
-
-debug('🔎 Procurando câmera...');
-
-
-const devices = await navigator.mediaDevices.enumerateDevices();
-
-const cameras = devices.filter(
-d => d.kind === 'videoinput'
-);
-
-
-let selectedCamera = null;
-
-
-// Prioriza webcam USB
-selectedCamera = cameras.find(cam => {
-
-const name = cam.label.toLowerCase();
-
-return (
-
-name.includes('logitech') ||
-name.includes('usb') ||
-name.includes('camera') ||
-name.includes('hd')
-
-);
-
-});
-
-
-// Se não encontrou USB usa a primeira disponível
-if(!selectedCamera){
-
-selectedCamera = cameras[0];
-
+    try{
+        debug('🔎 Procurando câmera...');
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const cameras = devices.filter(d => d.kind === 'videoinput');
+        let selectedCamera = null;
+        selectedCamera = cameras.find(cam => {
+            const name = cam.label.toLowerCase();
+            return (name.includes('logitech') || name.includes('usb') || name.includes('camera') || name.includes('hd'));
+        });
+        if(!selectedCamera){ selectedCamera = cameras[0]; }
+        const constraints = {
+            video:{
+                deviceId:selectedCamera ? {exact:selectedCamera.deviceId} : undefined,
+                width:{ideal:1920},
+                height:{ideal:1080},
+                frameRate:{ideal:30}
+            },
+            audio:false
+        };
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        videoFeed.srcObject = stream;
+        await videoFeed.play();
+        debug('✅ Câmera OK: '+ (selectedCamera ? selectedCamera.label : 'padrão'));
+    }catch(err){
+        debug('❌ Câmera: '+ err.message);
+    }
 }
 
-
-const constraints = {
-
-
-video:{
-
-
-deviceId:selectedCamera ? 
-{exact:selectedCamera.deviceId} :
-undefined,
-
-
-width:{
-ideal:1920
-},
-
-
-height:{
-ideal:1080
-},
-
-
-frameRate:{
-ideal:30
+function initMotionDetector(){
+    if(motionCanvas)return;
+    motionCanvas=document.createElement('canvas');
+    motionCanvas.width=320;
+    motionCanvas.height=180;
+    motionContext=motionCanvas.getContext('2d');
+    motionActive=true;
+    requestAnimationFrame(checkMotion);
+    debug('👁️ Detector de movimento ativo');
 }
 
-
-},
-
-
-audio:false
-
-
-};
-
-
-
-stream = await navigator.mediaDevices.getUserMedia(
-constraints
-);
-
-
-
-videoFeed.srcObject = stream;
-
-
-await videoFeed.play();
-
-
-
-debug(
-'✅ Câmera OK: '+
-(selectedCamera ? selectedCamera.label : 'padrão')
-);
-
-
-
-}catch(err){
-
-
-debug(
-'❌ Câmera: '+
-err.message
-);
-
-
-}
-
-
+function checkMotion(){
+    if(!motionActive){
+        requestAnimationFrame(checkMotion);
+        return;
+    }
+    if(videoFeed.readyState>=2){
+        motionContext.drawImage(videoFeed,0,0,motionCanvas.width,motionCanvas.height);
+        const frame = motionContext.getImageData(0,0,motionCanvas.width,motionCanvas.height);
+        let movement=0;
+        if(previousMotionFrame){
+            for(let i=0; i<frame.data.length; i+=20){
+                let r = Math.abs(frame.data[i] - previousMotionFrame.data[i]);
+                let g = Math.abs(frame.data[i+1] - previousMotionFrame.data[i+1]);
+                let b = Math.abs(frame.data[i+2] - previousMotionFrame.data[i+2]);
+                movement += (r+g+b);
+            }
+            movement = movement / (frame.data.length/20);
+        }
+        previousMotionFrame=frame;
+        if(movement > motionSensitivity){
+            motionFrames++;
+            if(motionFrames >= motionConfirmFrames){
+                if(!personDetected){
+                    personDetected=true;
+                    lastMotionTime=Date.now();
+                    debug("👤 Pessoa detectada");
+                }
+            }
+        }else{
+            motionFrames=0;
+        }
+    }
+    requestAnimationFrame(checkMotion);
 }
 
 async function syncEvento(){
@@ -547,16 +246,10 @@ function removeBackground(){localStorage.removeItem('photoprint_bg');document.ge
 (function(){const bg=localStorage.getItem('photoprint_bg');if(bg){document.getElementById('dynamic-bg').style.backgroundImage=`url('${bg}')`;document.getElementById('dynamic-bg').classList.add('active');}updateVisualMode();})();
 
 localStorage.setItem('booth_state','start');
-
 updateScreenState('start');
-
 initCamera()
 .then(()=>{
-
-initMotionDetector();
-    motionCanvas.width=320;
-motionCanvas.height=180;
-
+    initMotionDetector();
 });
 setInterval(pollServerState,800);setInterval(syncEvento,5000);syncEvento();
 debug('🚀 WEBCAM v10.3 pronta');

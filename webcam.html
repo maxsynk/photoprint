@@ -159,29 +159,44 @@ function checkMotion(){
     if(!motionActive){
 
         requestAnimationFrame(checkMotion);
+
         return;
 
     }
+
 
 
     if(videoFeed.readyState >= 2){
 
 
         motionContext.drawImage(
+
             videoFeed,
+
             0,
+
             0,
+
             motionCanvas.width,
+
             motionCanvas.height
+
         );
 
 
+
         const frame =
+
         motionContext.getImageData(
+
             0,
+
             0,
+
             motionCanvas.width,
+
             motionCanvas.height
+
         );
 
 
@@ -193,102 +208,161 @@ function checkMotion(){
         if(previousMotionFrame){
 
 
-            let changed = 0;
+
+            let changedPixels = 0;
+
 
 
             for(
-                let i=0;
-                i<frame.data.length;
-                i+=12
+
+                let i = 0;
+
+                i < frame.data.length;
+
+                i += 12
+
             ){
+
 
 
                 const diff =
 
+
                 Math.abs(
+
                     frame.data[i] -
+
                     previousMotionFrame.data[i]
+
                 )
 
                 +
 
                 Math.abs(
+
                     frame.data[i+1] -
+
                     previousMotionFrame.data[i+1]
+
                 )
 
                 +
 
                 Math.abs(
+
                     frame.data[i+2] -
+
                     previousMotionFrame.data[i+2]
+
                 );
 
 
 
                 if(diff > 25){
 
-                    changed++;
+
+                    changedPixels++;
+
 
                 }
 
 
+
             }
+
 
 
 
             movement =
 
+
             (
-                changed /
-                (frame.data.length/40)
+
+                changedPixels /
+
+                (frame.data.length / 12)
+
             ) * 100;
 
 
 
+
             /*
-              Mostra somente para ajuste
+            Guarda referência do estado parado
             */
+
 
             if(movement < 1){
 
-    lastMovementIdle = movement.toFixed(2);
 
-}
-
-
-debug(
-"PARADO: "+lastMovementIdle+
-" | MOVIMENTO: "+movement.toFixed(2)+
-" | FRAMES: "+motionFrames
-);
-            if(movement > 2){
-
-
-                motionFrames++;
-
-
-            }else{
-
-
-                motionFrames=0;
+                lastMovementIdle =
+                movement.toFixed(2);
 
 
             }
 
 
 
+
+            debug(
+
+                "PARADO: "+
+                lastMovementIdle+
+                " | MOVIMENTO: "+
+                movement.toFixed(2)+
+                " | FRAMES: "+
+                motionFrames
+
+            );
+
+
+
+
+
+            if(movement > 2){
+
+
+
+                motionFrames++;
+
+
+
+            }else{
+
+
+
+                motionFrames = 0;
+
+
+
+            }
+
+
+
+
+
             if(
+
                 motionFrames >= 15 &&
+
                 !personDetected
+
             ){
 
 
-                personDetected=true;
+
+                personDetected = true;
+
+
+                lastMotionTime =
+                Date.now();
+
 
 
                 debug(
+
                     "👤 PESSOA DETECTADA"
+
                 );
 
 
@@ -300,6 +374,7 @@ debug(
 
 
 
+
         previousMotionFrame = frame;
 
 
@@ -308,7 +383,9 @@ debug(
 
 
 
+
     requestAnimationFrame(checkMotion);
+
 
 }
 

@@ -153,12 +153,18 @@ function initMotionDetector(){
 }
 
 function checkMotion(){
+
     if(!motionActive){
+
         requestAnimationFrame(checkMotion);
         return;
+
     }
 
+
     if(videoFeed.readyState >= 2){
+
+
         motionContext.drawImage(
             videoFeed,
             0,
@@ -166,6 +172,7 @@ function checkMotion(){
             motionCanvas.width,
             motionCanvas.height
         );
+
 
         const frame =
         motionContext.getImageData(
@@ -175,63 +182,67 @@ function checkMotion(){
             motionCanvas.height
         );
 
-        let changedPixels = 0;
+
+        let total = 0;
+
+
 
         if(previousMotionFrame){
+
+
             for(
-                let i = 0;
-                i < frame.data.length;
-                i += 32
+                let i=0;
+                i<frame.data.length;
+                i+=40
             ){
-                const diff =
-                Math.abs(
+
+
+                total += Math.abs(
                     frame.data[i] -
                     previousMotionFrame.data[i]
-                )
-                +
-                Math.abs(
-                    frame.data[i+1] -
-                    previousMotionFrame.data[i+1]
-                )
-                +
-                Math.abs(
-                    frame.data[i+2] -
-                    previousMotionFrame.data[i+2]
                 );
 
-                if(diff > 50){
-                    changedPixels++;
-                }
+
             }
 
-            const movement =
-            (
-                changedPixels /
-                (frame.data.length / 32)
-            ) * 100;
 
-            if(movement > 2.5){
-                motionFrames++;
-            }else{
-                motionFrames=0;
-            }
 
-            if(
-                motionFrames >= motionConfirmFrames &&
-                !personDetected
-            ){
-                personDetected=true;
-                lastMotionTime=Date.now();
+            let movement =
+            total /
+            (frame.data.length/40);
+
+
+
+            debug(
+                "MOVIMENTO: "+
+                movement.toFixed(2)
+            );
+
+
+
+            if(movement > 5){
+
+
                 debug(
-                    "👤 PESSOA DETECTADA"
+                    "👤 MOVIMENTO DETECTADO"
                 );
+
+
             }
+
+
         }
 
+
+
         previousMotionFrame = frame;
+
+
     }
 
+
     requestAnimationFrame(checkMotion);
+
 }
 
 async function syncEvento(){

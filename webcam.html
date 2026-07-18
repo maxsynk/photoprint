@@ -341,30 +341,27 @@ function checkMotion(){
 
 
 
-            if(
-
-                motionFrames >= 15 &&
-
-                !personDetected
-
-            ){
+          if(
+    motionFrames >= 15 &&
+    !personDetected
+){
 
 
-
-                personDetected = true;
-
-
-                lastMotionTime =
-                Date.now();
+    personDetected=true;
 
 
+    lastMotionTime=Date.now();
 
-                debug(
 
-                    "👤 PESSOA DETECTADA"
+    debug(
+        "👤 PESSOA DETECTADA"
+    );
 
-                );
 
+    abrirCameraPorPresenca();
+
+
+}   
 
             }
 
@@ -388,7 +385,39 @@ function checkMotion(){
 
 
 }
+// ==================== ABRIR CAMERA POR PRESENÇA ====================
 
+function abrirCameraPorPresenca(){
+
+    if(lastState !== 'start'){
+        return;
+    }
+
+
+    debug("👤 Presença confirmada - abrindo câmera");
+
+
+    document.querySelectorAll('.screen')
+    .forEach(e=>e.style.display='none');
+
+
+    document.getElementById('screen-camera')
+    .style.display='flex';
+
+
+
+    lastState='capturing';
+
+
+
+    // Aqui futuramente entra o MediaPipe Hands
+
+
+    debug("✋ Aguardando gesto da mão");
+
+
+}
+    
 async function syncEvento(){
     const data=await verificarStatus();
     if(!data||!sistemaOnline)return;

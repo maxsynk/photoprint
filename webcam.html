@@ -83,8 +83,141 @@ const optionsOverlay=document.getElementById('options-overlay');
 let stream=null,lastState='start',captureInProgress=false,initialLoad=true,sistemaOnline=true;
 let eventoAtual=null,eventoId=null,formatoAtual='10X15V',molduraBase64=null;
 let fotosTirinha=[];
+let motionActive=false;
 
+let motionCanvas=null;
+
+let motionContext=null;
+
+let previousMotionFrame=null;
+
+let personDetected=false;
+
+let motionSensitivity=25;
+    
 const FORMATOS={"TIRINHA":{w:591,h:1819},"POLAROID":{w:1041,h:1311},"10X15V":{w:1181,h:1819},"10X15H":{w:1772,h:1228}};
+    function initMotionDetector(){
+
+if(motionCanvas)return;
+
+
+motionCanvas=document.createElement('canvas');
+
+motionCanvas.width=160;
+motionCanvas.height=90;
+
+
+motionContext=motionCanvas.getContext('2d');
+
+
+motionActive=true;
+
+
+requestAnimationFrame(checkMotion);
+
+
+debug('👁️ Detector de movimento ativo');
+
+}
+
+
+
+function checkMotion(){
+
+if(!motionActive){
+
+return;
+
+}
+
+
+
+if(videoFeed.readyState>=2){
+
+
+motionContext.drawImage(
+videoFeed,
+0,
+0,
+motionCanvas.width,
+motionCanvas.height
+);
+
+
+
+const frame=
+motionContext.getImageData(
+0,
+0,
+motionCanvas.width,
+motionCanvas.height
+);
+
+
+
+let diff=0;
+
+
+
+if(previousMotionFrame){
+
+
+for(
+let i=0;
+i<frame.data.length;
+i+=16
+){
+
+
+diff+=Math.abs(
+frame.data[i] -
+previousMotionFrame.data[i]
+);
+
+
+}
+
+
+diff =
+diff /
+(frame.data.length/16);
+
+
+
+}
+
+
+
+previousMotionFrame=frame;
+
+
+
+if(diff>motionSensitivity){
+
+
+if(!personDetected){
+
+personDetected=true;
+
+debug(
+'👤 Pessoa detectada'
+);
+
+
+}
+
+}
+
+
+
+}
+
+
+
+requestAnimationFrame(checkMotion);
+
+
+}
 function debug(msg){console.log('[WEBCAM]',msg);const el=document.getElementById('debug-info');if(el)el.innerText=msg;}
 function getCopiasFisicas(o){if(o===1)return 1;if(o===2)return 2;if(o===3)return 2;if(o===4)return 3;return 1;}
 
@@ -273,7 +406,16 @@ document.getElementById('bg-input').addEventListener('change',e=>{const f=e.targ
 function removeBackground(){localStorage.removeItem('photoprint_bg');document.getElementById('dynamic-bg').style.backgroundImage="";document.getElementById('dynamic-bg').classList.remove('active');updateVisualMode();document.getElementById('bg-menu').classList.remove('active');}
 (function(){const bg=localStorage.getItem('photoprint_bg');if(bg){document.getElementById('dynamic-bg').style.backgroundImage=`url('${bg}')`;document.getElementById('dynamic-bg').classList.add('active');}updateVisualMode();})();
 
-localStorage.setItem('booth_state','start');updateScreenState('start');initCamera();
+localStorage.setItem('booth_state','start');
+
+updateScreenState('start');
+
+initCamera()
+.then(()=>{
+
+initMotionDetector();
+
+});
 setInterval(pollServerState,800);setInterval(syncEvento,5000);syncEvento();
 debug('🚀 WEBCAM v10.3 pronta');
 </script>

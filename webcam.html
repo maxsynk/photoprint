@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>WEBCAM - PHOTO PRINT v12.0</title>
-<script src="https://cdn.jsdelivr.net/npm/handtrackjs@0.1.5/dist/handtrack.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 :root{ --neon:#39ff14; --dark:#050505; --danger:#ff3131; }
@@ -51,7 +50,6 @@ body.bg-active .corner-glow{ display:none; }
 #camera-wrapper{ position:absolute; inset:0; width:100vw; height:100vh; background:#000; overflow:hidden; z-index:40; }
 #camera-feed{ width:100%; height:100%; object-fit:cover; transform:scaleX(-1); display:block; }
 #camera-canvas{ width:100%; height:100%; object-fit:cover; display:none; }
-#gesture-canvas{ position:absolute; inset:0; width:100vw; height:100vh; z-index:41; pointer-events:none; }
 .fun-text{ position:absolute; bottom:18%; left:50%; transform:translateX(-50%); font-family:'Comic Sans MS','Arial Rounded MT Bold',sans-serif; font-size:38px; font-weight:900; text-align:center; color:#fff; white-space:nowrap; text-transform:uppercase; text-shadow:0px 0px 10px #ff0080,0px 0px 20px #ff8c00,0px 0px 30px #ffff00; animation:funPulse 0.6s infinite alternate, hueShift 3s linear infinite; z-index:50; pointer-events:none; background:rgba(0,0,0,0.5); padding:10px 25px; border-radius:30px; display:none; }
 @keyframes funPulse{ 0%{ transform:translateX(-50%) scale(0.9); } 100%{ transform:translateX(-50%) scale(1.1); } }
 @keyframes hueShift{ 0%{ filter:hue-rotate(0deg); } 100%{ filter:hue-rotate(360deg); } }
@@ -75,19 +73,22 @@ body.bg-active .corner-glow{ display:none; }
 <div id="gesto-msg"><div class="msg-text" id="msg-texto">🖐️ MOSTRE A MÃO ABERTA</div></div>
 
 <div id="screen-start" class="screen"><div class="btn-start"><div class="start-content"><div class="start-icon">📸</div><div class="start-title">PHOTO PRINT</div><div class="start-subtitle">Aproxime-se para ativar</div></div></div></div>
-<div id="screen-camera" class="screen" style="display:none;z-index:40;"><div id="camera-wrapper"><video id="camera-feed" autoplay playsinline muted></video><canvas id="camera-canvas"></canvas><canvas id="gesture-canvas"></canvas><div id="fun-text" class="fun-text"></div><div id="options-overlay"><div class="options-text">ACESSE O TOTEM PARA IMPRIMIR SUA FOTO</div></div></div></div>
+<div id="screen-camera" class="screen" style="display:none;z-index:40;"><div id="camera-wrapper"><video id="camera-feed" autoplay playsinline muted></video><canvas id="camera-canvas"></canvas><div id="fun-text" class="fun-text"></div><div id="options-overlay"><div class="options-text">ACESSE O TOTEM PARA IMPRIMIR SUA FOTO</div></div></div></div>
 <div id="screen-thanks" class="screen" style="display:none;"><div class="status-text" id="thanks-text">🖨️ AGUARDE A IMPRESSÃO...</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 
 <script>
 const API_BASE='https://photoprint-api.maxprimefotovideo.workers.dev';
 const videoFeed=document.getElementById('camera-feed');
 const canvasCapture=document.getElementById('camera-canvas');
-const gestureCanvas=document.getElementById('gesture-canvas');
-const gctx=gestureCanvas.getContext('2d');
 const ctx=canvasCapture.getContext('2d');
 const funText=document.getElementById('fun-text');
 const optionsOverlay=document.getElementById('options-overlay');
-let stream=null,lastState='start',captureInProgress=false,initialLoad=true,sistemaOnline=true;
+let stream=null,lastState='start',captureInProgress=false;
+let handDetector=null;let handCamera=null;let handOpen=false;let handClosed=false;let gestureActive=false;
+let initialLoad=true,sistemaOnline=true;
 let eventoAtual=null,eventoId=null,formatoAtual='10X15V',molduraBase64=null;
 let fotosTirinha=[];
 let model=null,gestureRunning=false,gestureCountdownActive=false;
@@ -128,7 +129,6 @@ async function initCamera(){
         videoFeed.srcObject=stream;
         debug('✅ Câmera: '+(selectedDevice?selectedDevice.label:'padrão'));
         startMotionDetection();
-        initGestureDetection();
     }catch(err){debug('❌ Câmera: '+err.message);}
 }
 
@@ -187,52 +187,16 @@ function abrirCameraPorPresenca(){
     videoFeed.style.display='block';canvasCapture.style.display='none';
     document.getElementById('gesto-msg').style.display='block';
     document.getElementById('msg-texto').innerText='🖐️ MOSTRE A MÃO ABERTA';
+    initHandDetector();
 }
 
-// ==================== DETECÇÃO DE GESTOS ====================
-async function initGestureDetection(){
-    try{
-        model=await handTrack.load({flipHorizontal:true,maxNumBoxes:1,scoreThreshold:0.6});
-        debug('🖐️ Gestos ativos!');
-        gestureRunning=true;
-        detectGesture();
-    }catch(e){debug('⚠️ Gestos indisponíveis: '+e.message);}
+// ==================== PLACEHOLDER PARA HAND DETECTOR ====================
+function initHandDetector(){
+    debug('✋ Iniciando MediaPipe Hand Detector...');
+    // A lógica de implementação do MediaPipe virá aqui
 }
 
-function detectGesture(){
-    if(!gestureRunning||!model||!stream){requestAnimationFrame(detectGesture);return;}
-    if(document.getElementById('screen-camera').style.display!=='flex'){requestAnimationFrame(detectGesture);return;}
-    model.detect(videoFeed).then(predictions=>{
-        gestureCanvas.width=videoFeed.videoWidth||1280;
-        gestureCanvas.height=videoFeed.videoHeight||720;
-        gctx.clearRect(0,0,gestureCanvas.width,gestureCanvas.height);
-        if(predictions.length>0){
-            const hand=predictions[0];
-            gctx.strokeStyle='#39ff14';gctx.lineWidth=4;
-            gctx.strokeRect(hand.bbox[0],hand.bbox[1],hand.bbox[2],hand.bbox[3]);
-            const ratio=hand.bbox[2]/hand.bbox[3];
-            if(ratio>0.9){
-                handClosedFrames++;handOpenFrames=0;
-                document.getElementById('gesto-msg').style.display='block';
-                document.getElementById('msg-texto').innerText='✊ FOTO!';
-                if(handClosedFrames>15&&!gestureCountdownActive&&!captureInProgress){
-                    gestureCountdownActive=true;
-                    startGestureCountdown();
-                }
-            }else{
-                handOpenFrames++;handClosedFrames=0;
-                document.getElementById('gesto-msg').style.display='block';
-                document.getElementById('msg-texto').innerText='🖐️ FECHE A MÃO PARA FOTO';
-                gestureCountdownActive=false;
-            }
-        }else{
-            handClosedFrames=0;
-            if(handOpenFrames>40){document.getElementById('gesto-msg').style.display='block';document.getElementById('msg-texto').innerText='🖐️ MOSTRE A MÃO ABERTA';}
-        }
-        requestAnimationFrame(detectGesture);
-    }).catch(()=>{requestAnimationFrame(detectGesture);});
-}
-
+// ==================== CONTROLE DE GESTOS ====================
 function startGestureCountdown(){
     captureInProgress=true;
     document.getElementById('gesto-msg').style.display='none';
@@ -245,15 +209,15 @@ function startGestureCountdown(){
             videoFeed.style.display='block';canvasCapture.style.display='block';
             debug('✅ Foto capturada (gesto)');
             fetch(`${API_BASE}/set-state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:'options'})}).catch(()=>{});
-            captureInProgress=false;gestureCountdownActive=false;
-            optionsOverlay.style.display='block';handClosedFrames=0;handOpenFrames=0;
+            captureInProgress=false;
+            optionsOverlay.style.display='block';
             document.getElementById('gesto-msg').style.display='block';
             document.getElementById('msg-texto').innerText='🖐️ MOSTRE A MÃO ABERTA';
         }},1000);
     },2500);
 }
 
-// ==================== SINCRONIZAÇÃO ====================
+// ==================== SINCRONIZAÇÃO E UI ====================
 async function syncEvento(){
     const data=await verificarStatus();if(!data||!sistemaOnline)return;
     if(data.config&&data.config.evento&&data.config.evento!=='Geral'){
@@ -282,8 +246,8 @@ function resetToStart(){
     document.querySelectorAll('.screen').forEach(e=>e.style.display='none');
     document.getElementById('screen-start').style.display='flex';
     ctx.clearRect(0,0,canvasCapture.width,canvasCapture.height);
-    captureInProgress=false;lastState='start';fotosTirinha=[];
-    personDetected=false;handOpenFrames=0;handClosedFrames=0;gestureCountdownActive=false;
+    captureInProgress=false;lastState='start';
+    personDetected=false;gestureActive=false;
     document.getElementById('gesto-msg').style.display='none';
     optionsOverlay.style.display='none';funText.style.display='none';
     fetch(`${API_BASE}/set-state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:'start'})}).catch(()=>{});
@@ -316,7 +280,7 @@ function removeBackground(){localStorage.removeItem('photoprint_bg');document.ge
 
 localStorage.setItem('booth_state','start');updateScreenState('start');initCamera();
 setInterval(pollServerState,800);setInterval(syncEvento,5000);syncEvento();
-debug('🚀 WEBCAM v12.0 pronta (movimento + gestos + botoeira)');
+debug('🚀 WEBCAM v12.0 pronta (movimento + MediaPipe pronto)');
 </script>
 </body>
 </html>

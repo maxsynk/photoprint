@@ -1,5 +1,5 @@
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- INÍCIO DO ARQUIVO galeria.html — GALERIA CLIENTE v2.2 (DEFINITIVO) -->
+<!-- INÍCIO DO ARQUIVO galeria.html — GALERIA CLIENTE v2.3 (FINAL)      -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -213,25 +213,33 @@
         const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
         let fotoUrlAtual = "";
 
-        // Escuta o carregamento da página
         window.addEventListener('load', init);
 
         function init() {
-            const params = new URLSearchParams(window.location.search);
-            const fotoKey = params.get('key');
-            const fotoId = params.get('id') || params.get('photoId');
+            // Pega a URL completa da barra de endereços
+            const urlParams = new URLSearchParams(window.location.search);
+            const fotoKey = urlParams.get('key');
+            const fotoId = urlParams.get('id') || urlParams.get('photoId');
 
             console.log('[GALERIA] Parâmetros recebidos:', { key: fotoKey, id: fotoId });
 
             if (fotoKey) {
-                // Decodifica caso venha URL-encoded (ex: %2F)
-                const keyDecodificada = decodeURIComponent(fotoKey);
-                const url = `${API_URL}/photo?key=${encodeURIComponent(keyDecodificada)}&t=${Date.now()}`;
+                // ✅ A MÁGICA ACONTECE AQUI:
+                // Nós NÃO decodificamos a key (não usamos decodeURIComponent).
+                // Nós enviamos a key exatamente como veio na URL (com %2F),
+                // pois a API espera a string codificada.
+                
+                // Limpa qualquer encode duplo que possa ter vindo por engano
+                const keyLimpa = fotoKey; 
+                
+                const url = `${API_URL}/photo?key=${keyLimpa}&t=${Date.now()}`;
+                console.log('[GALERIA] URL final para carregar a imagem:', url);
+                
                 carregarFoto(url, fotoId);
                 return;
             }
 
-            const fotoUrl = params.get('dl');
+            const fotoUrl = urlParams.get('dl');
             if (fotoUrl) {
                 carregarFoto(decodeURIComponent(fotoUrl), fotoId);
                 return;
@@ -241,7 +249,6 @@
         }
 
         function carregarFoto(url, id) {
-            console.log('[GALERIA] Tentando carregar:', url);
             const img = document.getElementById('main-photo');
             const loader = document.getElementById('photo-loader');
             const badge = document.getElementById('photo-badge');
@@ -256,16 +263,16 @@
             }
 
             img.onload = () => {
-                console.log('[GALERIA] Foto carregada com sucesso!');
+                console.log('✅ Foto carregada com sucesso!');
                 loader.classList.add('hidden');
                 img.style.transition = 'opacity 0.4s ease';
                 img.style.opacity = '1';
             };
 
             img.onerror = () => {
-                console.error('[GALERIA] Erro ao carregar imagem:', url);
+                console.error('❌ Erro ao carregar imagem:', url);
                 loader.classList.add('hidden');
-                mostrarErro('Não foi possível carregar a imagem. O link do QR Code pode estar expirado ou a foto foi removida.');
+                mostrarErro('Não foi possível carregar a imagem. O link do QR Code pode estar expirado.');
             };
 
             img.src = url;
@@ -275,11 +282,7 @@
             const btn = document.getElementById('btn-download');
             const status = document.getElementById('status-msg');
             
-            if (!fotoUrlAtual) {
-                status.innerText = "Nenhuma foto para baixar.";
-                status.className = "status-msg error";
-                return;
-            }
+            if (!fotoUrlAtual) return;
 
             try {
                 btn.disabled = true;
@@ -320,12 +323,7 @@
 
         async function compartilharFoto() {
             const status = document.getElementById('status-msg');
-            
-            if (!fotoUrlAtual) {
-                status.innerText = "Nenhuma foto para compartilhar.";
-                status.className = "status-msg error";
-                return;
-            }
+            if (!fotoUrlAtual) return;
 
             if (navigator.share) {
                 try {
@@ -367,7 +365,6 @@
             }
         }
 
-        // Prevenir zoom duplo toque (iOS)
         let lastTouchEnd = 0;
         document.addEventListener('touchend', (e) => {
             const now = Date.now();
@@ -378,5 +375,5 @@
 </body>
 </html>
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- FIM DO ARQUIVO galeria.html — GALERIA CLIENTE v2.2                 -->
+<!-- FIM DO ARQUIVO galeria.html — GALERIA CLIENTE v2.3                 -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->

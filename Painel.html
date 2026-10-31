@@ -1,0 +1,1456 @@
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- INÍCIO DO ARQUIVO painel.html — v3.1                                -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHOTO PRINT — Master Panel v3.1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- INÍCIO DO BLOCO DE ESTILOS (CSS)                            -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <style>
+        :root {
+            --neon: #39ff14;
+            --neon-dim: rgba(57, 255, 20, 0.12);
+            --neon-glow: 0 0 20px rgba(57, 255, 20, 0.4);
+            --red: #ff3131;
+            --red-dim: rgba(255, 49, 49, 0.15);
+            --blue: #0096ff;
+            --blue-dim: rgba(0, 150, 255, 0.15);
+            --yellow: #ffb800;
+            --yellow-dim: rgba(255, 184, 0, 0.15);
+
+            --bg-0: #000000;
+            --bg-1: #0a0a0a;
+            --bg-2: #111111;
+            --bg-3: #1a1a1a;
+            --bg-4: #222222;
+
+            --text-0: #ffffff;
+            --text-1: #e0e0e0;
+            --text-2: #999999;
+            --text-3: #555555;
+
+            --border-1: rgba(255, 255, 255, 0.06);
+            --border-2: rgba(255, 255, 255, 0.1);
+            --border-neon: rgba(57, 255, 20, 0.3);
+
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.6);
+
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-fast: all 0.15s ease;
+
+            --sidebar-w: 260px;
+            --topbar-h: 70px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-0);
+            color: var(--text-0);
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background:
+                radial-gradient(circle at 50% -10%, rgba(26, 58, 18, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 90% 100%, rgba(57, 255, 20, 0.02) 0%, transparent 40%),
+                var(--bg-0);
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--bg-4); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--neon-dim); }
+
+        /* --- SPLASH SCREEN --- */
+        #splash {
+            position: fixed; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            flex-direction: column; text-align: center;
+            background: radial-gradient(circle at 50% 50%, #0d1f0a 0%, #000 75%);
+            z-index: 2000;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+        .splash-brand {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(40px, 9vw, 84px);
+            font-weight: 900;
+            color: var(--neon);
+            letter-spacing: clamp(6px, 1.5vw, 14px);
+            text-transform: uppercase;
+            text-shadow: var(--neon-glow), 0 0 50px rgba(57, 255, 20, 0.2);
+            margin-bottom: 8px;
+        }
+        .splash-subtitle {
+            font-size: 11px; letter-spacing: 6px;
+            color: var(--text-3); text-transform: uppercase;
+            font-weight: 700; margin-bottom: 32px;
+        }
+        .splash-btn {
+            padding: 16px 44px;
+            background: transparent;
+            color: var(--text-0);
+            border: 1px solid var(--neon);
+            border-left: 4px solid var(--neon);
+            border-radius: var(--radius-sm);
+            font-size: 12px; font-weight: 700;
+            letter-spacing: 3px; text-transform: uppercase;
+            cursor: pointer; transition: var(--transition);
+            display: inline-flex; align-items: center; gap: 10px;
+        }
+        .splash-btn:hover {
+            background: var(--neon-dim);
+            box-shadow: var(--neon-glow);
+            transform: translateY(-2px);
+        }
+        .splash-version {
+            position: fixed; bottom: 20px; right: 28px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px; color: var(--text-3);
+            letter-spacing: 2px; font-weight: 700;
+        }
+
+        /* --- MODAL DE SENHA --- */
+        #modal-senha {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(16px);
+            z-index: 3000;
+            align-items: center; justify-content: center;
+        }
+        .pass-box {
+            background: var(--bg-1);
+            border: 1px solid var(--border-neon);
+            border-radius: var(--radius-xl);
+            padding: 36px 32px;
+            width: 340px; max-width: 90vw;
+            text-align: center;
+            box-shadow: var(--shadow-lg), 0 0 40px rgba(57, 255, 20, 0.1);
+        }
+        .pass-icon {
+            width: 50px; height: 50px;
+            margin: 0 auto 16px;
+            background: var(--neon-dim);
+            border: 1px solid var(--border-neon);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--neon); font-size: 20px;
+        }
+        .pass-label {
+            font-size: 9px; color: var(--neon);
+            letter-spacing: 3px; font-weight: 800;
+            text-transform: uppercase; margin-bottom: 4px;
+        }
+        .pass-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px; font-weight: 700;
+            margin-bottom: 20px;
+        }
+        .pass-input {
+            width: 100%; padding: 14px;
+            background: var(--bg-0);
+            border: 1px solid var(--bg-4);
+            color: var(--neon);
+            text-align: center;
+            font-size: 28px; font-weight: 900;
+            font-family: 'Orbitron', sans-serif;
+            border-radius: var(--radius-md);
+            outline: none; margin-bottom: 16px;
+            letter-spacing: 10px;
+            transition: var(--transition);
+        }
+        .pass-input:focus { border-color: var(--neon); box-shadow: 0 0 0 3px var(--neon-dim); }
+
+        /* --- LAYOUT PRINCIPAL (APP) --- */
+        #app { display: none; height: 100vh; grid-template-columns: var(--sidebar-w) 1fr; }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--bg-1);
+            border-right: 1px solid var(--border-1);
+            display: flex; flex-direction: column;
+            padding: 24px 16px;
+            z-index: 10;
+        }
+        .sidebar-brand {
+            display: flex; align-items: center; gap: 12px;
+            padding: 4px 8px 20px;
+            border-bottom: 1px solid var(--border-1);
+            margin-bottom: 16px;
+        }
+        .brand-logo {
+            width: 36px; height: 36px;
+            background: var(--neon);
+            border-radius: var(--radius-sm);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--bg-0); font-size: 16px;
+            box-shadow: var(--neon-glow);
+            flex-shrink: 0;
+        }
+        .brand-text h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px; font-weight: 900;
+            color: var(--neon); letter-spacing: 1px;
+            line-height: 1.1;
+        }
+        .brand-text span {
+            font-size: 8px; color: var(--text-3);
+            letter-spacing: 1.5px; font-weight: 700;
+            text-transform: uppercase;
+        }
+        .sidebar-nav { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+        .nav-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 14px;
+            border-radius: var(--radius-sm);
+            color: var(--text-2);
+            cursor: pointer;
+            font-size: 12px; font-weight: 600;
+            transition: var(--transition-fast);
+            border: 1px solid transparent;
+            background: transparent;
+            text-align: left; width: 100%;
+        }
+        .nav-item i { font-size: 14px; width: 18px; text-align: center; }
+        .nav-item:hover { background: var(--bg-2); color: var(--text-0); }
+        .nav-item.active {
+            background: var(--neon-dim);
+            color: var(--neon);
+            border-color: var(--border-neon);
+        }
+        .nav-badge {
+            margin-left: auto;
+            background: var(--neon); color: var(--bg-0);
+            font-size: 9px; font-weight: 900;
+            padding: 2px 6px; border-radius: 10px;
+        }
+        .sidebar-status-box {
+            margin-top: auto;
+            background: var(--bg-2);
+            border: 1px solid var(--border-1);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .status-indicator-info { display: flex; align-items: center; gap: 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .status-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--red); box-shadow: 0 0 8px currentColor;
+            flex-shrink: 0;
+        }
+        .status-dot.online { background: var(--neon); }
+        .sync-info {
+            font-size: 9px; color: var(--text-3);
+            font-weight: 600; letter-spacing: 0.5px;
+            padding-top: 6px; border-top: 1px solid var(--border-1);
+        }
+
+        /* Content Area */
+        .content-area { display: flex; flex-direction: column; overflow: hidden; background: var(--bg-0); }
+        .topbar {
+            height: var(--topbar-h);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 32px;
+            border-bottom: 1px solid var(--border-1);
+            background: rgba(10, 10, 10, 0.7);
+            backdrop-filter: blur(20px);
+            flex-shrink: 0;
+        }
+        .topbar-title h1 { font-size: 16px; font-weight: 700; }
+        .topbar-title span { font-size: 11px; color: var(--text-3); font-weight: 500; }
+        .topbar-active-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 5px 12px;
+            background: var(--neon-dim);
+            border: 1px solid var(--border-neon);
+            border-radius: 20px;
+            font-size: 10px; font-weight: 800;
+            color: var(--neon); letter-spacing: 0.5px;
+            text-transform: uppercase;
+            max-width: 240px;
+        }
+        .topbar-active-badge span {
+            overflow: hidden; text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .topbar-active-badge.hidden { display: none; }
+        .pulse-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--neon);
+            box-shadow: 0 0 6px var(--neon);
+            animation: pulseDot 1.5s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.85); }
+        }
+
+        /* Switch de rede */
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .switch-slider {
+            position: absolute; cursor: pointer; inset: 0;
+            background: var(--bg-4); transition: var(--transition);
+            border-radius: 30px; border: 1px solid var(--border-2);
+        }
+        .switch-slider:before {
+            position: absolute; content: "";
+            height: 16px; width: 16px; left: 3px; bottom: 3px;
+            background: var(--text-3); transition: var(--transition); border-radius: 50%;
+        }
+        .switch input:checked + .switch-slider { background: var(--neon-dim); border-color: var(--neon); }
+        .switch input:checked + .switch-slider:before { transform: translateX(20px); background: var(--neon); box-shadow: 0 0 8px var(--neon); }
+        .switch input:disabled + .switch-slider { opacity: 0.4; cursor: not-allowed; }
+
+        /* Views Container */
+        .view-container { flex: 1; overflow-y: auto; padding: 28px 32px; display: none; }
+        .view-container.active { display: block; animation: fadeInView 0.3s ease; }
+        @keyframes fadeInView { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- DASHBOARD / CARDS / METRICS --- */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 16px; margin-bottom: 24px;
+        }
+        .metric-card {
+            background: var(--bg-1);
+            border: 1px solid var(--border-1);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            position: relative; overflow: hidden;
+            transition: var(--transition);
+        }
+        .metric-card:hover { border-color: var(--border-neon); transform: translateY(-2px); }
+        .metric-card::before { content: ""; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: var(--neon); }
+        .metric-card.blue::before { background: var(--blue); }
+        .metric-card.yellow::before { background: var(--yellow); }
+        .metric-card.red::before { background: var(--red); }
+        .metric-icon {
+            width: 34px; height: 34px; background: var(--neon-dim); border-radius: var(--radius-sm);
+            display: flex; align-items: center; justify-content: center; color: var(--neon); font-size: 14px; margin-bottom: 12px;
+        }
+        .metric-card.blue .metric-icon { background: var(--blue-dim); color: var(--blue); }
+        .metric-card.yellow .metric-icon { background: var(--yellow-dim); color: var(--yellow); }
+        .metric-card.red .metric-icon { background: var(--red-dim); color: var(--red); }
+        .metric-value { font-family: 'Orbitron', sans-serif; font-size: 26px; font-weight: 900; line-height: 1; margin-bottom: 4px; }
+        .metric-value.small { font-size: 18px; }
+        .metric-label { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+
+        /* Card Genérico */
+        .card { background: var(--bg-1); border: 1px solid var(--border-1); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 24px; }
+        .card-header {
+            padding: 16px 20px; border-bottom: 1px solid var(--border-1);
+            display: flex; align-items: center; justify-content: space-between;
+            font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px;
+            color: var(--neon); background: var(--bg-2);
+        }
+        .card-body { padding: 20px; }
+
+        /* Badge Modo Edição */
+        .edit-mode-badge {
+            display: none;
+            background: var(--yellow-dim);
+            color: var(--yellow);
+            border: 1px solid var(--yellow);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 9px; font-weight: 900;
+            letter-spacing: 1px;
+            margin-left: 10px;
+            text-transform: uppercase;
+            animation: pulseEdit 2s ease-in-out infinite;
+        }
+        .edit-mode-badge.active { display: inline-flex; align-items: center; gap: 5px; }
+        @keyframes pulseEdit {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* --- FORMULÁRIOS E CAMPOS --- */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group.full { grid-column: 1 / -1; }
+        .form-label {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 10px; color: var(--neon); font-weight: 800;
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;
+        }
+        .form-control {
+            width: 100%; padding: 12px 14px;
+            background: var(--bg-0); border: 1px solid var(--bg-4);
+            color: var(--text-0); border-radius: var(--radius-sm);
+            font-family: 'Inter', sans-serif; font-size: 13px; outline: none; transition: var(--transition);
+        }
+        .form-control:focus { border-color: var(--neon); box-shadow: 0 0 0 3px var(--neon-dim); }
+        .form-control::placeholder { color: var(--text-3); }
+        select.form-control { cursor: pointer; }
+        input[type="date"].form-control::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; opacity: 0.6; }
+
+        /* Switch Inline no Formulário */
+        .form-inline-box {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px; background: var(--bg-0); border: 1px solid var(--bg-4); border-radius: var(--radius-sm);
+        }
+
+        /* --- UPLOAD ZONE --- */
+        .upload-zone {
+            border: 2px dashed var(--bg-4); border-radius: var(--radius-md);
+            padding: 20px; text-align: center; cursor: pointer; transition: var(--transition); background: var(--bg-0);
+        }
+        .upload-zone:hover { border-color: var(--neon); background: var(--neon-dim); }
+        .upload-zone.dragover { border-color: var(--neon); background: var(--neon-dim); }
+        .upload-zone-icon { font-size: 28px; color: var(--text-3); margin-bottom: 8px; }
+        .upload-zone:hover .upload-zone-icon { color: var(--neon); }
+        .upload-zone-text { font-size: 11px; font-weight: 600; color: var(--text-2); }
+        .moldura-preview-wrapper { margin-top: 12px; text-align: center; display: none; }
+        .moldura-preview { max-width: 160px; max-height: 200px; border-radius: var(--radius-sm); border: 1px solid var(--border-neon); box-shadow: var(--shadow-md); margin: 0 auto; }
+        .moldura-nome { font-size: 10px; color: var(--neon); margin-top: 6px; font-weight: 600; }
+
+        /* Aviso de resolução */
+        .resolution-warning {
+            display: none;
+            padding: 10px 14px;
+            background: var(--yellow-dim);
+            border: 1px solid var(--yellow);
+            border-radius: var(--radius-sm);
+            font-size: 11px; color: var(--yellow);
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        .resolution-warning.active { display: block; }
+        .resolution-warning i { margin-right: 6px; }
+
+        /* --- BOTÕES --- */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 12px 20px; border-radius: var(--radius-sm);
+            font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+            cursor: pointer; border: 1px solid transparent; transition: var(--transition); font-family: inherit;
+        }
+        .btn-primary { background: var(--neon); color: var(--bg-0); border-color: var(--neon); }
+        .btn-primary:hover { box-shadow: var(--neon-glow); transform: translateY(-1px); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-outline { background: transparent; color: var(--text-0); border-color: var(--border-2); }
+        .btn-outline:hover { background: var(--bg-2); border-color: var(--neon); color: var(--neon); }
+        .btn-sm { padding: 8px 14px; font-size: 10px; }
+        .btn-block { width: 100%; }
+
+        /* --- LISTA DE EVENTOS --- */
+        .list-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .search-box { flex: 1; position: relative; }
+        .search-box i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-3); font-size: 12px; }
+        .search-box input {
+            width: 100%; padding: 10px 14px 10px 38px; background: var(--bg-1);
+            border: 1px solid var(--border-1); color: var(--text-0); border-radius: var(--radius-sm); font-size: 12px; outline: none;
+        }
+        .search-box input:focus { border-color: var(--neon); box-shadow: 0 0 0 3px var(--neon-dim); }
+
+        .eventos-list { display: flex; flex-direction: column; gap: 10px; }
+        .evento-item {
+            background: var(--bg-1); border: 1px solid var(--border-1); border-radius: var(--radius-md);
+            padding: 14px 18px; display: flex; align-items: center; gap: 16px; transition: var(--transition); position: relative;
+        }
+        .evento-item:hover { border-color: var(--border-2); background: var(--bg-2); }
+        .evento-item.ativo { border-color: var(--border-neon); background: linear-gradient(90deg, var(--neon-dim) 0%, var(--bg-1) 40%); }
+        .evento-item.ativo::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--neon); box-shadow: var(--neon-glow); border-radius: 3px 0 0 3px; }
+
+        .evento-status-icon {
+            width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 12px; flex-shrink: 0; background: var(--bg-3); color: var(--text-3);
+        }
+        .evento-item.ativo .evento-status-icon { background: var(--neon-dim); color: var(--neon); box-shadow: 0 0 10px rgba(57,255,20,0.3); }
+
+        .evento-info { flex: 1; min-width: 0; }
+        .evento-nome { font-size: 13px; font-weight: 700; color: var(--text-0); display: flex; align-items: center; gap: 8px; margin-bottom: 3px; flex-wrap: wrap; }
+        .evento-item.ativo .evento-nome { color: var(--neon); }
+        .evento-meta { font-size: 10px; color: var(--text-3); font-weight: 500; display: flex; align-items: center; gap: 10px; }
+
+        .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 20px; font-size: 9px; font-weight: 800; text-transform: uppercase; }
+        .badge-neon { background: var(--neon-dim); color: var(--neon); }
+        .badge-blue { background: var(--blue-dim); color: var(--blue); }
+
+        .evento-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+        .icon-btn {
+            width: 32px; height: 32px; border-radius: var(--radius-sm); background: transparent; border: 1px solid transparent;
+            color: var(--text-3); cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; transition: var(--transition-fast);
+        }
+        .icon-btn:hover { background: var(--bg-3); color: var(--text-0); }
+        .icon-btn.edit:hover { color: var(--neon); background: var(--neon-dim); }
+        .icon-btn.delete:hover { color: var(--red); background: var(--red-dim); }
+
+        .btn-ativar {
+            padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-2);
+            background: transparent; color: var(--text-2); font-size: 10px; font-weight: 800; cursor: pointer; text-transform: uppercase; transition: var(--transition-fast);
+        }
+        .btn-ativar:hover { border-color: var(--neon); color: var(--neon); }
+        .evento-item.ativo .btn-ativar { background: var(--neon); color: var(--bg-0); border-color: var(--neon); }
+
+        /* --- EMPTY STATE --- */
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+        }
+        .empty-state i {
+            font-size: 42px; display: block; margin-bottom: 12px;
+            opacity: 0.4; color: var(--text-3);
+        }
+        .empty-state-title {
+            font-size: 14px; font-weight: 700;
+            color: var(--text-2); margin-bottom: 6px;
+        }
+        .empty-state-text {
+            font-size: 11px; color: var(--text-3);
+            margin-bottom: 18px;
+        }
+
+        /* --- TOAST NOTIFICATIONS --- */
+        .toast-container { position: fixed; top: 24px; right: 24px; z-index: 5000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast {
+            background: var(--bg-1); border: 1px solid var(--border-2); border-left: 3px solid var(--neon);
+            border-radius: var(--radius-md); padding: 12px 16px; min-width: 260px; max-width: 360px;
+            display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow-lg); pointer-events: auto;
+            animation: toastIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .toast.error { border-left-color: var(--red); }
+        .toast.info { border-left-color: var(--blue); }
+        .toast.warning { border-left-color: var(--yellow); }
+        .toast-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; background: var(--neon-dim); color: var(--neon); }
+        .toast.error .toast-icon { background: var(--red-dim); color: var(--red); }
+        .toast.info .toast-icon { background: var(--blue-dim); color: var(--blue); }
+        .toast.warning .toast-icon { background: var(--yellow-dim); color: var(--yellow); }
+        .toast-title { font-size: 11px; font-weight: 700; margin-bottom: 2px; }
+        .toast-message { font-size: 10px; color: var(--text-2); }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+
+        /* --- LOADING OVERLAY --- */
+        .loading-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+            z-index: 4000; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 14px;
+        }
+        .loading-overlay.active { display: flex; }
+        .spinner { width: 42px; height: 42px; border: 3px solid var(--bg-4); border-top-color: var(--neon); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- FIM DO BLOCO DE ESTILOS (CSS)                               -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+</head>
+<body>
+
+    <div class="splash-version">v3.1</div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- TELA INICIAL (SPLASH)                                       -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div id="splash">
+        <div>
+            <h1 class="splash-brand">PHOTO PRINT</h1>
+            <p class="splash-subtitle">Colecionando Momentos — Master Panel</p>
+        </div>
+        <button class="splash-btn" onclick="abrirModalSenha()">
+            <i class="fas fa-lock"></i> Acessar Terminal
+        </button>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- MODAL DE SENHA                                              -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div id="modal-senha">
+        <div class="pass-box">
+            <div class="pass-icon"><i class="fas fa-shield-alt"></i></div>
+            <div class="pass-label">Protocolo de Segurança</div>
+            <div class="pass-title">Autenticação Master</div>
+            <input type="password" id="input-pass" class="pass-input" placeholder="••••" maxlength="4" onkeydown="if(event.key === 'Enter') confirmarSenha()">
+            <button class="btn btn-primary btn-block" onclick="confirmarSenha()"><i class="fas fa-key"></i> Autenticar Acesso</button>
+            <!-- ═══════════════════════════════════════════════════════════ -->
+<!-- CONTINUAÇÃO: MODAL DE SENHA + APP + SCRIPTS                 -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
+            <!-- (Continuação do modal-senha — fechamento) -->
+            <div style="margin-top: 18px; color: var(--text-3); font-size: 9px; cursor: pointer; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;" onclick="fecharModalSenha()">
+                Abortar Operação
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- LAYOUT PRINCIPAL DO APLICATIVO                              -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div id="app">
+        <!-- Sidebar de Navegação -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo"><i class="fas fa-camera-retro"></i></div>
+                <div class="brand-text">
+                    <h2>PHOTO PRINT</h2>
+                    <span>Master Panel</span>
+                </div>
+            </div>
+
+            <div class="sidebar-nav">
+                <button class="nav-item active" data-aba="dashboard" onclick="trocarAba('dashboard', this)">
+                    <i class="fas fa-chart-pie"></i> Dashboard
+                </button>
+                <button class="nav-item" data-aba="eventos" onclick="trocarAba('eventos', this)">
+                    <i class="fas fa-list-alt"></i> Eventos <span class="nav-badge" id="badge-total">0</span>
+                </button>
+                <button class="nav-item" data-aba="novo" onclick="trocarAba('novo', this)">
+                    <i class="fas fa-plus-circle"></i> Novo Evento
+                </button>
+            </div>
+
+            <div class="sidebar-status-box">
+                <div class="status-indicator-info">
+                    <div class="status-dot" id="sidebar-dot"></div>
+                    <span id="sidebar-status-text">Offline</span>
+                </div>
+                <div class="sync-info" id="sync-info">
+                    <i class="fas fa-clock"></i> Aguardando sincronização...
+                </div>
+            </div>
+        </aside>
+
+        <!-- Área de Conteúdo Principal -->
+        <main class="content-area">
+            <header class="topbar">
+                <div class="topbar-title">
+                    <h1 id="topbar-title-text">Dashboard</h1>
+                    <span id="topbar-subtitle-text">Visão geral do sistema</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div class="topbar-active-badge hidden" id="topbar-active-badge">
+                        <span class="pulse-dot"></span>
+                        <span id="topbar-active-name">—</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; font-size: 11px; font-weight: 700;">
+                        <span id="label-status" style="color: var(--red);">OFFLINE</span>
+                        <label class="switch"><input type="checkbox" id="server-status" onchange="salvarStatusRede()"><span class="switch-slider"></span></label>
+                    </div>
+                </div>
+            </header>
+
+            <!-- ═══════════════════════════════════════════════════ -->
+            <!-- ABA 1: DASHBOARD                                    -->
+            <!-- ═══════════════════════════════════════════════════ -->
+            <div id="view-dashboard" class="view-container active">
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon"><i class="fas fa-calendar-check"></i></div>
+                        <div class="metric-value" id="stat-total">0</div>
+                        <div class="metric-label">Total de Eventos</div>
+                    </div>
+                    <div class="metric-card blue">
+                        <div class="metric-icon"><i class="fas fa-signal"></i></div>
+                        <div class="metric-value small" id="stat-ativo-nome">—</div>
+                        <div class="metric-label">Evento em Transmissão</div>
+                    </div>
+                    <div class="metric-card yellow">
+                        <div class="metric-icon"><i class="fas fa-image"></i></div>
+                        <div class="metric-value" id="stat-molduras">0</div>
+                        <div class="metric-label">Molduras Carregadas</div>
+                    </div>
+                    <div class="metric-card red">
+                        <div class="metric-icon"><i class="fas fa-book-open"></i></div>
+                        <div class="metric-value" id="stat-guestbooks">0</div>
+                        <div class="metric-label">Eventos Guestbook</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span><i class="fas fa-bolt"></i> Ações Rápidas</span>
+                    </div>
+                    <div class="card-body" style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <button class="btn btn-primary" onclick="trocarAba('novo', document.querySelector('[data-aba=novo]'))">
+                            <i class="fas fa-plus"></i> Criar Novo Evento
+                        </button>
+                        <button class="btn btn-outline" onclick="trocarAba('eventos', document.querySelector('[data-aba=eventos]'))">
+                            <i class="fas fa-list"></i> Ver Todos os Eventos
+                        </button>
+                        <button class="btn btn-outline" onclick="carregarEventosDoServidor()">
+                            <i class="fas fa-sync-alt"></i> Sincronizar Agora
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span><i class="fas fa-info-circle"></i> Informações do Sistema</span>
+                    </div>
+                    <div class="card-body">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; font-size: 12px;">
+                            <div>
+                                <div style="color: var(--text-3); font-size: 10px; text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">Versão</div>
+                                <div style="font-family: 'Orbitron', sans-serif; font-weight: 700; color: var(--neon);">v3.1</div>
+                            </div>
+                            <div>
+                                <div style="color: var(--text-3); font-size: 10px; text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">API Endpoint</div>
+                                <div style="font-family: monospace; font-size: 10px; color: var(--text-2); word-break: break-all;">photoprint-api.maxprimefotovideo.workers.dev</div>
+                            </div>
+                            <div>
+                                <div style="color: var(--text-3); font-size: 10px; text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">Status do Servidor</div>
+                                <div id="dash-server-status" style="font-weight: 700; color: var(--red);">OFFLINE</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════ -->
+            <!-- ABA 2: LISTA DE EVENTOS                             -->
+            <!-- ═══════════════════════════════════════════════════ -->
+            <div id="view-eventos" class="view-container">
+                <div class="card">
+                    <div class="card-header">
+                        <span><i class="fas fa-database"></i> Base de Eventos</span>
+                        <button class="btn btn-outline btn-sm" onclick="carregarEventosDoServidor()"><i class="fas fa-sync-alt"></i> Sincronizar</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-toolbar">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="input-busca" placeholder="Pesquisar evento por nome ou ID..." oninput="buscarComDebounce()">
+                            </div>
+                        </div>
+                        <div class="eventos-list" id="corpo-lista">
+                            <div class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <div class="empty-state-title">Nenhum evento carregado</div>
+                                <div class="empty-state-text">Clique em sincronizar ou crie seu primeiro evento</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════ -->
+            <!-- ABA 3: FORMULÁRIO (NOVO / EDITAR)                   -->
+            <!-- ═══════════════════════════════════════════════════ -->
+            <div id="view-novo" class="view-container">
+                <div class="card" style="max-width: 800px; margin: 0 auto;">
+                    <div class="card-header">
+                        <span id="card-form-title">
+                            <i class="fas fa-plus-circle"></i> Cadastrar Novo Evento
+                            <span class="edit-mode-badge" id="edit-mode-badge"><i class="fas fa-edit"></i> Modo Edição</span>
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <input type="hidden" id="edit-id" value="">
+
+                        <div class="form-grid">
+                            <div class="form-group full">
+                                <label class="form-label"><i class="fas fa-tag"></i> Nome do Evento</label>
+                                <input type="text" id="input-evento" class="form-control" placeholder="Ex: Casamento Ana e Carlos">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label"><i class="fas fa-calendar-alt"></i> Data do Evento</label>
+                                <input type="date" id="input-data" class="form-control">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label"><i class="fas fa-crop-alt"></i> Formato Padrão</label>
+                                <select id="select-formato" class="form-control" onchange="atualizarLabelMoldura()">
+                                    <option value="10X15V">10x15 Vertical (1181x1819px)</option>
+                                    <option value="10X15H">10x15 Horizontal (1772x1228px)</option>
+                                    <option value="TIRINHA">Tirinha 5x15 (591x1819px)</option>
+                                    <option value="POLAROID">Polaroid (1041x1311px)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-inline-box">
+                                <span style="font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-book-open" style="color: var(--neon);"></i> Modo Guestbook (Livro de Assinaturas)
+                                </span>
+                                <label class="switch"><input type="checkbox" id="input-livro"><span class="switch-slider"></span></label>
+                            </div>
+                        </div>
+
+                        <!-- UPLOAD DE MOLDURA -->
+                        <div class="form-group">
+                            <label class="form-label"><i class="fas fa-image"></i> <span id="label-moldura">Moldura — 10x15 Vertical (1181x1819px)</span></label>
+                            <input type="file" id="input-moldura" accept="image/png" style="display:none" onchange="uploadMoldura(this)">
+
+                            <div class="upload-zone" id="upload-zone"
+                                 onclick="document.getElementById('input-moldura').click()"
+                                 ondragover="event.preventDefault(); this.classList.add('dragover')"
+                                 ondragleave="this.classList.remove('dragover')"
+                                 ondrop="handleDrop(event)">
+                                <div class="upload-zone-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                                <div class="upload-zone-text">Clique ou arraste a moldura em PNG transparente</div>
+                                <div style="font-size: 9px; color: var(--text-3); margin-top: 4px;">Apenas arquivos .PNG na resolução recomendada</div>
+                            </div>
+
+                            <div class="moldura-preview-wrapper" id="preview-wrapper">
+                                <img id="moldura-preview" class="moldura-preview">
+                                <div id="moldura-nome" class="moldura-nome"></div>
+                            </div>
+
+                            <div class="resolution-warning" id="resolution-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span id="resolution-warning-text"></span>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 12px; margin-top: 24px;">
+                            <button class="btn btn-primary" style="flex: 1;" onclick="salvarEvento()" id="btn-submit">
+                                <i class="fas fa-save"></i> <span id="btn-text">Criar Evento</span>
+                            </button>
+                            <button class="btn btn-outline" style="display: none;" onclick="cancelarEdicao()" id="btn-cancelar">
+                                <i class="fas fa-times"></i> Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Overlay de Loading -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="spinner"></div>
+        <div style="font-size: 11px; font-weight: 700; color: var(--neon); letter-spacing: 2px; text-transform: uppercase;" id="loading-text">Processando dados...</div>
+    </div>
+
+    <!-- Container de Notificações Toast -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- INÍCIO DO BLOCO DE SCRIPTS (JavaScript)                     -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <script>
+        /* ═══════════════════════════════════════════════════════
+           CONFIGURAÇÕES GLOBAIS
+           ═══════════════════════════════════════════════════════ */
+        const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
+        const SENHA_MESTRA = "1234";
+        const RESOLUCOES = {
+            '10X15V':   { w: 1181, h: 1819, label: '10x15 Vertical (1181x1819px)' },
+            '10X15H':   { w: 1772, h: 1228, label: '10x15 Horizontal (1772x1228px)' },
+            'TIRINHA':  { w: 591,  h: 1819, label: 'Tirinha 5x15 (591x1819px)' },
+            'POLAROID': { w: 1041, h: 1311, label: 'Polaroid (1041x1311px)' }
+        };
+
+        let eventos = [];
+        let molduras = { polaroid: null, '10x15v': null, '10x15h': null, tirinha: null };
+        let buscaTimeout = null;
+        let autoRefreshInterval = null;
+
+        /* ═══════════════════════════════════════════════════════
+           SISTEMA DE NOTIFICAÇÕES TOAST
+           ═══════════════════════════════════════════════════════ */
+        function mostrarToast(titulo, mensagem, tipo = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${tipo}`;
+            const iconMap = {
+                success: 'fa-check',
+                error: 'fa-exclamation-triangle',
+                info: 'fa-info',
+                warning: 'fa-exclamation'
+            };
+            toast.innerHTML = `
+                <div class="toast-icon"><i class="fas ${iconMap[tipo] || 'fa-check'}"></i></div>
+                <div class="toast-content">
+                    <div class="toast-title">${titulo}</div>
+                    <div class="toast-message">${mensagem}</div>
+                </div>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        function mostrarLoading(show, texto = "Processando dados...") {
+            const overlay = document.getElementById('loading-overlay');
+            document.getElementById('loading-text').innerText = texto;
+            if (show) overlay.classList.add('active');
+            else overlay.classList.remove('active');
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           NAVEGAÇÃO ENTRE ABAS
+           ═══════════════════════════════════════════════════════ */
+        const TITULOS_ABA = {
+            dashboard: { title: 'Dashboard', sub: 'Visão geral do sistema' },
+            eventos:   { title: 'Gerenciamento de Eventos', sub: 'Visualize e controle seus eventos ativos' },
+            novo:      { title: 'Cadastro de Evento', sub: 'Insira as informações e carregue a moldura' }
+        };
+
+        function trocarAba(aba, elementoBtn) {
+            document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.sidebar-nav .nav-item').forEach(n => n.classList.remove('active'));
+
+            const viewId = 'view-' + aba;
+            const view = document.getElementById(viewId);
+            if (view) view.classList.add('active');
+
+            if (elementoBtn) {
+                elementoBtn.classList.add('active');
+            } else {
+                const btn = document.querySelector(`[data-aba="${aba}"]`);
+                if (btn) btn.classList.add('active');
+            }
+
+            const titulos = TITULOS_ABA[aba] || TITULOS_ABA.dashboard;
+            document.getElementById('topbar-title-text').innerText = titulos.title;
+            document.getElementById('topbar-subtitle-text').innerText = titulos.sub;
+
+            if (aba === 'dashboard') atualizarMetricasDashboard();
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           AUTENTICAÇÃO
+           ═══════════════════════════════════════════════════════ */
+        function abrirModalSenha() {
+            document.getElementById('modal-senha').style.display = 'flex';
+            setTimeout(() => document.getElementById('input-pass').focus(), 100);
+        }
+        function fecharModalSenha() {
+            document.getElementById('modal-senha').style.display = 'none';
+            document.getElementById('input-pass').value = '';
+        }
+        function confirmarSenha() {
+            if (document.getElementById('input-pass').value === SENHA_MESTRA) {
+                fecharModalSenha();
+                document.getElementById('splash').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('splash').style.display = 'none';
+                    document.getElementById('app').style.display = 'grid';
+                    carregarEventosDoServidor();
+                    verificarEstadoAtual();
+                    iniciarAutoRefresh();
+                }, 400);
+            } else {
+                mostrarToast("Autenticação Falhou", "Senha incorreta informada.", "error");
+                document.getElementById('input-pass').value = '';
+                document.getElementById('input-pass').focus();
+            }
+        }
+
+        // Fecha modal com ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('modal-senha');
+                if (modal.style.display === 'flex') fecharModalSenha();
+            }
+        });
+
+        /* ═══════════════════════════════════════════════════════
+           CARREGAMENTO DE EVENTOS
+           ═══════════════════════════════════════════════════════ */
+        async function carregarEventosDoServidor(silencioso = false) {
+            if (!silencioso) mostrarLoading(true, "Sincronizando eventos...");
+            try {
+                const resp = await fetch(`${API_URL}/eventos`);
+                const data = await resp.json();
+                if (data.success && data.eventos) {
+                    eventos = data.eventos.map(ev => ({
+                        id: ev.id, nome: ev.nome, data: ev.data, dataRaw: ev.data,
+                        formato: ev.formato || '10X15V',
+                        livro: ev.livro === 1 || ev.livro === true,
+                        ativo: ev.ativo === 1 || ev.ativo === true,
+                        temMoldura: ev.tem_moldura === 1 || ev.tem_moldura === true
+                    }));
+                    if (!silencioso) {
+                        mostrarToast("Sincronizado", `${eventos.length} eventos carregados com sucesso.`);
+                    }
+                } else {
+                    eventos = [];
+                }
+                atualizarSyncInfo();
+            } catch (e) {
+                eventos = [];
+                if (!silencioso) {
+                    mostrarToast("Erro de Conexão", "Não foi possível conectar ao servidor.", "error");
+                }
+            } finally {
+                if (!silencioso) mostrarLoading(false);
+                renderizarLista();
+                checarEventoAtivo();
+                atualizarMetricasDashboard();
+            }
+        }
+
+        async function verificarEstadoAtual() {
+            try {
+                const resp = await fetch(`${API_URL}/get-all-states`);
+                const data = await resp.json();
+                if (data.config) {
+                    atualizarUIStatus(data.config.status === "ONLINE");
+                    document.getElementById('server-status').checked = (data.config.status === "ONLINE");
+                }
+            } catch (e) {}
+        }
+
+        function atualizarUIStatus(on) {
+            const lb = document.getElementById('label-status');
+            const dot = document.getElementById('sidebar-dot');
+            const statusText = document.getElementById('sidebar-status-text');
+            const dashStatus = document.getElementById('dash-server-status');
+
+            lb.innerText = on ? "ONLINE" : "OFFLINE";
+            lb.style.color = on ? "var(--neon)" : "var(--red)";
+
+            if (dashStatus) {
+                dashStatus.innerText = on ? "ONLINE" : "OFFLINE";
+                dashStatus.style.color = on ? "var(--neon)" : "var(--red)";
+            }
+
+            if (on) {
+                dot.classList.add('online');
+                statusText.innerText = "Online";
+            } else {
+                dot.classList.remove('online');
+                statusText.innerText = "Offline";
+            }
+        }
+
+        function atualizarSyncInfo() {
+            const el = document.getElementById('sync-info');
+            const agora = new Date();
+            const hh = String(agora.getHours()).padStart(2, '0');
+            const mm = String(agora.getMinutes()).padStart(2, '0');
+            const ss = String(agora.getSeconds()).padStart(2, '0');
+            el.innerHTML = `<i class="fas fa-clock"></i> Última sync: ${hh}:${mm}:${ss}`;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           AUTO-REFRESH (30s)
+           ═══════════════════════════════════════════════════════ */
+        function iniciarAutoRefresh() {
+            if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+            autoRefreshInterval = setInterval(() => {
+                carregarEventosDoServidor(true);
+            }, 30000);
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           BUSCA COM DEBOUNCE (250ms)
+           ═══════════════════════════════════════════════════════ */
+        function buscarComDebounce() {
+            clearTimeout(buscaTimeout);
+            buscaTimeout = setTimeout(() => {
+                filtrarEventos();
+            }, 250);
+        }
+
+        function filtrarEventos() {
+            const termo = document.getElementById('input-busca').value.toLowerCase().trim();
+            if (!termo) {
+                renderizarListaFiltrada(eventos);
+                return;
+            }
+            const filtrados = eventos.filter(ev =>
+                ev.nome.toLowerCase().includes(termo) || String(ev.id).includes(termo)
+            );
+            renderizarListaFiltrada(filtrados);
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           UPLOAD DE MOLDURA (com validação de resolução)
+           ═══════════════════════════════════════════════════════ */
+        function atualizarLabelMoldura() {
+            const formato = document.getElementById('select-formato').value;
+            document.getElementById('label-moldura').innerText = 'Moldura — ' + RESOLUCOES[formato].label;
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            document.getElementById('upload-zone').classList.remove('dragover');
+            const files = event.dataTransfer.files;
+            if (files && files[0]) {
+                processarMoldura(files[0]);
+            }
+        }
+
+        function uploadMoldura(input) {
+            if (!input.files || !input.files[0]) return;
+            processarMoldura(input.files[0]);
+            input.value = '';
+        }
+
+        function processarMoldura(file) {
+            if (file.type !== 'image/png') {
+                mostrarToast("Formato Inválido", "Apenas arquivos PNG são permitidos.", "error");
+                return;
+            }
+
+            const formato = document.getElementById('select-formato').value;
+            const resolucaoEsperada = RESOLUCOES[formato];
+            const formatoKey = formato === '10X15V' ? '10x15v' : formato === '10X15H' ? '10x15h' : formato.toLowerCase();
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = new Image();
+                img.onload = function () {
+                    const warning = document.getElementById('resolution-warning');
+                    const warningText = document.getElementById('resolution-warning-text');
+
+                    if (img.width !== resolucaoEsperada.w || img.height !== resolucaoEsperada.h) {
+                        warning.classList.add('active');
+                        warningText.innerText = `Resolução atual: ${img.width}x${img.height}px. Recomendado: ${resolucaoEsperada.w}x${resolucaoEsperada.h}px para ${formato}.`;
+                    } else {
+                        warning.classList.remove('active');
+                    }
+
+                    const preview = document.getElementById('moldura-preview');
+                    preview.src = e.target.result;
+                    document.getElementById('preview-wrapper').style.display = 'block';
+                    document.getElementById('moldura-nome').innerText = `✅ ${file.name} (${img.width}x${img.height}px)`;
+
+                    molduras[formatoKey] = file;
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function fazerUploadMolduras(eventoId) {
+            for (const [formato, arquivo] of Object.entries(molduras)) {
+                if (!arquivo) continue;
+                const formData = new FormData();
+                formData.append('moldura', arquivo);
+                formData.append('eventoId', eventoId);
+                formData.append('formato', formato);
+                try {
+                    await fetch(`${API_URL}/upload-moldura`, { method: 'POST', body: formData });
+                } catch (e) {}
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           SALVAR / EDITAR / CANCELAR EVENTO
+           ═══════════════════════════════════════════════════════ */
+        async function salvarEvento() {
+            const nome = document.getElementById('input-evento').value.trim();
+            const data = document.getElementById('input-data').value;
+            const formato = document.getElementById('select-formato').value;
+            const livro = document.getElementById('input-livro').checked;
+            const editId = document.getElementById('edit-id').value;
+
+            if (!nome || !data) {
+                mostrarToast("Campos Obrigatórios", "Preencha o nome e a data do evento.", "error");
+                return;
+            }
+
+            mostrarLoading(true, editId ? "Atualizando evento..." : "Criando evento...");
+            try {
+                let eventId = editId;
+                if (editId) {
+                    await fetch(`${API_URL}/atualizar-evento/${editId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ nome, data, formato, livro, ativo: false })
+                    });
+                } else {
+                    const resp = await fetch(`${API_URL}/criar-evento`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ nome, data, formato, livro })
+                    });
+                    const result = await resp.json();
+                    if (!result.success) throw new Error(result.error || 'Erro ao criar');
+                    eventId = result.id;
+                    eventos.unshift({
+                        id: eventId, nome, data, dataRaw: data, formato,
+                        livro, ativo: false, temMoldura: true
+                    });
+                }
+
+                const temAlgumaMoldura = Object.values(molduras).some(f => f !== null);
+                if (temAlgumaMoldura) await fazerUploadMolduras(eventId);
+
+                mostrarToast("Sucesso", editId ? "Evento atualizado com sucesso!" : "Evento criado com sucesso!");
+                resetarFormulario();
+                trocarAba('eventos', document.querySelector('[data-aba="eventos"]'));
+                setTimeout(() => carregarEventosDoServidor(true), 800);
+            } catch (e) {
+                mostrarToast("Erro", e.message, "error");
+            } finally {
+                mostrarLoading(false);
+            }
+        }
+
+        function resetarFormulario() {
+            document.getElementById('input-evento').value = "";
+            document.getElementById('input-data').value = "";
+            document.getElementById('input-livro').checked = false;
+            document.getElementById('select-formato').value = "10X15V";
+            document.getElementById('edit-id').value = "";
+            document.getElementById('card-form-title').innerHTML = '<i class="fas fa-plus-circle"></i> Cadastrar Novo Evento <span class="edit-mode-badge" id="edit-mode-badge"><i class="fas fa-edit"></i> Modo Edição</span>';
+            document.getElementById('btn-text').innerText = "Criar Evento";
+            document.getElementById('btn-cancelar').style.display = 'none';
+            document.getElementById('preview-wrapper').style.display = 'none';
+            document.getElementById('moldura-preview').src = '';
+            document.getElementById('resolution-warning').classList.remove('active');
+            atualizarLabelMoldura();
+            ['polaroid', '10x15v', '10x15h', 'tirinha'].forEach(f => { molduras[f] = null; });
+        }
+
+        function cancelarEdicao() {
+            resetarFormulario();
+            trocarAba('eventos', document.querySelector('[data-aba="eventos"]'));
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           ATIVAR / DESATIVAR EVENTO
+           ═══════════════════════════════════════════════════════ */
+        async function ativarEvento(index) {
+            const ev = eventos[index];
+            if (!ev || !ev.id) return;
+            const novoEstado = !ev.ativo;
+            mostrarLoading(true, novoEstado ? "Ativando evento..." : "Desativando evento...");
+            try {
+                await fetch(`${API_URL}/atualizar-evento/${ev.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nome: ev.nome, data: ev.dataRaw || ev.data,
+                        formato: ev.formato, livro: ev.livro, ativo: novoEstado
+                    })
+                });
+                eventos.forEach((e, i) => e.ativo = (i === index && novoEstado));
+                renderizarLista();
+                checarEventoAtivo();
+                atualizarMetricasDashboard();
+                await sincronizarWorker(
+                    novoEstado ? ev.nome : "Geral",
+                    novoEstado ? ev.formato : "10X15V",
+                    novoEstado ? "ONLINE" : "OFFLINE",
+                    novoEstado ? ev.livro : false,
+                    novoEstado ? String(ev.id) : "",
+                    novoEstado ? ev.temMoldura : false
+                );
+                mostrarToast("Status Alterado", `Evento ${novoEstado ? 'ativado' : 'desativado'} com sucesso!`);
+            } catch (e) {
+                mostrarToast("Erro", e.message, "error");
+            } finally {
+                mostrarLoading(false);
+            }
+        }
+
+        async function sincronizarWorker(nome, formato, status, livro, eventoId, temMoldura) {
+            try {
+                await fetch(`${API_URL}/set-config`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ evento: nome, status, formato, livro, eventoId, temMoldura })
+                });
+                atualizarUIStatus(status === "ONLINE");
+            } catch (e) {}
+        }
+
+        function salvarStatusRede() {
+            const on = document.getElementById('server-status').checked;
+            const ativo = eventos.find(e => e.ativo);
+            if (ativo) {
+                sincronizarWorker(ativo.nome, ativo.formato, on ? "ONLINE" : "OFFLINE", ativo.livro, String(ativo.id), ativo.temMoldura);
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           EDITAR / EXCLUIR EVENTO
+           ═══════════════════════════════════════════════════════ */
+        function editarEvento(index) {
+            const ev = eventos[index];
+            document.getElementById('input-evento').value = ev.nome;
+                        // (Continuação da função editarEvento)
+            document.getElementById('input-data').value = ev.dataRaw || ev.data || "";
+            document.getElementById('select-formato').value = ev.formato;
+            document.getElementById('input-livro').checked = ev.livro;
+            document.getElementById('edit-id').value = ev.id;
+            document.getElementById('card-form-title').innerHTML = '<i class="fas fa-edit"></i> Editar Evento <span class="edit-mode-badge active"><i class="fas fa-edit"></i> Modo Edição</span>';
+            document.getElementById('btn-text').innerText = "Salvar Alterações";
+            document.getElementById('btn-cancelar').style.display = 'inline-flex';
+            atualizarLabelMoldura();
+            trocarAba('novo', document.querySelector('[data-aba="novo"]'));
+        }
+
+        async function excluirEvento(index) {
+            const ev = eventos[index];
+            if (!confirm(`Deseja realmente excluir o evento "${ev.nome}"?`)) return;
+            mostrarLoading(true, "Excluindo evento...");
+            try {
+                await fetch(`${API_URL}/deletar-evento/${ev.id}`, { method: 'DELETE' });
+                eventos.splice(index, 1);
+                if (ev.ativo) await sincronizarWorker("Geral", "10X15V", "OFFLINE", false, "", false);
+                renderizarLista();
+                checarEventoAtivo();
+                atualizarMetricasDashboard();
+                mostrarToast("Excluído", "Evento removido com sucesso.");
+            } catch (e) {
+                mostrarToast("Erro", e.message, "error");
+            } finally {
+                mostrarLoading(false);
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           RENDERIZAÇÃO DA LISTA
+           ═══════════════════════════════════════════════════════ */
+        function renderizarLista() {
+            renderizarListaFiltrada(eventos);
+        }
+
+        function renderizarListaFiltrada(lista) {
+            const container = document.getElementById('corpo-lista');
+            document.getElementById('badge-total').innerText = eventos.length;
+
+            if (!lista || lista.length === 0) {
+                const mensagemVazia = eventos.length === 0
+                    ? {
+                        titulo: 'Nenhum evento cadastrado',
+                        texto: 'Crie seu primeiro evento ou sincronize com o servidor',
+                        botao: true
+                    }
+                    : {
+                        titulo: 'Nenhum resultado encontrado',
+                        texto: 'Tente outro termo de busca',
+                        botao: false
+                    };
+
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <div class="empty-state-title">${mensagemVazia.titulo}</div>
+                        <div class="empty-state-text">${mensagemVazia.texto}</div>
+                        ${mensagemVazia.botao ? `
+                            <button class="btn btn-primary btn-sm" onclick="trocarAba('novo', document.querySelector('[data-aba=\\'novo\\']'))">
+                                <i class="fas fa-plus"></i> Criar Primeiro Evento
+                            </button>
+                        ` : ''}
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = lista.map((ev) => {
+                const realIndex = eventos.findIndex(e => e.id === ev.id);
+                return `
+                    <div class="evento-item ${ev.ativo ? 'ativo' : ''}">
+                        <div class="evento-status-icon">
+                            <i class="fas ${ev.ativo ? 'fa-check-circle' : 'fa-circle'}"></i>
+                        </div>
+                        <div class="evento-info">
+                            <div class="evento-nome">
+                                ${ev.nome}
+                                ${ev.livro ? '<span class="badge badge-blue"><i class="fas fa-book"></i> Guestbook</span>' : ''}
+                                ${ev.temMoldura ? '<span class="badge badge-neon"><i class="fas fa-image"></i> Moldura</span>' : ''}
+                            </div>
+                            <div class="evento-meta">
+                                <span><i class="fas fa-calendar"></i> ${ev.data || 'Sem data'}</span>
+                                <span><i class="fas fa-crop"></i> ${ev.formato}</span>
+                                <span><i class="fas fa-fingerprint"></i> ID: ${ev.id}</span>
+                            </div>
+                        </div>
+                        <div class="evento-actions">
+                            <button class="icon-btn edit" onclick="editarEvento(${realIndex})" title="Editar"><i class="fas fa-edit"></i></button>
+                            <button class="icon-btn delete" onclick="excluirEvento(${realIndex})" title="Excluir"><i class="fas fa-trash"></i></button>
+                            <button class="btn-ativar" onclick="ativarEvento(${realIndex})">${ev.ativo ? 'Ativado' : 'Ativar'}</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           CONTROLE DE EVENTO ATIVO + MÉTRICAS
+           ═══════════════════════════════════════════════════════ */
+        function checarEventoAtivo() {
+            const ativo = eventos.find(e => e.ativo);
+            const checkbox = document.getElementById('server-status');
+            const statAtivoNome = document.getElementById('stat-ativo-nome');
+            const topbarBadge = document.getElementById('topbar-active-badge');
+            const topbarActiveName = document.getElementById('topbar-active-name');
+
+            if (ativo) {
+                checkbox.checked = true;
+                checkbox.disabled = false;
+                atualizarUIStatus(true);
+
+                if (statAtivoNome) statAtivoNome.innerText = ativo.nome;
+
+                // Mostra badge no topbar
+                if (topbarBadge) topbarBadge.classList.remove('hidden');
+                if (topbarActiveName) topbarActiveName.innerText = ativo.nome;
+            } else {
+                checkbox.checked = false;
+                checkbox.disabled = true;
+                atualizarUIStatus(false);
+
+                if (statAtivoNome) statAtivoNome.innerText = "Nenhum";
+
+                // Esconde badge do topbar
+                if (topbarBadge) topbarBadge.classList.add('hidden');
+            }
+        }
+
+        function atualizarMetricasDashboard() {
+            const total = eventos.length;
+            const ativo = eventos.find(e => e.ativo);
+            const comMoldura = eventos.filter(e => e.temMoldura).length;
+            const comGuestbook = eventos.filter(e => e.livro).length;
+
+            const elTotal = document.getElementById('stat-total');
+            const elMolduras = document.getElementById('stat-molduras');
+            const elGuestbooks = document.getElementById('stat-guestbooks');
+            const elAtivoNome = document.getElementById('stat-ativo-nome');
+
+            if (elTotal) elTotal.innerText = total;
+            if (elMolduras) elMolduras.innerText = comMoldura;
+            if (elGuestbooks) elGuestbooks.innerText = comGuestbooks;
+            if (elAtivoNome) elAtivoNome.innerText = ativo ? ativo.nome : '—';
+
+            // Atualiza badge da sidebar
+            const badge = document.getElementById('badge-total');
+            if (badge) badge.innerText = total;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           INICIALIZAÇÃO
+           ═══════════════════════════════════════════════════════ */
+        // Permite fechar a busca com ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const busca = document.getElementById('input-busca');
+                if (busca && busca.value) {
+                    busca.value = '';
+                    filtrarEventos();
+                }
+            }
+        });
+
+    </script>
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- FIM DO BLOCO DE SCRIPTS (JavaScript)                        -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+</body>
+</html>
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- FIM DO ARQUIVO painel.html — v3.1                                    -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->

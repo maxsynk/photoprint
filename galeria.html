@@ -1,12 +1,12 @@
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- ▶▶▶ INÍCIO DO ARQUIVO galeria.html — CENTRAL v11.3 FINAL ◀◀◀        -->
+<!-- ▶▶▶ INÍCIO DO ARQUIVO galeria.html — CENTRAL v11.4 FINAL ◀◀◀        -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT — Central de Impressão v11.3</title>
+    <title>PHOTO PRINT — Central de Impressão v11.4</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -76,31 +76,31 @@
         #print-area { display: none; }
 
         @media print {
+            /* A folha base é portrait, o JS muda para landscape se precisar */
             @page { size: A4 portrait; margin: 0; }
             body * { visibility: hidden !important; display: none !important; }
             #print-area, #print-area * { visibility: visible !important; display: block !important; }
             
             #print-area {
                 position: absolute !important; inset: 0 !important;
-                width: 210mm !important; height: 297mm !important;
-                background: #fff !important; margin: 0 !important; padding: 3mm !important;
+                background: #fff !important; margin: 0 !important; padding: 5mm !important;
                 display: grid !important;
                 justify-content: center !important;
-                align-content: flex-start !important;
-                gap: 2mm !important;
+                align-content: center !important;
+                gap: 3mm !important;
             }
 
             /* ── POLAROID: 6 por folha (3x2), tamanho 68x98mm ── */
-            .layout-polaroid { grid-template-columns: repeat(3, 68mm) !important; grid-auto-rows: 98mm !important; }
+            .layout-polaroid { width: 210mm; height: 297mm; grid-template-columns: repeat(3, 68mm) !important; grid-auto-rows: 98mm !important; }
             
-            /* ── TIRINHA: 5 por folha (5x1), tamanho 37x180mm ── */
-            .layout-tirinha { grid-template-columns: repeat(5, 37mm) !important; grid-auto-rows: 180mm !important; }
+            /* ── TIRINHA: 5 por folha (5x1), tamanho 37x180mm (folha deitada) ── */
+            .layout-tirinha { width: 297mm; height: 210mm; grid-template-columns: repeat(5, 37mm) !important; grid-auto-rows: 180mm !important; }
             
             /* ── 10x15 VERTICAL: 2 por folha (2x1), tamanho 100x150mm ── */
-            .layout-10x15v { grid-template-columns: repeat(2, 100mm) !important; grid-auto-rows: 150mm !important; }
+            .layout-10x15v { width: 210mm; height: 297mm; grid-template-columns: repeat(2, 100mm) !important; grid-auto-rows: 150mm !important; }
             
-            /* ── 10x15 HORIZONTAL: 2 por folha (1x2), tamanho 150x100mm ── */
-            .layout-10x15h { grid-template-columns: repeat(1, 150mm) !important; grid-auto-rows: 100mm !important; }
+            /* ── 10x15 HORIZONTAL: 2 por folha (2x1), tamanho 150x100mm (folha em pé, fotos lado a lado) ── */
+            .layout-10x15h { width: 210mm; height: 297mm; grid-template-columns: repeat(2, 150mm) !important; grid-auto-rows: 100mm !important; }
 
             .slot { width: 100% !important; height: 100% !important; display: flex !important; align-items: center !important; justify-content: center !important; overflow: hidden !important; background: #fff !important; }
             .slot img { width: 100% !important; height: 100% !important; object-fit: contain !important; }
@@ -340,15 +340,6 @@
         </button>
         <div class="config-panel" id="config-panel">
             <div class="config-row">
-                <label>Fotos/folha (Polaroid)</label>
-                <select id="config-capacidade" onchange="salvarConfigCapacidade(this.value)">
-                    <option value="6" selected>6 (Padrão A4)</option>
-                    <option value="9">9</option>
-                    <option value="4">4</option>
-                    <option value="2">2</option>
-                </select>
-            </div>
-            <div class="config-row">
                 <label>Auto-impressão</label>
                 <select id="config-auto" onchange="salvarConfigAuto(this.value)">
                     <option value="1">Ativada</option>
@@ -392,23 +383,23 @@
         let todasFotos = [], chavesLocais = new Set();
         let eventoAtual = "", eventoIdAtual = "", formatoAtual = "POLAROID", primeiraCarga = true;
         let sheetBuffer = [], sheetQueue = [], isPrinting = false, pausado = false;
-        let autoImpressao = true, fotosPorFolha = 6;
+        let autoImpressao = true;
         let modoSelecao = false, selecionadas = new Set();
         let logHistory = [], logAberto = false;
 
         function getCapacidade() {
             const fmt = formatoAtual.toUpperCase();
-            // ── CONFIGURAÇÃO DE CAPACIDADE E LAYOUT POR FORMATO ──
-            if (fmt.includes("POLAROID")) return { slots: fotosPorFolha, layout: "layout-polaroid" };
-            if (fmt.includes("TIRINHA")) return { slots: 5, layout: "layout-tirinha" }; // 5 tirinhas em pé
-            if (fmt.includes("10X15H")) return { slots: 2, layout: "layout-10x15h" };   // 2 fotos deitadas
-            if (fmt.includes("10X15V")) return { slots: 2, layout: "layout-10x15v" };   // 2 fotos em pé
-            return { slots: fotosPorFolha, layout: "layout-polaroid" };
+            // A capacidade agora é fixa e baseada no formato, garantindo o preenchimento correto
+            if (fmt.includes("POLAROID")) return { slots: 6, layout: "layout-polaroid" };
+            if (fmt.includes("TIRINHA")) return { slots: 5, layout: "layout-tirinha" };
+            if (fmt.includes("10X15H")) return { slots: 2, layout: "layout-10x15h" };
+            if (fmt.includes("10X15V")) return { slots: 2, layout: "layout-10x15v" };
+            return { slots: 6, layout: "layout-polaroid" };
         }
 
         function addLog(msg, tipo = 'info') {
             const ts = new Date().toLocaleTimeString('pt-BR');
-            logHistory.push({ ts, msg, tipo });
+                        logHistory.push({ ts, msg, tipo });
             if (logHistory.length > 30) logHistory.shift();
             renderLog();
         }
@@ -429,7 +420,7 @@
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `toast ${tipo}`;
-                        toast.innerHTML = `<i class="fa-solid fa-${tipo==='success'?'check-circle':tipo==='error'?'exclamation-triangle':'info-circle'}" style="color:var(--${tipo==='success'?'success':tipo==='error'?'danger':'accent'})"></i>
+            toast.innerHTML = `<i class="fa-solid fa-${tipo==='success'?'check-circle':tipo==='error'?'exclamation-triangle':'info-circle'}" style="color:var(--${tipo==='success'?'success':tipo==='error'?'danger':'accent'})"></i>
                 <div><div style="font-size:12px;font-weight:800;">${titulo}</div><div style="font-size:11px;color:var(--text-2);">${msg}</div></div>`;
             container.appendChild(toast);
             setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3500);
@@ -599,10 +590,10 @@
             document.head.appendChild(stylePage);
             
             // Define a folha correta com base no layout
+            // A4 PORTRAIT: Polaroid, 10x15 V, 10x15 H
+            // A4 LANDSCAPE: Tirinha
             let pageRule = '@page { size: A4 portrait; margin: 0; }';
-            
-            // Tirinha e 10x15 Horizontal precisam de folha DEITADA (Landscape)
-            if (folha.layout === 'layout-tirinha' || folha.layout === 'layout-10x15h') {
+            if (folha.layout === 'layout-tirinha') {
                 pageRule = '@page { size: A4 landscape; margin: 0; }';
             }
             
@@ -726,7 +717,6 @@
             cancelarSelecao();
         }
 
-        function salvarConfigCapacidade(v) { fotosPorFolha = parseInt(v); atualizarUIFolha(); }
         function salvarConfigAuto(v) { autoImpressao = v === '1'; }
 
         function togglePausa() {
@@ -800,9 +790,9 @@
             atualizarUIFolha();
             atualizar();
             setInterval(atualizar, POLL_INTERVAL);
-            addLog('🚀 Central v11.3 iniciada', 'success');
+            addLog('🚀 Central v11.4 iniciada', 'success');
         });
     </script>
 </body>
 </html>
-<!-- ◀◀◀ FIM DO ARQUIVO galeria.html — v11.3 ▶▶▶ -->
+<!-- ◀◀◀ FIM DO ARQUIVO galeria.html — v11.4 ▶▶▶ -->

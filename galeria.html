@@ -258,15 +258,20 @@
             }
         }
 
+       <!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- INÍCIO DA ATUALIZAÇÃO DA BUSCA DE FOTOS EM galeria.html            -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+    <script>
+        // ... (mantenha todo o restante do arquivo e substitua apenas a função abaixo)
+
         async function carregarFotosDoEventoAtivo(eventoId) {
             const loader = document.getElementById('photo-loader');
             const card = document.getElementById('photo-card');
             
             try {
-                const resp = await fetch(`${API_URL}/fotos?id=${eventoId}`);
+                // Tenta buscar na rota correta do evento ou lista geral filtrada
+                const resp = await fetch(`${API_URL}/evento/${eventoId}/fotos`);
                 const data = await resp.json();
-
-                if (loader) loader.classList.add('hidden');
 
                 if (data.success && data.fotos && data.fotos.length > 0) {
                     card.innerHTML = `
@@ -286,21 +291,24 @@
                         <div style="padding: 35px 20px; text-align: center;">
                             <i class="fas fa-camera-retro" style="font-size: 40px; color: var(--neon); margin-bottom: 14px; opacity: 0.8;"></i>
                             <h3 style="font-size: 16px; color: #fff; margin-bottom: 8px; font-family: var(--font-display);">Painel Sincronizado</h3>
-                            <p style="font-size: 11px; color: var(--text-2); line-height: 1.5;">O evento ativo foi identificado, mas ainda não há fotos registradas para ele (ID: ${eventoId}). Tire uma foto para exibi-la aqui automaticamente.</p>
+                            <p style="font-size: 11px; color: var(--text-2); line-height: 1.5;">O evento ativo foi identificado (ID: ${eventoId}), mas ainda não há fotos registradas na nuvem para exibição em grade.</p>
                         </div>
                     `;
                 }
             } catch (e) {
-                if (loader) loader.classList.add('hidden');
                 card.innerHTML = `
                     <div style="padding: 35px 20px; text-align: center;">
                         <i class="fas fa-signal" style="font-size: 40px; color: var(--neon); margin-bottom: 14px; opacity: 0.8;"></i>
-                        <h3 style="font-size: 16px; color: #fff; margin-bottom: 8px; font-family: var(--font-display);">Aguardando Capturas</h3>
-                        <p style="font-size: 11px; color: var(--text-2); line-height: 1.5;">Conectado ao evento ativo (ID: ${eventoId}). Pronto para exibir as novas fotos.</p>
+                        <h3 style="font-size: 16px; color: #fff; margin-bottom: 8px; font-family: var(--font-display);">Conectado ao Evento Ativo</h3>
+                        <p style="font-size: 11px; color: var(--text-2); line-height: 1.5;">Painel vinculado ao ID ${eventoId}. Pronto para exibir as fotos assim que capturadas.</p>
                     </div>
                 `;
             }
         }
+    </script>
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- FIM DA ATUALIZAÇÃO DA BUSCA DE FOTOS Em galeria.html               -->
+<!-- ═══════════════════════════════════════════════════════════════════ --> 
 
         function carregarFotoUnica(url, id) {
             const card = document.getElementById('photo-card');

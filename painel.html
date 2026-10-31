@@ -7,8 +7,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
-        body { display: grid; grid-template-columns: 260px 1fr; height: 100vh; overflow: hidden; }
+        /* CSS Específico do PAINEL */
+        body { display: block; height: 100vh; overflow: hidden; }
         #app { display: grid; grid-template-columns: 260px 1fr; height: 100vh; }
+        
         .sidebar { background: var(--bg-1); border-right: 1px solid var(--border-1); display: flex; flex-direction: column; padding: 24px 16px; z-index: 10; }
         .sidebar-brand { display: flex; align-items: center; gap: 12px; padding: 4px 8px 20px; border-bottom: 1px solid var(--border-1); margin-bottom: 16px; }
         .brand-logo { width: 36px; height: 36px; background: var(--accent); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--bg-0); font-size: 16px; box-shadow: var(--accent-glow); flex-shrink: 0; }
@@ -25,6 +27,7 @@
         .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); box-shadow: 0 0 8px currentColor; flex-shrink: 0; }
         .status-dot.online { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
         .sync-info { font-size: 9px; color: var(--text-3); font-weight: 600; letter-spacing: 0.5px; padding-top: 6px; border-top: 1px solid var(--border-1); }
+        
         .content-area { display: flex; flex-direction: column; overflow: hidden; background: var(--bg-0); }
         .topbar { height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; border-bottom: 1px solid var(--border-1); background: rgba(10,10,10,0.7); backdrop-filter: blur(20px); flex-shrink: 0; }
         .topbar-title h1 { font-size: 16px; font-weight: 700; }
@@ -34,15 +37,18 @@
         .topbar-active-badge.hidden { display: none; }
         .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent); animation: pulseDot 1.5s ease-in-out infinite; flex-shrink: 0; }
         @keyframes pulseDot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.85); } }
+        
         .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .switch-slider { position: absolute; cursor: pointer; inset: 0; background: var(--bg-4); transition: all 0.3s; border-radius: 30px; border: 1px solid var(--border-2); }
         .switch-slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: var(--text-3); transition: all 0.3s; border-radius: 50%; }
         .switch input:checked + .switch-slider { background: var(--accent-dim); border-color: var(--accent); }
         .switch input:checked + .switch-slider:before { transform: translateX(20px); background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+        
         .view-container { flex: 1; overflow-y: auto; padding: 28px 32px; display: none; }
         .view-container.active { display: block; animation: fadeInView 0.3s ease; }
         @keyframes fadeInView { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        
         .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 24px; }
         .metric-card { background: var(--bg-1); border: 1px solid var(--border-1); border-radius: var(--radius-lg); padding: 20px; position: relative; overflow: hidden; transition: all 0.3s; }
         .metric-card:hover { border-color: var(--accent); transform: translateY(-2px); }
@@ -57,20 +63,24 @@
         .metric-value { font-family: var(--font-display); font-size: 26px; font-weight: 900; line-height: 1; margin-bottom: 4px; }
         .metric-value.small { font-size: 18px; }
         .metric-label { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+        
         .card { background: var(--bg-1); border: 1px solid var(--border-1); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 24px; }
         .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border-1); display: flex; align-items: center; justify-content: space-between; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); background: var(--bg-2); }
         .card-body { padding: 20px; }
+        
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .form-group { margin-bottom: 16px; }
         .form-group.full { grid-column: 1 / -1; }
         .form-label { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--accent); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
         .form-control { width: 100%; padding: 12px 14px; background: var(--bg-0); border: 1px solid var(--bg-4); color: var(--text-0); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 13px; outline: none; transition: all 0.3s; }
         .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+        
         .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 20px; border-radius: var(--radius-sm); font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; border: 1px solid transparent; transition: all 0.3s; font-family: inherit; }
         .btn-primary { background: var(--accent); color: var(--bg-0); border-color: var(--accent); }
         .btn-primary:hover { box-shadow: var(--accent-glow); transform: translateY(-1px); }
         .btn-outline { background: transparent; color: var(--text-0); border-color: var(--border-2); }
         .btn-outline:hover { background: var(--bg-2); border-color: var(--accent); color: var(--accent); }
+        
         .eventos-list { display: flex; flex-direction: column; gap: 10px; }
         .evento-item { background: var(--bg-1); border: 1px solid var(--border-1); border-radius: var(--radius-md); padding: 14px 18px; display: flex; align-items: center; gap: 16px; transition: all 0.3s; position: relative; }
         .evento-item:hover { border-color: var(--border-2); background: var(--bg-2); }
@@ -79,10 +89,12 @@
         .evento-info { flex: 1; }
         .evento-nome { font-size: 13px; font-weight: 700; color: var(--text-0); margin-bottom: 3px; }
         .evento-meta { font-size: 10px; color: var(--text-3); font-weight: 500; }
+        
         .upload-zone { border: 2px dashed var(--bg-4); border-radius: var(--radius-md); padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s; background: var(--bg-0); }
         .upload-zone:hover { border-color: var(--accent); background: var(--accent-dim); }
+        
         .toast-container { position: fixed; top: 24px; right: 24px; z-index: 5000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-                .toast { background: var(--bg-1); border: 1px solid var(--border-2); border-left: 3px solid var(--accent); border-radius: var(--radius-md); padding: 12px 16px; min-width: 260px; max-width: 360px; display: flex; align-items: center; gap: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); pointer-events: auto; animation: toastIn 0.3s; }
+        .toast { background: var(--bg-1); border: 1px solid var(--border-2); border-left: 3px solid var(--accent); border-radius: var(--radius-md); padding: 12px 16px; min-width: 260px; max-width: 360px; display: flex; align-items: center; gap: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); pointer-events: auto; animation: toastIn 0.3s; }
         .toast.error { border-left-color: var(--danger); }
         .toast-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; background: var(--accent-dim); color: var(--accent); }
         .toast.error .toast-icon { background: var(--danger-dim); color: var(--danger); }
@@ -97,51 +109,28 @@
     </style>
 </head>
 <body>
-
     <div id="app">
-        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-brand">
                 <div class="brand-logo"><i class="fas fa-camera-retro"></i></div>
-                <div class="brand-text">
-                    <h2>PHOTO PRINT</h2>
-                    <span>Master Panel</span>
-                </div>
+                <div class="brand-text"><h2>PHOTO PRINT</h2><span>Master Panel</span></div>
             </div>
             <div class="sidebar-nav">
-                <button class="nav-item active" data-aba="dashboard" onclick="trocarAba('dashboard', this)">
-                    <i class="fas fa-chart-pie"></i> Dashboard
-                </button>
-                <button class="nav-item" data-aba="eventos" onclick="trocarAba('eventos', this)">
-                    <i class="fas fa-list-alt"></i> Eventos <span class="nav-badge" id="badge-total">0</span>
-                </button>
-                <button class="nav-item" data-aba="novo" onclick="trocarAba('novo', this)">
-                    <i class="fas fa-plus-circle"></i> Novo Evento
-                </button>
+                <button class="nav-item active" data-aba="dashboard" onclick="trocarAba('dashboard', this)"><i class="fas fa-chart-pie"></i> Dashboard</button>
+                <button class="nav-item" data-aba="eventos" onclick="trocarAba('eventos', this)"><i class="fas fa-list-alt"></i> Eventos <span class="nav-badge" id="badge-total">0</span></button>
+                <button class="nav-item" data-aba="novo" onclick="trocarAba('novo', this)"><i class="fas fa-plus-circle"></i> Novo Evento</button>
             </div>
             <div class="sidebar-status-box">
-                <div class="status-indicator-info">
-                    <div class="status-dot" id="sidebar-dot"></div>
-                    <span id="sidebar-status-text">Offline</span>
-                </div>
-                <div class="sync-info" id="sync-info">
-                    <i class="fas fa-clock"></i> Aguardando sincronização...
-                </div>
+                <div class="status-indicator-info"><div class="status-dot" id="sidebar-dot"></div><span id="sidebar-status-text">Offline</span></div>
+                <div class="sync-info" id="sync-info"><i class="fas fa-clock"></i> Aguardando...</div>
             </div>
         </aside>
 
-        <!-- Main Content -->
         <main class="content-area">
             <header class="topbar">
-                <div class="topbar-title">
-                    <h1 id="topbar-title-text">Dashboard</h1>
-                    <span id="topbar-subtitle-text">Visão geral do sistema</span>
-                </div>
+                <div class="topbar-title"><h1 id="topbar-title-text">Dashboard</h1><span id="topbar-subtitle-text">Visão geral</span></div>
                 <div style="display: flex; align-items: center; gap: 16px;">
-                    <div class="topbar-active-badge hidden" id="topbar-active-badge">
-                        <span class="pulse-dot"></span>
-                        <span id="topbar-active-name">—</span>
-                    </div>
+                    <div class="topbar-active-badge hidden" id="topbar-active-badge"><span class="pulse-dot"></span><span id="topbar-active-name">—</span></div>
                     <div style="display: flex; align-items: center; gap: 10px; font-size: 11px; font-weight: 700;">
                         <span id="label-status" style="color: var(--danger);">OFFLINE</span>
                         <label class="switch"><input type="checkbox" id="server-status" onchange="salvarStatusRede()"><span class="switch-slider"></span></label>
@@ -149,7 +138,6 @@
                 </div>
             </header>
 
-            <!-- ABA DASHBOARD -->
             <div id="view-dashboard" class="view-container active">
                 <div class="metrics-grid">
                     <div class="metric-card"><div class="metric-icon"><i class="fas fa-calendar-check"></i></div><div class="metric-value" id="stat-total">0</div><div class="metric-label">Total de Eventos</div></div>
@@ -161,87 +149,50 @@
                     <div class="card-header"><span><i class="fas fa-bolt"></i> Ações Rápidas</span></div>
                     <div class="card-body" style="display: flex; gap: 12px; flex-wrap: wrap;">
                         <button class="btn btn-primary" onclick="trocarAba('novo', document.querySelector('[data-aba=novo]'))"><i class="fas fa-plus"></i> Criar Novo Evento</button>
-                        <button class="btn btn-outline" onclick="trocarAba('eventos', document.querySelector('[data-aba=eventos]'))"><i class="fas fa-list"></i> Ver Todos os Eventos</button>
-                        <button class="btn btn-outline" onclick="carregarEventosDoServidor()"><i class="fas fa-sync-alt"></i> Sincronizar Agora</button>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-header"><span><i class="fas fa-info-circle"></i> Informações do Sistema</span></div>
-                    <div class="card-body">
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; font-size: 12px;">
-                            <div><div style="color: var(--text-3); font-size: 10px; text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">Versão</div><div style="font-family: var(--font-display); font-weight: 700; color: var(--accent);">v3.2</div></div>
-                            <div><div style="color: var(--text-3); font-size: 10px; text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">API Endpoint</div><div style="font-family: monospace; font-size: 10px; color: var(--text-2); word-break: break-all;">photoprint-api.maxprimefotovideo.workers.dev</div></div>
-                            <div><div style="color: var(--text-3); font-size: 10px; text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">Status do Servidor</div><div id="dash-server-status" style="font-weight: 700; color: var(--danger);">OFFLINE</div></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ABA EVENTOS -->
-            <div id="view-eventos" class="view-container">
-                <div class="card">
-                    <div class="card-header">
-                        <span><i class="fas fa-database"></i> Base de Eventos</span>
+                        <button class="btn btn-outline" onclick="trocarAba('eventos', document.querySelector('[data-aba=eventos]'))"><i class="fas fa-list"></i> Ver Todos</button>
                         <button class="btn btn-outline" onclick="carregarEventosDoServidor()"><i class="fas fa-sync-alt"></i> Sincronizar</button>
                     </div>
-                    <div class="card-body">
-                        <div class="eventos-list" id="corpo-lista">
-                            <div style="text-align: center; padding: 40px; color: var(--text-3);">
-                                <i class="fas fa-inbox" style="font-size: 42px; opacity: 0.4; display: block; margin-bottom: 12px;"></i>
-                                Nenhum evento carregado
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
-            <!-- ABA NOVO/EDITAR -->
+            <div id="view-eventos" class="view-container">
+                <div class="card">
+                    <div class="card-header"><span><i class="fas fa-database"></i> Base de Eventos</span><button class="btn btn-outline" onclick="carregarEventosDoServidor()"><i class="fas fa-sync-alt"></i> Sincronizar</button></div>
+                    <div class="card-body"><div class="eventos-list" id="corpo-lista"></div></div>
+                </div>
+            </div>
+
             <div id="view-novo" class="view-container">
                 <div class="card" style="max-width: 800px; margin: 0 auto;">
-                    <div class="card-header">
-                        <span id="card-form-title"><i class="fas fa-plus-circle"></i> Cadastrar Novo Evento</span>
-                    </div>
+                    <div class="card-header"><span id="card-form-title"><i class="fas fa-plus-circle"></i> Cadastrar Novo Evento</span></div>
                     <div class="card-body">
                         <input type="hidden" id="edit-id" value="">
                         <div class="form-grid">
-                            <div class="form-group full">
-                                <label class="form-label"><i class="fas fa-tag"></i> Nome do Evento</label>
-                                <input type="text" id="input-evento" class="form-control" placeholder="Ex: Casamento Ana e Carlos">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label"><i class="fas fa-calendar-alt"></i> Data do Evento</label>
-                                <input type="date" id="input-data" class="form-control">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label"><i class="fas fa-crop-alt"></i> Formato Padrão</label>
+                            <div class="form-group full"><label class="form-label"><i class="fas fa-tag"></i> Nome do Evento</label><input type="text" id="input-evento" class="form-control" placeholder="Ex: Casamento"></div>
+                            <div class="form-group"><label class="form-label"><i class="fas fa-calendar-alt"></i> Data</label><input type="date" id="input-data" class="form-control"></div>
+                            <div class="form-group"><label class="form-label"><i class="fas fa-crop-alt"></i> Formato</label>
                                 <select id="select-formato" class="form-control" onchange="atualizarLabelMoldura()">
-                                    <option value="POLAROID">Polaroid (1041x1311px)</option>
-                                    <option value="TIRINHA">Tirinha 5x15 (591x1819px)</option>
-                                    <option value="10X15H">10x15 Horizontal (1772x1228px)</option>
-                                    <option value="10X15V">10x15 Vertical (1181x1819px)</option>
+                                    <option value="POLAROID">Polaroid</option>
+                                    <option value="TIRINHA">Tirinha</option>
+                                    <option value="10X15H">10x15 Horizontal</option>
+                                    <option value="10X15V">10x15 Vertical</option>
                                 </select>
                             </div>
                         </div>
                         <div class="form-group">
                             <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--bg-0); border: 1px solid var(--bg-4); border-radius: var(--radius-sm);">
-                                <span style="font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                                    <i class="fas fa-book-open" style="color: var(--accent);"></i> Modo Guestbook (Livro de Assinaturas)
-                                </span>
+                                <span style="font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px;"><i class="fas fa-book-open" style="color: var(--accent);"></i> Modo Guestbook</span>
                                 <label class="switch"><input type="checkbox" id="input-livro"><span class="switch-slider"></span></label>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label"><i class="fas fa-image"></i> <span id="label-moldura">Moldura — Polaroid (1041x1311px)</span></label>
+                            <label class="form-label"><i class="fas fa-image"></i> <span id="label-moldura">Moldura</span></label>
                             <input type="file" id="input-moldura" accept="image/png" style="display:none" onchange="uploadMoldura(this)">
                             <div class="upload-zone" id="upload-zone" onclick="document.getElementById('input-moldura').click()" ondragover="event.preventDefault(); this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleDrop(event)">
                                 <div style="font-size: 28px; color: var(--text-3); margin-bottom: 8px;"><i class="fas fa-cloud-upload-alt"></i></div>
-                                <div style="font-size: 11px; font-weight: 600; color: var(--text-2);">Clique ou arraste a moldura em PNG transparente</div>
-                                <div style="font-size: 9px; color: var(--text-3); margin-top: 4px;">Apenas arquivos .PNG</div>
+                                <div style="font-size: 11px; font-weight: 600; color: var(--text-2);">Clique ou arraste o PNG</div>
                             </div>
-                            <div id="preview-wrapper" style="margin-top: 12px; text-align: center; display: none;">
-                                <img id="moldura-preview" style="max-width: 160px; max-height: 200px; border-radius: 8px; border: 1px solid var(--accent); box-shadow: 0 8px 24px rgba(0,0,0,0.5); margin: 0 auto;">
-                                <div id="moldura-nome" style="font-size: 10px; color: var(--accent); margin-top: 6px; font-weight: 600;"></div>
-                            </div>
+                            <div id="preview-wrapper" style="margin-top: 12px; text-align: center; display: none;"><img id="moldura-preview" style="max-width: 160px; border: 1px solid var(--accent); border-radius: 8px;"><div id="moldura-nome" style="font-size: 10px; color: var(--accent); margin-top: 6px;"></div></div>
                         </div>
                         <div style="display: flex; gap: 12px; margin-top: 24px;">
                             <button class="btn btn-primary" style="flex: 1;" onclick="salvarEvento()" id="btn-submit"><i class="fas fa-save"></i> <span id="btn-text">Criar Evento</span></button>
@@ -253,314 +204,66 @@
         </main>
     </div>
 
-    <div class="loading-overlay" id="loading-overlay">
-        <div class="spinner"></div>
-        <div style="font-size: 11px; font-weight: 700; color: var(--accent); letter-spacing: 2px; text-transform: uppercase;" id="loading-text">Processando dados...</div>
-    </div>
+    <div class="loading-overlay" id="loading-overlay"><div class="spinner"></div><div style="font-size: 11px; font-weight: 700; color: var(--accent); letter-spacing: 2px; text-transform: uppercase;" id="loading-text">...</div></div>
     <div class="toast-container" id="toast-container"></div>
 
     <script>
         const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
-        const RESOLUCOES = {
-            'POLAROID': { w: 1041, h: 1311, label: 'Polaroid (1041x1311px)' },
-            'TIRINHA':  { w: 591,  h: 1819, label: 'Tirinha 5x15 (591x1819px)' },
-            '10X15V':   { w: 1181, h: 1819, label: '10x15 Vertical (1181x1819px)' },
-            '10X15H':   { w: 1772, h: 1228, label: '10x15 Horizontal (1772x1228px)' }
-        };
-        let eventos = [];
-        let molduras = { polaroid: null, tirinha: null, '10x15v': null, '10x15h': null };
-        let buscaTimeout = null;
-        let autoRefreshInterval = null;
+        const RESOLUCOES = { 'POLAROID': { w: 1041, h: 1311, label: 'Polaroid' }, 'TIRINHA': { w: 591, h: 1819, label: 'Tirinha' }, '10X15V': { w: 1181, h: 1819, label: '10x15 V' }, '10X15H': { w: 1772, h: 1228, label: '10x15 H' } };
+        let eventos = [], molduras = { polaroid: null, tirinha: null, '10x15v': null, '10x15h': null }, autoRefreshInterval = null;
 
         function mostrarToast(titulo, mensagem, tipo = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${tipo}`;
-            const iconMap = { success: 'fa-check', error: 'fa-exclamation-triangle', info: 'fa-info', warning: 'fa-exclamation' };
-            toast.innerHTML = `<div class="toast-icon"><i class="fas ${iconMap[tipo] || 'fa-check'}"></i></div><div class="toast-content"><div class="toast-title">${titulo}</div><div class="toast-message">${mensagem}</div></div>`;
-            container.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3500);
+            const toast = document.createElement('div'); toast.className = `toast ${tipo}`;
+            toast.innerHTML = `<div class="toast-icon"><i class="fas fa-check"></i></div><div><div class="toast-title">${titulo}</div><div class="toast-message">${mensagem}</div></div>`;
+            document.getElementById('toast-container').appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
         }
-        function mostrarLoading(show, texto = "Processando dados...") {
-            document.getElementById('loading-text').innerText = texto;
-            document.getElementById('loading-overlay').classList.toggle('active', show);
+        function mostrarLoading(show, texto = "...") { document.getElementById('loading-text').innerText = texto; document.getElementById('loading-overlay').classList.toggle('active', show); }
+        function trocarAba(aba, btn) {
+            document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('view-' + aba).classList.add('active'); if (btn) btn.classList.add('active');
+            document.getElementById('topbar-title-text').innerText = aba === 'dashboard' ? 'Dashboard' : aba === 'eventos' ? 'Eventos' : 'Novo Evento';
         }
-
-        const TITULOS_ABA = {
-            dashboard: { title: 'Dashboard', sub: 'Visão geral do sistema' },
-            eventos:   { title: 'Gerenciamento de Eventos', sub: 'Visualize e controle seus eventos' },
-            novo:      { title: 'Cadastro de Evento', sub: 'Insira as informações e carregue a moldura' }
-        };
-
-        function trocarAba(aba, elementoBtn) {
-            document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
-            document.querySelectorAll('.sidebar-nav .nav-item').forEach(n => n.classList.remove('active'));
-            const viewId = 'view-' + aba;
-            const view = document.getElementById(viewId);
-            if (view) view.classList.add('active');
-            if (elementoBtn) elementoBtn.classList.add('active');
-            else document.querySelector(`[data-aba="${aba}"]`)?.classList.add('active');
-            const titulos = TITULOS_ABA[aba] || TITULOS_ABA.dashboard;
-            document.getElementById('topbar-title-text').innerText = titulos.title;
-            document.getElementById('topbar-subtitle-text').innerText = titulos.sub;
-            if (aba === 'dashboard') atualizarMetricasDashboard();
-        }
-
-        async function carregarEventosDoServidor(silencioso = false) {
-            if (!silencioso) mostrarLoading(true, "Sincronizando eventos...");
+        async function carregarEventosDoServidor() {
+            mostrarLoading(true, "Sincronizando...");
             try {
-                const resp = await fetch(`${API_URL}/eventos`);
-                const data = await resp.json();
-                if (data.success && data.eventos) {
-                    eventos = data.eventos.map(ev => ({
-                        id: ev.id, nome: ev.nome, data: ev.data, dataRaw: ev.data,
-                        formato: ev.formato || 'POLAROID',
-                        livro: ev.livro === 1 || ev.livro === true,
-                        ativo: ev.ativo === 1 || ev.ativo === true,
-                        temMoldura: ev.tem_moldura === 1 || ev.tem_moldura === true
-                    }));
-                } else { eventos = []; }
-                atualizarSyncInfo();
-            } catch (e) { eventos = []; }
-            finally { if (!silencioso) mostrarLoading(false); renderizarLista(); checarEventoAtivo(); atualizarMetricasDashboard(); }
+                const resp = await fetch(`${API_URL}/eventos`); const data = await resp.json();
+                if (data.success && data.eventos) eventos = data.eventos.map(ev => ({ id: ev.id, nome: ev.nome, data: ev.data, dataRaw: ev.data, formato: ev.formato || 'POLAROID', livro: ev.livro === 1, ativo: ev.ativo === 1, temMoldura: ev.tem_moldura === 1 }));
+                renderizarLista(); checarEventoAtivo(); atualizarMetricas();
+            } catch (e) { mostrarToast("Erro", "Falha na conexão.", "error"); }
+            finally { mostrarLoading(false); }
         }
-
-        async function verificarEstadoAtual() {
-            try {
-                const resp = await fetch(`${API_URL}/get-all-states`);
-                const data = await resp.json();
-                if (data.config) {
-                    atualizarUIStatus(data.config.status === "ONLINE");
-                    document.getElementById('server-status').checked = (data.config.status === "ONLINE");
-                }
-            } catch (e) {}
+        function atualizarMetricas() {
+            document.getElementById('stat-total').innerText = eventos.length; document.getElementById('stat-molduras').innerText = eventos.filter(e => e.temMoldura).length; document.getElementById('stat-guestbooks').innerText = eventos.filter(e => e.livro).length;
+            const ativo = eventos.find(e => e.ativo); document.getElementById('stat-ativo-nome').innerText = ativo ? ativo.nome : '—'; document.getElementById('badge-total').innerText = eventos.length;
         }
-
-        function atualizarUIStatus(on) {
-            const lb = document.getElementById('label-status');
-            const dot = document.getElementById('sidebar-dot');
-            const statusText = document.getElementById('sidebar-status-text');
-            const dashStatus = document.getElementById('dash-server-status');
-            lb.innerText = on ? "ONLINE" : "OFFLINE";
-            lb.style.color = on ? "var(--accent)" : "var(--danger)";
-            if (dashStatus) { dashStatus.innerText = on ? "ONLINE" : "OFFLINE"; dashStatus.style.color = on ? "var(--accent)" : "var(--danger)"; }
-            dot.classList.toggle('online', on);
-            statusText.innerText = on ? "Online" : "Offline";
+        function renderizarLista() {
+            const container = document.getElementById('corpo-lista');
+            if (eventos.length === 0) return container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-3);">Nenhum evento.</div>';
+            container.innerHTML = eventos.map((ev, i) => `<div class="evento-item ${ev.ativo ? 'ativo' : ''}"><div class="evento-info"><div class="evento-nome">${ev.nome}</div><div class="evento-meta">${ev.data} · ${ev.formato}</div></div><button class="btn btn-outline" onclick="editarEvento(${i})"><i class="fas fa-edit"></i></button><button class="btn btn-outline" onclick="excluirEvento(${i})" style="color:var(--danger);border-color:var(--danger);"><i class="fas fa-trash"></i></button><button class="btn ${ev.ativo ? 'btn-primary' : 'btn-outline'}" onclick="ativarEvento(${i})">${ev.ativo ? 'Ativado' : 'Ativar'}</button></div>`).join('');
         }
-
-        function atualizarSyncInfo() {
-            const agora = new Date();
-            const hh = String(agora.getHours()).padStart(2, '0');
-            const mm = String(agora.getMinutes()).padStart(2, '0');
-            const ss = String(agora.getSeconds()).padStart(2, '0');
-            document.getElementById('sync-info').innerHTML = `<i class="fas fa-clock"></i> Última sync: ${hh}:${mm}:${ss}`;
+        function checarEventoAtivo() {
+            const ativo = eventos.find(e => e.ativo); document.getElementById('topbar-active-badge').classList.toggle('hidden', !ativo);
+            if (ativo) document.getElementById('topbar-active-name').innerText = ativo.nome;
         }
-
-        function iniciarAutoRefresh() {
-            if (autoRefreshInterval) clearInterval(autoRefreshInterval);
-            autoRefreshInterval = setInterval(() => carregarEventosDoServidor(true), 30000);
+        async function ativarEvento(index) {
+            const ev = eventos[index]; const novo = !ev.ativo; mostrarLoading(true, "Alterando...");
+            try { await fetch(`${API_URL}/atualizar-evento/${ev.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome: ev.nome, data: ev.dataRaw, formato: ev.formato, livro: ev.livro, ativo: novo }) }); eventos.forEach((e, i) => e.ativo = (i === index && novo)); renderizarLista(); checarEventoAtivo(); atualizarMetricas(); } catch (e) { mostrarToast("Erro", e.message, "error"); } finally { mostrarLoading(false); }
         }
-
-        function atualizarLabelMoldura() {
-            const formato = document.getElementById('select-formato').value;
-            document.getElementById('label-moldura').innerText = 'Moldura — ' + RESOLUCOES[formato].label;
-        }
-
-        function handleDrop(event) {
-            event.preventDefault();
-            document.getElementById('upload-zone').classList.remove('dragover');
-            if (event.dataTransfer.files[0]) processarMoldura(event.dataTransfer.files[0]);
-        }
-        function uploadMoldura(input) {
-            if (input.files && input.files[0]) { processarMoldura(input.files[0]); input.value = ''; }
-        }
-
-        function processarMoldura(file) {
-            if (file.type !== 'image/png') return mostrarToast("Formato Inválido", "Apenas PNG.", "error");
-            const formato = document.getElementById('select-formato').value;
-            const resolucao = RESOLUCOES[formato];
-            const keyFormat = formato.toLowerCase();
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                const img = new Image();
-                img.onload = function () {
-                    document.getElementById('moldura-preview').src = e.target.result;
-                    document.getElementById('preview-wrapper').style.display = 'block';
-                    document.getElementById('moldura-nome').innerText = `✅ ${file.name} (${img.width}x${img.height}px)`;
-                    molduras[keyFormat] = file;
-                    if (img.width !== resolucao.w || img.height !== resolucao.h) {
-                        mostrarToast("Aviso de Resolução", `Recomendado: ${resolucao.w}x${resolucao.h}px`, "warning");
-                    }
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        async function fazerUploadMolduras(eventoId) {
-            for (const [formato, arquivo] of Object.entries(molduras)) {
-                if (!arquivo) continue;
-                const formData = new FormData();
-                formData.append('moldura', arquivo);
-                formData.append('eventoId', eventoId);
-                formData.append('formato', formato);
-                try { await fetch(`${API_URL}/upload-moldura`, { method: 'POST', body: formData }); } catch (e) {}
-            }
-        }
-
+        function editarEvento(index) { const ev = eventos[index]; document.getElementById('input-evento').value = ev.nome; document.getElementById('input-data').value = ev.dataRaw; document.getElementById('select-formato').value = ev.formato; document.getElementById('input-livro').checked = ev.livro; document.getElementById('edit-id').value = ev.id; document.getElementById('btn-text').innerText = "Salvar"; document.getElementById('btn-cancelar').style.display = 'inline-flex'; trocarAba('novo', document.querySelector('[data-aba="novo"]')); }
+        function cancelarEdicao() { document.getElementById('input-evento').value = ""; document.getElementById('input-data').value = ""; document.getElementById('edit-id').value = ""; document.getElementById('btn-text').innerText = "Criar Evento"; document.getElementById('btn-cancelar').style.display = 'none'; trocarAba('eventos', document.querySelector('[data-aba="eventos"]')); }
+        async function excluirEvento(index) { if (!confirm("Excluir?")) return; const ev = eventos[index]; try { await fetch(`${API_URL}/deletar-evento/${ev.id}`, { method: 'DELETE' }); eventos.splice(index, 1); renderizarLista(); atualizarMetricas(); } catch (e) { mostrarToast("Erro", e.message, "error"); } }
         async function salvarEvento() {
-            const nome = document.getElementById('input-evento').value.trim();
-            const data = document.getElementById('input-data').value;
-            const formato = document.getElementById('select-formato').value;
-            const livro = document.getElementById('input-livro').checked;
-            const editId = document.getElementById('edit-id').value;
-            if (!nome || !data) return mostrarToast("Campos Obrigatórios", "Preencha nome e data.", "error");
-            mostrarLoading(true, editId ? "Atualizando..." : "Criando...");
+            const nome = document.getElementById('input-evento').value.trim(); const data = document.getElementById('input-data').value; const formato = document.getElementById('select-formato').value; const livro = document.getElementById('input-livro').checked; const editId = document.getElementById('edit-id').value;
+            if (!nome || !data) return mostrarToast("Erro", "Preencha tudo.", "error"); mostrarLoading(true, "Salvando...");
             try {
                 let eventId = editId;
-                if (editId) {
-                    const atual = eventos.find(e => String(e.id) === String(editId));
-                    await fetch(`${API_URL}/atualizar-evento/${editId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome, data, formato, livro, ativo: atual ? atual.ativo : false }) });
-                } else {
-                    const resp = await fetch(`${API_URL}/criar-evento`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome, data, formato, livro }) });
-                    const result = await resp.json();
-                    if (!result.success) throw new Error(result.error);
-                    eventId = result.id;
-                }
-                const temMoldura = Object.values(molduras).some(f => f !== null);
-                if (temMoldura) await fazerUploadMolduras(eventId);
-                mostrarToast("Sucesso", editId ? "Atualizado!" : "Criado!");
-                resetarFormulario();
-                trocarAba('eventos', document.querySelector('[data-aba="eventos"]'));
-                setTimeout(() => carregarEventosDoServidor(true), 800);
-            } catch (e) { mostrarToast("Erro", e.message, "error"); }
-            finally { mostrarLoading(false); }
+                if (editId) await fetch(`${API_URL}/atualizar-evento/${editId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome, data, formato, livro, ativo: eventos.find(e => e.id == editId)?.ativo }) });
+                else { const resp = await fetch(`${API_URL}/criar-evento`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome, data, formato, livro }) }); const result = await resp.json(); eventId = result.id; }
+                mostrarToast("Sucesso", "Salvo!"); cancelarEdicao(); carregarEventosDoServidor();
+            } catch (e) { mostrarToast("Erro", e.message, "error"); } finally { mostrarLoading(false); }
         }
-
-        function resetarFormulario() {
-            document.getElementById('input-evento').value = "";
-            document.getElementById('input-data').value = "";
-            document.getElementById('input-livro').checked = false;
-            document.getElementById('select-formato').value = "POLAROID";
-            document.getElementById('edit-id').value = "";
-            document.getElementById('card-form-title').innerHTML = '<i class="fas fa-plus-circle"></i> Cadastrar Novo Evento';
-            document.getElementById('btn-text').innerText = "Criar Evento";
-            document.getElementById('btn-cancelar').style.display = 'none';
-            document.getElementById('preview-wrapper').style.display = 'none';
-            atualizarLabelMoldura();
-            ['polaroid', 'tirinha', '10x15v', '10x15h'].forEach(f => molduras[f] = null);
-        }
-        function cancelarEdicao() { resetarFormulario(); trocarAba('eventos', document.querySelector('[data-aba="eventos"]')); }
-
-        async function ativarEvento(index) {
-            const ev = eventos[index];
-            const novoEstado = !ev.ativo;
-            mostrarLoading(true, novoEstado ? "Ativando..." : "Desativando...");
-            try {
-                await fetch(`${API_URL}/atualizar-evento/${ev.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome: ev.nome, data: ev.dataRaw, formato: ev.formato, livro: ev.livro, ativo: novoEstado }) });
-                eventos.forEach((e, i) => e.ativo = (i === index && novoEstado));
-                renderizarLista(); checarEventoAtivo(); atualizarMetricasDashboard();
-                await sincronizarWorker(novoEstado ? ev.nome : "Geral", novoEstado ? ev.formato : "POLAROID", novoEstado ? "ONLINE" : "OFFLINE", novoEstado ? ev.livro : false, novoEstado ? String(ev.id) : "", novoEstado ? ev.temMoldura : false);
-                mostrarToast("Status Alterado", `Evento ${novoEstado ? 'ativado' : 'desativado'}!`);
-            } catch (e) { mostrarToast("Erro", e.message, "error"); }
-            finally { mostrarLoading(false); }
-        }
-
-        async function sincronizarWorker(nome, formato, status, livro, eventoId, temMoldura) {
-            try { await fetch(`${API_URL}/set-config`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ evento: nome, status, formato, livro, eventoId, temMoldura }) }); atualizarUIStatus(status === "ONLINE"); } catch (e) {}
-        }
-
-        function salvarStatusRede() {
-            const on = document.getElementById('server-status').checked;
-            const ativo = eventos.find(e => e.ativo);
-            if (ativo) sincronizarWorker(ativo.nome, ativo.formato, on ? "ONLINE" : "OFFLINE", ativo.livro, String(ativo.id), ativo.temMoldura);
-        }
-
-        function editarEvento(index) {
-            const ev = eventos[index];
-            document.getElementById('input-evento').value = ev.nome;
-            document.getElementById('input-data').value = ev.dataRaw;
-            document.getElementById('select-formato').value = ev.formato;
-            document.getElementById('input-livro').checked = ev.livro;
-            document.getElementById('edit-id').value = ev.id;
-            document.getElementById('card-form-title').innerHTML = '<i class="fas fa-edit"></i> Editar Evento';
-            document.getElementById('btn-text').innerText = "Salvar Alterações";
-            document.getElementById('btn-cancelar').style.display = 'inline-flex';
-            atualizarLabelMoldura();
-            trocarAba('novo', document.querySelector('[data-aba="novo"]'));
-        }
-
-        async function excluirEvento(index) {
-            const ev = eventos[index];
-            if (!confirm(`Excluir "${ev.nome}"?`)) return;
-            mostrarLoading(true, "Excluindo...");
-            try {
-                await fetch(`${API_URL}/deletar-evento/${ev.id}`, { method: 'DELETE' });
-                eventos.splice(index, 1);
-                if (ev.ativo) await sincronizarWorker("Geral", "POLAROID", "OFFLINE", false, "", false);
-                renderizarLista(); checarEventoAtivo(); atualizarMetricasDashboard();
-                mostrarToast("Excluído", "Evento removido.");
-            } catch (e) { mostrarToast("Erro", e.message, "error"); }
-            finally { mostrarLoading(false); }
-        }
-
-        function renderizarListaFiltrada(lista) {
-            const container = document.getElementById('corpo-lista');
-            document.getElementById('badge-total').innerText = eventos.length;
-            if (!lista || lista.length === 0) {
-                container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-3);"><i class="fas fa-inbox" style="font-size:42px;opacity:0.4;display:block;margin-bottom:12px;"></i>Nenhum evento.</div>`;
-                return;
-            }
-            container.innerHTML = lista.map((ev) => {
-                const realIndex = eventos.findIndex(e => e.id === ev.id);
-                return `<div class="evento-item ${ev.ativo ? 'ativo' : ''}">
-                    <div class="evento-info">
-                        <div class="evento-nome">${ev.nome} ${ev.livro ? '📖' : ''} ${ev.temMoldura ? '🖼️' : ''}</div>
-                        <div class="evento-meta"><i class="fas fa-calendar"></i> ${ev.data} · <i class="fas fa-crop"></i> ${ev.formato} · ID: ${ev.id}</div>
-                    </div>
-                    <button class="btn btn-outline" style="padding:6px 12px;font-size:10px;" onclick="editarEvento(${realIndex})"><i class="fas fa-edit"></i></button>
-                    <button class="btn btn-outline" style="padding:6px 12px;font-size:10px;color:var(--danger);border-color:var(--danger);" onclick="excluirEvento(${realIndex})"><i class="fas fa-trash"></i></button>
-                    <button class="btn ${ev.ativo ? 'btn-primary' : 'btn-outline'}" style="padding:6px 16px;font-size:10px;" onclick="ativarEvento(${realIndex})">${ev.ativo ? 'Ativado' : 'Ativar'}</button>
-                </div>`;
-            }).join('');
-        }
-        function renderizarLista() { renderizarListaFiltrada(eventos); }
-
-        function checarEventoAtivo() {
-            const ativo = eventos.find(e => e.ativo);
-            const checkbox = document.getElementById('server-status');
-            const statAtivoNome = document.getElementById('stat-ativo-nome');
-            const topbarBadge = document.getElementById('topbar-active-badge');
-            const topbarActiveName = document.getElementById('topbar-active-name');
-            if (ativo) {
-                checkbox.checked = true; checkbox.disabled = false;
-                atualizarUIStatus(true);
-                if (statAtivoNome) statAtivoNome.innerText = ativo.nome;
-                topbarBadge.classList.remove('hidden');
-                topbarActiveName.innerText = ativo.nome;
-            } else {
-                checkbox.checked = false; checkbox.disabled = true;
-                atualizarUIStatus(false);
-                if (statAtivoNome) statAtivoNome.innerText = "Nenhum";
-                topbarBadge.classList.add('hidden');
-            }
-        }
-
-        function atualizarMetricasDashboard() {
-            document.getElementById('stat-total').innerText = eventos.length;
-            document.getElementById('stat-molduras').innerText = eventos.filter(e => e.temMoldura).length;
-            document.getElementById('stat-guestbooks').innerText = eventos.filter(e => e.livro).length;
-            const ativo = eventos.find(e => e.ativo);
-            document.getElementById('stat-ativo-nome').innerText = ativo ? ativo.nome : '—';
-            document.getElementById('badge-total').innerText = eventos.length;
-        }
-
-        window.addEventListener('load', () => {
-            atualizarLabelMoldura();
-            carregarEventosDoServidor();
-            verificarEstadoAtual();
-            iniciarAutoRefresh();
-        });
+        window.addEventListener('load', () => { carregarEventosDoServidor(); autoRefreshInterval = setInterval(carregarEventosDoServidor, 30000); });
     </script>
 </body>
 </html>

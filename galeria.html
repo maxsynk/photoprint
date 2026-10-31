@@ -1,62 +1,47 @@
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- INÍCIO DO ARQUIVO galeria.html — GALERIA CLIENTE v2.3 (FINAL)      -->
+<!-- ▶▶▶ INÍCIO DO ARQUIVO galeria.html — GALERIA CLIENTE v3.0 ◀◀◀      -->
+<!-- (SUBSTITUA O ARQUIVO INTEIRO POR ESTE)                              -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#000000">
     <title>PHOTO PRINT — Sua Foto</title>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- ═══════════ ▶ INÍCIO DO BLOCO DE ESTILOS (CSS) ═══════════ -->
     <style>
         :root {
             --neon: #39ff14;
             --neon-dim: rgba(57, 255, 20, 0.12);
             --neon-glow: 0 0 20px rgba(57, 255, 20, 0.4);
             --red: #ff3131;
-            --red-dim: rgba(255, 49, 49, 0.15);
-            --blue: #0096ff;
-            --blue-dim: rgba(0, 150, 255, 0.12);
-
             --bg-0: #000000;
             --bg-1: #0a0a0a;
-            --bg-2: #111111;
-            --bg-3: #1a1a1a;
             --bg-4: #222222;
-
             --text-0: #ffffff;
             --text-1: #e0e0e0;
             --text-2: #999999;
             --text-3: #555555;
-
-            --border-1: rgba(255, 255, 255, 0.06);
             --border-2: rgba(255, 255, 255, 0.1);
             --border-neon: rgba(57, 255, 20, 0.3);
-
             --radius-sm: 10px;
             --radius-md: 16px;
             --radius-lg: 24px;
-            --radius-xl: 32px;
-
-            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
             --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.6);
-
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
             --font-display: 'Outfit', sans-serif;
             --font-mono: 'Space Grotesk', sans-serif;
             --font-body: 'Plus Jakarta Sans', -apple-system, sans-serif;
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
         html, body {
             font-family: var(--font-body);
             background: var(--bg-0);
@@ -66,235 +51,19 @@
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
         }
-
         body {
             background:
                 radial-gradient(circle at 50% 0%, rgba(26, 58, 18, 0.5) 0%, transparent 50%),
                 radial-gradient(circle at 100% 100%, rgba(57, 255, 20, 0.03) 0%, transparent 40%),
                 var(--bg-0);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
             padding: 24px 16px;
         }
-
-        body::after {
-            content: '';
-            position: fixed; top: 30%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 500px; height: 500px;
-            background: radial-gradient(circle, rgba(57, 255, 20, 0.06) 0%, transparent 70%);
-            border-radius: 50%; pointer-events: none;
-            animation: orbBreath 5s ease-in-out infinite; z-index: 0;
-        }
-        @keyframes orbBreath { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; } 50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; } }
-
-        .header { position: relative; z-index: 2; text-align: center; margin-bottom: 28px; animation: fadeInUp 0.6s ease-out; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
-
-        .brand-title {
-            font-family: var(--font-display); font-size: clamp(26px, 7vw, 36px); font-weight: 900; color: var(--neon);
-            text-shadow: var(--neon-glow), 0 0 40px rgba(57, 255, 20, 0.2); letter-spacing: 4px; text-transform: uppercase;
-            line-height: 1; animation: titleGlow 3s ease-in-out infinite;
-        }
-        @keyframes titleGlow { 0%, 100% { text-shadow: var(--neon-glow), 0 0 40px rgba(57, 255, 20, 0.2); } 50% { text-shadow: var(--neon-glow), 0 0 70px rgba(57, 255, 20, 0.4); } }
-        .brand-subtitle { font-size: 10px; letter-spacing: 5px; color: var(--text-3); text-transform: uppercase; font-weight: 700; margin-top: 6px; }
-
-        .photo-card {
-            position: relative; z-index: 2; width: 100%; max-width: 420px; background: var(--bg-1);
-            border: 1px solid var(--border-neon); border-radius: var(--radius-lg); overflow: hidden;
-            box-shadow: var(--shadow-lg), 0 0 60px rgba(57, 255, 20, 0.1); animation: fadeInUp 0.7s ease-out 0.1s backwards;
-        }
-        .photo-card::before {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-            background: linear-gradient(90deg, transparent, var(--neon), transparent);
-            animation: scanLine 2.5s ease-in-out infinite; z-index: 3;
-        }
-        @keyframes scanLine { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
-
-        .photo-wrapper { position: relative; background: var(--bg-0); display: flex; align-items: center; justify-content: center; min-height: 300px; overflow: hidden; }
-        .photo-wrapper img { width: 100%; height: auto; display: block; transition: opacity 0.4s ease; }
-
-        .photo-badge {
-            position: absolute; top: 12px; left: 12px; z-index: 4; background: rgba(0, 0, 0, 0.85);
-            border-left: 3px solid var(--neon); border-radius: var(--radius-sm); padding: 6px 14px;
-            font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--neon);
-            letter-spacing: 1px; backdrop-filter: blur(10px);
-        }
-
-        .photo-loader { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 14px; background: var(--bg-1); z-index: 2; transition: opacity 0.4s ease; }
-        .photo-loader.hidden { opacity: 0; pointer-events: none; }
-        .spin { width: 48px; height: 48px; border: 3px solid rgba(57, 255, 20, 0.15); border-top-color: var(--neon); border-radius: 50%; animation: spin 0.8s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loader-text { font-family: var(--font-body); font-size: 11px; font-weight: 700; color: var(--neon); letter-spacing: 2px; text-transform: uppercase; }
-
-        .photo-actions { padding: 20px 20px 24px; display: flex; flex-direction: column; gap: 10px; position: relative; z-index: 2; }
-
-        .btn {
-            display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 16px 24px;
-            border-radius: var(--radius-md); font-family: var(--font-body); font-size: 13px; font-weight: 800;
-            letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; border: none;
-            transition: var(--transition); text-decoration: none; position: relative; overflow: hidden;
-        }
-
-        .btn-primary { background: var(--neon); color: var(--bg-0); box-shadow: var(--neon-glow); }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(57, 255, 20, 0.6); }
-        .btn-primary:active { transform: translateY(0); }
-        .btn-primary:disabled { background: var(--bg-4); color: var(--text-3); box-shadow: none; cursor: wait; transform: none; }
-        .btn-primary i { font-size: 16px; }
-
-        .btn-secondary { background: transparent; border: 1px solid var(--border-2); color: var(--text-1); }
-        .btn-secondary:hover { border-color: var(--neon); color: var(--neon); background: var(--neon-dim); }
-        .btn-secondary i { font-size: 14px; }
-
-        .status-msg { text-align: center; font-size: 11px; color: var(--text-3); font-weight: 600; min-height: 16px; transition: var(--transition); }
-        .status-msg.success { color: var(--neon); }
-        .status-msg.error { color: var(--red); }
-
-        .info-footer { position: relative; z-index: 2; text-align: center; margin-top: 28px; font-size: 10px; color: var(--text-3); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; animation: fadeInUp 0.8s ease-out 0.2s backwards; }
-        .info-footer .heart { color: var(--red); margin: 0 4px; }
-
-        .error-state { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; z-index: 2; position: relative; animation: fadeInUp 0.5s ease-out; }
-        .error-state.active { display: flex; }
-        .error-state i { font-size: 60px; color: var(--red); margin-bottom: 20px; opacity: 0.8; animation: errorPulse 2s ease-in-out infinite; }
-        @keyframes errorPulse { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.05); opacity: 1; } }
-        .error-title { font-family: var(--font-display); font-size: 20px; font-weight: 800; color: var(--text-0); margin-bottom: 8px; }
-        .error-text { font-size: 12px; color: var(--text-2); line-height: 1.5; max-width: 320px; }
-
-        @media (max-width: 400px) {
-            .brand-title { font-size: 24px; letter-spacing: 2px; }
-            .photo-actions { padding: 16px; gap: 8px; }
-            .btn { padding: 14px 20px; font-size: 12px; }
-        }
-    </style>
-</head>
-<body>
-
-    <div class="header" id="main-header">
-        <h1 class="brand-title">PHOTO PRINT</h1>
-        <p class="brand-subtitle">Sua Foto Está Pronta</p>
-    </div>
-
-    <div class="photo-card" id="photo-card">
-        <div class="photo-wrapper">
-            <div class="photo-badge" id="photo-badge">#----</div>
-            <div class="photo-loader" id="photo-loader">
-                <div class="spin"></div>
-                <div class="loader-text">Carregando Foto...</div>
-            </div>
-            <img id="main-photo" src="" alt="Foto do evento" style="opacity: 0;">
-        </div>
-        <div class="photo-actions">
-            <button class="btn btn-primary" id="btn-download" onclick="baixarFoto()">
-                <i class="fas fa-download"></i> Baixar Foto
-            </button>
-            <button class="btn btn-secondary" id="btn-compartilhar" onclick="compartilharFoto()">
-                <i class="fas fa-share-alt"></i> Compartilhar
-            </button>
-            <div class="status-msg" id="status-msg"></div>
-        </div>
-    </div>
-
-    <div class="error-state" id="error-state">
-        <i class="fas fa-exclamation-triangle"></i>
-        <h2 class="error-title">Foto não encontrada</h2>
-        <p class="error-text" id="error-text">
-            O link pode ter expirado ou está incorreto.
-            Escaneie o QR Code novamente no quiosque.
-        </p>
-    </div>
-
-    <div class="info-footer">
-        Feito com <span class="heart">♥</span> por Photo Print &copy; 2026
-    </div>
-
-   <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- INÍCIO DO ARQUIVO galeria.html — v2.5 (COM BOTÃO DE VOLTAR)        -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#000000">
-    <title>PHOTO PRINT — Sua Foto</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <style>
-        :root {
-            --neon: #39ff14;
-            --neon-dim: rgba(57, 255, 20, 0.12);
-            --neon-glow: 0 0 20px rgba(57, 255, 20, 0.4);
-            --red: #ff3131;
-            --red-dim: rgba(255, 49, 49, 0.15);
-            --blue: #0096ff;
-            --blue-dim: rgba(0, 150, 255, 0.12);
-
-            --bg-0: #000000;
-            --bg-1: #0a0a0a;
-            --bg-2: #111111;
-            --bg-3: #1a1a1a;
-            --bg-4: #222222;
-
-            --text-0: #ffffff;
-            --text-1: #e0e0e0;
-            --text-2: #999999;
-            --text-3: #555555;
-
-            --border-1: rgba(255, 255, 255, 0.06);
-            --border-2: rgba(255, 255, 255, 0.1);
-            --border-neon: rgba(57, 255, 20, 0.3);
-
-            --radius-sm: 10px;
-            --radius-md: 16px;
-            --radius-lg: 24px;
-            --radius-xl: 32px;
-
-            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
-            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.6);
-
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-            --font-display: 'Outfit', sans-serif;
-            --font-mono: 'Space Grotesk', sans-serif;
-            --font-body: 'Plus Jakarta Sans', -apple-system, sans-serif;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-        html, body {
-            font-family: var(--font-body);
-            background: var(--bg-0);
-            color: var(--text-0);
-            min-height: 100vh;
-            min-height: 100dvh;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        body {
-            background:
-                radial-gradient(circle at 50% 0%, rgba(26, 58, 18, 0.5) 0%, transparent 50%),
-                radial-gradient(circle at 100% 100%, rgba(57, 255, 20, 0.03) 0%, transparent 40%),
-                var(--bg-0);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 24px 16px;
-        }
-
         .header { position: relative; z-index: 2; text-align: center; margin-bottom: 24px; }
-
         .brand-title {
-            font-family: var(--font-display); font-size: clamp(26px, 7vw, 36px); font-weight: 900; color: var(--neon);
-            text-shadow: var(--neon-glow); letter-spacing: 4px; text-transform: uppercase; line-height: 1;
+            font-family: var(--font-display); font-size: clamp(26px, 7vw, 36px); font-weight: 900;
+            color: var(--neon); text-shadow: var(--neon-glow); letter-spacing: 4px;
+            text-transform: uppercase; line-height: 1;
         }
         .brand-subtitle { font-size: 10px; letter-spacing: 5px; color: var(--text-3); text-transform: uppercase; font-weight: 700; margin-top: 6px; }
 
@@ -304,23 +73,38 @@
             box-shadow: var(--shadow-lg), 0 0 60px rgba(57, 255, 20, 0.1);
         }
 
+        /* Grade de fotos */
+        .grid-wrap { padding: 24px 20px; }
+        .grid-title {
+            font-size: 13px; color: var(--neon); text-transform: uppercase;
+            font-family: var(--font-mono); letter-spacing: 1px; margin-bottom: 16px;
+        }
+        .photo-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+            max-height: 460px; overflow-y: auto; padding-right: 4px;
+        }
+        .grid-item {
+            cursor: pointer; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-2);
+            aspect-ratio: 1; background: #111; transition: var(--transition);
+        }
+        .grid-item:hover { border-color: var(--neon); }
+        .grid-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+        /* Foto única */
         .photo-wrapper { position: relative; background: var(--bg-0); display: flex; align-items: center; justify-content: center; min-height: 300px; overflow: hidden; }
         .photo-wrapper img { width: 100%; height: auto; display: block; transition: opacity 0.4s ease; }
-
         .photo-badge {
             position: absolute; top: 12px; left: 12px; z-index: 4; background: rgba(0, 0, 0, 0.85);
             border-left: 3px solid var(--neon); border-radius: var(--radius-sm); padding: 6px 14px;
             font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--neon);
             letter-spacing: 1px; backdrop-filter: blur(10px);
         }
-
-        /* Botão para voltar à grade dentro do card */
         .btn-voltar-grade {
             position: absolute; top: 12px; right: 12px; z-index: 4; background: rgba(0, 0, 0, 0.85);
             border: 1px solid var(--border-2); border-radius: var(--radius-sm); padding: 6px 12px;
             font-family: var(--font-body); font-size: 11px; font-weight: 700; color: var(--text-0);
-            cursor: pointer; backdrop-filter: blur(10px); transition: var(--transition); display: none;
-            align-items: center; gap: 6px; text-transform: uppercase;
+            cursor: pointer; backdrop-filter: blur(10px); transition: var(--transition);
+            display: inline-flex; align-items: center; gap: 6px; text-transform: uppercase;
         }
         .btn-voltar-grade:hover { border-color: var(--neon); color: var(--neon); background: var(--neon-dim); }
 
@@ -328,23 +112,19 @@
         .photo-loader.hidden { opacity: 0; pointer-events: none; }
         .spin { width: 48px; height: 48px; border: 3px solid rgba(57, 255, 20, 0.15); border-top-color: var(--neon); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .loader-text { font-family: var(--font-body); font-size: 11px; font-weight: 700; color: var(--neon); letter-spacing: 2px; text-transform: uppercase; }
+        .loader-text { font-size: 11px; font-weight: 700; color: var(--neon); letter-spacing: 2px; text-transform: uppercase; }
 
         .photo-actions { padding: 20px 20px 24px; display: flex; flex-direction: column; gap: 10px; position: relative; z-index: 2; }
-
         .btn {
             display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 16px 24px;
             border-radius: var(--radius-md); font-family: var(--font-body); font-size: 13px; font-weight: 800;
-            letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; border: none;
-            transition: var(--transition); text-decoration: none; position: relative; overflow: hidden;
+            letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; border: none; transition: var(--transition);
         }
-
         .btn-primary { background: var(--neon); color: var(--bg-0); box-shadow: var(--neon-glow); }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(57, 255, 20, 0.6); }
+        .btn-primary:hover { transform: translateY(-2px); }
         .btn-primary:disabled { background: var(--bg-4); color: var(--text-3); box-shadow: none; cursor: wait; }
         .btn-secondary { background: transparent; border: 1px solid var(--border-2); color: var(--text-1); }
         .btn-secondary:hover { border-color: var(--neon); color: var(--neon); background: var(--neon-dim); }
-
         .status-msg { text-align: center; font-size: 11px; color: var(--text-3); font-weight: 600; min-height: 16px; }
         .status-msg.success { color: var(--neon); }
         .status-msg.error { color: var(--red); }
@@ -352,139 +132,231 @@
         .info-footer { position: relative; z-index: 2; text-align: center; margin-top: 24px; font-size: 10px; color: var(--text-3); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
         .info-footer .heart { color: var(--red); margin: 0 4px; }
 
-        .error-state { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; z-index: 2; position: relative; }
-        .error-state.active { display: flex; }
-        .error-state i { font-size: 60px; color: var(--red); margin-bottom: 20px; opacity: 0.8; }
-        .error-title { font-family: var(--font-display); font-size: 20px; font-weight: 800; color: var(--text-0); margin-bottom: 8px; }
-        .error-text { font-size: 12px; color: var(--text-2); line-height: 1.5; max-width: 320px; }
+        .state-box { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; z-index: 2; position: relative; }
+        .state-box.active { display: flex; }
+        .state-box i { font-size: 56px; color: var(--red); margin-bottom: 20px; opacity: 0.8; }
+        .state-title { font-family: var(--font-display); font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+        .state-text { font-size: 12px; color: var(--text-2); line-height: 1.5; max-width: 320px; }
+        .state-box .btn { margin-top: 20px; }
     </style>
+    <!-- ═══════════ ◀ FIM DO BLOCO DE ESTILOS (CSS) ═══════════ -->
 </head>
 <body>
 
+    <!-- ═══════════ ▶ INÍCIO DO HTML DA PÁGINA ═══════════ -->
     <div class="header" id="main-header">
         <h1 class="brand-title">PHOTO PRINT</h1>
-        <p class="brand-subtitle">Carregando Evento...</p>
+        <p class="brand-subtitle" id="subtitulo">Carregando Evento...</p>
     </div>
 
     <div class="photo-card" id="photo-card">
-        <!-- O conteúdo será injetado dinamicamente via JS -->
+        <div class="photo-wrapper">
+            <div class="photo-loader">
+                <div class="spin"></div>
+                <div class="loader-text">Carregando...</div>
+            </div>
+        </div>
     </div>
 
-    <div class="error-state" id="error-state">
+    <div class="state-box" id="error-state">
         <i class="fas fa-exclamation-triangle"></i>
-        <h2 class="error-title">Nenhuma foto encontrada</h2>
-        <p class="error-text" id="error-text">
-            O evento ativo ainda não possui fotos capturadas.
-        </p>
+        <h2 class="state-title" id="error-title">Nenhuma foto encontrada</h2>
+        <p class="state-text" id="error-text"></p>
+        <button class="btn btn-secondary" onclick="location.reload()"><i class="fas fa-sync-alt"></i> Tentar novamente</button>
     </div>
 
     <div class="info-footer">
         Feito com <span class="heart">♥</span> por Photo Print &copy; 2026
     </div>
+    <!-- ═══════════ ◀ FIM DO HTML DA PÁGINA ═══════════ -->
 
+    <!-- ═══════════ ▶ INÍCIO DO BLOCO DE SCRIPTS (JavaScript) ═══════════ -->
     <script>
         const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
+        const INTERVALO_ATUALIZACAO = 20000; // 20s — detecta troca de evento / novas fotos
+
         let fotoUrlAtual = "";
         let listaFotosCache = [];
+        let eventoAtualId = "";
         let nomeEventoCache = "";
+        let modoAtual = "grade";      // "grade" | "foto"
+        let timerAtualizacao = null;
 
+        const urlFoto = (key) => `${API_URL}/photo?key=${encodeURIComponent(key)}`;
+        const el = (id) => document.getElementById(id);
+
+        /* ───────────────────────────────────────────────
+           ▶ INÍCIO: BUSCA DO EVENTO ATIVO + FOTOS
+           ─────────────────────────────────────────────── */
+        async function buscarEventoAtivo() {
+            // 1) Rota nova do worker (retorna evento ativo + fotos de uma vez)
+            try {
+                const r = await fetch(`${API_URL}/fotos-ativas?t=${Date.now()}`, { cache: 'no-store' });
+                if (r.ok) {
+                    const d = await r.json();
+                    return {
+                        ativo: !!d.ativo,
+                        eventoId: String(d.eventoId || ""),
+                        nome: d.evento || "",
+                        fotos: Array.isArray(d.fotos) ? d.fotos : []
+                    };
+                }
+            } catch (e) { /* cai no fallback */ }
+
+            // 2) Fallback (worker antigo): get-all-states + list-photos
+            const rc = await fetch(`${API_URL}/get-all-states?t=${Date.now()}`, { cache: 'no-store' });
+            const dc = await rc.json();
+            const cfg = dc && dc.config;
+            if (!cfg || cfg.status !== "ONLINE" || !cfg.evento) {
+                return { ativo: false, eventoId: "", nome: "", fotos: [] };
+            }
+            const rf = await fetch(`${API_URL}/list-photos?evento=${encodeURIComponent(cfg.evento)}`, { cache: 'no-store' });
+            const fotos = await rf.json();
+            return {
+                ativo: true,
+                eventoId: String(cfg.eventoId || ""),
+                nome: cfg.evento,
+                fotos: Array.isArray(fotos) ? fotos : []
+            };
+        }
+
+        function ordenarFotos(fotos) {
+            return [...fotos].sort((a, b) => new Date(b.uploaded || 0) - new Date(a.uploaded || 0));
+        }
+        /* ◀ FIM: BUSCA DO EVENTO ATIVO + FOTOS */
+
+        /* ───────────────────────────────────────────────
+           ▶ INÍCIO: INICIALIZAÇÃO
+           ─────────────────────────────────────────────── */
         window.addEventListener('load', init);
 
         async function init() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const fotoKey = urlParams.get('key');
-            const fotoId = urlParams.get('id') || urlParams.get('photoId');
-            const fotoUrl = urlParams.get('dl');
+            const p = new URLSearchParams(window.location.search);
+            const fotoKey = p.get('key');
+            const fotoId = p.get('id') || p.get('photoId');
+            const fotoDl = p.get('dl');
 
+            // Link direto de uma foto (QR Code do quiosque)
             if (fotoKey) {
-                const url = `${API_URL}/photo?key=${fotoKey}&t=${Date.now()}`;
-                carregarFotoUnica(url, fotoId, false);
+                el('subtitulo').innerText = 'Sua Foto Está Pronta';
+                carregarFotoUnica(`${API_URL}/photo?key=${encodeURIComponent(fotoKey)}&t=${Date.now()}`, fotoId, true);
+                return;
+            }
+            if (fotoDl) {
+                el('subtitulo').innerText = 'Sua Foto Está Pronta';
+                carregarFotoUnica(decodeURIComponent(fotoDl), fotoId, true);
                 return;
             }
 
-            if (fotoUrl) {
-                carregarFotoUnica(decodeURIComponent(fotoUrl), fotoId, false);
+            await carregarGaleriaDoEventoAtivo(true);
+            timerAtualizacao = setInterval(atualizarSilencioso, INTERVALO_ATUALIZACAO);
+        }
+
+        async function carregarGaleriaDoEventoAtivo(primeiraVez) {
+            try {
+                const d = await buscarEventoAtivo();
+                if (!d.ativo) {
+                    mostrarErro('Nenhum evento ativo', 'Nenhum evento está ativo no painel no momento.');
+                    return;
+                }
+                aplicarDados(d);
+                if (listaFotosCache.length === 0) {
+                    mostrarErro('Nenhuma foto encontrada',
+                        `O evento ativo ("${nomeEventoCache}") ainda não possui fotos registradas.`);
+                    return;
+                }
+                esconderErro();
+                exibirGradeFotos();
+            } catch (e) {
+                mostrarErro('Sem conexão', 'Não foi possível conectar ao servidor.');
+            }
+        }
+
+        function aplicarDados(d) {
+            eventoAtualId = d.eventoId;
+            nomeEventoCache = d.nome;
+            listaFotosCache = ordenarFotos(d.fotos);
+            el('subtitulo').innerText = nomeEventoCache;
+        }
+
+        // Verifica se o evento ativo mudou ou se chegaram fotos novas
+        async function atualizarSilencioso() {
+            if (modoAtual !== 'grade') return;
+            try {
+                const d = await buscarEventoAtivo();
+                if (!d.ativo) {
+                    listaFotosCache = [];
+                    mostrarErro('Nenhum evento ativo', 'Nenhum evento está ativo no painel no momento.');
+                    return;
+                }
+                const mudouEvento = d.eventoId !== eventoAtualId;
+                const mudouQtd = d.fotos.length !== listaFotosCache.length;
+                if (mudouEvento || mudouQtd) {
+                    aplicarDados(d);
+                    if (listaFotosCache.length === 0) {
+                        mostrarErro('Nenhuma foto encontrada',
+                            `O evento ativo ("${nomeEventoCache}") ainda não possui fotos registradas.`);
+                    } else {
+                        esconderErro();
+                        exibirGradeFotos();
+                    }
+                }
+            } catch (e) { /* mantém a tela atual */ }
+        }
+        /* ◀ FIM: INICIALIZAÇÃO */
+
+        /* ───────────────────────────────────────────────
+           ▶ INÍCIO: GRADE DE FOTOS
+           ─────────────────────────────────────────────── */
+        async function exibirGradeFotos() {
+            modoAtual = 'grade';
+            // Veio de link direto e ainda não carregou a lista do evento
+            if (listaFotosCache.length === 0) {
+                await carregarGaleriaDoEventoAtivo(false);
+                if (!timerAtualizacao) timerAtualizacao = setInterval(atualizarSilencioso, INTERVALO_ATUALIZACAO);
                 return;
             }
 
-            try {
-                const respConfig = await fetch(`${API_URL}/get-all-states`);
-                const dataConfig = await respConfig.json();
-                
-                if (dataConfig && dataConfig.config && dataConfig.config.evento) {
-                    nomeEventoCache = dataConfig.config.evento;
-                    const subtitleEl = document.querySelector('.brand-subtitle');
-                    if (subtitleEl) subtitleEl.innerText = nomeEventoCache;
-
-                    await carregarFotosDoEventoAtivo(nomeEventoCache);
-                } else {
-                    mostrarErro('Nenhum evento ativo no momento.');
-                }
-            } catch (e) {
-                mostrarErro('Não foi possível conectar ao servidor.');
-            }
-        }
-
-        async function carregarFotosDoEventoAtivo(nomeEvento) {
-            try {
-                const resp = await fetch(`${API_URL}/list-photos?evento=${encodeURIComponent(nomeEvento)}`);
-                const fotos = await resp.json();
-
-                if (Array.isArray(fotos) && fotos.length > 0) {
-                    listaFotosCache = fotos;
-                    // Mostra a grade diretamente na tela inicial
-                    exibirGradeFotos();
-                } else {
-                    mostrarErro('O evento ativo ("' + nomeEvento + '") ainda não possui fotos registradas.');
-                }
-            } catch (e) {
-                mostrarErro('Erro ao carregar as fotos do evento.');
-            }
-        }
-
-        function exibirGradeFotos() {
-            const card = document.getElementById('photo-card');
-            const subtitleEl = document.querySelector('.brand-subtitle');
-            if (subtitleEl) subtitleEl.innerText = nomeEventoCache;
+            const card = el('photo-card');
+            card.style.display = '';
+            el('main-header').style.display = '';
+            el('subtitulo').innerText = nomeEventoCache;
 
             card.innerHTML = `
-                <div style="padding: 24px 20px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-                        <h3 style="font-size: 13px; color: var(--neon); text-transform: uppercase; font-family: var(--font-mono); letter-spacing: 1px;">
-                            <i class="fas fa-images"></i> Fotos do Evento (${listaFotosCache.length})
-                        </h3>
+                <div class="grid-wrap">
+                    <h3 class="grid-title"><i class="fas fa-images"></i> Fotos do Evento (${listaFotosCache.length})</h3>
+                    <div class="photo-grid">
+                        ${listaFotosCache.map((f, i) => `
+                            <div class="grid-item" onclick="selecionarFotoDaGrade(${i})">
+                                <img src="${urlFoto(f.key)}" loading="lazy" alt="Foto ${i + 1}">
+                            </div>`).join('')}
                     </div>
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-height: 420px; overflow-y: auto; padding-right: 4px;">
-                        ${listaFotosCache.map((f, index) => {
-                            const u = `${API_URL}/photo?key=${encodeURIComponent(f.key)}`;
-                            return `
-                                <div onclick="selecionarFotoDaGrade(${index})" style="cursor: pointer; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-2); aspect-ratio: 1; background: #111; transition: var(--transition); position: relative;" onmouseover="this.style.borderColor='var(--neon)'" onmouseout="this.style.borderColor='var(--border-2)'">
-                                    <img src="${u}" style="width: 100%; height: 100%; object-fit: cover;" alt="Foto ${index + 1}">
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
-                </div>
-            `;
+                </div>`;
         }
 
         function selecionarFotoDaGrade(index) {
             const f = listaFotosCache[index];
-            const u = `${API_URL}/photo?key=${encodeURIComponent(f.key)}`;
-            carregarFotoUnica(u, '', true); // true indica que veio da grade e deve mostrar o botão de voltar
+            if (!f) return;
+            carregarFotoUnica(urlFoto(f.key), '', true);
         }
+        /* ◀ FIM: GRADE DE FOTOS */
 
-        function carregarFotoUnica(url, id, mostrarBotaoVoltar = false) {
-            const card = document.getElementById('photo-card');
+        /* ───────────────────────────────────────────────
+           ▶ INÍCIO: FOTO ÚNICA (VISUALIZAR / BAIXAR / COMPARTILHAR)
+           ─────────────────────────────────────────────── */
+        function carregarFotoUnica(url, id, mostrarBotaoVoltar) {
+            modoAtual = 'foto';
+            const card = el('photo-card');
+            card.style.display = '';
+            el('main-header').style.display = '';
 
             card.innerHTML = `
                 <div class="photo-wrapper">
-                    <div class="photo-badge" id="photo-badge">${id ? '#' + id : '#foto'}</div>
-                    ${mostrarBotaoVoltar && listaFotosCache.length > 0 ? `
+                    <div class="photo-badge" id="photo-badge" style="display:none"></div>
+                    ${mostrarBotaoVoltar ? `
                         <button class="btn-voltar-grade" onclick="exibirGradeFotos()">
-                            <i class="fas fa-th"></i> Voltar
-                        </button>
-                    ` : ''}
+                            <i class="fas fa-th"></i> Fotos do evento
+                        </button>` : ''}
                     <div class="photo-loader" id="photo-loader">
                         <div class="spin"></div>
                         <div class="loader-text">Carregando Foto...</div>
@@ -499,39 +371,34 @@
                         <i class="fas fa-share-alt"></i> Compartilhar
                     </button>
                     <div class="status-msg" id="status-msg"></div>
-                </div>
-            `;
+                </div>`;
 
-            const img = document.getElementById('main-photo');
-            const loader = document.getElementById('photo-loader');
-            const badge = document.getElementById('photo-badge');
+            const img = el('main-photo');
+            const loader = el('photo-loader');
+            const badge = el('photo-badge');
 
             fotoUrlAtual = url;
 
             if (id) {
                 badge.innerText = `#${id}`;
                 badge.style.display = 'block';
-            } else {
-                badge.style.display = 'none';
             }
 
             img.onload = () => {
-                if (loader) loader.classList.add('hidden');
-                img.style.transition = 'opacity 0.4s ease';
+                loader.classList.add('hidden');
                 img.style.opacity = '1';
             };
-
             img.onerror = () => {
-                if (loader) loader.classList.add('hidden');
+                loader.classList.add('hidden');
+                el('status-msg').innerText = '❌ Não foi possível carregar a imagem.';
+                el('status-msg').className = 'status-msg error';
             };
-
             img.src = url;
         }
 
         async function baixarFoto() {
-            const btn = document.getElementById('btn-download');
-            const status = document.getElementById('status-msg');
-            
+            const btn = el('btn-download');
+            const status = el('status-msg');
             if (!fotoUrlAtual) return;
 
             try {
@@ -558,11 +425,7 @@
                 btn.innerHTML = '<i class="fas fa-check"></i> Baixada!';
                 status.innerText = "✅ Foto salva na sua galeria!";
                 status.className = "status-msg success";
-
-                setTimeout(() => {
-                    btn.innerHTML = '<i class="fas fa-download"></i> Baixar Foto';
-                }, 3000);
-
+                setTimeout(() => { btn.innerHTML = '<i class="fas fa-download"></i> Baixar Foto'; }, 3000);
             } catch (e) {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-download"></i> Baixar Foto';
@@ -572,7 +435,7 @@
         }
 
         async function compartilharFoto() {
-            const status = document.getElementById('status-msg');
+            const status = el('status-msg');
             if (!fotoUrlAtual) return;
 
             if (navigator.share) {
@@ -580,13 +443,8 @@
                     const response = await fetch(fotoUrlAtual);
                     const blob = await response.blob();
                     const file = new File([blob], 'photoprint.jpg', { type: blob.type });
-
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        await navigator.share({
-                            files: [file],
-                            title: 'PHOTO PRINT',
-                            text: 'Olha a foto do evento! 📸'
-                        });
+                        await navigator.share({ files: [file], title: 'PHOTO PRINT', text: 'Olha a foto do evento! 📸' });
                         status.innerText = "✅ Compartilhado com sucesso!";
                         status.className = "status-msg success";
                         return;
@@ -595,7 +453,6 @@
                     if (err.name === 'AbortError') return;
                 }
             }
-
             try {
                 await navigator.clipboard.writeText(window.location.href);
                 status.innerText = "🔗 Link copiado!";
@@ -605,190 +462,29 @@
                 status.className = "status-msg error";
             }
         }
+        /* ◀ FIM: FOTO ÚNICA */
 
-        function mostrarErro(mensagem) {
-            const photoCard = document.getElementById('photo-card');
-            const mainHeader = document.getElementById('main-header');
-            const errorState = document.getElementById('error-state');
-            const errorText = document.getElementById('error-text');
-
-            if (photoCard) photoCard.style.display = 'none';
-            if (mainHeader) mainHeader.style.display = 'none';
-            if (errorState) errorState.classList.add('active');
-            if (mensagem && errorText) {
-                errorText.innerText = mensagem;
-            }
+        /* ───────────────────────────────────────────────
+           ▶ INÍCIO: TELAS DE ERRO / ESTADO VAZIO
+           ─────────────────────────────────────────────── */
+        function mostrarErro(titulo, mensagem) {
+            el('photo-card').style.display = 'none';
+            el('main-header').style.display = 'none';
+            el('error-title').innerText = titulo;
+            el('error-text').innerText = mensagem;
+            el('error-state').classList.add('active');
         }
 
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', (e) => {
-            const now = Date.now();
-            if (now - lastTouchEnd <= 300) e.preventDefault();
-            lastTouchEnd = now;
-        }, false);
+        function esconderErro() {
+            el('error-state').classList.remove('active');
+            el('photo-card').style.display = '';
+            el('main-header').style.display = '';
+        }
+        /* ◀ FIM: TELAS DE ERRO / ESTADO VAZIO */
     </script>
+    <!-- ═══════════ ◀ FIM DO BLOCO DE SCRIPTS (JavaScript) ═══════════ -->
 </body>
 </html>
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- FIM DO ARQUIVO galeria.html — v2.5                                 -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- FIM DO SCRIPT CORRIGIDO — galeria.html                             -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-
-        function carregarFotoUnica(url, id) {
-            const card = document.getElementById('photo-card');
-            card.innerHTML = `
-                <div class="photo-wrapper">
-                    <div class="photo-badge" id="photo-badge">${id ? '#' + id : '#----'}</div>
-                    <div class="photo-loader" id="photo-loader">
-                        <div class="spin"></div>
-                        <div class="loader-text">Carregando Foto...</div>
-                    </div>
-                    <img id="main-photo" src="" alt="Foto do evento" style="opacity: 0;">
-                </div>
-                <div class="photo-actions">
-                    <button class="btn btn-primary" id="btn-download" onclick="baixarFoto()">
-                        <i class="fas fa-download"></i> Baixar Foto
-                    </button>
-                    <button class="btn btn-secondary" id="btn-compartilhar" onclick="compartilharFoto()">
-                        <i class="fas fa-share-alt"></i> Compartilhar
-                    </button>
-                    <div class="status-msg" id="status-msg"></div>
-                </div>
-            `;
-
-            const img = document.getElementById('main-photo');
-            const loader = document.getElementById('photo-loader');
-            const badge = document.getElementById('photo-badge');
-
-            fotoUrlAtual = url;
-
-            if (id) {
-                badge.innerText = `#${id}`;
-                badge.style.display = 'block';
-            } else {
-                badge.style.display = 'none';
-            }
-
-            img.onload = () => {
-                if (loader) loader.classList.add('hidden');
-                img.style.transition = 'opacity 0.4s ease';
-                img.style.opacity = '1';
-            };
-
-            img.onerror = () => {
-                if (loader) loader.classList.add('hidden');
-                mostrarErro('Não foi possível carregar a imagem.');
-            };
-
-            img.src = url;
-        }
-
-        async function baixarFoto() {
-            const btn = document.getElementById('btn-download');
-            const status = document.getElementById('status-msg');
-            
-            if (!fotoUrlAtual) return;
-
-            try {
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparando...';
-                status.innerText = "Preparando download...";
-                status.className = "status-msg";
-
-                const response = await fetch(fotoUrlAtual);
-                if (!response.ok) throw new Error('Erro na requisição');
-
-                const blob = await response.blob();
-                const blobUrl = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-                a.href = blobUrl;
-                a.download = `photoprint_${timestamp}.jpg`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(blobUrl);
-
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-check"></i> Baixada!';
-                status.innerText = "✅ Foto salva na sua galeria!";
-                status.className = "status-msg success";
-
-                setTimeout(() => {
-                    btn.innerHTML = '<i class="fas fa-download"></i> Baixar Foto';
-                }, 3000);
-
-            } catch (e) {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-download"></i> Baixar Foto';
-                status.innerText = "❌ Falha no download. Segure na imagem e escolha 'Salvar foto'.";
-                status.className = "status-msg error";
-            }
-        }
-
-        async function compartilharFoto() {
-            const status = document.getElementById('status-msg');
-            if (!fotoUrlAtual) return;
-
-            if (navigator.share) {
-                try {
-                    const response = await fetch(fotoUrlAtual);
-                    const blob = await response.blob();
-                    const file = new File([blob], 'photoprint.jpg', { type: blob.type });
-
-                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        await navigator.share({
-                            files: [file],
-                            title: 'PHOTO PRINT',
-                            text: 'Olha a foto do evento! 📸'
-                        });
-                        status.innerText = "✅ Compartilhado com sucesso!";
-                        status.className = "status-msg success";
-                        return;
-                    }
-                } catch (err) {
-                    if (err.name === 'AbortError') return;
-                }
-            }
-
-            try {
-                await navigator.clipboard.writeText(window.location.href);
-                status.innerText = "🔗 Link copiado!";
-                status.className = "status-msg success";
-            } catch (e) {
-                status.innerText = "Compartilhamento não disponível.";
-                status.className = "status-msg error";
-            }
-        }
-
-        function mostrarErro(mensagem) {
-            const photoCard = document.getElementById('photo-card');
-            const mainHeader = document.getElementById('main-header');
-            const errorState = document.getElementById('error-state');
-            const errorText = document.getElementById('error-text');
-
-            if (photoCard) photoCard.style.display = 'none';
-            if (mainHeader) mainHeader.style.display = 'none';
-            if (errorState) errorState.classList.add('active');
-            if (mensagem && errorText) {
-                errorText.innerText = mensagem;
-            }
-        }
-
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', (e) => {
-            const now = Date.now();
-            if (now - lastTouchEnd <= 300) e.preventDefault();
-            lastTouchEnd = now;
-        }, false);
-    </script>
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- FIM DA CORREÇÃO DEFINITIVA DO SCRIPT Em galeria.html               -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->  
-</body>
-</html>
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- FIM DO ARQUIVO galeria.html — GALERIA CLIENTE v2.3                 -->
+<!-- ◀◀◀ FIM DO ARQUIVO galeria.html — GALERIA CLIENTE v3.0 ▶▶▶         -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->

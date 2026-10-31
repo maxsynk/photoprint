@@ -3,18 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#000000">
     <title>PHOTO PRINT — Webcam Totem</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
         html, body { width: 100vw; height: 100vh; height: 100dvh; overflow: hidden; user-select: none; position: relative; background: radial-gradient(circle at 50% 0%, rgba(0,229,255,0.05) 0%, transparent 40%), var(--bg-0); }
-        #dynamic-bg { position: fixed; inset: 0; z-index: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 0.6s ease; pointer-events: none; }
+        #dynamic-bg { position: fixed; inset: 0; z-index: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 0.6s; pointer-events: none; }
         #dynamic-bg.active { opacity: 0.45; }
         #dynamic-bg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.85)); }
         .bg-brand { position: fixed; inset: 0; z-index: 1; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0.05; }
         .bg-brand-title { font-family: var(--font-display); font-size: clamp(80px, 15vw, 180px); font-weight: 900; color: var(--accent); letter-spacing: 16px; text-transform: uppercase; line-height: 1; }
-        .bg-brand-sub { margin-top: 20px; font-size: clamp(18px, 3vw, 36px); letter-spacing: 12px; text-transform: uppercase; color: var(--text-0); font-weight: 700; }
         .top-logo { position: fixed; top: 40px; left: 48px; z-index: 25; cursor: pointer; }
         .logo-title { font-family: var(--font-display); color: var(--accent); font-size: clamp(28px, 4vw, 44px); font-weight: 900; letter-spacing: 6px; text-shadow: var(--accent-glow); user-select: none; line-height: 1; }
         .logo-sub { margin-top: 6px; color: var(--text-2); letter-spacing: 4px; font-size: 11px; text-transform: uppercase; font-weight: 700; }
@@ -22,7 +20,6 @@
         #active-event-name.visible { display: inline-flex; align-items: center; gap: 8px; }
         #active-event-name::before { content: ''; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 6px var(--accent); animation: pulseDot 2s infinite; }
         @keyframes pulseDot { 0%,100%{opacity:1} 50%{opacity:0.4} }
-        #debug-info { position: fixed; bottom: 16px; right: 16px; z-index: 999; background: rgba(0,0,0,0.8); color: var(--accent); font-size: 10px; padding: 6px 12px; border-radius: 6px; font-family: var(--font-body); max-width: 350px; word-break: break-all; border: 1px solid var(--border-1); display: none; }
         #bg-menu { position: fixed; top: 120px; right: 40px; z-index: 100; display: none; flex-direction: column; gap: 12px; }
         #bg-menu.active { display: flex; }
         .bg-btn { padding: 12px 22px; border-radius: var(--radius-md); border: 1px solid var(--accent); background: rgba(0,0,0,0.85); color: var(--text-0); font-family: var(--font-body); font-size: 13px; font-weight: 800; cursor: pointer; backdrop-filter: blur(12px); transition: all 0.3s; display: flex; align-items: center; gap: 8px; }
@@ -62,7 +59,6 @@
     <div class="bg-brand"><div class="bg-brand-title">PHOTO PRINT</div><div class="bg-brand-sub">Colecionando Momentos</div></div>
     <div class="top-logo" id="secret-logo"><div class="logo-title">PHOTO PRINT</div><div class="logo-sub">Colecionando Momentos</div></div>
     <div id="active-event-name"></div>
-    <div id="debug-info">SISTEMA PRONTO</div>
     <div id="bg-menu"><label class="bg-btn" for="bg-input"><i class="fas fa-image"></i> Alterar Fundo</label><div class="bg-btn" onclick="removeBackground()"><i class="fas fa-times"></i> Sem Fundo</div></div>
     <input type="file" id="bg-input" accept="image/*">
     <div id="offline-overlay"><div class="offline-text">SISTEMA EM<br>MANUTENÇÃO</div></div>
@@ -96,25 +92,37 @@
         let handVisibleFrames = 0, openFrames = 0, closedFrames = 0, personDetected = false, inactivityTimeout = null;
         const FORMATOS = { "TIRINHA": { w: 591, h: 1819 }, "POLAROID": { w: 1041, h: 1311 }, "10X15V": { w: 1181, h: 1819 }, "10X15H": { w: 1772, h: 1228 } };
 
-        function debug(msg) { console.log('[WEBCAM]', msg); const el = document.getElementById('debug-info'); if (el) el.innerText = msg; }
+        // Inicialização imediata da câmera
+        async function initCamera() {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices(), cameras = devices.filter(d => d.kind === 'videoinput');
+                let selectedDevice = null;
+                for (const cam of cameras) { const name = cam.label.toLowerCase(); if (name.includes('logitech') || name.includes('usb') || name.includes('c920')) { selectedDevice = cam; break; } }
+                if (!selectedDevice && cameras.length > 0) selectedDevice = cameras[0];
+                stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: selectedDevice ? { exact: selectedDevice.deviceId } : undefined, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+                videoFeed.srcObject = stream; startMotionDetection();
+            } catch (err) { document.querySelector('.start-subtitle').innerText = 'Câmera não encontrada'; }
+        }
 
         async function verificarStatus() {
             try {
                 const res = await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`);
-                if (!res || !res.ok) { sistemaOnline = false; mostrarOffline(); return; }
+                if (!res || !res.ok) throw new Error();
                 const data = await res.json();
-                const status = (data.config && data.config.status) ? data.config.status : 'OFFLINE';
-                if (status === 'OFFLINE') { sistemaOnline = false; mostrarOffline(); } else { sistemaOnline = true; esconderOffline(); }
+                // CORREÇÃO: Só mostra offline se for erro de rede, não se o status for OFFLINE no banco
+                sistemaOnline = true; 
+                document.getElementById('offline-overlay').classList.remove('active');
                 return data;
-            } catch (e) { sistemaOnline = false; mostrarOffline(); return null; }
+            } catch (e) { 
+                sistemaOnline = false; 
+                document.getElementById('offline-overlay').classList.add('active'); 
+                return null; 
+            }
         }
-
-        function mostrarOffline() { document.getElementById('offline-overlay').classList.add('active'); }
-        function esconderOffline() { document.getElementById('offline-overlay').classList.remove('active'); }
 
         async function syncEvento() {
             const data = await verificarStatus();
-            if (!data || !sistemaOnline) return;
+            if (!data) return;
             if (data.config && data.config.evento && data.config.evento !== 'Geral') {
                 const novoEventoId = data.config.eventoId, novoFormato = (data.config.formato || 'POLAROID').toUpperCase().trim();
                 if (eventoAtual !== data.config.evento || eventoId !== novoEventoId || formatoAtual !== novoFormato || !molduraBase64) {
@@ -130,17 +138,6 @@
             if (eventoAtual) { el.classList.add('visible'); el.innerHTML = `🎉 ${eventoAtual} | ${formatoAtual}`; } else el.classList.remove('visible');
         }
 
-        async function initCamera() {
-            try {
-                const devices = await navigator.mediaDevices.enumerateDevices(), cameras = devices.filter(d => d.kind === 'videoinput');
-                let selectedDevice = null;
-                for (const cam of cameras) { const name = cam.label.toLowerCase(); if (name.includes('logitech') || name.includes('usb') || name.includes('c920')) { selectedDevice = cam; break; } }
-                if (!selectedDevice && cameras.length > 0) selectedDevice = cameras[0];
-                stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: selectedDevice ? { exact: selectedDevice.deviceId } : undefined, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
-                videoFeed.srcObject = stream; startMotionDetection();
-            } catch (err) { document.querySelector('.start-subtitle').innerText = 'Câmera não encontrada'; }
-        }
-
         let motionCanvas = null, motionCtx = null, previousFrame = null;
         function startMotionDetection() {
             motionCanvas = document.createElement('canvas'); motionCanvas.width = 160; motionCanvas.height = 90;
@@ -153,26 +150,22 @@
                 if (videoFeed.readyState >= 2) {
                     motionCtx.drawImage(videoFeed, 0, 0, 160, 90);
                     const frame = motionCtx.getImageData(0, 0, 160, 90);
-                    if (previousFrame)
-                                        let changed = 0;
-                    for (let i = 0; i < frame.data.length; i += 16) {
-                        const diff = Math.abs(frame.data[i] - previousFrame.data[i]) + Math.abs(frame.data[i+1] - previousFrame.data[i+1]) + Math.abs(frame.data[i+2] - previousFrame.data[i+2]);
-                        if (diff > 30) changed++;
-                    }
-                    const movement = (changed / (frame.data.length / 16)) * 100;
-                    if (movement > 3 && !personDetected) {
-                        personDetected = true; abrirCameraPorPresenca();
-                        clearTimeout(inactivityTimeout);
-                    }
-                    if (movement < 0.5 && personDetected) {
-                        if (!inactivityTimeout) {
-                            inactivityTimeout = setTimeout(() => {
-                                if (lastState === 'options' || lastState === 'start') { personDetected = false; resetToStart(); }
-                                inactivityTimeout = null;
-                            }, 45000);
+                    if (previousFrame) {
+                        let changed = 0;
+                        for (let i = 0; i < frame.data.length; i += 16) {
+                            const diff = Math.abs(frame.data[i] - previousFrame.data[i]) + Math.abs(frame.data[i+1] - previousFrame.data[i+1]) + Math.abs(frame.data[i+2] - previousFrame.data[i+2]);
+                            if (diff > 30) changed++;
                         }
-                    } else if (movement > 1) {
-                        clearTimeout(inactivityTimeout); inactivityTimeout = null;
+                        const movement = (changed / (frame.data.length / 16)) * 100;
+                        if (movement > 3 && !personDetected) { personDetected = true; abrirCameraPorPresenca(); clearTimeout(inactivityTimeout); }
+                        if (movement < 0.5 && personDetected) {
+                            if (!inactivityTimeout) {
+                                inactivityTimeout = setTimeout(() => {
+                                    if (lastState === 'options' || lastState === 'start') { personDetected = false; resetToStart(); }
+                                    inactivityTimeout = null;
+                                }, 45000);
+                            }
+                        } else if (movement > 1) { clearTimeout(inactivityTimeout); inactivityTimeout = null; }
                     }
                     previousFrame = frame;
                 }
@@ -203,17 +196,12 @@
 
         function onHandResults(results) {
             if (!gestureActive) return;
-            if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
-                handVisibleFrames = 0; openFrames = 0; closedFrames = 0; return;
-            }
+            if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) { handVisibleFrames = 0; openFrames = 0; closedFrames = 0; return; }
             handVisibleFrames++;
             const hand = results.multiHandLandmarks[0];
             const dedosAbertos = (hand[8].y < hand[6].y ? 1 : 0) + (hand[12].y < hand[10].y ? 1 : 0) + (hand[16].y < hand[14].y ? 1 : 0) + (hand[20].y < hand[18].y ? 1 : 0);
             if (handVisibleFrames < 8) return;
-            if (dedosAbertos >= 4) {
-                openFrames++; closedFrames = 0;
-                if (openFrames == 10) handOpen = true;
-            }
+            if (dedosAbertos >= 4) { openFrames++; closedFrames = 0; if (openFrames == 10) handOpen = true; }
             if (handOpen && dedosAbertos <= 1) {
                 closedFrames++;
                 if (closedFrames == 6) { gestureActive = false; handOpen = false; capturePhoto(); }
@@ -224,8 +212,7 @@
         function capturePhoto() {
             captureInProgress = true;
             document.getElementById('gesto-msg').classList.remove('active');
-            funText.style.display = 'block';
-            funText.innerHTML = "✨ PREPARE-SE! ✨";
+            funText.style.display = 'block'; funText.innerHTML = "✨ PREPARE-SE! ✨";
             setTimeout(() => {
                 let cd = 3;
                 funText.innerHTML = `😁 SORRIA! 😁<br>⏳ ${cd}`;
@@ -234,15 +221,12 @@
                     if (cd > 0) { funText.innerHTML = `😁 SORRIA! 😁<br>⏳ ${cd}`; }
                     else {
                         funText.style.display = 'none'; clearInterval(t);
-                        canvasCapture.width = videoFeed.videoWidth || 1280;
-                        canvasCapture.height = videoFeed.videoHeight || 720;
+                        canvasCapture.width = videoFeed.videoWidth || 1280; canvasCapture.height = videoFeed.videoHeight || 720;
                         ctx.save(); ctx.scale(-1, 1); ctx.drawImage(videoFeed, -canvasCapture.width, 0, canvasCapture.width, canvasCapture.height); ctx.restore();
                         videoFeed.style.display = 'block'; canvasCapture.style.display = 'block';
                         fetch(`${API_BASE}/set-state`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state: 'options' }) }).catch(() => {});
-                        captureInProgress = false;
-                        optionsOverlay.classList.add('active');
-                        document.getElementById('gesto-msg').classList.add('active');
-                        document.getElementById('msg-texto').innerText = '👉 RETIRE SUA FOTO NO TOTEM';
+                        captureInProgress = false; optionsOverlay.classList.add('active');
+                        document.getElementById('gesto-msg').classList.add('active'); document.getElementById('msg-texto').innerText = '👉 RETIRE SUA FOTO NO TOTEM';
                     }
                 }, 1000);
             }, 2500);
@@ -285,48 +269,34 @@
             document.getElementById('screen-start').classList.add('active');
             ctx.clearRect(0, 0, canvasCapture.width, canvasCapture.height);
             captureInProgress = false; lastState = 'start'; personDetected = false; gestureActive = false;
-            document.getElementById('gesto-msg').classList.remove('active');
-            optionsOverlay.classList.remove('active');
-            funText.style.display = 'none';
+            document.getElementById('gesto-msg').classList.remove('active'); optionsOverlay.classList.remove('active'); funText.style.display = 'none';
             if (handCamera) { try { handCamera.stop(); } catch(e) {} handCamera = null; }
             handDetector = null; handVisibleFrames = 0; openFrames = 0; closedFrames = 0;
             fetch(`${API_BASE}/set-state`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state: 'start' }) }).catch(() => {});
         }
 
-        // Fundo personalizado
         let clickCount = 0, clickTimer = null;
         document.getElementById('secret-logo').addEventListener('click', () => {
             clickCount++; clearTimeout(clickTimer);
             clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
             if (clickCount >= 7) { document.getElementById('bg-menu').classList.toggle('active'); clickCount = 0; }
         });
-
         document.getElementById('bg-input').addEventListener('change', (e) => {
             const f = e.target.files[0]; if (!f) return;
             const r = new FileReader();
             r.onload = (ev) => {
-                document.getElementById('dynamic-bg').style.backgroundImage = `url('${ev.target.result}')`;
-                document.getElementById('dynamic-bg').classList.add('active');
+                document.getElementById('dynamic-bg').style.backgroundImage = `url('${ev.target.result}')`; document.getElementById('dynamic-bg').classList.add('active');
                 try { localStorage.setItem('photoprint_bg', ev.target.result); } catch(err) {}
                 document.getElementById('bg-menu').classList.remove('active');
             };
             r.readAsDataURL(f);
         });
-
-        function removeBackground() {
-            localStorage.removeItem('photoprint_bg');
-            document.getElementById('dynamic-bg').style.backgroundImage = "";
-            document.getElementById('dynamic-bg').classList.remove('active');
-            document.getElementById('bg-menu').classList.remove('active');
-        }
-
-        (function() {
-            const bg = localStorage.getItem('photoprint_bg');
-            if (bg) { document.getElementById('dynamic-bg').style.backgroundImage = `url('${bg}')`; document.getElementById('dynamic-bg').classList.add('active'); }
-        })();
+        function removeBackground() { localStorage.removeItem('photoprint_bg'); document.getElementById('dynamic-bg').style.backgroundImage = ""; document.getElementById('dynamic-bg').classList.remove('active'); document.getElementById('bg-menu').classList.remove('active'); }
+        (function() { const bg = localStorage.getItem('photoprint_bg'); if (bg) { document.getElementById('dynamic-bg').style.backgroundImage = `url('${bg}')`; document.getElementById('dynamic-bg').classList.add('active'); } })();
 
         window.addEventListener('load', () => {
-            initCamera(); syncEvento();
+            initCamera(); // Ativa câmera imediatamente
+            syncEvento();
             setInterval(syncEvento, 5000);
         });
         window.addEventListener('beforeunload', () => {
@@ -336,4 +306,4 @@
         });
     </script>
 </body>
-</html>    
+</html>

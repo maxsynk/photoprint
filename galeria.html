@@ -75,37 +75,54 @@
            ═══════════════════════════════════════════════════════════════ */
         #print-area { display: none; }
 
-        @media print {
-            /* A folha base é portrait, o JS muda para landscape se precisar */
-            @page { size: A4 portrait; margin: 0; }
-            body * { visibility: hidden !important; display: none !important; }
-            #print-area, #print-area * { visibility: visible !important; display: block !important; }
-            
-            #print-area {
-                position: absolute !important; inset: 0 !important;
-                background: #fff !important; margin: 0 !important; padding: 5mm !important;
-                display: grid !important;
-                justify-content: center !important;
-                align-content: center !important;
-                gap: 3mm !important;
-            }
+        /* ▶▶▶ INÍCIO TRECHO 1 — @media print (substitui o bloco inteiro) ◀◀◀ */
+@media print {
+    @page { size: A4 portrait; margin: 0; }
+    body * { visibility: hidden !important; display: none !important; }
+    #print-area, #print-area * { visibility: visible !important; display: block !important; }
 
-            /* ── POLAROID: 6 por folha (3x2), tamanho 68x98mm ── */
-            .layout-polaroid { width: 210mm; height: 297mm; grid-template-columns: repeat(3, 68mm) !important; grid-auto-rows: 98mm !important; }
-            
-            /* ── TIRINHA: 5 por folha (5x1), tamanho 37x180mm (folha deitada) ── */
-            .layout-tirinha { width: 297mm; height: 210mm; grid-template-columns: repeat(5, 37mm) !important; grid-auto-rows: 180mm !important; }
-            
-            /* ── 10x15 VERTICAL: 2 por folha (2x1), tamanho 100x150mm ── */
-            .layout-10x15v { width: 210mm; height: 297mm; grid-template-columns: repeat(2, 100mm) !important; grid-auto-rows: 150mm !important; }
-            
-            /* ── 10x15 HORIZONTAL: 2 por folha (2x1), tamanho 150x100mm (folha em pé, fotos lado a lado) ── */
-            .layout-10x15h { width: 210mm; height: 297mm; grid-template-columns: repeat(2, 150mm) !important; grid-auto-rows: 100mm !important; }
+    #print-area {
+        position: absolute !important; inset: 0 !important;
+        background: #fff !important; margin: 0 !important; padding: 0 !important;
+        display: grid !important;
+        justify-content: center !important;
+        align-content: center !important;
+        overflow: hidden !important;
+    }
 
-            .slot { width: 100% !important; height: 100% !important; display: flex !important; align-items: center !important; justify-content: center !important; overflow: hidden !important; background: #fff !important; }
-            .slot img { width: 100% !important; height: 100% !important; object-fit: contain !important; }
-        }
+    /* ── POLAROID: 6 por folha EM PÉ (3x2), 68x98mm ── */
+    #print-area.layout-polaroid {
+        width: 210mm; height: 297mm; gap: 1mm !important;
+        grid-template-columns: repeat(3, 68mm) !important;
+        grid-auto-rows: 98mm !important;
+    }
 
+    /* ── TIRINHA: 5 por folha DEITADA (5x1), cada uma 50x150mm (5x15cm) ──
+       Para mudar o tamanho: altere 50mm (largura) e 150mm (altura) abaixo */
+    #print-area.layout-tirinha {
+        width: 297mm; height: 210mm; gap: 4mm !important;
+        grid-template-columns: repeat(5, 50mm) !important;
+        grid-auto-rows: 150mm !important;
+    }
+
+    /* ── 10x15 VERTICAL: 2 por folha EM PÉ, lado a lado (100x150mm) ── */
+    #print-area.layout-10x15v {
+        width: 210mm; height: 297mm; gap: 2mm !important;
+        grid-template-columns: repeat(2, 100mm) !important;
+        grid-auto-rows: 150mm !important;
+    }
+
+    /* ── 10x15 HORIZONTAL: folha EM PÉ, 2 fotos UMA EM CIMA DA OUTRA (150x100mm) ── */
+    #print-area.layout-10x15h {
+        width: 210mm; height: 297mm; gap: 5mm !important;
+        grid-template-columns: 150mm !important;
+        grid-auto-rows: 100mm !important;
+    }
+
+    .slot { width: 100% !important; height: 100% !important; display: flex !important; align-items: center !important; justify-content: center !important; overflow: hidden !important; background: #fff !important; }
+    .slot img { width: 100% !important; height: 100% !important; object-fit: contain !important; }
+}
+/* ◀◀◀ FIM TRECHO 1 — @media print ▶▶▶ */
         /* ═══════════════════════════════════════════════════════════════
            PAINEL ESQUERDO
            ═══════════════════════════════════════════════════════════════ */
@@ -387,15 +404,21 @@
         let modoSelecao = false, selecionadas = new Set();
         let logHistory = [], logAberto = false;
 
-        function getCapacidade() {
-            const fmt = formatoAtual.toUpperCase();
-            // A capacidade agora é fixa e baseada no formato, garantindo o preenchimento correto
-            if (fmt.includes("POLAROID")) return { slots: 6, layout: "layout-polaroid" };
-            if (fmt.includes("TIRINHA")) return { slots: 5, layout: "layout-tirinha" };
-            if (fmt.includes("10X15H")) return { slots: 2, layout: "layout-10x15h" };
-            if (fmt.includes("10X15V")) return { slots: 2, layout: "layout-10x15v" };
-            return { slots: 6, layout: "layout-polaroid" };
-        }
+        /* ▶▶▶ INÍCIO TRECHO 2 — getCapacidade (substitui a função inteira) ◀◀◀ */
+function getCapacidade() {
+    // Normaliza: tira espaços, "_" e "-" (aceita "10x15 H", "10X15_H", etc.)
+    const fmt = String(formatoAtual || '').toUpperCase().replace(/[\s_\-]/g, '');
+
+    if (fmt.includes('10X15H'))
+        return { slots: 2, layout: 'layout-10x15h', cols: 1, rows: 2, landscape: false };
+    if (fmt.includes('10X15V'))
+        return { slots: 2, layout: 'layout-10x15v', cols: 2, rows: 1, landscape: false };
+    if (fmt.includes('TIRINHA') || fmt.includes('STRIP') || fmt.includes('5X15'))
+        return { slots: 5, layout: 'layout-tirinha', cols: 5, rows: 1, landscape: true };
+    // Polaroid (padrão)
+    return { slots: 6, layout: 'layout-polaroid', cols: 3, rows: 2, landscape: false };
+}
+/* ◀◀◀ FIM TRECHO 2 — getCapacidade ▶▶▶ */
 
         function addLog(msg, tipo = 'info') {
             const ts = new Date().toLocaleTimeString('pt-BR');
@@ -443,10 +466,14 @@
                     document.getElementById('grid-fotos').innerHTML = "";
                     addLog(`🔄 Evento: ${evt} (${traduzirFormato(formatoAtual)})`, 'success');
                     atualizarUIStatus();
-                } else if (formatoAtual !== novoFormato) {
-                    formatoAtual = novoFormato;
-                    atualizarUIStatus();
-                }
+                /* ▶▶▶ INÍCIO TRECHO 4 — else if do formato (dentro de atualizar) ◀◀◀ */
+} else if (formatoAtual !== novoFormato) {
+    formatoAtual = novoFormato;
+    const c = getCapacidade();
+    addLog(`📐 Formato: ${traduzirFormato(formatoAtual)} → ${c.slots} por folha`, 'info');
+    atualizarUIFolha();
+}
+/* ◀◀◀ FIM TRECHO 4 ▶▶▶ */
 
                 document.getElementById('nome-evento').innerText = eventoAtual;
                 document.getElementById('tipo-formato').innerText = traduzirFormato(formatoAtual);
@@ -620,36 +647,39 @@
             }
         }
 
-        function atualizarUIFolha() {
-            const cap = getCapacidade();
-            document.getElementById('sheet-count').innerText = `${sheetBuffer.length}/${cap.slots}`;
-            document.getElementById('fila-count').innerText = sheetQueue.length;
-            
-            const container = document.getElementById('sheet-preview');
-            let cols = 3;
-            if (cap.slots === 4) cols = 2;
-            else if (cap.slots === 2) cols = 2;
-            else if (cap.slots === 5) cols = 5;
-            
-            container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-            container.innerHTML = '';
+        /* ▶▶▶ INÍCIO TRECHO 3 — atualizarUIFolha (substitui a função inteira) ◀◀◀ */
+function atualizarUIFolha() {
+    const cap = getCapacidade();
+    document.getElementById('sheet-count').innerText = `${sheetBuffer.length}/${cap.slots}`;
+    document.getElementById('fila-count').innerText = sheetQueue.length;
 
-            for (let i = 0; i < cap.slots; i++) {
-                const slot = document.createElement('div');
-                slot.className = 'sheet-preview-slot';
-                const data = sheetBuffer[i];
-                
-                if (data) {
-                    slot.classList.add('filled');
-                    slot.innerHTML = `<span class="slot-label">${i+1}</span><img src="${data.url}">
-                        <div class="remove-btn" onclick="event.stopPropagation(); removerDoBuffer(${i})"><i class="fa-solid fa-xmark"></i></div>`;
-                } else {
-                    slot.innerHTML = `<span style="font-size:10px;color:var(--text-3);">${i+1}</span>`;
-                }
-                container.appendChild(slot);
-            }
-            atualizarUIStatus();
+    const container = document.getElementById('sheet-preview');
+
+    // Preview acompanha a orientação real da folha (tirinha = deitada)
+    container.style.aspectRatio = cap.landscape ? '297 / 210' : '210 / 297';
+    container.style.maxWidth = cap.landscape ? '250px' : '180px';
+    container.style.width = '100%';
+    container.style.gridTemplateColumns = `repeat(${cap.cols}, 1fr)`;
+    container.style.gridTemplateRows = `repeat(${cap.rows}, 1fr)`;
+    container.innerHTML = '';
+
+    for (let i = 0; i < cap.slots; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'sheet-preview-slot';
+        const data = sheetBuffer[i];
+
+        if (data) {
+            slot.classList.add('filled');
+            slot.innerHTML = `<span class="slot-label">${i+1}</span><img src="${data.url}">
+                <div class="remove-btn" onclick="event.stopPropagation(); removerDoBuffer(${i})"><i class="fa-solid fa-xmark"></i></div>`;
+        } else {
+            slot.innerHTML = `<span style="font-size:10px;color:var(--text-3);">${i+1}</span>`;
         }
+        container.appendChild(slot);
+    }
+    atualizarUIStatus();
+}
+/* ◀◀◀ FIM TRECHO 3 — atualizarUIFolha ▶▶▶ */
 
         function render() {
             const grid = document.getElementById('grid-fotos');

@@ -86,14 +86,24 @@
         async function verificarSistema() {
             try {
                 const res = await fetch(`${API}/get-all-states?t=${Date.now()}`);
+                if (!res || !res.ok) throw new Error();
                 const data = await res.json();
-                if (data.config && data.config.status === 'ONLINE') {
-                    sistemaOnline = true;
-                    if (data.config.evento && data.config.evento !== 'Geral') { eventoAtivo = true; document.getElementById('event-name').innerText = data.config.evento; }
-                    else eventoAtivo = false;
-                } else { sistemaOnline = false; eventoAtivo = false; }
+                
+                // CORREÇÃO: Só mostra offline se a conexão falhar. Se o status no banco for OFFLINE, 
+                // a botoeira ainda permite tentar.
+                sistemaOnline = true; 
+                
+                if (data.config && data.config.evento && data.config.evento !== 'Geral')
+                                       eventoAtivo = true; 
+                    document.getElementById('event-name').innerText = data.config.evento; 
+                }
+                else eventoAtivo = false;
                 atualizarStatusUI();
-            } catch (e) { sistemaOnline = false; eventoAtivo = false; atualizarStatusUI(); }
+            } catch (e) { 
+                sistemaOnline = false; 
+                eventoAtivo = false; 
+                atualizarStatusUI(); 
+            }
         }
 
         async function dispararCaptura() {
@@ -115,8 +125,13 @@
             }
         }
 
-        window.addEventListener('load', () => { log("Iniciando monitoramento..."); verificarSistema(); intervaloSync = setInterval(verificarSistema, 3000); });
+        window.addEventListener('load', () => { 
+            log("Iniciando monitoramento..."); 
+            verificarSistema(); 
+            intervaloSync = setInterval(verificarSistema, 3000); 
+        });
+        
         window.addEventListener('beforeunload', () => { if (intervaloSync) clearInterval(intervaloSync); });
     </script>
 </body>
-</html>
+</html> 

@@ -13,13 +13,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* ═══════════════════════════════════════════════════════════════
-           TOKENS — GRAFITE + PRATA + DOURADO FOSCO
+           TOKENS — GRAFITE + PRATA + AZUL
            ═══════════════════════════════════════════════════════════════ */
+        
         :root {
-            --accent: #E8E8E8;
-            --gold: #D4AF37;
-            --gold-dim: rgba(212, 175, 55, 0.12);
-            --gold-glow: 0 0 20px rgba(212, 175, 55, 0.35);
+            --accent: #2563EB; /* Azul Cobalto */
+            --accent-dim: rgba(37, 99, 235, 0.15);
+            --accent-glow: 0 0 20px rgba(37, 99, 235, 0.4);
             --danger: #E5484D;
             --danger-dim: rgba(229, 72, 77, 0.15);
             --info: #6EA8FE;
@@ -40,6 +40,7 @@
             --border-1: rgba(255, 255, 255, 0.06);
             --border-2: rgba(255, 255, 255, 0.10);
             --border-3: rgba(255, 255, 255, 0.16);
+            --border-accent: rgba(37, 99, 235, 0.4);
 
             --radius-sm: 8px;
             --radius-md: 12px;
@@ -334,11 +335,7 @@
                 <i class="fa-solid fa-check-square"></i> <span id="btn-selecao-text">Selecionar</span>
             </button>
         </div>
-            <button class="ctrl-btn" id="btn-selecao" onclick="toggleModoSelecao()">
-                <i class="fa-solid fa-check-square"></i> <span id="btn-selecao-text">Selecionar</span>
-            </button>
-        </div>
-
+            
         <!-- Barra de Seleção -->
         <div class="selection-bar" id="selection-bar" style="display:none; padding: 10px 20px; background: var(--gold-dim); margin: 10px 20px; border-radius: 8px;">
             <div style="font-size: 10px; color: var(--gold); font-weight: 800; margin-bottom: 8px;">

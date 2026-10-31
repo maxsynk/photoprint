@@ -1163,11 +1163,14 @@
             try {
                 let eventId = editId;
                 if (editId) {
+                                        // ▶ INÍCIO DA TROCA (dentro de salvarEvento, bloco if (editId))
+                    const atual = eventos.find(e => String(e.id) === String(editId));
                     await fetch(`${API_URL}/atualizar-evento/${editId}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ nome, data, formato, livro, ativo: false })
+                        body: JSON.stringify({ nome, data, formato, livro, ativo: atual ? atual.ativo : false })
                     });
+                    // ◀ FIM DA TROCA
                 } else {
                     const resp = await fetch(`${API_URL}/criar-evento`, {
                         method: 'POST',

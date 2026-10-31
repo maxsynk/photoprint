@@ -1,22 +1,22 @@
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- ▶▶▶ INÍCIO DO ARQUIVO galeria.html — CENTRAL v10.2 (VISUAL PRO) ◀◀◀ -->
+<!-- ▶▶▶ INÍCIO DO ARQUIVO galeria.html — CENTRAL v11.0 FINAL ◀◀◀        -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT — Central de Impressão v10.2</title>
+    <title>PHOTO PRINT — Central de Impressão v11.0</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* ═══════════════════════════════════════════════════════════════
-           TOKENS — AZUL ELÉTRICO + GRAFITE
+           TOKENS — AZUL ELÉTRICO (CYAN) + GRAFITE
            ═══════════════════════════════════════════════════════════════ */
         :root {
-            --accent: #00E5FF; /* Azul Elétrico (Cyan) */
+            --accent: #00E5FF;
             --accent-dim: rgba(0, 229, 255, 0.12);
             --accent-glow: 0 0 20px rgba(0, 229, 255, 0.4);
             --danger: #FF3B30;
@@ -24,7 +24,7 @@
             --warn: #FFCC00;
             --success: #34C759;
 
-            --bg-0: #050505; /* Preto profundo */
+            --bg-0: #050505;
             --bg-1: #0F0F12;
             --bg-2: #18181D;
             --bg-3: #232329;
@@ -59,7 +59,7 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Fundo Quadriculado Azul (Grid) */
+        /* Fundo Quadriculado */
         body {
             display: grid;
             grid-template-columns: var(--panel-width) 1fr;
@@ -72,7 +72,7 @@
         }
 
         /* ═══════════════════════════════════════════════════════════════
-           ÁREA DE IMPRESSÃO (NÃO CORTA MAIS A FOTO)
+           ÁREA DE IMPRESSÃO (MATEMÁTICA EXATA PARA A4)
            ═══════════════════════════════════════════════════════════════ */
         #print-area { display: none; }
 
@@ -86,19 +86,26 @@
                 width: 210mm !important; height: 297mm !important;
                 background: #fff !important; margin: 0 !important; padding: 3mm !important;
                 display: grid !important;
-                grid-template-columns: repeat(3, 68mm) !important;
-                grid-auto-rows: 98mm !important;
-                gap: 2mm !important;
                 justify-content: center !important;
                 align-content: flex-start !important;
+                gap: 2mm !important;
             }
-            /* Ajuste para outros formatos */
-            .layout-tirinha { grid-template-columns: repeat(3, 62mm) !important; grid-auto-rows: 180mm !important; }
+
+            /* LAYOUTS DINÂMICOS */
+            /* Polaroid (Padrão 9 fotos) */
+            .layout-polaroid { grid-template-columns: repeat(3, 68mm) !important; grid-auto-rows: 95mm !important; }
+            
+            /* Tirinha (3 fotos) */
+            .layout-tirinha { grid-template-columns: repeat(3, 66mm) !important; grid-auto-rows: 198mm !important; }
+            
+            /* 10x15 Vertical (2 fotos) */
             .layout-10x15v { grid-template-columns: repeat(2, 100mm) !important; grid-auto-rows: 150mm !important; }
-            .layout-10x15h { grid-template-columns: repeat(1, 150mm) !important; grid-auto-rows: 100mm !important; }
+            
+            /* 10x15 Horizontal (2 fotos) - Muda a folha para paisagem */
+            .layout-10x15h { grid-template-columns: repeat(2, 150mm) !important; grid-auto-rows: 100mm !important; }
 
             .slot { width: 100% !important; height: 100% !important; display: flex !important; align-items: center !important; justify-content: center !important; overflow: hidden !important; background: #fff !important; }
-            .slot img { width: 100% !important; height: 100% !important; object-fit: contain !important; } /* OBJECT-FIT CONTAIN */
+            .slot img { width: 100% !important; height: 100% !important; object-fit: contain !important; } /* Não corta as fotos */
         }
 
         /* ═══════════════════════════════════════════════════════════════
@@ -113,13 +120,11 @@
         .brand-title { font-family: var(--font-display); font-size: 22px; font-weight: 900; color: var(--accent); letter-spacing: 2px; text-shadow: var(--accent-glow); }
         .brand-subtitle { font-size: 9px; letter-spacing: 3px; color: var(--text-2); text-transform: uppercase; font-weight: 800; margin-top: 4px; }
 
-        /* Status */
         .status-card { margin: 20px 20px 0; padding: 16px; background: var(--bg-2); border: 1px solid var(--border-1); border-left: 3px solid var(--accent); border-radius: var(--radius-md); }
         .status-label { font-size: 9px; letter-spacing: 2px; color: var(--text-3); font-weight: 800; text-transform: uppercase; margin-bottom: 6px; }
         #nome-evento { font-family: var(--font-display); font-size: 15px; font-weight: 800; color: var(--text-0); text-transform: uppercase; }
         #tipo-formato { font-size: 10px; color: var(--accent); font-weight: 800; text-transform: uppercase; margin-top: 4px; }
 
-        /* Barra de status */
         .print-status-bar {
             margin: 14px 20px 0; padding: 10px 14px; background: var(--bg-2); border: 1px solid var(--border-2);
             border-radius: var(--radius-md); display: flex; align-items: center; gap: 10px;
@@ -130,7 +135,6 @@
         .print-status-bar.active .dot { background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
-        /* Controles */
         .controls { margin: 16px 20px 0; display: flex; flex-direction: column; gap: 8px; }
         .ctrl-btn {
             width: 100%; padding: 12px 16px; background: var(--bg-2); border: 1px solid var(--border-2);
@@ -142,7 +146,6 @@
         .ctrl-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
         .ctrl-btn .badge-qty { margin-left: auto; background: var(--accent); color: var(--bg-0); font-family: var(--font-mono); padding: 2px 8px; border-radius: 20px; }
 
-        /* Busca */
         .search-box { margin: 16px 20px 0; display: flex; gap: 8px; }
         .search-box input {
             flex: 1; background: var(--bg-0); border: 1px solid var(--border-2); color: var(--text-0);
@@ -151,7 +154,6 @@
         .search-box input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-dim); }
         .search-btn { background: var(--accent); color: var(--bg-0); border: none; padding: 0 14px; border-radius: var(--radius-md); cursor: pointer; font-size: 14px; }
 
-        /* Preview Folha (Dropzone) */
         .sheet-section {
             margin: 20px; padding: 16px; background: var(--bg-2); border: 1px dashed var(--border-3);
             border-radius: var(--radius-md); transition: 0.2s;
@@ -161,8 +163,7 @@
         .sheet-title { font-size: 10px; font-weight: 800; color: var(--text-2); text-transform: uppercase; }
         .sheet-count { font-family: var(--font-mono); font-size: 11px; font-weight: 900; color: var(--accent); }
         
-        /* Grid da folha */
-        .sheet-preview { display: grid; gap: 4px; background: var(--bg-0); padding: 6px; border-radius: 6px; aspect-ratio: 210/297; max-width: 180px; margin: 0 auto; }
+        .sheet-preview { display: grid; gap: 4px; background: var(--bg-0); padding: 6px; border-radius: 6px; aspect-ratio: 210/297; max-width: 180px; margin: 0 auto; transition: 0.2s; }
         .sheet-preview-slot { background: var(--bg-3); border: 1px dashed var(--border-2); border-radius: 3px; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .sheet-preview-slot.filled { border: 1px solid var(--accent); }
         .sheet-preview-slot img { width: 100%; height: 100%; object-fit: cover; border-radius: 3px; }
@@ -174,7 +175,6 @@
         .sheet-preview-slot:hover .remove-btn { opacity: 1; }
         .sheet-preview-slot .slot-label { position: absolute; top: 2px; left: 4px; font-size: 8px; color: #fff; background: rgba(0,0,0,0.8); padding: 1px 4px; border-radius: 2px; z-index: 5; }
 
-        /* Configurações Escondidas */
         .config-toggle {
             margin: auto 20px 20px; padding: 12px; background: transparent; border: 1px solid var(--border-2);
             color: var(--text-2); border-radius: var(--radius-md); cursor: pointer; font-size: 10px;
@@ -188,16 +188,12 @@
         .config-row select { background: var(--bg-0); border: 1px solid var(--border-2); color: var(--text-0); padding: 6px 10px; border-radius: 6px; outline: none; }
 
         /* ═══════════════════════════════════════════════════════════════
-           ÁREA PRINCIPAL (GRID DE FOTOS)
+           ÁREA PRINCIPAL
            ═══════════════════════════════════════════════════════════════ */
         .main-area { padding: 24px 32px; overflow-y: auto; height: 100vh; position: relative; }
         .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .main-title { font-family: var(--font-display); font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--text-0); text-shadow: 0 0 10px rgba(255,255,255,0.1); }
-        
-        .main-count { 
-            font-family: var(--font-mono); font-size: 12px; background: var(--bg-2); 
-            padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border-2); margin-right: 60px; /* Margem para não bater no menu hamburguer */
-        }
+        .main-count { font-family: var(--font-mono); font-size: 12px; background: var(--bg-2); padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border-2); margin-right: 60px; }
 
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
         .card { 
@@ -215,12 +211,10 @@
         .card.selected { border-color: var(--accent); }
         .card.selected .check-overlay { display: flex; }
 
-        /* MENU HAMBURGUER (Corrigido e com Riscos) */
         .menu-trigger {
             position: fixed; right: 24px; top: 24px; z-index: 5100; width: 44px; height: 44px;
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
-            background: var(--bg-2); border: 1px solid var(--border-2); border-radius: 10px; cursor: pointer; backdrop-filter: blur(12px);
-            transition: 0.2s;
+            background: var(--bg-2); border: 1px solid var(--border-2); border-radius: 10px; cursor: pointer; backdrop-filter: blur(12px); transition: 0.2s;
         }
         .menu-trigger:hover { border-color: var(--accent); box-shadow: var(--accent-glow); }
         .menu-trigger span { display: block; width: 20px; height: 2px; background: var(--accent); border-radius: 2px; transition: 0.3s; }
@@ -228,7 +222,6 @@
         .menu-trigger.active span:nth-child(2) { opacity: 0; }
         .menu-trigger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-        /* SIDEBAR DIREITA */
         .sidebar {
             position: fixed; right: -360px; top: 0; width: 320px; height: 100%;
             background: rgba(15, 15, 18, 0.98); z-index: 5000; transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -245,7 +238,6 @@
         .sidebar-btn.danger i { color: var(--danger); }
         .sidebar-btn.danger:hover { border-color: var(--danger); background: var(--danger-dim); }
 
-        /* Modais / Toast */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 6000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .modal.active { display: flex; }
         .modal img { max-height: 70vh; border: 2px solid var(--accent); border-radius: var(--radius-md); box-shadow: var(--accent-glow); }
@@ -260,7 +252,6 @@
         .toast.error { border-color: var(--danger); }
         @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } }
 
-        /* LOG */
         .log-toggle { position: fixed; bottom: 24px; right: 24px; width: 48px; height: 48px; background: var(--bg-2); border: 1px solid var(--accent); border-radius: 50%; color: var(--accent); cursor: pointer; z-index: 500; transition: 0.2s; }
         .log-toggle:hover { box-shadow: var(--accent-glow); }
         .log-drawer { position: fixed; bottom: 84px; right: 24px; width: 300px; max-height: 250px; background: var(--bg-1); border: 1px solid var(--accent); border-radius: 12px; z-index: 500; display: none; flex-direction: column; box-shadow: 0 8px 24px rgba(0,0,0,0.8); }
@@ -273,12 +264,10 @@
 </head>
 <body>
 
-    <!-- MENU HAMBURGUER -->
     <div class="menu-trigger" id="menu-trigger" onclick="toggleSidebar()">
         <span></span><span></span><span></span>
     </div>
 
-    <!-- SIDEBAR DIREITA -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-title">Menu de Controle</div>
         <button class="sidebar-btn" onclick="baixarZip()">
@@ -289,7 +278,6 @@
         </button>
     </aside>
 
-    <!-- PAINEL ESQUERDO -->
     <aside class="panel">
         <div class="panel-header">
             <div class="brand-title">PHOTO PRINT</div>
@@ -322,7 +310,6 @@
             </button>
         </div>
 
-        <!-- Barra de Seleção -->
         <div class="selection-bar" id="selection-bar" style="display:none; padding: 10px 20px; background: var(--accent-dim); margin: 10px 20px; border-radius: 8px;">
             <div style="font-size: 10px; color: var(--accent); font-weight: 800; margin-bottom: 8px;">
                 <span id="selection-count">0</span> foto(s) selecionada(s)
@@ -340,11 +327,10 @@
             <button class="search-btn" onclick="executarBusca()"><i class="fa-solid fa-magnifying-glass"></i></button>
         </div>
 
-        <!-- DROPZONE -->
         <div class="sheet-section" id="sheet-section">
             <div class="sheet-header">
                 <span class="sheet-title">Folha Atual</span>
-                <span class="sheet-count" id="sheet-count">0/6</span>
+                <span class="sheet-count" id="sheet-count">0/9</span>
             </div>
             <div class="sheet-preview" id="sheet-preview"></div>
             <div style="font-size:9px; color:var(--text-3); text-align:center; margin-top:8px; text-transform:uppercase;">Arraste fotos para cá</div>
@@ -356,9 +342,10 @@
         </button>
         <div class="config-panel" id="config-panel">
             <div class="config-row">
-                <label>Fotos/folha</label>
+                <label>Fotos/folha (Polaroid)</label>
                 <select id="config-capacidade" onchange="salvarConfigCapacidade(this.value)">
-                    <option value="6">6 (Padrão)</option>
+                    <option value="9" selected>9 (Padrão A4)</option>
+                    <option value="6">6</option>
                     <option value="4">4</option>
                     <option value="2">2</option>
                 </select>
@@ -373,7 +360,6 @@
         </div>
     </aside>
 
-    <!-- ÁREA PRINCIPAL -->
     <main class="main-area">
         <div class="main-header">
             <h2 class="main-title">Galeria do Evento</h2>
@@ -382,7 +368,6 @@
         <div class="grid" id="grid-fotos"></div>
     </main>
 
-    <!-- MODAL ZOOM -->
     <div class="modal" id="modal-zoom">
         <div style="text-align: center;">
             <img id="img-zoom" src="">
@@ -393,7 +378,6 @@
         </div>
     </div>
 
-    <!-- LOG -->
     <button class="log-toggle" onclick="toggleLog()"><i class="fa-solid fa-terminal"></i></button>
     <div class="log-drawer" id="log-drawer">
         <div class="log-header"><span>Log</span><span style="cursor:pointer" onclick="toggleLog()">X</span></div>
@@ -410,12 +394,13 @@
         let todasFotos = [], chavesLocais = new Set();
         let eventoAtual = "", eventoIdAtual = "", formatoAtual = "POLAROID", primeiraCarga = true;
         let sheetBuffer = [], sheetQueue = [], isPrinting = false, pausado = false;
-        let autoImpressao = true, fotosPorFolha = 6;
+        let autoImpressao = true, fotosPorFolha = 9; // Agora o padrão é 9
         let modoSelecao = false, selecionadas = new Set();
         let logHistory = [], logAberto = false;
 
         function getCapacidade() {
             const fmt = formatoAtual.toUpperCase();
+            // A capacidade muda conforme o formato escolhido no painel
             if (fmt.includes("POLAROID")) return { slots: fotosPorFolha, layout: "layout-polaroid" };
             if (fmt.includes("TIRINHA")) return { slots: 3, layout: "layout-tirinha" };
             if (fmt.includes("10X15H")) return { slots: 2, layout: "layout-10x15h" };
@@ -526,6 +511,7 @@
         function alimentarBuffer(url, key, parsed, origemId) {
             const cap = getCapacidade();
             
+            // Se tiver guestbook, vai direto pra fila sem esperar a folha encher
             if (parsed.guestbook) {
                 sheetQueue.push({ slots: [{ url, key, tipo: 'guestbook', origemId }], layout: 'layout-guestbook', descricao: 'Guestbook' });
                 addLog(`📄 Guestbook preparado`, 'info');
@@ -535,6 +521,8 @@
 
             for (let i = 0; i < parsed.copias; i++) {
                 sheetBuffer.push({ url, key, tipo: 'foto', origemId });
+                
+                // ⬇️ AUTO-IMPRESSÃO: quando atinge a capacidade (ex: 9), fecha a folha
                 if (sheetBuffer.length >= cap.slots) {
                     fecharFolha();
                 }
@@ -646,7 +634,15 @@
             document.getElementById('fila-count').innerText = sheetQueue.length;
             
             const container = document.getElementById('sheet-preview');
-            container.style.gridTemplateColumns = `repeat(${cap.slots === 6 ? 3 : cap.slots === 4 ? 2 : 1}, 1fr)`;
+            // Calcula colunas baseado no total de slots
+            let cols = 1;
+            if (cap.slots === 9) cols = 3;
+            else if (cap.slots === 6) cols = 3;
+            else if (cap.slots === 4) cols = 2;
+            else if (cap.slots === 3) cols = 3;
+            else if (cap.slots === 2) cols = 2;
+            
+            container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
             container.innerHTML = '';
 
             for (let i = 0; i < cap.slots; i++) {
@@ -806,9 +802,9 @@
             atualizarUIFolha();
             atualizar();
             setInterval(atualizar, POLL_INTERVAL);
-            addLog('🚀 Central v10.2 iniciada', 'success');
+            addLog('🚀 Central v11.0 iniciada', 'success');
         });
     </script>
 </body>
 </html>
-<!-- ◀◀◀ FIM DO ARQUIVO galeria.html — v10.2 ▶▶▶ -->
+<!-- ◀◀◀ FIM DO ARQUIVO galeria.html — v11.0 ▶▶▶ -->

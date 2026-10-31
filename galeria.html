@@ -210,104 +210,231 @@
     </div>
 
   <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- INÍCIO DA CORREÇÃO DEFINITIVA DO SCRIPT EM galeria.html            -->
+<!-- INÍCIO DO SCRIPT CORRIGIDO — galeria.html                          -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-    <script>
-        const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
-        let fotoUrlAtual = "";
+<script>
+    const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
+    let fotoUrlAtual = "";
 
-        window.addEventListener('load', init);
+    window.addEventListener('load', init);
 
-        async function init() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const fotoKey = urlParams.get('key');
-            const fotoId = urlParams.get('id') || urlParams.get('photoId');
-            const fotoUrl = urlParams.get('dl');
+    async function init() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const fotoKey = urlParams.get('key');
+        const fotoId = urlParams.get('id') || urlParams.get('photoId');
+        const fotoUrl = urlParams.get('dl');
 
-            console.log('[GALERIA] Parâmetros recebidos:', { key: fotoKey, id: fotoId, dl: fotoUrl });
+        console.log('[GALERIA] Parâmetros recebidos:', { key: fotoKey, id: fotoId, dl: fotoUrl });
 
-            if (fotoKey) {
-                const url = `${API_URL}/photo?key=${fotoKey}&t=${Date.now()}`;
-                carregarFotoUnica(url, fotoId);
-                return;
-            }
-
-            if (fotoUrl) {
-                carregarFotoUnica(decodeURIComponent(fotoUrl), fotoId);
-                return;
-            }
-
-            try {
-                const respConfig = await fetch(`${API_URL}/get-all-states`);
-                const dataConfig = await respConfig.json();
-                
-                if (dataConfig && dataConfig.config && dataConfig.config.eventoId) {
-                    const eventoIdAtivo = dataConfig.config.eventoId;
-                    const nomeEvento = dataConfig.config.evento || "Evento Ativo";
-                    
-                    const subtitleEl = document.querySelector('.brand-subtitle');
-                    if (subtitleEl) subtitleEl.innerText = nomeEvento;
-
-                    await carregarFotosDoEventoAtivo(eventoIdAtivo);
-                } else {
-                    mostrarErro('Nenhum evento ativo no momento. Escaneie o QR Code no quiosque.');
-                }
-            } catch (e) {
-                console.error('[GALERIA] Erro ao buscar evento ativo:', e);
-                mostrarErro('Não foi possível carregar o evento ativo.');
-            }
+        if (fotoKey) {
+            const url = `${API_URL}/photo?key=${fotoKey}&t=${Date.now()}`;
+            carregarFotoUnica(url, fotoId);
+            return;
         }
 
-       <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- INÍCIO DA ATUALIZAÇÃO DA BUSCA DE FOTOS EM galeria.html            -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-    <script>
-        // ... (mantenha todo o restante do arquivo e substitua apenas a função abaixo)
+        if (fotoUrl) {
+            carregarFotoUnica(decodeURIComponent(fotoUrl), fotoId);
+            return;
+        }
 
-        async function carregarFotosDoEventoAtivo(eventoId) {
-            const loader = document.getElementById('photo-loader');
-            const card = document.getElementById('photo-card');
+        try {
+            const respConfig = await fetch(`${API_URL}/get-all-states`);
+            const dataConfig = await respConfig.json();
             
-            try {
-                // Tenta buscar na rota correta do evento ou lista geral filtrada
-                const resp = await fetch(`${API_URL}/evento/${eventoId}/fotos`);
-                const data = await resp.json();
+            if (dataConfig && dataConfig.config && dataConfig.config.eventoId) {
+                const eventoIdAtivo = dataConfig.config.eventoId;
+                const nomeEvento = dataConfig.config.evento || "Evento Ativo";
+                
+                const subtitleEl = document.querySelector('.brand-subtitle');
+                if (subtitleEl) subtitleEl.innerText = nomeEvento;
 
-                if (data.success && data.fotos && data.fotos.length > 0) {
-                    card.innerHTML = `
-                        <div style="padding: 20px;">
-                            <h3 style="font-size: 14px; margin-bottom: 14px; color: var(--neon); text-transform: uppercase; font-family: var(--font-mono);">📸 Fotos do Evento</h3>
-                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; max-height: 400px; overflow-y: auto;">
-                                ${data.fotos.map(f => `
-                                    <div onclick="carregarFotoUnica('${f.url}', '${f.id}')" style="cursor: pointer; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-2); aspect-ratio: 1; background: #111; display: flex; align-items: center; justify-content: center;">
-                                        <img src="${f.url}" style="width: 100%; height: 100%; object-fit: cover;" alt="Foto">
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    card.innerHTML = `
-                        <div style="padding: 35px 20px; text-align: center;">
-                            <i class="fas fa-camera-retro" style="font-size: 40px; color: var(--neon); margin-bottom: 14px; opacity: 0.8;"></i>
-                            <h3 style="font-size: 16px; color: #fff; margin-bottom: 8px; font-family: var(--font-display);">Painel Sincronizado</h3>
-                            <p style="font-size: 11px; color: var(--text-2); line-height: 1.5;">O evento ativo foi identificado (ID: ${eventoId}), mas ainda não há fotos registradas na nuvem para exibição em grade.</p>
-                        </div>
-                    `;
+                await carregarFotosDoEventoAtivo(eventoIdAtivo);
+            } else {
+                mostrarErro('Nenhum evento ativo no momento. Escaneie o QR Code no quiosque.');
+            }
+        } catch (e) {
+            console.error('[GALERIA] Erro ao buscar evento ativo:', e);
+            mostrarErro('Não foi possível carregar o evento ativo.');
+        }
+    }
+
+    async function carregarFotosDoEventoAtivo(eventoId) {
+        const loader = document.getElementById('photo-loader');
+        const card = document.getElementById('photo-card');
+        
+        try {
+            const resp = await fetch(`${API_URL}/evento/${eventoId}/fotos`);
+            const data = await resp.json();
+
+            if (loader) loader.classList.add('hidden');
+
+            if (data.success && data.fotos && data.fotos.length > 0) {
+                let htmlGrid = '<div style="padding: 20px;"><h3 style="font-size: 14px; margin-bottom: 14px; color: var(--neon); text-transform: uppercase; font-family: var(--font-mono);">📸 Fotos do Evento</h3><div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; max-height: 400px; overflow-y: auto;">';
+                
+                data.fotos.forEach(f => {
+                    htmlGrid += `<div onclick="carregarFotoUnica('${f.url}', '${f.id}')" style="cursor: pointer; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-2); aspect-ratio: 1; background: #111; display: flex; align-items: center; justify-content: center;"><img src="${f.url}" style="width: 100%; height: 100%; object-fit: cover;" alt="Foto"></div>`;
+                });
+                
+                htmlGrid += '</div></div>';
+                card.innerHTML = htmlGrid;
+            } else {
+                card.innerHTML = '<div style="padding: 35px 20px; text-align: center;"><i class="fas fa-camera-retro" style="font-size: 40px; color: var(--neon); margin-bottom: 14px; opacity: 0.8;"></i><h3 style="font-size: 16px; color: #fff; margin-bottom: 8px;">Painel Sincronizado</h3><p style="font-size: 11px; color: var(--text-2); line-height: 1.5;">O evento ativo foi identificado (ID: ' + eventoId + '), mas ainda não há fotos registradas para ele.</p></div>';
+            }
+        } catch (e) {
+            card.innerHTML = '<div style="padding: 35px 20px; text-align: center;"><i class="fas fa-signal" style="font-size: 40px; color: var(--neon); margin-bottom: 14px; opacity: 0.8;"></i><h3 style="font-size: 16px; color: #fff; margin-bottom: 8px;">Conectado ao Evento Ativo</h3><p style="font-size: 11px; color: var(--text-2); line-height: 1.5;">Painel vinculado ao ID ' + eventoId + '. Pronto para exibir as fotos assim que capturadas.</p></div>';
+        }
+    }
+
+    function carregarFotoUnica(url, id) {
+        const card = document.getElementById('photo-card');
+        card.innerHTML = `
+            <div class="photo-wrapper">
+                <div class="photo-badge" id="photo-badge">${id ? '#' + id : '#----'}</div>
+                <div class="photo-loader" id="photo-loader">
+                    <div class="spin"></div>
+                    <div class="loader-text">Carregando Foto...</div>
+                </div>
+                <img id="main-photo" src="" alt="Foto do evento" style="opacity: 0;">
+            </div>
+            <div class="photo-actions">
+                <button class="btn btn-primary" id="btn-download" onclick="baixarFoto()">
+                    <i class="fas fa-download"></i> Baixar Foto
+                </button>
+                <button class="btn btn-secondary" id="btn-compartilhar" onclick="compartilharFoto()">
+                    <i class="fas fa-share-alt"></i> Compartilhar
+                </button>
+                <div class="status-msg" id="status-msg"></div>
+            </div>
+        `;
+
+        const img = document.getElementById('main-photo');
+        const loader = document.getElementById('photo-loader');
+        const badge = document.getElementById('photo-badge');
+
+        fotoUrlAtual = url;
+
+        if (id) {
+            badge.innerText = `#${id}`;
+            badge.style.display = 'block';
+        } else {
+            badge.style.display = 'none';
+        }
+
+        img.onload = () => {
+            if (loader) loader.classList.add('hidden');
+            img.style.transition = 'opacity 0.4s ease';
+            img.style.opacity = '1';
+        };
+
+        img.onerror = () => {
+            if (loader) loader.classList.add('hidden');
+            mostrarErro('Não foi possível carregar a imagem.');
+        };
+
+        img.src = url;
+    }
+
+    async function baixarFoto() {
+        const btn = document.getElementById('btn-download');
+        const status = document.getElementById('status-msg');
+        
+        if (!fotoUrlAtual) return;
+
+        try {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparando...';
+            status.innerText = "Preparando download...";
+            status.className = "status-msg";
+
+            const response = await fetch(fotoUrlAtual);
+            if (!response.ok) throw new Error('Erro na requisição');
+
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+            a.href = blobUrl;
+            a.download = `photoprint_${timestamp}.jpg`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(blobUrl);
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check"></i> Baixada!';
+            status.innerText = "✅ Foto salva na sua galeria!";
+            status.className = "status-msg success";
+
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fas fa-download"></i> Baixar Foto';
+            }, 3000);
+
+        } catch (e) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-download"></i> Baixar Foto';
+            status.innerText = "❌ Falha no download. Segure na imagem e escolha 'Salvar foto'.";
+            status.className = "status-msg error";
+        }
+    }
+
+    async function compartilharFoto() {
+        const status = document.getElementById('status-msg');
+        if (!fotoUrlAtual) return;
+
+        if (navigator.share) {
+            try {
+                const response = await fetch(fotoUrlAtual);
+                const blob = await response.blob();
+                const file = new File([blob], 'photoprint.jpg', { type: blob.type });
+
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: 'PHOTO PRINT',
+                        text: 'Olha a foto do evento! 📸'
+                    });
+                    status.innerText = "✅ Compartilhado com sucesso!";
+                    status.className = "status-msg success";
+                    return;
                 }
-            } catch (e) {
-                card.innerHTML = `
-                    <div style="padding: 35px 20px; text-align: center;">
-                        <i class="fas fa-signal" style="font-size: 40px; color: var(--neon); margin-bottom: 14px; opacity: 0.8;"></i>
-                        <h3 style="font-size: 16px; color: #fff; margin-bottom: 8px; font-family: var(--font-display);">Conectado ao Evento Ativo</h3>
-                        <p style="font-size: 11px; color: var(--text-2); line-height: 1.5;">Painel vinculado ao ID ${eventoId}. Pronto para exibir as fotos assim que capturadas.</p>
-                    </div>
-                `;
+            } catch (err) {
+                if (err.name === 'AbortError') return;
             }
         }
-    </script>
+
+        try {
+            await navigator.clipboard.writeText(window.location.href);
+            status.innerText = "🔗 Link copiado!";
+            status.className = "status-msg success";
+        } catch (e) {
+            status.innerText = "Compartilhamento não disponível.";
+            status.className = "status-msg error";
+        }
+    }
+
+    function mostrarErro(mensagem) {
+        const photoCard = document.getElementById('photo-card');
+        const mainHeader = document.getElementById('main-header');
+        const errorState = document.getElementById('error-state');
+        const errorText = document.getElementById('error-text');
+
+        if (photoCard) photoCard.style.display = 'none';
+        if (mainHeader) mainHeader.style.display = 'none';
+        if (errorState) errorState.classList.add('active');
+        if (mensagem && errorText) {
+            errorText.innerText = mensagem;
+        }
+    }
+
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', (e) => {
+        const now = Date.now();
+        if (now - lastTouchEnd <= 300) e.preventDefault();
+        lastTouchEnd = now;
+    }, false);
+</script>
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- FIM DA ATUALIZAÇÃO DA BUSCA DE FOTOS Em galeria.html               -->
+<!-- FIM DO SCRIPT CORRIGIDO — galeria.html                             -->
 <!-- ═══════════════════════════════════════════════════════════════════ --> 
 
         function carregarFotoUnica(url, id) {

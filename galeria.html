@@ -1,5 +1,5 @@
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- INÍCIO DO ARQUIVO galeria.html — GALERIA CLIENTE v2.1 (CORRIGIDO)  -->
+<!-- INÍCIO DO ARQUIVO galeria.html — GALERIA CLIENTE v2.2 (DEFINITIVO) -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -213,15 +213,21 @@
         const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
         let fotoUrlAtual = "";
 
-        document.addEventListener('DOMContentLoaded', init);
+        // Escuta o carregamento da página
+        window.addEventListener('load', init);
 
         function init() {
             const params = new URLSearchParams(window.location.search);
             const fotoKey = params.get('key');
             const fotoId = params.get('id') || params.get('photoId');
 
+            console.log('[GALERIA] Parâmetros recebidos:', { key: fotoKey, id: fotoId });
+
             if (fotoKey) {
-                carregarFotoPorKey(fotoKey, fotoId);
+                // Decodifica caso venha URL-encoded (ex: %2F)
+                const keyDecodificada = decodeURIComponent(fotoKey);
+                const url = `${API_URL}/photo?key=${encodeURIComponent(keyDecodificada)}&t=${Date.now()}`;
+                carregarFoto(url, fotoId);
                 return;
             }
 
@@ -234,14 +240,8 @@
             mostrarErro('Nenhuma foto especificada. Use o link recebido no quiosque.');
         }
 
-        function carregarFotoPorKey(key, id) {
-            // Decodifica caso venha URL-encoded
-            const keyDecodificada = decodeURIComponent(key);
-            const url = `${API_URL}/photo?key=${encodeURIComponent(keyDecodificada)}&t=${Date.now()}`;
-            carregarFoto(url, id);
-        }
-
         function carregarFoto(url, id) {
+            console.log('[GALERIA] Tentando carregar:', url);
             const img = document.getElementById('main-photo');
             const loader = document.getElementById('photo-loader');
             const badge = document.getElementById('photo-badge');
@@ -256,14 +256,16 @@
             }
 
             img.onload = () => {
+                console.log('[GALERIA] Foto carregada com sucesso!');
                 loader.classList.add('hidden');
                 img.style.transition = 'opacity 0.4s ease';
                 img.style.opacity = '1';
             };
 
             img.onerror = () => {
+                console.error('[GALERIA] Erro ao carregar imagem:', url);
                 loader.classList.add('hidden');
-                mostrarErro('Não foi possível carregar a imagem. Verifique sua conexão ou tente novamente.');
+                mostrarErro('Não foi possível carregar a imagem. O link do QR Code pode estar expirado ou a foto foi removida.');
             };
 
             img.src = url;
@@ -365,6 +367,7 @@
             }
         }
 
+        // Prevenir zoom duplo toque (iOS)
         let lastTouchEnd = 0;
         document.addEventListener('touchend', (e) => {
             const now = Date.now();
@@ -375,5 +378,5 @@
 </body>
 </html>
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- FIM DO ARQUIVO galeria.html — GALERIA CLIENTE v2.1                 -->
+<!-- FIM DO ARQUIVO galeria.html — GALERIA CLIENTE v2.2                 -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->

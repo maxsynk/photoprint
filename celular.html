@@ -24,7 +24,7 @@
         #nome-evento-capa { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-top: 14px; min-height: 20px; display: flex; align-items: center; gap: 8px; }
         #nome-evento-capa::before { content: ''; display: inline-block; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 8px var(--accent); }
         .main-ui { flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 24px; padding-bottom: 40px; }
-        .btn-eye-wrapper { position: relative; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; }
+                .btn-eye-wrapper { position: relative; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; }
         .btn-eye-wrapper::before { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px dashed rgba(0,229,255,0.3); animation: rotateRing 20s linear infinite; }
         @keyframes rotateRing { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .btn-eye { position: relative; width: 150px; height: 150px; border-radius: 50%; border: 3px solid var(--accent); cursor: pointer; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, rgba(0,0,0,0.9) 0%, rgba(0,20,25,0.9) 100%); animation: pulseNeon 2.4s infinite; transition: all 0.3s; z-index: 2; }
@@ -74,7 +74,7 @@
 
     <div id="cam-container">
         <video id="v" autoplay playsinline muted></video>
-                <div id="overlay">
+        <div id="overlay">
             <div class="topo-grupo">
                 <div id="info-topo">CARREGANDO...</div>
                 <span id="num-count"></span>
@@ -88,7 +88,6 @@
         </div>
     </div>
 
-    <!-- TELA DE SELEÇÃO DE OPÇÕES -->
     <div class="header" id="secret-logo">
         <h1 class="brand-title">PHOTO PRINT</h1>
         <div class="subtitle">colecionando momentos</div>
@@ -138,8 +137,7 @@
         }
 
         function atualizarBadgeStatus(online) {
-            const badge = document.getElementById('status-badge');
-            const text = document.getElementById('status-text');
+            const badge = document.getElementById('status-badge'), text = document.getElementById('status-text');
             badge.classList.toggle('online', online);
             text.innerText = online ? 'Online' : 'Offline';
         }
@@ -147,10 +145,12 @@
         async function verificarStatus() {
             try {
                 const res = await fetch(`${API}/get-all-states?t=${Date.now()}`);
+                if (!res || !res.ok) throw new Error();
                 const data = await res.json();
-                sistemaOnline = data.config && data.config.status === 'ONLINE';
-                document.getElementById('offline-overlay').classList.toggle('active', !sistemaOnline);
-                atualizarBadgeStatus(sistemaOnline);
+                // CORREÇÃO: Só mostra offline se a conexão falhar. O status do banco não bloqueia a interface.
+                sistemaOnline = true;
+                document.getElementById('offline-overlay').classList.remove('active');
+                atualizarBadgeStatus(true);
                 return data;
             } catch (e) {
                 sistemaOnline = false;
@@ -162,10 +162,10 @@
 
         async function sync() {
             const data = await verificarStatus();
-            if (!data || !sistemaOnline) return;
+            if (!data) return;
             if (data.config && data.config.evento && data.config.evento !== 'Geral') {
                 ev = data.config.evento;
-                formatStr = data.config.formato || 'POLAROID';
+                formatStr = (data.config.formato || 'POLAROID').toUpperCase().trim();
                 eventoId = data.config.eventoId;
                 guestbookAtivo = (data.config.livro === true || data.config.livro === 1);
                 molduraBase64 = data.moldura || '';
@@ -173,13 +173,7 @@
                 ev = "Geral"; formatStr = "POLAROID"; eventoId = ""; molduraBase64 = ""; guestbookAtivo = false;
             }
             document.getElementById('nome-evento-capa').innerText = ev || "—";
-            configAtual = FORMATOS[formatStr.toUpperCase()] || FORMATOS["POLAROID"];
-        }
-
-        function checkOrientation() {
-            if (!configAtual || !configAtual.exigeH) return;
-            const vertical = window.innerWidth <= window.innerHeight;
-            if (vertical) mostrarToast("Gire o aparelho", "Posição horizontal necessária.", "warning");
+            configAtual = FORMATOS[formatStr] || FORMATOS["POLAROID"];
         }
 
         async function startStream() {
@@ -189,10 +183,7 @@
                 const video = document.getElementById('v');
                 video.srcObject = stream;
                 video.className = (facingMode === "user") ? "mirror" : "";
-            } catch (e) {
-                mostrarToast("Erro de câmera", "Não foi possível iniciar.", "error");
-                throw e;
-            }
+            } catch (e) { mostrarToast("Erro de câmera", "Não foi possível iniciar.", "error"); throw e; }
         }
 
         async function switchCam() {
@@ -202,13 +193,11 @@
         }
 
         async function ligar() {
-            if (!sistemaOnline) return mostrarToast("Offline", "Aguarde reativação.", "warning");
             if (!molduraBase64) return mostrarToast("Moldura ausente", "Configure no painel.", "warning");
             document.getElementById('cam-container').classList.add('active');
-            document.getElementById('info-topo').innerText = `${ev} | ${configAtual ? formatStr : ''}`;
+            document.getElementById('info-topo').innerText = `${ev} | ${formatStr}`;
             document.getElementById('num-count').innerText = "";
             document.getElementById('sub-count').innerText = "TOQUE NO DISPARADOR";
-            checkOrientation();
             try { await startStream(); } catch (e) { voltarHome(); }
         }
 
@@ -225,24 +214,17 @@
             document.getElementById('shutter-placeholder').style.visibility = "hidden";
             document.getElementById('btn-switch').classList.add('disabled');
             pics = [];
-
             try {
                 for (let n = 1; n <= configAtual.fotos; n++) {
                     document.getElementById('sub-count').innerText = `FOTO ${n} DE ${configAtual.fotos}`;
-                    for (let i = 5; i > 0; i--) {
-                        document.getElementById('num-count').innerText = i;
-                        await new Promise(r => setTimeout(r, 1000));
-                    }
+                    for (let i = 5; i > 0; i--) { document.getElementById('num-count').innerText = i; await new Promise(r => setTimeout(r, 1000)); }
                     document.getElementById('num-count').innerText = "SORRIA!";
                     snap();
                     await new Promise(r => setTimeout(r, 1500));
                 }
                 captureInProgress = false;
                 processar();
-            } catch (e) {
-                captureInProgress = false;
-                voltarHome();
-            }
+            } catch (e) { captureInProgress = false; voltarHome(); }
         }
 
         function snap() {
@@ -250,10 +232,8 @@
             if (!v.videoWidth || !v.videoHeight) return;
             document.getElementById('flash').style.display = "block";
             setTimeout(() => document.getElementById('flash').style.display = "none", 120);
-            const cv = document.getElementById('c-snap');
-            const ctx = cv.getContext('2d');
-            cv.width = v.videoWidth;
-            cv.height = v.videoHeight;
+            const cv = document.getElementById('c-snap'), ctx = cv.getContext('2d');
+            cv.width = v.videoWidth; cv.height = v.videoHeight;
             if (facingMode === "user") { ctx.translate(cv.width, 0); ctx.scale(-1, 1); }
             ctx.drawImage(v, 0, 0);
             pics.push(cv.toDataURL('image/jpeg', 0.92));
@@ -263,16 +243,11 @@
             voltarHome();
             document.getElementById('loader').innerHTML = `<div class="spin"></div><p style="color:var(--accent);margin-top:20px;font-weight:700;text-transform:uppercase;font-size:12px;">Processando imagem...</p>`;
             document.getElementById('loader').classList.add('active');
-            
-            const cv = document.getElementById('c-strip'), ctx = cv.getContext('2d');
-            const molduraImg = new Image();
+            const cv = document.getElementById('c-strip'), ctx = cv.getContext('2d'), molduraImg = new Image();
             
             molduraImg.onload = () => {
-                cv.width = configAtual.w;
-                cv.height = configAtual.h;
-                ctx.fillStyle = "white";
-                ctx.fillRect(0, 0, cv.width, cv.height);
-
+                cv.width = configAtual.w; cv.height = configAtual.h;
+                ctx.fillStyle = "white"; ctx.fillRect(0, 0, cv.width, cv.height);
                 if (formatStr === "TIRINHA") {
                     const slots = [{ y: 0.030, h: 0.254 }, { y: 0.296, h: 0.254 }, { y: 0.559, h: 0.254 }];
                     let count = 0;
@@ -284,8 +259,7 @@
                             ctx.save(); ctx.beginPath(); ctx.rect(dx, dy, dw, dh); ctx.clip();
                             const r = Math.max(dw / img.width, dh / img.height);
                             ctx.drawImage(img, dx + (dw - img.width * r) / 2, dy + (dh - img.height * r) / 2, img.width * r, img.height * r);
-                            ctx.restore();
-                            count++;
+                            ctx.restore(); count++;
                             if (count === 3) { ctx.drawImage(molduraImg, 0, 0, cv.width, cv.height); exibir(cv.toDataURL('image/jpeg', 0.95)); }
                         };
                         img.src = src;
@@ -302,7 +276,7 @@
                     img.src = pics[0];
                 }
             };
-            molduraImg.onerror = () => { document.getElementById('loader').classList.remove('active'); mostrarToast("Erro", "Falha ao carregar moldura.", "error"); };
+            molduraImg.onerror = () => { document.getElementById('loader').classList.remove('active'); mostrarToast("Erro", "Falha na moldura.", "error"); };
             molduraImg.src = molduraBase64;
         }
 
@@ -318,7 +292,6 @@
             const botoesGuestbook = guestbookAtivo ? `
                 <button id="btn-opt-3" class="print-capsule-btn" onclick="alterarCopias(3)"><i class="fas fa-book"></i> 1 + GB</button>
                 <button id="btn-opt-4" class="print-capsule-btn" onclick="alterarCopias(4)"><i class="fas fa-book"></i> 2 + GB</button>` : '';
-
             const loader = document.getElementById('loader');
             loader.innerHTML = `
                 <img src="${url}" class="preview-img">
@@ -359,7 +332,7 @@
         window.addEventListener('load', () => {
             sync();
             intervaloStatus = setInterval(sync, 10000);
-            document.getElementById('bg-input').addEventListener('change', (e) => {
+            document.getElementById('bg-input')?.addEventListener('change', (e) => {
                 const f = e.target.files[0]; if (!f) return;
                 const r = new FileReader();
                 r.onload = (ev) => { document.getElementById('dynamic-bg').style.backgroundImage = `url('${ev.target.result}')`; document.getElementById('dynamic-bg').classList.add('active'); try { localStorage.setItem('photoprint_bg_mobile', ev.target.result); } catch(err) {} };

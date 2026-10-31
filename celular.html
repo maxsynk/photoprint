@@ -24,7 +24,7 @@
         #nome-evento-capa { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-top: 14px; min-height: 20px; display: flex; align-items: center; gap: 8px; }
         #nome-evento-capa::before { content: ''; display: inline-block; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 8px var(--accent); }
         .main-ui { flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 24px; padding-bottom: 40px; }
-                .btn-eye-wrapper { position: relative; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; }
+        .btn-eye-wrapper { position: relative; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; }
         .btn-eye-wrapper::before { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px dashed rgba(0,229,255,0.3); animation: rotateRing 20s linear infinite; }
         @keyframes rotateRing { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .btn-eye { position: relative; width: 150px; height: 150px; border-radius: 50%; border: 3px solid var(--accent); cursor: pointer; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, rgba(0,0,0,0.9) 0%, rgba(0,20,25,0.9) 100%); animation: pulseNeon 2.4s infinite; transition: all 0.3s; z-index: 2; }
@@ -145,9 +145,8 @@
         async function verificarStatus() {
             try {
                 const res = await fetch(`${API}/get-all-states?t=${Date.now()}`);
-                if (!res || !res.ok) throw new Error();
+                if (!res.ok) throw new Error();
                 const data = await res.json();
-                // CORREÇÃO: Só mostra offline se a conexão falhar. O status do banco não bloqueia a interface.
                 sistemaOnline = true;
                 document.getElementById('offline-overlay').classList.remove('active');
                 atualizarBadgeStatus(true);
@@ -183,7 +182,7 @@
                 const video = document.getElementById('v');
                 video.srcObject = stream;
                 video.className = (facingMode === "user") ? "mirror" : "";
-            } catch (e) { mostrarToast("Erro de câmera", "Não foi possível iniciar.", "error"); throw e; }
+            } catch (e) { mostrarToast("Erro", "Câmera indisponível.", "error"); throw e; }
         }
 
         async function switchCam() {
@@ -209,7 +208,7 @@
 
         async function iniciarSequencia() {
             if (captureInProgress) return;
-            if (configAtual.exigeH && window.innerWidth <= window.innerHeight) return mostrarToast("Gire o aparelho", "Posição horizontal necessária.", "warning");
+            if (configAtual.exigeH && window.innerWidth <= window.innerHeight) return mostrarToast("Gire o aparelho", "Horizontal necessária.", "warning");
             captureInProgress = true;
             document.getElementById('shutter-placeholder').style.visibility = "hidden";
             document.getElementById('btn-switch').classList.add('disabled');
@@ -229,7 +228,7 @@
 
         function snap() {
             const v = document.getElementById('v');
-            if (!v.videoWidth || !v.videoHeight) return;
+            if (!v.videoWidth) return;
             document.getElementById('flash').style.display = "block";
             setTimeout(() => document.getElementById('flash').style.display = "none", 120);
             const cv = document.getElementById('c-snap'), ctx = cv.getContext('2d');
@@ -241,7 +240,7 @@
 
         function processar() {
             voltarHome();
-            document.getElementById('loader').innerHTML = `<div class="spin"></div><p style="color:var(--accent);margin-top:20px;font-weight:700;text-transform:uppercase;font-size:12px;">Processando imagem...</p>`;
+            document.getElementById('loader').innerHTML = `<div class="spin"></div><p style="color:var(--accent);margin-top:20px;font-weight:700;">Processando...</p>`;
             document.getElementById('loader').classList.add('active');
             const cv = document.getElementById('c-strip'), ctx = cv.getContext('2d'), molduraImg = new Image();
             
@@ -249,7 +248,7 @@
                 cv.width = configAtual.w; cv.height = configAtual.h;
                 ctx.fillStyle = "white"; ctx.fillRect(0, 0, cv.width, cv.height);
                 if (formatStr === "TIRINHA") {
-                    const slots = [{ y: 0.030, h: 0.254 }, { y: 0.296, h: 0.254 }, { y: 0.559, h: 0.254 }];
+                                        const slots = [{ y: 0.030, h: 0.254 }, { y: 0.296, h: 0.254 }, { y: 0.559, h: 0.254 }];
                     let count = 0;
                     pics.forEach((src, i) => {
                         const img = new Image();
@@ -309,7 +308,7 @@
         }
 
         async function enviar() {
-            document.getElementById('loader').innerHTML = `<div class="spin"></div><p style="color:var(--accent);margin-top:20px;font-weight:700;text-transform:uppercase;font-size:12px;">Enviando...</p>`;
+            document.getElementById('loader').innerHTML = `<div class="spin"></div><p style="color:var(--accent);margin-top:20px;font-weight:700;">Enviando...</p>`;
             const cv = document.getElementById('c-strip');
             cv.toBlob(async (b) => {
                 const copiasFisicas = quantidadeCopias === 1 ? 1 : quantidadeCopias === 2 ? 2 : quantidadeCopias === 3 ? 2 : 3;
@@ -332,12 +331,6 @@
         window.addEventListener('load', () => {
             sync();
             intervaloStatus = setInterval(sync, 10000);
-            document.getElementById('bg-input')?.addEventListener('change', (e) => {
-                const f = e.target.files[0]; if (!f) return;
-                const r = new FileReader();
-                r.onload = (ev) => { document.getElementById('dynamic-bg').style.backgroundImage = `url('${ev.target.result}')`; document.getElementById('dynamic-bg').classList.add('active'); try { localStorage.setItem('photoprint_bg_mobile', ev.target.result); } catch(err) {} };
-                r.readAsDataURL(f);
-            });
             const bg = localStorage.getItem('photoprint_bg_mobile');
             if (bg) { document.getElementById('dynamic-bg').style.backgroundImage = `url('${bg}')`; document.getElementById('dynamic-bg').classList.add('active'); }
         });

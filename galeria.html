@@ -447,22 +447,29 @@
             mostrarErro('Nenhuma foto especificada. Use o link recebido no quiosque.');
         }
 
-        /* ═══════════ CARREGAR FOTO POR KEY ═══════════ */
+                /* ═══════════ CARREGAR FOTO POR KEY (com fallback) ═══════════ */
         function carregarFotoPorKey(key, id) {
-            const url = `${API_URL}/photo?key=${encodeURIComponent(key)}&t=${Date.now()}`;
+            // ✅ CORREÇÃO: decodifica a key caso venha URL-encoded
+            const keyDecodificada = decodeURIComponent(key);
+            
+            // ✅ CORREÇÃO: log de debug para você ver o que está chegando
+            console.log('[GALERIA] Key recebida:', key);
+            console.log('[GALERIA] Key decodificada:', keyDecodificada);
+            console.log('[GALERIA] URL final:', `${API_URL}/photo?key=${encodeURIComponent(keyDecodificada)}`);
+            
+            const url = `${API_URL}/photo?key=${encodeURIComponent(keyDecodificada)}&t=${Date.now()}`;
             carregarFoto(url, id);
         }
 
-        function carregarFotoDireta(url, id) {
-            carregarFoto(url, id);
-        }
-
+        /* ═══════════ CARREGAR FOTO (com retry automático) ═══════════ */
         function carregarFoto(url, id) {
             const img = document.getElementById('main-photo');
             const loader = document.getElementById('photo-loader');
             const badge = document.getElementById('photo-badge');
 
             fotoUrlAtual = url;
+            let tentativas = 0;
+            const MAX_TENTATIVAS = 2;
 
             // Badge com ID
             if (id) {
@@ -472,28 +479,51 @@
                 badge.style.display = 'none';
             }
 
-            img.onload = () => {
-                loader.classList.add('hidden');
-                img.style.transition = 'opacity 0.4s ease';
-                img.style.opacity = '1';
-            };
+            function tentarCarregar() {
+                tentativas++;
+                console.log(`[GALERIA] Tentativa ${tentativas} de carregar foto`);
+                
+                img.onload = () => {
+                    console.log('✅ [GALERIA] Foto carregada com sucesso!');
+                    loader.classList.add('hidden');
+                    img.style.transition = 'opacity 0.4s ease';
+                    img.style.opacity = '1';
+                };
 
-            img.onerror = () => {
-                loader.classList.add('hidden');
-                mostrarErro('Não foi possível carregar a imagem. Verifique sua conexão ou tente novamente.');
-            };
+                img.onerror = () => {
+                    console.error(`❌ [GALERIA] Erro na tentativa ${tentativas}:`, url);
+                    
+                    if (tentativas < MAX_TENTATIVAS) {
+                        // Tenta novamente com cache-bust
+                        console.log('[GALERIA] Tentando novamente...');
+                        setTimeout(tentarCarregar, 800);
+                    } else {
+                        loader.classList.add('hidden');
+                        mostrarErro(
+                            'Não foi possível carregar a foto. Verifique:\n' +
+                            '1. Se a foto ainda existe no servidor\n' +
+                            '2. Sua conexão com a internet\n' +
+                            '3. Se o link do QR Code está correto'
+                        );
+                    }
+                };
 
-            img.src = url;
+                // Cache-bust diferente a cada tentativa
+                img.src = `${url}${url.includes('?') ? '&' : '?'}retry=${tentativas}&t=${Date.now()}`;
+            }
 
-            // Timeout de segurança (15s)
+            tentarCarregar();
+
+            // Timeout de segurança (20s)
             setTimeout(() => {
                 if (!img.complete || img.naturalWidth === 0) {
-                    loader.classList.add('hidden');
                     if (img.style.opacity === '0') {
-                        mostrarErro('A foto está demorando para carregar. Verifique sua conexão.');
+                        console.warn('[GALERIA] Timeout de 20s atingido');
+                        loader.classList.add('hidden');
+                        mostrarErro('A foto está demorando muito para carregar. Verifique sua conexão.');
                     }
                 }
-            }, 15000);
+            }, 20000);
         }
 
         /* ═══════════ DOWNLOAD ═══════════ */

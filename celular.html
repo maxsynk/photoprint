@@ -1,1285 +1,145 @@
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- INÍCIO DO ARQUIVO celular.html — MOBILE v4.1                       -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#000000">
-    <title>PHOTO PRINT — Mobile v4.1</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>PHOTO PRINT — Mobile</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- ═══════════════════════════════════════════════════════════ -->
-    <!-- INÍCIO DO BLOCO DE ESTILOS (CSS)                            -->
-    <!-- ═══════════════════════════════════════════════════════════ -->
+    <link rel="stylesheet" href="style.css">
     <style>
-        :root {
-            --neon: #39ff14;
-            --neon-dim: rgba(57, 255, 20, 0.12);
-            --neon-glow: 0 0 20px rgba(57, 255, 20, 0.4);
-            --red: #ff3131;
-            --red-dim: rgba(255, 49, 49, 0.15);
-            --blue: #00e5ff;
-            --blue-dim: rgba(0, 229, 255, 0.12);
-            --yellow: #ffb800;
-            --yellow-dim: rgba(255, 184, 0, 0.15);
-
-            --bg-0: #000000;
-            --bg-1: #0a0a0a;
-            --bg-2: #111111;
-            --bg-3: #1a1a1a;
-            --bg-4: #222222;
-
-            --text-0: #ffffff;
-            --text-1: #e0e0e0;
-            --text-2: #999999;
-            --text-3: #555555;
-
-            --border-1: rgba(255, 255, 255, 0.06);
-            --border-2: rgba(255, 255, 255, 0.1);
-            --border-neon: rgba(57, 255, 20, 0.3);
-
-            --radius-sm: 10px;
-            --radius-md: 14px;
-            --radius-lg: 20px;
-            --radius-xl: 28px;
-
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
-            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
-            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.6);
-
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-fast: all 0.15s ease;
-
-            /* NOVA TIPOGRAFIA SUAVE */
-            --font-display: 'Outfit', sans-serif;
-            --font-mono: 'Space Grotesk', sans-serif;
-            --font-body: 'Plus Jakarta Sans', -apple-system, sans-serif;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-        html, body {
-            font-family: var(--font-body);
-            background: var(--bg-0);
-            color: var(--text-0);
-            height: 100vh;
-            height: 100dvh;
-            overflow: hidden;
-            -webkit-font-smoothing: antialiased;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-
-        body {
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            background:
-                radial-gradient(circle at 50% 30%, rgba(26, 58, 18, 0.4) 0%, transparent 50%),
-                radial-gradient(circle at 80% 90%, rgba(57, 255, 20, 0.03) 0%, transparent 40%),
-                var(--bg-0);
-        }
-
-        body::after {
-            content: '';
-            position: fixed;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 400px; height: 400px;
-            background: radial-gradient(circle, rgba(57, 255, 20, 0.08) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-            animation: orbBreath 4s ease-in-out infinite;
-            z-index: 1;
-        }
-        @keyframes orbBreath {
-            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
-            50% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
-        }
-
-        #dynamic-bg {
-            position: fixed; inset: 0;
-            z-index: 0;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            opacity: 0;
-            transition: opacity 0.6s ease;
-        }
+        html, body { overflow: hidden; display: flex; flex-direction: column; position: relative; background: radial-gradient(circle at 50% 30%, rgba(0,229,255,0.05) 0%, transparent 50%), var(--bg-0); }
+        #dynamic-bg { position: fixed; inset: 0; z-index: 0; background-size: cover; opacity: 0; transition: opacity 0.6s; }
         #dynamic-bg.active { opacity: 0.35; }
-        #dynamic-bg::after {
-            content: '';
-            position: absolute; inset: 0;
-            background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.85));
-        }
-
-        body::before {
-            content: '';
-            position: fixed; inset: 0;
-            background-image:
-                linear-gradient(rgba(57, 255, 20, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(57, 255, 20, 0.03) 1px, transparent 1px);
-            background-size: 40px 40px;
-            z-index: 0;
-            animation: gridMove 12s linear infinite;
-            pointer-events: none;
-            mask-image: radial-gradient(circle at 50% 50%, black 30%, transparent 80%);
-            -webkit-mask-image: radial-gradient(circle at 50% 50%, black 30%, transparent 80%);
-        }
-        body.bg-active::before { display: none; }
-        @keyframes gridMove { from { transform: translateY(0); } to { transform: translateY(40px); } }
-
-        /* ═══════════ STATUS BADGE FLUTUANTE ═══════════ */
-        .status-badge {
-            position: fixed;
-            top: 16px; right: 16px;
-            z-index: 20;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 14px;
-            background: rgba(10, 10, 10, 0.85);
-            border: 1px solid var(--border-2);
-            border-radius: 20px;
-            backdrop-filter: blur(12px);
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            font-family: var(--font-body);
-            box-shadow: var(--shadow-sm);
-            color: var(--text-2);
-        }
-        .status-badge .dot {
-            width: 8px; height: 8px;
-            border-radius: 50%;
-            background: var(--red);
-            box-shadow: 0 0 8px var(--red);
-            animation: pulseDot 2s ease-in-out infinite;
-        }
-        .status-badge.online .dot {
-            background: var(--neon);
-            box-shadow: 0 0 8px var(--neon);
-        }
-        .status-badge.online { color: var(--neon); border-color: var(--border-neon); }
-        @keyframes pulseDot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(0.85); }
-        }
-
-        /* ═══════════ HEADER ═══════════ */
-        .header {
-            position: relative;
-            z-index: 10;
-            padding: 22px 20px 18px 26px;
-            margin: 16px 16px 0;
-            background: linear-gradient(135deg, rgba(10,10,10,0.9), rgba(17,17,17,0.7));
-            border: 1px solid var(--border-1);
-            border-radius: var(--radius-lg);
-            backdrop-filter: blur(16px);
-            box-shadow: var(--shadow-md);
-            overflow: hidden;
-            cursor: pointer;
-            transition: var(--transition);
-            animation: fadeInUp 0.5s ease-out;
-        }
-        .header::before {
-            content: '';
-            position: absolute;
-            left: 0; top: 0; bottom: 0;
-            width: 4px;
-            background: linear-gradient(180deg, var(--neon), rgba(57,255,20,0.3));
-            box-shadow: 0 0 12px var(--neon);
-            animation: borderGlow 2s ease-in-out infinite;
-        }
-        @keyframes borderGlow {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
-        }
-
-        .brand-title {
-            font-family: var(--font-display);
-            font-size: clamp(22px, 6vw, 30px);
-            font-weight: 900;
-            color: var(--neon);
-            text-shadow: 0 0 20px rgba(57, 255, 20, 0.5);
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            line-height: 1;
-        }
-        .subtitle {
-            font-size: 10px;
-            letter-spacing: 3px;
-            color: var(--text-3);
-            text-transform: uppercase;
-            font-weight: 700;
-            margin-top: 4px;
-            font-family: var(--font-body);
-        }
-
-        #nome-evento-capa {
-            font-family: var(--font-display);
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--neon);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 14px;
-            min-height: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        #nome-evento-capa::before {
-            content: '';
-            display: inline-block;
-            width: 6px; height: 6px;
-            background: var(--neon);
-            border-radius: 50%;
-            box-shadow: 0 0 8px var(--neon);
-            animation: pulseDot 1.5s ease-in-out infinite;
-        }
-
-        #modo-guestbook {
-            display: none;
-            align-items: center;
-            gap: 6px;
-            margin-top: 8px;
-            padding: 4px 10px;
-            background: var(--blue-dim);
-            border: 1px solid rgba(0, 229, 255, 0.4);
-            border-radius: 20px;
-            color: var(--blue);
-            font-size: 9px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            font-family: var(--font-body);
-        }
-        #modo-guestbook.visible { display: inline-flex; }
-
-        /* ═══════════ SEGMENTED CONTROL ═══════════ */
-        .modo-selector {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 14px;
-        }
-        .modo-selector > span {
-            font-size: 10px;
-            color: var(--text-3);
-            text-transform: uppercase;
-            font-weight: 800;
-            letter-spacing: 1px;
-            font-family: var(--font-body);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .modo-segment {
-            position: relative;
-            display: inline-flex;
-            background: var(--bg-0);
-            border: 1px solid var(--border-2);
-            border-radius: 20px;
-            padding: 3px;
-        }
-        .modo-btn {
-            position: relative;
-            z-index: 2;
-            padding: 7px 16px;
-            border-radius: 20px;
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            cursor: pointer;
-            background: transparent;
-            border: none;
-            color: var(--text-3);
-            transition: var(--transition-fast);
-            text-transform: uppercase;
-            font-family: var(--font-body);
-        }
-        .modo-btn.activo { color: var(--bg-0); }
-        .modo-indicator {
-            position: absolute;
-            top: 3px; bottom: 3px;
-            left: 3px;
-            width: calc(50% - 3px);
-            background: var(--neon);
-            border-radius: 20px;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 0 12px rgba(57, 255, 20, 0.4);
-            z-index: 1;
-        }
-        .modo-indicator.right { transform: translateX(100%); }
-
-        /* ═══════════ BOTÃO OLHO ═══════════ */
-        .main-ui {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            z-index: 10;
-            flex-direction: column;
-            gap: 24px;
-            padding-bottom: 40px;
-            animation: fadeInUp 0.6s ease-out 0.1s backwards;
-        }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(16px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .btn-eye-wrapper {
-            position: relative;
-            width: 200px;
-            height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .btn-eye-wrapper::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 50%;
-            border: 2px dashed rgba(57, 255, 20, 0.3);
-            animation: rotateRing 20s linear infinite;
-        }
-        @keyframes rotateRing {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        .btn-eye-wrapper::after {
-            content: '';
-            position: absolute;
-            inset: 20px;
-            border-radius: 50%;
-            border: 1px solid rgba(57, 255, 20, 0.15);
-        }
-
-        .btn-eye {
-            position: relative;
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            border: 3px solid var(--neon);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: radial-gradient(circle, rgba(0,0,0,0.9) 0%, rgba(10,20,5,0.9) 100%);
-            backdrop-filter: blur(10px);
-            animation: pulseNeon 2.4s infinite;
-            transition: var(--transition);
-            z-index: 2;
-        }
+        .status-badge { position: fixed; top: 16px; right: 16px; z-index: 20; display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; background: rgba(10,10,10,0.85); border: 1px solid var(--border-2); border-radius: 20px; backdrop-filter: blur(12px); font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--text-2); }
+        .status-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); box-shadow: 0 0 8px var(--danger); animation: pulseDot 2s infinite; }
+        .status-badge.online .dot { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+        .status-badge.online { color: var(--accent); border-color: var(--accent); }
+        @keyframes pulseDot { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .header { position: relative; z-index: 10; padding: 22px 20px 18px 26px; margin: 16px 16px 0; background: linear-gradient(135deg, rgba(10,10,10,0.9), rgba(17,17,17,0.7)); border: 1px solid var(--border-1); border-radius: var(--radius-lg); backdrop-filter: blur(16px); box-shadow: 0 8px 24px rgba(0,0,0,0.5); overflow: hidden; }
+        .header::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+        .brand-title { font-family: var(--font-display); font-size: clamp(22px, 6vw, 30px); font-weight: 900; color: var(--accent); text-shadow: 0 0 20px rgba(0,229,255,0.5); letter-spacing: 2px; text-transform: uppercase; line-height: 1; }
+        .subtitle { font-size: 10px; letter-spacing: 3px; color: var(--text-3); text-transform: uppercase; font-weight: 700; margin-top: 4px; }
+        #nome-evento-capa { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-top: 14px; min-height: 20px; display: flex; align-items: center; gap: 8px; }
+        #nome-evento-capa::before { content: ''; display: inline-block; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 8px var(--accent); }
+        .main-ui { flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 24px; padding-bottom: 40px; }
+        .btn-eye-wrapper { position: relative; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; }
+        .btn-eye-wrapper::before { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px dashed rgba(0,229,255,0.3); animation: rotateRing 20s linear infinite; }
+        @keyframes rotateRing { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .btn-eye { position: relative; width: 150px; height: 150px; border-radius: 50%; border: 3px solid var(--accent); cursor: pointer; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, rgba(0,0,0,0.9) 0%, rgba(0,20,25,0.9) 100%); animation: pulseNeon 2.4s infinite; transition: all 0.3s; z-index: 2; }
         .btn-eye:active { transform: scale(0.94); }
-        .btn-eye.desativado {
-            opacity: 0.35;
-            animation: none;
-            pointer-events: none;
-            filter: grayscale(0.7);
-        }
-        .eye-inner {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            border: 3px solid var(--neon);
-            background: radial-gradient(circle, rgba(57,255,20,0.15) 0%, transparent 70%);
-            box-shadow:
-                inset 0 0 20px rgba(57, 255, 20, 0.3),
-                0 0 20px rgba(57, 255, 20, 0.4);
-            transition: var(--transition);
-        }
-        .btn-eye:hover .eye-inner {
-            transform: scale(1.1);
-            box-shadow:
-                inset 0 0 30px rgba(57, 255, 20, 0.5),
-                0 0 30px rgba(57, 255, 20, 0.6);
-        }
-        @keyframes pulseNeon {
-            0% { box-shadow: 0 0 0 0 rgba(57, 255, 20, 0.7), 0 0 20px rgba(57, 255, 20, 0.3); }
-            70% { box-shadow: 0 0 0 24px rgba(57, 255, 20, 0), 0 0 20px rgba(57, 255, 20, 0.3); }
-            100% { box-shadow: 0 0 0 0 rgba(57, 255, 20, 0), 0 0 20px rgba(57, 255, 20, 0.3); }
-        }
-
-        .btn-hint {
-            font-family: var(--font-body);
-            font-size: 11px;
-            color: var(--text-2);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-weight: 800;
-            text-align: center;
-            transition: var(--transition);
-        }
-        .btn-hint .highlight {
-            display: block;
-            color: var(--neon);
-            margin-top: 4px;
-            font-size: 12px;
-        }
-
-        /* ═══════════ CÂMERA ═══════════ */
-        #cam-container {
-            position: fixed; inset: 0;
-            background: #000;
-            display: none;
-            z-index: 1000;
-        }
+        .eye-inner { width: 60px; height: 60px; border-radius: 50%; border: 3px solid var(--accent); background: radial-gradient(circle, rgba(0,229,255,0.15) 0%, transparent 70%); box-shadow: inset 0 0 20px rgba(0,229,255,0.3), 0 0 20px rgba(0,229,255,0.4); }
+        @keyframes pulseNeon { 0% { box-shadow: 0 0 0 0 rgba(0,229,255,0.7); } 70% { box-shadow: 0 0 0 24px rgba(0,229,255,0); } }
+        .btn-hint { font-size: 11px; color: var(--text-2); text-transform: uppercase; letter-spacing: 2px; font-weight: 800; text-align: center; }
+        .btn-hint .highlight { display: block; color: var(--accent); margin-top: 4px; font-size: 12px; }
+        #cam-container { position: fixed; inset: 0; background: #000; display: none; z-index: 1000; }
         #cam-container.active { display: block; }
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        video { width: 100%; height: 100%; object-fit: cover; }
         .mirror { transform: scaleX(-1); }
-
-        #overlay {
-            position: absolute; inset: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            pointer-events: none;
-        }
-
-        .topo-grupo {
-            background: linear-gradient(135deg, rgba(0,0,0,0.9), rgba(10,20,5,0.85));
-            border: 1px solid var(--neon);
-            padding: 18px 32px 20px;
-            border-radius: var(--radius-xl);
-            width: 88%;
-            max-width: 420px;
-            backdrop-filter: blur(16px);
-            box-shadow:
-                0 0 30px rgba(57, 255, 20, 0.15),
-                inset 0 0 30px rgba(57, 255, 20, 0.05);
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        .topo-grupo::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--neon), transparent);
-            animation: scanLine 2s ease-in-out infinite;
-        }
-        @keyframes scanLine {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 1; }
-        }
-
-        #info-topo {
-            font-family: var(--font-body);
-            font-size: 10px;
-            font-weight: 800;
-            color: var(--neon);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 8px;
-        }
-        #num-count {
-            font-family: var(--font-mono);
-            font-size: 84px;
-            font-weight: 700;
-            color: #fff;
-            line-height: 1;
-            display: block;
-            text-shadow:
-                0 0 30px var(--neon),
-                0 0 60px rgba(57, 255, 20, 0.4);
-            letter-spacing: -2px;
-        }
-        #sub-count {
-            font-family: var(--font-body);
-            font-size: 11px;
-            font-weight: 800;
-            color: var(--neon);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-top: 6px;
-            display: block;
-        }
-
-        #cam-controls {
-            position: absolute;
-            bottom: 40px;
-            left: 0; right: 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-evenly;
-            width: 100%;
-            padding: 0 24px;
-            pointer-events: auto;
-        }
-        .cam-btn {
-            width: 58px;
-            height: 58px;
-            background: rgba(0, 0, 0, 0.8);
-            border: 1.5px solid var(--neon);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: var(--transition-fast);
-            backdrop-filter: blur(12px);
-            box-shadow: 0 0 15px rgba(57, 255, 20, 0.2);
-        }
-        .cam-btn:active { transform: scale(0.88); }
-        .cam-btn.disabled { opacity: 0.3; pointer-events: none; }
-        .cam-btn i {
-            color: var(--neon);
-            font-size: 20px;
-        }
-
-        .shutter-wrapper {
-            position: relative;
-            width: 96px;
-            height: 96px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .shutter-wrapper::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 50%;
-            border: 2px solid rgba(57, 255, 20, 0.3);
-            animation: shutterPulse 2s ease-in-out infinite;
-        }
-        @keyframes shutterPulse {
-            0%, 100% { transform: scale(1); opacity: 0.6; }
-            50% { transform: scale(1.15); opacity: 0.2; }
-        }
-        .shutter-btn {
-            position: relative;
-            width: 76px;
-            height: 76px;
-            background: radial-gradient(circle, #000 40%, rgba(57,255,20,0.1) 100%);
-            border-radius: 50%;
-            border: 4px solid var(--neon);
-            cursor: pointer;
-            box-shadow:
-                0 0 24px var(--neon),
-                inset 0 0 20px rgba(57, 255, 20, 0.2);
-            transition: var(--transition-fast);
-            z-index: 2;
-        }
+        #overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; padding: 20px; pointer-events: none; }
+        .topo-grupo { background: linear-gradient(135deg, rgba(0,0,0,0.9), rgba(10,20,25,0.85)); border: 1px solid var(--accent); padding: 18px 32px 20px; border-radius: var(--radius-xl); width: 88%; max-width: 420px; backdrop-filter: blur(16px); box-shadow: 0 0 30px rgba(0,229,255,0.15); text-align: center; position: relative; overflow: hidden; }
+        .topo-grupo::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); }
+        #info-topo { font-family: var(--font-body); font-size: 10px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
+        #num-count { font-family: var(--font-mono); font-size: 84px; font-weight: 700; color: #fff; line-height: 1; display: block; text-shadow: 0 0 30px var(--accent); letter-spacing: -2px; }
+        #sub-count { font-family: var(--font-body); font-size: 11px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-top: 6px; display: block; }
+        #cam-controls { position: absolute; bottom: 40px; left: 0; right: 0; display: flex; align-items: center; justify-content: space-evenly; width: 100%; padding: 0 24px; pointer-events: auto; }
+        .cam-btn { width: 58px; height: 58px; background: rgba(0,0,0,0.8); border: 1.5px solid var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(12px); }
+        .cam-btn i { color: var(--accent); font-size: 20px; }
+        .shutter-wrapper { position: relative; width: 96px; height: 96px; display: flex; align-items: center; justify-content: center; }
+        .shutter-btn { position: relative; width: 76px; height: 76px; background: radial-gradient(circle, #000 40%, rgba(0,229,255,0.1) 100%); border-radius: 50%; border: 4px solid var(--accent); cursor: pointer; box-shadow: 0 0 24px var(--accent); z-index: 2; }
         .shutter-btn:active { transform: scale(0.9); }
-
-        /* ═══════════ OVERLAYS ═══════════ */
-        #flash {
-            position: fixed; inset: 0;
-            background: #fff;
-            display: none;
-            z-index: 2000;
-            pointer-events: none;
-        }
-
-        #loader {
-            display: none;
-            position: fixed; inset: 0;
-            background: rgba(0, 0, 0, 0.96);
-            backdrop-filter: blur(16px);
-            z-index: 3000;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-            text-align: center;
-        }
+        #flash { position: fixed; inset: 0; background: #fff; display: none; z-index: 2000; pointer-events: none; }
+        #loader { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.96); backdrop-filter: blur(16px); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; }
         #loader.active { display: flex; }
-
-        .spin {
-            width: 60px;
-            height: 60px;
-            border: 4px solid rgba(57, 255, 20, 0.15);
-            border-top-color: var(--neon);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
+        .spin { width: 60px; height: 60px; border: 4px solid rgba(0,229,255,0.15); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        #offline-overlay {
-            position: fixed; inset: 0;
-            background: #000;
-            z-index: 9999;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            padding: 30px;
-        }
+        #offline-overlay { position: fixed; inset: 0; background: #000; z-index: 9999; display: none; align-items: center; justify-content: center; flex-direction: column; padding: 30px; }
         #offline-overlay.active { display: flex; }
-        .offline-icon {
-            width: 88px;
-            height: 88px;
-            border-radius: 50%;
-            background: var(--red-dim);
-            border: 2px solid var(--red);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--red);
-            font-size: 38px;
-            margin-bottom: 28px;
-            animation: pulseOff 1.5s ease-in-out infinite;
-        }
-        @keyframes pulseOff {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 49, 49, 0.5); }
-            50% { box-shadow: 0 0 0 24px rgba(255, 49, 49, 0); }
-        }
-        .offline-text {
-            font-family: var(--font-display);
-            font-size: 26px;
-            font-weight: 900;
-            color: var(--red);
-            text-shadow: 0 0 30px var(--red);
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            text-align: center;
-            line-height: 1.3;
-            margin-bottom: 14px;
-        }
-        .offline-sub {
-            font-family: var(--font-body);
-            font-size: 12px;
-            color: var(--text-3);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-weight: 700;
-        }
-
-        #rotate-warning {
-            position: fixed; inset: 0;
-            background: rgba(0, 0, 0, 0.98);
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 5000;
-            color: var(--neon);
-            padding: 30px;
-            text-align: center;
-        }
-        #rotate-warning.active { display: flex; }
-        .icon-rotate {
-            width: 96px;
-            height: 96px;
-            margin-bottom: 28px;
-            animation: rotateAnim 2s ease-in-out infinite;
-        }
-        @keyframes rotateAnim {
-            0%, 100% { transform: rotate(0deg); }
-            50% { transform: rotate(-90deg); }
-        }
-        #rotate-warning h2 {
-            font-family: var(--font-display);
-            font-size: 22px;
-            margin-bottom: 10px;
-            letter-spacing: 2px;
-            font-weight: 900;
-        }
-        #rotate-warning p {
-            font-family: var(--font-body);
-            font-size: 12px;
-            color: var(--text-2);
-            letter-spacing: 1px;
-            font-weight: 600;
-        }
-
-        /* ═══════════ MENU SECRETO ═══════════ */
-        #bg-menu {
-            position: fixed;
-            top: 100px;
-            left: 16px;
-            z-index: 100;
-            display: none;
-            flex-direction: column;
-            gap: 10px;
-        }
-        #bg-menu.active { display: flex; animation: slideIn 0.3s ease; }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        .bg-btn {
-            padding: 12px 20px;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border-neon);
-            background: rgba(0, 0, 0, 0.9);
-            color: var(--text-0);
-            font-size: 12px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            cursor: pointer;
-            backdrop-filter: blur(12px);
-            text-align: center;
-            transition: var(--transition-fast);
-            font-family: var(--font-body);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            justify-content: center;
-        }
-        .bg-btn:hover, .bg-btn:active {
-            background: var(--neon-dim);
-            color: var(--neon);
-            border-color: var(--neon);
-        }
-        .bg-btn i { font-size: 14px; }
-        #bg-input { display: none; }
-
-        /* ═══════════ TOASTS ═══════════ */
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 5000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            width: calc(100% - 40px);
-            max-width: 380px;
-            pointer-events: none;
-        }
-        .toast {
-            position: relative;
-            background: rgba(10, 10, 10, 0.95);
-            border: 1px solid var(--border-2);
-            border-left: 3px solid var(--neon);
-            border-radius: var(--radius-md);
-            padding: 14px 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: var(--shadow-lg);
-            pointer-events: auto;
-            animation: toastIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(16px);
-            overflow: hidden;
-        }
-        .toast::after {
-            content: '';
-            position: absolute;
-            bottom: 0; left: 0;
-            height: 2px;
-            width: 100%;
-            background: var(--neon);
-            transform-origin: left;
-            animation: toastProgress 3.2s linear forwards;
-        }
-        @keyframes toastProgress {
-            from { transform: scaleX(1); }
-            to { transform: scaleX(0); }
-        }
-        .toast.error { border-left-color: var(--red); }
-        .toast.error::after { background: var(--red); }
-        .toast.info { border-left-color: var(--blue); }
-        .toast.info::after { background: var(--blue); }
-        .toast.warning { border-left-color: var(--yellow); }
-        .toast.warning::after { background: var(--yellow); }
-
-        .toast-icon {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            flex-shrink: 0;
-            background: var(--neon-dim);
-            color: var(--neon);
-            animation: iconBounce 0.4s ease;
-        }
-        @keyframes iconBounce {
-            0% { transform: scale(0.5); }
-            60% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        .toast.error .toast-icon { background: var(--red-dim); color: var(--red); }
-        .toast.info .toast-icon { background: var(--blue-dim); color: var(--blue); }
-        .toast.warning .toast-icon { background: var(--yellow-dim); color: var(--yellow); }
-
-        .toast-title {
-            font-family: var(--font-body);
-            font-size: 12px;
-            font-weight: 800;
-            margin-bottom: 3px;
-        }
-        .toast-message {
-            font-family: var(--font-body);
-            font-size: 11px;
-            color: var(--text-2);
-            font-weight: 500;
-            line-height: 1.3;
-        }
-        @keyframes toastIn {
-            from { opacity: 0; transform: translateY(-20px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .toast.removing { animation: toastOut 0.3s ease forwards; }
-        @keyframes toastOut {
-            to { opacity: 0; transform: translateY(-20px) scale(0.95); }
-        }
-
-        /* ═══════════ PREVIEW / OPÇÕES ═══════════ */
-        .preview-wrapper {
-            position: relative;
-            margin-bottom: 20px;
-            animation: previewPop 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        @keyframes previewPop {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        .preview-wrapper::before {
-            content: '';
-            position: absolute;
-            inset: -8px;
-            border-radius: var(--radius-lg);
-            background: linear-gradient(135deg, var(--neon), transparent 50%, var(--neon));
-            opacity: 0.4;
-            filter: blur(12px);
-            z-index: -1;
-            animation: previewGlow 3s ease-in-out infinite;
-        }
-        @keyframes previewGlow {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.6; }
-        }
-        .preview-img {
-            max-height: 42vh;
-            max-width: 88%;
-            border: 2px solid var(--neon);
-            border-radius: var(--radius-md);
-            box-shadow: 0 0 30px rgba(57, 255, 20, 0.4);
-            display: block;
-            margin: 0 auto;
-        }
-
-        .options-title {
-            font-family: var(--font-display);
-            font-size: 14px;
-            color: var(--neon);
-            font-weight: 800;
-            letter-spacing: 1px;
-            margin-bottom: 18px;
-            text-transform: uppercase;
-            text-align: center;
-        }
-
-                .print-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            width: 90%;
-            max-width: 360px;
-            margin: 0 auto 20px;
-        }
-        .print-capsule-btn {
-            background: rgba(0, 0, 0, 0.6);
-            border: 2px solid var(--neon);
-            color: var(--neon);
-            padding: 14px 15px;
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            border-radius: 50px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: var(--transition-fast);
-            font-family: var(--font-body);
-            text-transform: uppercase;
-            position: relative;
-            overflow: hidden;
-        }
-        .print-capsule-btn::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle, rgba(57, 255, 20, 0.3) 0%, transparent 70%);
-            opacity: 0;
-            transform: scale(0);
-            transition: all 0.4s ease;
-        }
-        .print-capsule-btn:active::before {
-            opacity: 1;
-            transform: scale(2);
-        }
-        .print-capsule-btn:active { transform: scale(0.95); }
-        .print-capsule-btn.color-green { border-color: var(--neon); color: var(--neon); }
-        .print-capsule-btn.color-green.active {
-            background: var(--neon);
-            color: var(--bg-0);
-            box-shadow: 0 0 20px rgba(57, 255, 20, 0.4);
-        }
-        .print-capsule-btn.color-blue { border-color: var(--blue); color: var(--blue); }
-        .print-capsule-btn.color-blue.active {
-            background: var(--blue);
-            color: var(--bg-0);
-            box-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
-        }
-
-        .btn-send {
-            width: 72px;
-            height: 72px;
-            border-radius: 50%;
-            background: var(--neon);
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow:
-                0 0 24px var(--neon),
-                inset 0 -4px 8px rgba(0, 0, 0, 0.3);
-            transition: var(--transition);
-            margin-bottom: 10px;
-            position: relative;
-        }
-        .btn-send::after {
-            content: '';
-            position: absolute;
-            inset: -6px;
-            border-radius: 50%;
-            border: 2px solid rgba(57, 255, 20, 0.3);
-            animation: shutterPulse 2s ease-in-out infinite;
-        }
-        .btn-send:active { transform: scale(0.92); }
-        .btn-send i {
-            color: var(--bg-0);
-            font-size: 26px;
-            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-        }
-
-        .send-label {
-            font-family: var(--font-body);
-            font-size: 11px;
-            color: var(--neon);
-            font-weight: 800;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            margin-bottom: 14px;
-        }
-
-        .btn-cancel {
-            background: transparent;
-            border: 1px solid var(--border-2);
-            color: var(--text-3);
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            margin-top: 6px;
-            cursor: pointer;
-            padding: 10px 24px;
-            border-radius: 20px;
-            font-family: var(--font-body);
-            transition: var(--transition-fast);
-        }
-        .btn-cancel:hover, .btn-cancel:active {
-            color: var(--red);
-            border-color: var(--red);
-            background: var(--red-dim);
-        }
-
-        /* ═══════════ RESPONSIVO ═══════════ */
-        @media (min-width: 900px) {
-            .btn-hint { display: none; }
-            .btn-eye-wrapper { width: 240px; height: 240px; }
-            .btn-eye { width: 180px; height: 180px; }
-            .eye-inner { width: 72px; height: 72px; }
-        }
+        .offline-text { font-family: var(--font-display); font-size: 26px; font-weight: 900; color: var(--danger); text-transform: uppercase; letter-spacing: 3px; text-align: center; }
+        .print-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 90%; max-width: 360px; margin: 20px auto; }
+        .print-capsule-btn { background: rgba(0,0,0,0.6); border: 2px solid var(--accent); color: var(--accent); padding: 14px 15px; font-size: 11px; font-weight: 800; border-radius: 50px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; }
+        .print-capsule-btn.active { background: var(--accent); color: var(--bg-0); }
+        .btn-send { width: 72px; height: 72px; border-radius: 50%; background: var(--accent); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 24px var(--accent); margin: 10px 0; }
+        .btn-send i { color: var(--bg-0); font-size: 26px; }
+        .preview-img { max-height: 42vh; max-width: 88%; border: 2px solid var(--accent); border-radius: var(--radius-md); display: block; margin: 0 auto 20px; }
     </style>
-    <!-- ═══════════════════════════════════════════════════════════ -->
-    <!-- FIM DO BLOCO DE ESTILOS (CSS)                               -->
-    <!-- ═══════════════════════════════════════════════════════════ -->
 </head>
 <body>
-
     <div id="dynamic-bg"></div>
-
-    <!-- Badge de status flutuante -->
-    <div class="status-badge" id="status-badge">
-        <span class="dot"></span>
-        <span id="status-text">Offline</span>
-    </div>
-
-    <!-- Overlay offline -->
-    <div id="offline-overlay">
-        <div class="offline-icon"><i class="fas fa-tools"></i></div>
-        <div class="offline-text">Sistema em<br>Manutenção</div>
-        <div class="offline-sub">Aguarde a reativação no painel</div>
-    </div>
-
-    <!-- Aviso de rotação -->
-    <div id="rotate-warning">
-        <svg class="icon-rotate" viewBox="0 0 24 24" fill="var(--neon)">
-            <path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h2l-3.5 3.5-3.5-3.5h2c-.34-3.19-2.32-5.85-5.08-7.1l1.11-1.88M12.06 19c-1.38 0-2.61-.56-3.5-1.47l-1.41 1.41C8.36 20.15 10.09 21 12.06 21c3.97 0 7.32-2.8 8.16-6.5h-2.07c-.77 2.58-3.17 4.5-5.99 4.5M2.06 11h2c.34 3.19 2.32 5.85 5.08 7.1l-1.11 1.88C4.76 18.43 2.42 15.26 2.06 11.5M12.06 5c1.38 0 2.61.56 3.5 1.47l1.41-1.41C15.76 3.85 14.03 3 12.06 3 8.09 3 4.74 5.8 3.9 9.5h2.07C6.74 6.92 9.14 5 12.06 5Z"/>
-        </svg>
-        <h2>GIRE O APARELHO</h2>
-        <p>Posição Horizontal necessária (Deitado)</p>
-    </div>
-
-    <!-- Flash da câmera -->
+    <div class="status-badge" id="status-badge"><span class="dot"></span><span id="status-text">Offline</span></div>
+    <div id="offline-overlay"><div class="offline-text">Sistema em<br>Manutenção</div></div>
     <div id="flash"></div>
-
-    <!-- Loader / Tela de opções -->
     <div id="loader"></div>
 
-    <!-- Menu secreto de fundo -->
-    <div id="bg-menu">
-        <label class="bg-btn" for="bg-input"><i class="fas fa-image"></i> Alterar Fundo</label>
-        <div class="bg-btn" onclick="removeBackground()"><i class="fas fa-times"></i> Sem Fundo</div>
-    </div>
-    <input type="file" id="bg-input" accept="image/*">
-
-    <!-- Container da câmera -->
     <div id="cam-container">
         <video id="v" autoplay playsinline muted></video>
-        <div id="overlay">
+                <div id="overlay">
             <div class="topo-grupo">
                 <div id="info-topo">CARREGANDO...</div>
                 <span id="num-count"></span>
                 <span id="sub-count">Aguardando Start</span>
             </div>
             <div id="cam-controls">
-                <div class="cam-btn" id="btn-back" onclick="voltarHome()">
-                    <i class="fas fa-arrow-left"></i>
-                </div>
-                <div class="shutter-wrapper" id="shutter-placeholder">
-                    <div class="shutter-btn" id="btn-shutter" onclick="iniciarSequencia()"></div>
-                </div>
-                <div class="cam-btn" id="btn-switch" onclick="switchCam()">
-                    <i class="fas fa-sync-alt"></i>
-                </div>
+                <div class="cam-btn" id="btn-back" onclick="voltarHome()"><i class="fas fa-arrow-left"></i></div>
+                <div class="shutter-wrapper" id="shutter-placeholder"><div class="shutter-btn" id="btn-shutter" onclick="iniciarSequencia()"></div></div>
+                <div class="cam-btn" id="btn-switch" onclick="switchCam()"><i class="fas fa-sync-alt"></i></div>
             </div>
         </div>
     </div>
 
-    <!-- Header principal -->
+    <!-- TELA DE SELEÇÃO DE OPÇÕES -->
     <div class="header" id="secret-logo">
         <h1 class="brand-title">PHOTO PRINT</h1>
         <div class="subtitle">colecionando momentos</div>
         <div id="nome-evento-capa">...</div>
-        <div id="modo-guestbook"><i class="fas fa-book"></i> Modo Guestbook Ativo</div>
-        <div class="modo-selector">
-            <span><i class="fas fa-mobile-alt"></i> Modo:</span>
-            <div class="modo-segment">
-                <div class="modo-indicator" id="modo-indicator"></div>
-                <button class="modo-btn activo" id="btn-modo-manual" onclick="setModo('manual')">Manual</button>
-                <button class="modo-btn" id="btn-modo-botoeira" onclick="setModo('botoeira')">Botoeira</button>
-            </div>
-        </div>
     </div>
 
-    <!-- Área principal -->
     <div class="main-ui">
         <div class="btn-eye-wrapper">
             <div id="main-action-btn" class="btn-eye" onclick="ligar()">
                 <div class="eye-inner"></div>
             </div>
         </div>
-        <div class="btn-hint">
-            <span>Toque no olho para começar</span>
-            <span class="highlight">Captura Mobile</span>
-        </div>
+        <div class="btn-hint"><span>Toque no olho para começar</span><span class="highlight">Captura Mobile</span></div>
     </div>
 
-    <!-- Canvas ocultos -->
     <canvas id="c-snap" style="display:none"></canvas>
     <canvas id="c-strip" style="display:none"></canvas>
 
-    <!-- ═══════════════════════════════════════════════════════════ -->
-    <!-- INÍCIO DO BLOCO DE SCRIPTS (JavaScript)                     -->
-    <!-- ═══════════════════════════════════════════════════════════ -->
     <script>
-        /* ═══════════ CONFIGURAÇÕES GLOBAIS ═══════════ */
         const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
-        const LS_MODO = 'celular_modo';
-        const LS_BG   = 'photoprint_bg_mobile';
-
         const FORMATOS = {
-            "TIRINHA":  { w: 591,  h: 1819, fotos: 3, key: "TIRINHA",  exigeH: false },
-            "POLAROID": { w: 1041, h: 1311, fotos: 1, key: "POLAROID", exigeH: false },
-            "10X15H":   { w: 1772, h: 1228, fotos: 1, key: "10X15H",   exigeH: true  },
-            "10X15V":   { w: 1181, h: 1819, fotos: 1, key: "10X15V",   exigeH: false }
+            "TIRINHA": { w: 591, h: 1819, fotos: 3, exigeH: false },
+            "POLAROID": { w: 1041, h: 1311, fotos: 1, exigeH: false },
+            "10X15H": { w: 1772, h: 1228, fotos: 1, exigeH: true },
+            "10X15V": { w: 1181, h: 1819, fotos: 1, exigeH: false }
         };
 
         let ev = "", formatStr = "", molduraBase64 = "", eventoId = "", guestbookAtivo = false, sistemaOnline = true;
         let pics = [], stream = null, facingMode = "environment", configAtual = null, quantidadeCopias = 1;
-        let modoOperacao = "manual", lastState = 'start', captureInProgress = false;
-        let intervaloStatus = null, intervaloPolling = null;
-
-        /* ═══════════ TOASTS ═══════════ */
-        function criarToastContainer() {
-            if (!document.getElementById('toast-container')) {
-                const c = document.createElement('div');
-                c.className = 'toast-container';
-                c.id = 'toast-container';
-                document.body.appendChild(c);
-            }
-            return document.getElementById('toast-container');
-        }
+        let lastState = 'start', captureInProgress = false, intervaloStatus = null;
 
         function mostrarToast(titulo, mensagem, tipo = 'success') {
-            const container = criarToastContainer();
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'toast-container';
+                container.id = 'toast-container';
+                container.style = "position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:7000;display:flex;flex-direction:column;gap:10px;width:calc(100% - 40px);max-width:380px;";
+                document.body.appendChild(container);
+            }
             const toast = document.createElement('div');
-            toast.className = `toast ${tipo}`;
-            const iconMap = {
-                success: 'fa-check',
-                error: 'fa-exclamation-triangle',
-                info: 'fa-info-circle',
-                warning: 'fa-exclamation'
-            };
-            toast.innerHTML = `
-                <div class="toast-icon"><i class="fas ${iconMap[tipo] || 'fa-check'}"></i></div>
-                <div class="toast-content">
-                    <div class="toast-title">${titulo}</div>
-                    <div class="toast-message">${mensagem}</div>
-                </div>
-            `;
+            toast.style = "background:var(--bg-2);border:1px solid var(--border-2);border-left:3px solid var(--accent);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,0.8);animation:slideDown 0.3s;";
+            toast.innerHTML = `<i class="fas fa-${tipo==='success'?'check-circle':tipo==='error'?'exclamation-triangle':'info-circle'}" style="color:var(--${tipo==='success'?'success':tipo==='error'?'danger':'accent'})"></i>
+                <div><div style="font-size:12px;font-weight:800;">${titulo}</div><div style="font-size:11px;color:var(--text-2);">${mensagem}</div></div>`;
             container.appendChild(toast);
-            setTimeout(() => {
-                toast.classList.add('removing');
-                setTimeout(() => toast.remove(), 300);
-            }, 3200);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3500);
         }
 
-        /* ═══════════ MODO DE OPERAÇÃO ═══════════ */
-        function setModo(modo) {
-            modoOperacao = modo;
-            document.getElementById('btn-modo-manual').classList.toggle('activo', modo === 'manual');
-            document.getElementById('btn-modo-botoeira').classList.toggle('activo', modo === 'botoeira');
-
-            const indicador = document.getElementById('modo-indicator');
-            if (indicador) indicador.classList.toggle('right', modo === 'botoeira');
-
-            const btnEye = document.getElementById('main-action-btn');
-            if (modo === 'botoeira') {
-                btnEye.classList.add('desativado');
-                iniciarPollingBotoeira();
-            } else {
-                btnEye.classList.remove('desativado');
-                pararPollingBotoeira();
-            }
-            try { localStorage.setItem(LS_MODO, modo); } catch(e) {}
-        }
-
-        /* ═══════════ FUNDO PERSONALIZÁVEL ═══════════ */
-        const dynamicBg = document.getElementById('dynamic-bg');
-        const bgMenu = document.getElementById('bg-menu');
-        const secretLogo = document.getElementById('secret-logo');
-        let clickCount = 0, clickTimer = null;
-
-        secretLogo.addEventListener('click', () => {
-            clickCount++;
-            clearTimeout(clickTimer);
-            clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
-            if (clickCount >= 7) {
-                bgMenu.classList.toggle('active');
-                clickCount = 0;
-                if (bgMenu.classList.contains('active')) {
-                    mostrarToast("Menu Secreto", "Alterar fundo desbloqueado.", "info");
-                }
-            }
-        });
-
-        function comprimirImagem(file, maxW = 1280, qualidade = 0.75) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        let { width, height } = img;
-                        if (width > maxW) {
-                            height = Math.round(height * (maxW / width));
-                            width = maxW;
-                        }
-                        const canvas = document.createElement('canvas');
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', qualidade));
-                    };
-                    img.onerror = reject;
-                    img.src = e.target.result;
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-        }
-
-        document.getElementById('bg-input').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            try {
-                const dataUrl = await comprimirImagem(file);
-                dynamicBg.style.backgroundImage = `url('${dataUrl}')`;
-                dynamicBg.classList.add('active');
-                document.body.classList.add('bg-active');
-                try { localStorage.setItem(LS_BG, dataUrl); }
-                catch(err) { mostrarToast("Aviso", "Imagem grande demais para salvar.", "warning"); }
-                bgMenu.classList.remove('active');
-                mostrarToast("Fundo Atualizado", "Nova imagem aplicada.", "success");
-            } catch (err) {
-                mostrarToast("Erro", "Não foi possível processar a imagem.", "error");
-            }
-        });
-
-        function removeBackground() {
-            try { localStorage.removeItem(LS_BG); } catch(e) {}
-            dynamicBg.style.backgroundImage = "";
-            dynamicBg.classList.remove('active');
-            document.body.classList.remove('bg-active');
-            bgMenu.classList.remove('active');
-            mostrarToast("Fundo Removido", "Voltamos ao padrão.", "info");
-        }
-
-        function loadSavedBackground() {
-            try {
-                const saved = localStorage.getItem(LS_BG);
-                if (saved) {
-                    dynamicBg.style.backgroundImage = `url('${saved}')`;
-                    dynamicBg.classList.add('active');
-                    document.body.classList.add('bg-active');
-                }
-            } catch(e) {}
-        }
-
-        /* ═══════════ STATUS ONLINE/OFFLINE ═══════════ */
-        function mostrarOffline() {
-            document.getElementById('offline-overlay').classList.add('active');
-        }
-        function esconderOffline() {
-            document.getElementById('offline-overlay').classList.remove('active');
-        }
         function atualizarBadgeStatus(online) {
             const badge = document.getElementById('status-badge');
             const text = document.getElementById('status-text');
-            if (!badge || !text) return;
             badge.classList.toggle('online', online);
             text.innerText = online ? 'Online' : 'Offline';
         }
@@ -1287,45 +147,22 @@
         async function verificarStatus() {
             try {
                 const res = await fetch(`${API}/get-all-states?t=${Date.now()}`);
-                if (!res || !res.ok) {
-                    sistemaOnline = false;
-                    mostrarOffline();
-                    atualizarBadgeStatus(false);
-                    return null;
-                }
-                const texto = await res.text();
-                let data;
-                try { data = JSON.parse(texto); }
-                catch(e) {
-                    sistemaOnline = false;
-                    mostrarOffline();
-                    atualizarBadgeStatus(false);
-                    return null;
-                }
-                const status = (data.config && data.config.status) ? data.config.status : 'OFFLINE';
-                if (status === 'OFFLINE') {
-                    sistemaOnline = false;
-                    mostrarOffline();
-                    atualizarBadgeStatus(false);
-                } else {
-                    sistemaOnline = true;
-                    esconderOffline();
-                    atualizarBadgeStatus(true);
-                }
+                const data = await res.json();
+                sistemaOnline = data.config && data.config.status === 'ONLINE';
+                document.getElementById('offline-overlay').classList.toggle('active', !sistemaOnline);
+                atualizarBadgeStatus(sistemaOnline);
                 return data;
             } catch (e) {
                 sistemaOnline = false;
-                mostrarOffline();
+                document.getElementById('offline-overlay').classList.add('active');
                 atualizarBadgeStatus(false);
                 return null;
             }
         }
 
-        /* ═══════════ SINCRONIZAÇÃO ═══════════ */
         async function sync() {
             const data = await verificarStatus();
             if (!data || !sistemaOnline) return;
-
             if (data.config && data.config.evento && data.config.evento !== 'Geral') {
                 ev = data.config.evento;
                 formatStr = data.config.formato || 'POLAROID';
@@ -1333,202 +170,27 @@
                 guestbookAtivo = (data.config.livro === true || data.config.livro === 1);
                 molduraBase64 = data.moldura || '';
             } else {
-                ev = "Geral";
-                formatStr = "POLAROID";
-                eventoId = "";
-                molduraBase64 = "";
-                guestbookAtivo = false;
+                ev = "Geral"; formatStr = "POLAROID"; eventoId = ""; molduraBase64 = ""; guestbookAtivo = false;
             }
-
             document.getElementById('nome-evento-capa').innerText = ev || "—";
-            document.getElementById('modo-guestbook').classList.toggle('visible', guestbookAtivo);
             configAtual = FORMATOS[formatStr.toUpperCase()] || FORMATOS["POLAROID"];
         }
 
-        /* ═══════════ POLLING BOTOEIRA ═══════════ */
-        function iniciarPollingBotoeira() {
-            if (intervaloPolling) return;
-            intervaloPolling = setInterval(pollServerState, 800);
-        }
-        function pararPollingBotoeira() {
-            if (intervaloPolling) {
-                clearInterval(intervaloPolling);
-                intervaloPolling = null;
-            }
-        }
-
-        async function pollServerState() {
-            if (modoOperacao !== 'botoeira') return;
-            if (captureInProgress) return;
-            try {
-                const res = await fetch(`${API}/get-state?t=${Date.now()}`);
-                if (!res || !res.ok) return;
-                const d = await res.json();
-                if (d.state && d.state !== lastState) {
-                    lastState = d.state;
-                    if (d.state === 'capturing' && !captureInProgress) {
-                        if (!molduraBase64) {
-                            mostrarToast("Moldura ausente", "Configure no painel.", "warning");
-                            return;
-                        }
-                        document.getElementById('cam-container').classList.add('active');
-                        document.getElementById('info-topo').innerText = `${ev} | ${configAtual.key}`;
-                        checkOrientation();
-                        await startStream();
-                        iniciarSequenciaAuto();
-                    }
-                }
-            } catch(e) {}
-        }
-
-        async function iniciarSequenciaAuto() {
-            captureInProgress = true;
-            document.getElementById('shutter-placeholder').style.visibility = "hidden";
-            document.getElementById('btn-switch').classList.add('disabled');
-            pics = [];
-            try {
-                for (let n = 1; n <= configAtual.fotos; n++) {
-                    document.getElementById('sub-count').innerText = `FOTO ${n} DE ${configAtual.fotos}`;
-                    for (let i = 5; i > 0; i--) {
-                        document.getElementById('num-count').innerText = i;
-                        await new Promise(r => setTimeout(r, 1000));
-                    }
-                    document.getElementById('num-count').innerText = "SORRIA!";
-                    snap();
-                    await new Promise(r => setTimeout(r, 1500));
-                }
-                processarAuto();
-            } catch(e) {
-                captureInProgress = false;
-                resetarBotoesCamera();
-                voltarHome();
-            }
-        }
-
-        function processarAuto() {
-            voltarHome();
-            mostrarLoader('Processando imagem...');
-            const cv = document.getElementById('c-strip'), ctx = cv.getContext('2d');
-            const molduraImg = new Image();
-            molduraImg.onload = () => {
-                cv.width = configAtual.w;
-                cv.height = configAtual.h;
-                ctx.fillStyle = "white";
-                ctx.fillRect(0, 0, cv.width, cv.height);
-
-                if (configAtual.key === "TIRINHA") {
-                    const slots = [{y:0.030, h:0.254}, {y:0.296, h:0.254}, {y:0.559, h:0.254}];
-                    let count = 0;
-                    pics.forEach((src, i) => {
-                        const img = new Image();
-                        img.onload = () => {
-                            const s = slots[i];
-                            const dx = cv.width * 0.06, dw = cv.width * 0.88;
-                            const dy = cv.height * s.y, dh = cv.height * s.h;
-                            ctx.save();
-                            ctx.beginPath();
-                            ctx.rect(dx, dy, dw, dh);
-                            ctx.clip();
-                            const r = Math.max(dw/img.width, dh/img.height);
-                            ctx.drawImage(img, dx+(dw-img.width*r)/2, dy+(dh-img.height*r)/2, img.width*r, img.height*r);
-                            ctx.restore();
-                            count++;
-                            if (count === 3) {
-                                ctx.drawImage(molduraImg, 0, 0, cv.width, cv.height);
-                                enviarAuto(cv.toDataURL('image/jpeg', 0.95));
-                            }
-                        };
-                        img.src = src;
-                    });
-                } else {
-                    const img = new Image();
-                    img.onload = () => {
-                        const scale = Math.max(cv.width/img.width, cv.height/img.height);
-                        const w = img.width * scale, h = img.height * scale;
-                        ctx.drawImage(img, (cv.width-w)/2, (cv.height-h)/2, w, h);
-                        ctx.drawImage(molduraImg, 0, 0, cv.width, cv.height);
-                        enviarAuto(cv.toDataURL('image/jpeg', 0.95));
-                    };
-                    img.src = pics[0];
-                }
-            };
-            molduraImg.onerror = () => {
-                mostrarToast("Erro", "Falha ao carregar moldura.", "error");
-                captureInProgress = false;
-                resetarBotoesCamera();
-                voltarHome();
-                fecharLoader();
-            };
-            molduraImg.src = molduraBase64;
-        }
-
-        async function enviarAuto(dataUrl) {
-            mostrarLoader('Enviando...');
-            const blob = await fetch(dataUrl).then(r => r.blob());
-            const ts = Date.now();
-            const nome = `foto_${ts}_1c.jpg`;
-            const fd = new FormData();
-            fd.append('foto', blob, nome);
-            fd.append('eventoId', eventoId);
-            fd.append('timestamp', String(ts) + '_1c');
-            fd.append('copias', '1');
-            try {
-                await fetch(`${API}/salvar-foto`, { method: 'POST', body: fd });
-                await fetch(`${API}/set-state`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ state: 'options' })
-                });
-                mostrarToast("Enviado", "Foto enviada com sucesso!", "success");
-                captureInProgress = false;
-                resetarBotoesCamera();
-                fecharLoader();
-                setTimeout(() => voltarHome(), 300);
-            } catch(e) {
-                mostrarToast("Erro no envio", "Verifique a conexão.", "error");
-                captureInProgress = false;
-                resetarBotoesCamera();
-                fecharLoader();
-                voltarHome();
-            }
-        }
-
-        /* ═══════════ ORIENTAÇÃO ═══════════ */
         function checkOrientation() {
-            if (!configAtual || !configAtual.exigeH) {
-                document.getElementById('rotate-warning').classList.remove('active');
-                return;
-            }
+            if (!configAtual || !configAtual.exigeH) return;
             const vertical = window.innerWidth <= window.innerHeight;
-            document.getElementById('rotate-warning').classList.toggle('active', vertical);
+            if (vertical) mostrarToast("Gire o aparelho", "Posição horizontal necessária.", "warning");
         }
-        window.addEventListener("resize", checkOrientation);
 
-        /* ═══════════ CÂMERA ═══════════ */
         async function startStream() {
-            if (stream) {
-                stream.getTracks().forEach(t => t.stop());
-                stream = null;
-            }
+            if (stream) stream.getTracks().forEach(t => t.stop());
             try {
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: { ideal: facingMode },
-                        width: { ideal: 1920 },
-                        height: { ideal: 1080 }
-                    }
-                });
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: facingMode }, width: { ideal: 1920 }, height: { ideal: 1080 } } });
                 const video = document.getElementById('v');
                 video.srcObject = stream;
                 video.className = (facingMode === "user") ? "mirror" : "";
             } catch (e) {
-                if (e.name === 'NotAllowedError') {
-                    mostrarToast("Permissão negada", "Autorize a câmera nas configurações.", "error");
-                } else if (e.name === 'NotFoundError') {
-                    mostrarToast("Sem câmera", "Nenhuma câmera encontrada.", "error");
-                } else {
-                    mostrarToast("Erro de câmera", "Não foi possível iniciar.", "error");
-                }
+                mostrarToast("Erro de câmera", "Não foi possível iniciar.", "error");
                 throw e;
             }
         }
@@ -1536,52 +198,29 @@
         async function switchCam() {
             if (captureInProgress) return;
             facingMode = (facingMode === "user") ? "environment" : "user";
-            try { await startStream(); }
-            catch(e) {}
+            try { await startStream(); } catch (e) {}
         }
 
-        /* ═══════════ LIGAR CÂMERA ═══════════ */
         async function ligar() {
-            if (!sistemaOnline) {
-                mostrarToast("Sistema offline", "Aguarde a reativação.", "warning");
-                return;
-            }
-            if (modoOperacao === 'botoeira') return;
-            if (!molduraBase64) {
-                mostrarToast("Moldura ausente", "Configure no painel.", "warning");
-                return;
-            }
+            if (!sistemaOnline) return mostrarToast("Offline", "Aguarde reativação.", "warning");
+            if (!molduraBase64) return mostrarToast("Moldura ausente", "Configure no painel.", "warning");
             document.getElementById('cam-container').classList.add('active');
-            document.getElementById('info-topo').innerText = `${ev} | ${configAtual.key}`;
+            document.getElementById('info-topo').innerText = `${ev} | ${configAtual ? formatStr : ''}`;
             document.getElementById('num-count').innerText = "";
             document.getElementById('sub-count').innerText = "TOQUE NO DISPARADOR";
             checkOrientation();
-            try { await startStream(); }
-            catch(e) { voltarHome(); }
+            try { await startStream(); } catch (e) { voltarHome(); }
         }
 
         function voltarHome() {
-            if (stream) {
-                stream.getTracks().forEach(t => t.stop());
-                stream = null;
-            }
+            if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
             document.getElementById('cam-container').classList.remove('active');
-            document.getElementById('rotate-warning').classList.remove('active');
             document.getElementById('shutter-placeholder').style.visibility = "visible";
-            resetarBotoesCamera();
         }
 
-        function resetarBotoesCamera() {
-            document.getElementById('btn-switch').classList.remove('disabled');
-        }
-
-        /* ═══════════ SEQUÊNCIA MANUAL + SNAP ═══════════ */
         async function iniciarSequencia() {
             if (captureInProgress) return;
-            if (configAtual.exigeH && window.innerWidth <= window.innerHeight) {
-                mostrarToast("Gire o aparelho", "Posição horizontal necessária.", "warning");
-                return;
-            }
+            if (configAtual.exigeH && window.innerWidth <= window.innerHeight) return mostrarToast("Gire o aparelho", "Posição horizontal necessária.", "warning");
             captureInProgress = true;
             document.getElementById('shutter-placeholder').style.visibility = "hidden";
             document.getElementById('btn-switch').classList.add('disabled');
@@ -1600,109 +239,74 @@
                 }
                 captureInProgress = false;
                 processar();
-            } catch(e) {
+            } catch (e) {
                 captureInProgress = false;
-                resetarBotoesCamera();
                 voltarHome();
             }
         }
 
         function snap() {
             const v = document.getElementById('v');
-            if (!v.videoWidth || !v.videoHeight) {
-                mostrarToast("Câmera iniciando", "Aguarde estabilizar.", "warning");
-                return;
-            }
+            if (!v.videoWidth || !v.videoHeight) return;
             document.getElementById('flash').style.display = "block";
             setTimeout(() => document.getElementById('flash').style.display = "none", 120);
-
             const cv = document.getElementById('c-snap');
             const ctx = cv.getContext('2d');
             cv.width = v.videoWidth;
             cv.height = v.videoHeight;
-            if (facingMode === "user") {
-                ctx.translate(cv.width, 0);
-                ctx.scale(-1, 1);
-            }
+            if (facingMode === "user") { ctx.translate(cv.width, 0); ctx.scale(-1, 1); }
             ctx.drawImage(v, 0, 0);
             pics.push(cv.toDataURL('image/jpeg', 0.92));
         }
 
-        /* ═══════════ PROCESSAMENTO MANUAL ═══════════ */
         function processar() {
             voltarHome();
-            mostrarLoader('Processando imagem...');
+            document.getElementById('loader').innerHTML = `<div class="spin"></div><p style="color:var(--accent);margin-top:20px;font-weight:700;text-transform:uppercase;font-size:12px;">Processando imagem...</p>`;
+            document.getElementById('loader').classList.add('active');
+            
             const cv = document.getElementById('c-strip'), ctx = cv.getContext('2d');
             const molduraImg = new Image();
+            
             molduraImg.onload = () => {
                 cv.width = configAtual.w;
                 cv.height = configAtual.h;
                 ctx.fillStyle = "white";
                 ctx.fillRect(0, 0, cv.width, cv.height);
 
-                if (configAtual.key === "TIRINHA") {
-                    const slots = [{y:0.030, h:0.254}, {y:0.296, h:0.254}, {y:0.559, h:0.254}];
+                if (formatStr === "TIRINHA") {
+                    const slots = [{ y: 0.030, h: 0.254 }, { y: 0.296, h: 0.254 }, { y: 0.559, h: 0.254 }];
                     let count = 0;
                     pics.forEach((src, i) => {
                         const img = new Image();
                         img.onload = () => {
                             const s = slots[i];
-                            const dx = cv.width * 0.06, dw = cv.width * 0.88;
-                            const dy = cv.height * s.y, dh = cv.height * s.h;
-                            ctx.save();
-                            ctx.beginPath();
-                            ctx.rect(dx, dy, dw, dh);
-                            ctx.clip();
-                            const r = Math.max(dw/img.width, dh/img.height);
-                            ctx.drawImage(img, dx+(dw-img.width*r)/2, dy+(dh-img.height*r)/2, img.width*r, img.height*r);
+                            const dx = cv.width * 0.06, dw = cv.width * 0.88, dy = cv.height * s.y, dh = cv.height * s.h;
+                            ctx.save(); ctx.beginPath(); ctx.rect(dx, dy, dw, dh); ctx.clip();
+                            const r = Math.max(dw / img.width, dh / img.height);
+                            ctx.drawImage(img, dx + (dw - img.width * r) / 2, dy + (dh - img.height * r) / 2, img.width * r, img.height * r);
                             ctx.restore();
                             count++;
-                            if (count === 3) {
-                                ctx.drawImage(molduraImg, 0, 0, cv.width, cv.height);
-                                exibir(cv.toDataURL('image/jpeg', 0.95));
-                            }
+                            if (count === 3) { ctx.drawImage(molduraImg, 0, 0, cv.width, cv.height); exibir(cv.toDataURL('image/jpeg', 0.95)); }
                         };
                         img.src = src;
                     });
                 } else {
                     const img = new Image();
                     img.onload = () => {
-                        const scale = Math.max(cv.width/img.width, cv.height/img.height);
+                        const scale = Math.max(cv.width / img.width, cv.height / img.height);
                         const w = img.width * scale, h = img.height * scale;
-                        ctx.drawImage(img, (cv.width-w)/2, (cv.height-h)/2, w, h);
+                        ctx.drawImage(img, (cv.width - w) / 2, (cv.height - h) / 2, w, h);
                         ctx.drawImage(molduraImg, 0, 0, cv.width, cv.height);
                         exibir(cv.toDataURL('image/jpeg', 0.95));
                     };
                     img.src = pics[0];
                 }
             };
-            molduraImg.onerror = () => {
-                mostrarToast("Erro", "Falha ao carregar moldura.", "error");
-                fecharLoader();
-            };
+            molduraImg.onerror = () => { document.getElementById('loader').classList.remove('active'); mostrarToast("Erro", "Falha ao carregar moldura.", "error"); };
             molduraImg.src = molduraBase64;
         }
 
-        /* ═══════════ LOADER / OPÇÕES ═══════════ */
-        function mostrarLoader(texto = 'Processando...') {
-            const loader = document.getElementById('loader');
-            loader.innerHTML = `<div class="spin"></div><p style="color:var(--neon); margin-top:20px; font-weight:700; letter-spacing:2px; text-transform:uppercase; font-size:12px; font-family:var(--font-body);">${texto}</p>`;
-            loader.classList.add('active');
-        }
-        function fecharLoader() {
-            document.getElementById('loader').classList.remove('active');
-            document.getElementById('loader').innerHTML = '';
-        }
-
-        function getCopiasFisicas(o) {
-            if (o === 1) return 1;
-            if (o === 2) return 2;
-            if (o === 3) return 2;
-            if (o === 4) return 3;
-            return 1;
-        }
-
-                function alterarCopias(qtd) {
+        function alterarCopias(qtd) {
             quantidadeCopias = qtd;
             document.querySelectorAll('.print-capsule-btn').forEach(b => b.classList.remove('active'));
             const btn = document.getElementById('btn-opt-' + qtd);
@@ -1712,106 +316,63 @@
         function exibir(url) {
             quantidadeCopias = 1;
             const botoesGuestbook = guestbookAtivo ? `
-                <button id="btn-opt-3" class="print-capsule-btn color-blue" onclick="alterarCopias(3)">
-                    <i class="fas fa-book"></i> 1 + Guestbook
-                </button>
-                <button id="btn-opt-4" class="print-capsule-btn color-blue" onclick="alterarCopias(4)">
-                    <i class="fas fa-book"></i> 2 + Guestbook
-                </button>` : '';
+                <button id="btn-opt-3" class="print-capsule-btn" onclick="alterarCopias(3)"><i class="fas fa-book"></i> 1 + GB</button>
+                <button id="btn-opt-4" class="print-capsule-btn" onclick="alterarCopias(4)"><i class="fas fa-book"></i> 2 + GB</button>` : '';
 
             const loader = document.getElementById('loader');
             loader.innerHTML = `
-                <div class="preview-wrapper">
-                    <img src="${url}" class="preview-img" alt="Preview">
-                </div>
-                <div class="options-title">Quantas cópias deseja imprimir?</div>
+                <img src="${url}" class="preview-img">
+                <div style="font-family:var(--font-display);font-size:14px;color:var(--accent);margin-bottom:18px;text-transform:uppercase;">Quantas cópias?</div>
                 <div class="print-grid">
-                    <button id="btn-opt-1" class="print-capsule-btn color-green active" onclick="alterarCopias(1)">
-                        <i class="fas fa-print"></i> 1 Cópia
-                    </button>
-                    <button id="btn-opt-2" class="print-capsule-btn color-green" onclick="alterarCopias(2)">
-                        <i class="fas fa-print"></i> 2 Cópias
-                    </button>
+                    <button id="btn-opt-1" class="print-capsule-btn active" onclick="alterarCopias(1)"><i class="fas fa-print"></i> 1</button>
+                    <button id="btn-opt-2" class="print-capsule-btn" onclick="alterarCopias(2)"><i class="fas fa-print"></i> 2</button>
                     ${botoesGuestbook}
                 </div>
-                <button class="btn-send" onclick="enviar()">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
-                <div class="send-label">Enviar e Imprimir</div>
-                <button class="btn-cancel" onclick="cancelarCaptura()">Cancelar</button>
+                <button class="btn-send" onclick="enviar()"><i class="fas fa-paper-plane"></i></button>
+                <div style="font-size:11px;color:var(--accent);font-weight:800;text-transform:uppercase;margin-bottom:14px;">Enviar</div>
+                <button onclick="document.getElementById('loader').classList.remove('active')" style="background:transparent;border:1px solid var(--border-2);color:var(--text-3);font-size:11px;font-weight:700;padding:10px 24px;border-radius:20px;cursor:pointer;text-transform:uppercase;">Cancelar</button>
             `;
             loader.classList.add('active');
         }
 
-        function cancelarCaptura() {
-            fecharLoader();
-            pics = [];
-            voltarHome();
-        }
-
-        /* ═══════════ ENVIO FINAL ═══════════ */
         async function enviar() {
-            mostrarLoader('Enviando...');
+            document.getElementById('loader').innerHTML = `<div class="spin"></div><p style="color:var(--accent);margin-top:20px;font-weight:700;text-transform:uppercase;font-size:12px;">Enviando...</p>`;
             const cv = document.getElementById('c-strip');
             cv.toBlob(async (b) => {
-                const copiasFisicas = getCopiasFisicas(quantidadeCopias);
-                const ts = Date.now();
+                const copiasFisicas = quantidadeCopias === 1 ? 1 : quantidadeCopias === 2 ? 2 : quantidadeCopias === 3 ? 2 : 3;
                 const temGuestbook = (quantidadeCopias === 3 || quantidadeCopias === 4);
                 const sufixo = temGuestbook ? '_guestbook' : '';
-                const nome = `foto_${ts}_${copiasFisicas}c${sufixo}.jpg`;
+                const ts = Date.now();
                 const fd = new FormData();
-                fd.append('foto', b, nome);
+                fd.append('foto', b, `foto_${ts}_${copiasFisicas}c${sufixo}.jpg`);
                 fd.append('eventoId', eventoId);
                 fd.append('timestamp', String(ts) + '_' + copiasFisicas + 'c' + sufixo);
                 fd.append('copias', String(copiasFisicas));
-
                 try {
                     const res = await fetch(`${API}/salvar-foto`, { method: 'POST', body: fd });
-                    if (res.ok) {
-                        mostrarToast("Enviado", "Foto enviada com sucesso!", "success");
-                        fecharLoader();
-                        setTimeout(() => {
-                            document.getElementById('sub-count').innerText = "AGUARDANDO START";
-                            document.getElementById('num-count').innerText = "";
-                        }, 400);
-                    } else {
-                        mostrarToast("Erro no envio", "Servidor rejeitou o arquivo.", "error");
-                        fecharLoader();
-                    }
-                } catch (e) {
-                    mostrarToast("Erro no envio", "Verifique a conexão.", "error");
-                    fecharLoader();
-                }
+                    if (res.ok) { mostrarToast("Enviado", "Foto enviada!", "success"); document.getElementById('loader').classList.remove('active'); }
+                    else throw new Error();
+                } catch (e) { mostrarToast("Erro", "Falha no envio.", "error"); document.getElementById('loader').classList.remove('active'); }
             }, 'image/jpeg', 0.95);
         }
 
-        /* ═══════════ INICIALIZAÇÃO + CLEANUP ═══════════ */
-        function initApp() {
-            loadSavedBackground();
-
-            const savedModo = localStorage.getItem(LS_MODO) || 'manual';
-            setModo(savedModo);
-
+        window.addEventListener('load', () => {
             sync();
             intervaloStatus = setInterval(sync, 10000);
-        }
+            document.getElementById('bg-input').addEventListener('change', (e) => {
+                const f = e.target.files[0]; if (!f) return;
+                const r = new FileReader();
+                r.onload = (ev) => { document.getElementById('dynamic-bg').style.backgroundImage = `url('${ev.target.result}')`; document.getElementById('dynamic-bg').classList.add('active'); try { localStorage.setItem('photoprint_bg_mobile', ev.target.result); } catch(err) {} };
+                r.readAsDataURL(f);
+            });
+            const bg = localStorage.getItem('photoprint_bg_mobile');
+            if (bg) { document.getElementById('dynamic-bg').style.backgroundImage = `url('${bg}')`; document.getElementById('dynamic-bg').classList.add('active'); }
+        });
 
-        window.addEventListener('load', initApp);
         window.addEventListener('beforeunload', () => {
             if (intervaloStatus) clearInterval(intervaloStatus);
-            if (intervaloPolling) clearInterval(intervaloPolling);
             if (stream) stream.getTracks().forEach(t => t.stop());
         });
-
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) sync();
-        });
     </script>
-    <!-- ═══════════════════════════════════════════════════════════ -->
-    <!-- FIM DO BLOCO DE SCRIPTS (JavaScript)                        -->
-    <!-- ═══════════════════════════════════════════════════════════ -->
 </body>
 </html>
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- FIM DO ARQUIVO celular.html — MOBILE v4.1                          -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->

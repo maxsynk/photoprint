@@ -1,5 +1,5 @@
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- INÍCIO DO ARQUIVO quiosque.html — QUIOSQUE PRO v2.0                -->
+<!-- INÍCIO DO ARQUIVO quiosque.html — QUIOSQUE PRO v2.1 (CORRIGIDO)    -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#000000">
-    <title>PHOTO CLOUD — Quiosque Pro v2.2</title>
+    <title>PHOTO CLOUD — Quiosque Pro v2.1</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,9 +16,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-    <!-- ═══════════════════════════════════════════════════════════ -->
-    <!-- INÍCIO DO BLOCO DE ESTILOS (CSS)                            -->
-    <!-- ═══════════════════════════════════════════════════════════ -->
     <style>
         :root {
             --neon: #39ff14;
@@ -54,7 +51,6 @@
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             --transition-fast: all 0.15s ease;
 
-            /* NOVA TIPOGRAFIA SUAVE */
             --font-display: 'Outfit', sans-serif;
             --font-mono: 'Space Grotesk', sans-serif;
             --font-body: 'Plus Jakarta Sans', -apple-system, sans-serif;
@@ -80,7 +76,7 @@
                 var(--bg-0);
         }
 
-        /* ═══════════ HEADER ═══════════ */
+        /* HEADER */
         header {
             background: rgba(10, 10, 10, 0.8);
             padding: 30px 40px 20px;
@@ -120,10 +116,7 @@
             text-shadow: 0 0 15px rgba(57, 255, 20, 0.4);
         }
 
-        .brand-center {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+        .brand-center { text-align: center; margin-bottom: 20px; }
         .brand-center h1 {
             font-family: var(--font-display);
             margin: 0;
@@ -148,7 +141,6 @@
             text-transform: uppercase;
         }
 
-        /* Busca trigger */
         .search-trigger {
             background: rgba(0, 0, 0, 0.6);
             border: 1px solid var(--border-neon);
@@ -177,7 +169,7 @@
         }
         .search-trigger i { font-size: 16px; }
 
-        /* ═══════════ GALERIA ═══════════ */
+        /* GALERIA */
         #galeria {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -235,7 +227,7 @@
             letter-spacing: 0.5px;
         }
 
-        /* ═══════════ NUMPAD ═══════════ */
+        /* NUMPAD */
         #numpad-overlay {
             display: none;
             position: fixed; inset: 0;
@@ -248,11 +240,7 @@
         }
         #numpad-overlay.active { display: flex; }
 
-        .numpad-content {
-            width: 340px;
-            max-width: 92vw;
-            text-align: center;
-        }
+        .numpad-content { width: 340px; max-width: 92vw; text-align: center; }
         .numpad-title {
             font-family: var(--font-display);
             font-size: 16px;
@@ -281,11 +269,7 @@
         }
         #input-busca:focus { border-color: var(--neon); }
 
-        .numpad-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-        }
+        .numpad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
         .num-btn {
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid var(--bg-4);
@@ -310,22 +294,9 @@
             box-shadow: 0 0 30px var(--neon);
             transform: scale(0.95);
         }
-        .btn-ok {
-            background: var(--neon);
-            color: var(--bg-0);
-            border-color: var(--neon);
-            font-family: var(--font-display);
-            font-size: 16px;
-            font-weight: 900;
-            letter-spacing: 1px;
-        }
+        .btn-ok { background: var(--neon); color: var(--bg-0); border-color: var(--neon); font-family: var(--font-display); font-size: 16px; font-weight: 900; letter-spacing: 1px; }
         .btn-ok:hover { box-shadow: var(--neon-glow); }
-        .btn-c {
-            color: var(--red);
-            border-color: rgba(255, 49, 49, 0.3);
-            font-size: 14px;
-            font-weight: 800;
-        }
+        .btn-c { color: var(--red); border-color: rgba(255, 49, 49, 0.3); font-size: 14px; font-weight: 800; }
         .btn-c:hover { background: rgba(255, 49, 49, 0.1); border-color: var(--red); }
 
         .btn-fechar {
@@ -346,7 +317,7 @@
         }
         .btn-fechar:hover { color: var(--red); border-color: var(--red); }
 
-        /* ═══════════ MODAL PREVIEW ═══════════ */
+        /* MODAL PREVIEW */
         #modal {
             display: none;
             position: fixed; inset: 0;
@@ -386,205 +357,65 @@
             width: 280px;
             box-shadow: 0 0 60px rgba(57, 255, 20, 0.3);
         }
-        .instr-header {
-            font-size: 10px;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-weight: 800;
-            margin-bottom: 6px;
-        }
-        .instr-text {
-            font-family: var(--font-display);
-            font-weight: 800;
-            font-size: 16px;
-            color: #000;
-            margin-bottom: 16px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            line-height: 1.3;
-        }
-        #qrcode {
-            display: flex;
-            justify-content: center;
-            margin: 16px 0;
-        }
+        .instr-header { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 2px; font-weight: 800; margin-bottom: 6px; }
+        .instr-text { font-family: var(--font-display); font-weight: 800; font-size: 16px; color: #000; margin-bottom: 16px; letter-spacing: 0.5px; text-transform: uppercase; line-height: 1.3; }
+        #qrcode { display: flex; justify-content: center; margin: 16px 0; }
         #qrcode img { border: 4px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
 
-        #photo-id-label {
-            font-family: var(--font-mono);
-            font-weight: 700;
-            font-size: 34px;
-            color: #000;
-            margin-top: 8px;
-            letter-spacing: 2px;
-        }
+        #photo-id-label { font-family: var(--font-mono); font-weight: 700; font-size: 34px; color: #000; margin-top: 8px; letter-spacing: 2px; }
 
         .close-btn {
-            background: var(--neon);
-            color: var(--bg-0);
-            border: none;
-            padding: 16px;
-            border-radius: var(--radius-md);
-            font-family: var(--font-body);
-            font-weight: 900;
-            font-size: 14px;
-            cursor: pointer;
-            width: 100%;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-top: 20px;
-            transition: var(--transition);
+            background: var(--neon); color: var(--bg-0); border: none; padding: 16px;
+            border-radius: var(--radius-md); font-family: var(--font-body); font-weight: 900;
+            font-size: 14px; cursor: pointer; width: 100%; text-transform: uppercase;
+            letter-spacing: 2px; margin-top: 20px; transition: var(--transition);
         }
         .close-btn:hover { box-shadow: var(--neon-glow); transform: translateY(-1px); }
 
-        /* ═══════════ SCREENSAVER ═══════════ */
-        #screensaver {
-            display: none;
-            position: fixed; inset: 0;
-            background: #000;
-            z-index: 5000;
-            cursor: pointer;
-        }
+        /* SCREENSAVER */
+        #screensaver { display: none; position: fixed; inset: 0; background: #000; z-index: 5000; cursor: pointer; }
         #screensaver.active { display: block; }
-        #ss-img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            filter: brightness(0.5) contrast(1.1);
-            transition: opacity 0.6s ease;
-        }
+        #ss-img { width: 100%; height: 100%; object-fit: contain; filter: brightness(0.5) contrast(1.1); transition: opacity 0.6s ease; }
         .ss-msg {
-            position: absolute;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid var(--neon);
-            color: var(--neon);
-            padding: 20px 50px;
-            border-radius: var(--radius-md);
-            font-family: var(--font-display);
-            font-weight: 900;
-            font-size: 22px;
-            text-transform: uppercase;
-            box-shadow: 0 0 25px var(--neon);
-            animation: pulseBlink 2s infinite;
-            letter-spacing: 4px;
-            border-left: 8px solid var(--neon);
+            position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8); border: 2px solid var(--neon); color: var(--neon);
+            padding: 20px 50px; border-radius: var(--radius-md); font-family: var(--font-display);
+            font-weight: 900; font-size: 22px; text-transform: uppercase; box-shadow: 0 0 25px var(--neon);
+            animation: pulseBlink 2s infinite; letter-spacing: 4px; border-left: 8px solid var(--neon);
             backdrop-filter: blur(10px);
         }
-        @keyframes pulseBlink {
-            0%, 100% { opacity: 1; text-shadow: 0 0 10px var(--neon); }
-            50% { opacity: 0.6; text-shadow: 0 0 25px var(--neon); }
-        }
+        @keyframes pulseBlink { 0%, 100% { opacity: 1; text-shadow: 0 0 10px var(--neon); } 50% { opacity: 0.6; text-shadow: 0 0 25px var(--neon); } }
 
-        /* ═══════════ MOBILE DOWNLOAD ═══════════ */
+        /* MOBILE DOWNLOAD */
         #mobile-download-screen {
-            display: none;
-            position: fixed; inset: 0;
+            display: none; position: fixed; inset: 0;
             background: radial-gradient(circle at 50% 50%, rgba(26, 58, 18, 0.6) 0%, #000 100%);
-            z-index: 9999;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 30px;
-            text-align: center;
+            z-index: 9999; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center;
         }
         #mobile-download-screen.active { display: flex; }
-
-        .mobile-badge {
-            font-size: 10px;
-            color: var(--text-3);
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            font-weight: 800;
-            margin-bottom: 8px;
-        }
-        .mobile-title {
-            font-family: var(--font-display);
-            color: var(--neon);
-            letter-spacing: 4px;
-            margin: 0 0 24px;
-            font-size: 28px;
-            text-transform: uppercase;
-            font-weight: 900;
-            text-shadow: var(--neon-glow);
-        }
-        #mobile-img {
-            max-width: 100%;
-            max-height: 50vh;
-            border-radius: var(--radius-md);
-            border: 2px solid var(--border-neon);
-            box-shadow: 0 0 40px rgba(57, 255, 20, 0.2);
-        }
+        .mobile-badge { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 3px; font-weight: 800; margin-bottom: 8px; }
+        .mobile-title { font-family: var(--font-display); color: var(--neon); letter-spacing: 4px; margin: 0 0 24px; font-size: 28px; text-transform: uppercase; font-weight: 900; text-shadow: var(--neon-glow); }
+        #mobile-img { max-width: 100%; max-height: 50vh; border-radius: var(--radius-md); border: 2px solid var(--border-neon); box-shadow: 0 0 40px rgba(57, 255, 20, 0.2); }
         .btn-baixar {
-            background: var(--neon);
-            color: var(--bg-0);
-            padding: 20px 56px;
-            border-radius: var(--radius-md);
-            text-decoration: none;
-            font-family: var(--font-body);
-            font-weight: 900;
-            font-size: 15px;
-            margin-top: 28px;
-            box-shadow: var(--neon-glow);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            border: none;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
+            background: var(--neon); color: var(--bg-0); padding: 20px 56px; border-radius: var(--radius-md);
+            text-decoration: none; font-family: var(--font-body); font-weight: 900; font-size: 15px;
+            margin-top: 28px; box-shadow: var(--neon-glow); text-transform: uppercase; letter-spacing: 2px;
+            border: none; cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; gap: 10px;
         }
         .btn-baixar:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(57, 255, 20, 0.6); }
-        .btn-baixar:disabled {
-            background: var(--bg-4);
-            color: var(--text-3);
-            box-shadow: none;
-            cursor: wait;
-        }
-        #msg-status {
-            font-family: var(--font-body);
-            font-size: 11px;
-            color: var(--text-3);
-            margin-top: 16px;
-            font-weight: 600;
-        }
+        .btn-baixar:disabled { background: var(--bg-4); color: var(--text-3); box-shadow: none; cursor: wait; }
+        #msg-status { font-family: var(--font-body); font-size: 11px; color: var(--text-3); margin-top: 16px; font-weight: 600; }
 
-        /* ═══════════ EMPTY STATE ═══════════ */
-        .empty-galeria {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 80px 20px;
-            color: var(--text-3);
-        }
-        .empty-galeria i {
-            font-size: 60px;
-            margin-bottom: 16px;
-            opacity: 0.3;
-            display: block;
-        }
-        .empty-galeria h3 {
-            font-family: var(--font-display);
-            font-size: 18px;
-            color: var(--text-2);
-            margin-bottom: 6px;
-            font-weight: 700;
-        }
+        /* EMPTY STATE */
+        .empty-galeria { grid-column: 1 / -1; text-align: center; padding: 80px 20px; color: var(--text-3); }
+        .empty-galeria i { font-size: 60px; margin-bottom: 16px; opacity: 0.3; display: block; }
+        .empty-galeria h3 { font-family: var(--font-display); font-size: 18px; color: var(--text-2); margin-bottom: 6px; font-weight: 700; }
         .empty-galeria p { font-size: 12px; }
 
-        /* ═══════════ RESPONSIVO ═══════════ */
+        /* RESPONSIVO */
         @media (min-width: 768px) {
-            .modal-container {
-                flex-direction: row;
-                justify-content: center;
-            }
-            #full-photo {
-                max-height: 80vh;
-                max-width: 60%;
-            }
+            .modal-container { flex-direction: row; justify-content: center; }
+            #full-photo { max-height: 80vh; max-width: 60%; }
         }
         @media (max-width: 600px) {
             header { padding: 70px 20px 20px; }
@@ -598,13 +429,10 @@
             .mobile-title { font-size: 22px; }
         }
     </style>
-    <!-- ═══════════════════════════════════════════════════════════ -->
-    <!-- FIM DO BLOCO DE ESTILOS (CSS)                               -->
-    <!-- ═══════════════════════════════════════════════════════════ -->
 </head>
 <body>
 
-    <!-- ═══════════ TELA DE DOWNLOAD MOBILE ═══════════ -->
+    <!-- TELA DE DOWNLOAD MOBILE -->
     <div id="mobile-download-screen">
         <div class="mobile-badge">SISTEMA PRONTO</div>
         <h2 class="mobile-title">Baixar Foto</h2>
@@ -615,7 +443,7 @@
         <p id="msg-status"></p>
     </div>
 
-    <!-- ═══════════ CONTEÚDO PRINCIPAL DO QUIOSQUE ═══════════ -->
+    <!-- CONTEÚDO PRINCIPAL DO QUIOSQUE -->
     <div id="conteudo-quiosque">
         <header id="main-header">
             <div class="event-label">
@@ -677,22 +505,16 @@
         </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════════ -->
-    <!-- INÍCIO DO BLOCO DE SCRIPTS (JavaScript)                     -->
-    <!-- ═══════════════════════════════════════════════════════════ -->
     <script>
         const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
         let eventoAtivo = "", todasFotos = [], inactivityTimer, ssInterval;
         
         const qr = new QRCode(document.getElementById("qrcode"), {
-            width: 190,
-            height: 190,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
+            width: 190, height: 190, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H
         });
 
-        window.onload = () => {
+        /* INICIALIZAÇÃO */
+        window.addEventListener('load', () => {
             const params = new URLSearchParams(window.location.search);
             const fotoUrl = params.get('dl');
             const fotoKey = params.get('key');
@@ -708,8 +530,9 @@
                 syncDados();
                 resetInactivityTimer();
             }
-        };
+        });
 
+        /* CONTROLE DE DOWNLOAD MOBILE */
         function exibirTelaDownload(url) {
             document.getElementById('conteudo-quiosque').style.display = 'none';
             document.getElementById('mobile-download-screen').classList.add('active');
@@ -746,73 +569,131 @@
             }
         }
 
-                /* ═══════════ SINCRONIZAÇÃO CORRIGIDA ═══════════ */
-                async function syncDados() {
+        /* SINCRONIZAÇÃO DE DADOS (CORRIGIDO) */
+        async function syncDados() {
             try {
-                // 1. Pega o evento ativo
+                // Pega o evento ativo
                 const r1 = await fetch(`${API_URL}/get-all-states?t=${Date.now()}`);
                 const data = await r1.json();
                 const config = data.config || data;
-                const eventoRecebido = config.evento || "";
-                const novoEvento = (eventoRecebido && eventoRecebido !== 'Geral') ? eventoRecebido : "";
+                const novoEvento = (config.evento && config.evento !== 'Geral') ? config.evento : "";
 
                 if (novoEvento !== eventoAtivo) {
                     eventoAtivo = novoEvento;
-                    const titulo = document.getElementById('ev-titulo');
-                    if (titulo) titulo.innerText = eventoAtivo ? eventoAtivo.toUpperCase() : "AGUARDANDO EVENTO";
-                    todasFotos = [];
+                    document.getElementById('ev-titulo').innerText = eventoAtivo ? eventoAtivo.toUpperCase() : "AGUARDANDO EVENTO";
+                    todasFotos = []; // Reseta ao trocar de evento
                 }
 
-                // 2. Busca as fotos
+                // Busca as fotos
                 let url = `${API_URL}/list-photos?t=${Date.now()}`;
                 if (eventoAtivo) url += `&evento=${encodeURIComponent(eventoAtivo)}`;
-
+                
                 const r2 = await fetch(url);
-                const resposta = await r2.json();
-
-                console.log('[QUIOSQUE] Resposta de /list-photos:', resposta);
-
-                // TRATAMENTO: a API pode retornar array direto OU { fotos: [...] }
-                let fotos = [];
-                if (Array.isArray(resposta)) {
-                    fotos = resposta;
-                } else if (resposta && Array.isArray(resposta.fotos)) {
-                    fotos = resposta.fotos;
-                } else if (resposta && Array.isArray(resposta.data)) {
-                    fotos = resposta.data;
-                } else {
-                    console.warn('[QUIOSQUE] Formato de resposta não reconhecido:', resposta);
-                    return;
-                }
-
+                let resposta = await r2.json();
+                
+                // Trata a resposta (pode vir array direto ou objeto com .fotos)
+                let fotos = Array.isArray(resposta) ? resposta : (resposta.fotos || resposta.data || []);
+                
                 const invertidas = fotos.reverse();
-
-                // Compara apenas as keys para ver se mudou
-                const keysNovas = JSON.stringify(invertidas.map(f => f.key || f.id));
-                const keysAtuais = JSON.stringify(todasFotos.map(f => f.key || f.id));
-
-                if (keysNovas !== keysAtuais) {
+                
+                if (JSON.stringify(invertidas.map(f => f.key || f.id)) !== JSON.stringify(todasFotos.map(f => f.key || f.id))) {
                     todasFotos = invertidas;
                     renderizarGaleria();
                 }
             } catch (e) {
-                console.error('❌ Erro syncDados:', e);
+                console.error('Erro syncDados:', e);
             }
         }
 
-        /* ═══════════ BUSCA POR ID (SEM ERRO DE SINTAXE) ═══════════ */
+        /* RENDERIZAÇÃO DA GALERIA */
+        function renderizarGaleria() {
+            const container = document.getElementById('galeria');
+            const termo = document.getElementById('input-busca').value;
+            const comId = todasFotos.map((f, i) => ({ ...f, displayId: todasFotos.length - i }));
+            const filtradas = termo === "" ? comId : comId.filter(f => f.displayId.toString().includes(termo));
+            
+            if (filtradas.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-galeria">
+                        <i class="fas fa-image"></i>
+                        <h3>Nenhuma foto encontrada</h3>
+                        <p>As fotos aparecerão aqui conforme forem capturadas</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = filtradas.map(f => {
+                const key = f.key || f.id;
+                const imgUrl = `${API_URL}/photo?key=${encodeURIComponent(key)}&t=${Date.now()}`;
+                return `<div class="foto-item" onclick="abrirModal('${key}', '${f.displayId}')">
+                    <div class="foto-id">#${f.displayId}</div>
+                    <img src="${imgUrl}" loading="lazy" alt="Foto ${f.displayId}">
+                </div>`;
+            }).join('');
+        }
+
+        /* TIMER DE INATIVIDADE (RESTAURADO) */
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimer);
+            inactivityTimer = setTimeout(() => {
+                if (todasFotos.length > 0 && !document.getElementById('modal').classList.contains('active')) {
+                    document.getElementById('screensaver').classList.add('active');
+                    runSlideshow();
+                    clearInterval(ssInterval);
+                    ssInterval = setInterval(runSlideshow, 5000);
+                }
+            }, 60000);
+        }
+
+        function runSlideshow() {
+            if (todasFotos.length === 0) return;
+            const f = todasFotos[Math.floor(Math.random() * todasFotos.length)];
+            const key = f.key || f.id;
+            const img = document.getElementById('ss-img');
+            img.style.opacity = '0';
+            setTimeout(() => {
+                img.src = `${API_URL}/photo?key=${encodeURIComponent(key)}&t=${Date.now()}`;
+                img.style.opacity = '1';
+            }, 300);
+        }
+
+        function stopScreensaver() {
+            document.getElementById('screensaver').classList.remove('active');
+            clearInterval(ssInterval);
+            resetInactivityTimer();
+        }
+
+        /* NUMPAD */
+        function addNum(n) {
+            const inp = document.getElementById('input-busca');
+            if (inp.value.length < 4) inp.value += n;
+            renderizarGaleria();
+        }
+
+        function limparBusca() {
+            document.getElementById('input-busca').value = "";
+            renderizarGaleria();
+        }
+
+        function toggleNumpad(show) {
+            document.getElementById('numpad-overlay').classList.toggle('active', show);
+            if (show) {
+                document.getElementById('input-busca').value = "";
+                renderizarGaleria();
+            }
+        }
+
+        /* BUSCA E MODAL */
         function buscarEAbrirFoto() {
             const termo = document.getElementById('input-busca').value;
             if (!termo) return;
-
             const comId = todasFotos.map((f, i) => ({ ...f, displayId: todasFotos.length - i }));
             const achada = comId.find(f => f.displayId.toString() === termo);
-
             if (achada) {
                 toggleNumpad(false);
-                abrirModal(achada.key, achada.displayId);
+                abrirModal(achada.key || achada.id, achada.displayId);
             } else {
-                // Feedback visual de erro (sem alert)
                 const input = document.getElementById('input-busca');
                 input.style.borderColor = 'var(--red)';
                 input.style.color = 'var(--red)';
@@ -829,14 +710,15 @@
             stopScreensaver();
             const url = `${API_URL}/photo?key=${encodeURIComponent(key)}&t=${Date.now()}`;
             const img = document.getElementById('full-photo');
-            img.onerror = function() {
-                this.src = url + '&retry=1';
-            };
+            img.onerror = function() { this.src = url + '&retry=1'; };
             img.src = url;
             document.getElementById('photo-id-label').innerText = "#" + id;
             
+            // Gera o link para o QR Code passando a KEY e o ID
             const linkCurto = new URL(window.location.href.split('?')[0]);
-            linkCurto.searchParams.set('key', key);
+            linkCurto.pathname = linkCurto.pathname.replace('quiosque.html', 'galeria.html
+                       linkCurto.searchParams.set('key', key);
+            linkCurto.searchParams.set('id', id);
             
             qr.clear();
             qr.makeCode(linkCurto.toString());
@@ -869,11 +751,8 @@
             if (ssInterval) clearInterval(ssInterval);
         });
     </script>
-    <!-- ═══════════════════════════════════════════════════════════ -->
-    <!-- FIM DO BLOCO DE SCRIPTS (JavaScript)                        -->
-    <!-- ═══════════════════════════════════════════════════════════ -->
 </body>
 </html>
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- FIM DO ARQUIVO quiosque.html — QUIOSQUE PRO v2.0                   -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->               
+<!-- FIM DO ARQUIVO quiosque.html — QUIOSQUE PRO v2.1                   -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->                                                           

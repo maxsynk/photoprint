@@ -210,231 +210,428 @@
     </div>
 
    <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- INÍCIO DO SCRIPT CORRIGIDO — galeria.html                          -->
+<!-- INÍCIO DO ARQUIVO galeria.html — v2.5 (COM BOTÃO DE VOLTAR)        -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-<script>
-    const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
-    let fotoUrlAtual = "";
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#000000">
+    <title>PHOTO PRINT — Sua Foto</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    window.addEventListener('load', init);
+    <style>
+        :root {
+            --neon: #39ff14;
+            --neon-dim: rgba(57, 255, 20, 0.12);
+            --neon-glow: 0 0 20px rgba(57, 255, 20, 0.4);
+            --red: #ff3131;
+            --red-dim: rgba(255, 49, 49, 0.15);
+            --blue: #0096ff;
+            --blue-dim: rgba(0, 150, 255, 0.12);
 
-    async function init() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const fotoKey = urlParams.get('key');
-        const fotoId = urlParams.get('id') || urlParams.get('photoId');
-        const fotoUrl = urlParams.get('dl');
+            --bg-0: #000000;
+            --bg-1: #0a0a0a;
+            --bg-2: #111111;
+            --bg-3: #1a1a1a;
+            --bg-4: #222222;
 
-        console.log('[GALERIA] Parâmetros recebidos:', { key: fotoKey, id: fotoId, dl: fotoUrl });
+            --text-0: #ffffff;
+            --text-1: #e0e0e0;
+            --text-2: #999999;
+            --text-3: #555555;
 
-        if (fotoKey) {
-            const url = `${API_URL}/photo?key=${fotoKey}&t=${Date.now()}`;
-            carregarFotoUnica(url, fotoId);
-            return;
+            --border-1: rgba(255, 255, 255, 0.06);
+            --border-2: rgba(255, 255, 255, 0.1);
+            --border-neon: rgba(57, 255, 20, 0.3);
+
+            --radius-sm: 10px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --radius-xl: 32px;
+
+            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.6);
+
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+            --font-display: 'Outfit', sans-serif;
+            --font-mono: 'Space Grotesk', sans-serif;
+            --font-body: 'Plus Jakarta Sans', -apple-system, sans-serif;
         }
 
-        if (fotoUrl) {
-            carregarFotoUnica(decodeURIComponent(fotoUrl), fotoId);
-            return;
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+        html, body {
+            font-family: var(--font-body);
+            background: var(--bg-0);
+            color: var(--text-0);
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
-        try {
-            // Busca o estado atual do painel para saber o evento ativo
-            const respConfig = await fetch(`${API_URL}/get-all-states`);
-            const dataConfig = await respConfig.json();
-            
-            if (dataConfig && dataConfig.config && dataConfig.config.evento) {
-                const nomeEventoAtivo = dataConfig.config.evento;
-                const subtitleEl = document.querySelector('.brand-subtitle');
-                if (subtitleEl) subtitleEl.innerText = nomeEventoAtivo;
+        body {
+            background:
+                radial-gradient(circle at 50% 0%, rgba(26, 58, 18, 0.5) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(57, 255, 20, 0.03) 0%, transparent 40%),
+                var(--bg-0);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+        }
 
-                // Puxa as fotos usando a rota oficial do seu Worker: /list-photos?evento=...
-                await carregarFotosDoEventoAtivo(nomeEventoAtivo);
-            } else {
-                mostrarErro('Nenhum evento ativo no momento. Escaneie o QR Code no quiosque.');
+        .header { position: relative; z-index: 2; text-align: center; margin-bottom: 24px; }
+
+        .brand-title {
+            font-family: var(--font-display); font-size: clamp(26px, 7vw, 36px); font-weight: 900; color: var(--neon);
+            text-shadow: var(--neon-glow); letter-spacing: 4px; text-transform: uppercase; line-height: 1;
+        }
+        .brand-subtitle { font-size: 10px; letter-spacing: 5px; color: var(--text-3); text-transform: uppercase; font-weight: 700; margin-top: 6px; }
+
+        .photo-card {
+            position: relative; z-index: 2; width: 100%; max-width: 420px; background: var(--bg-1);
+            border: 1px solid var(--border-neon); border-radius: var(--radius-lg); overflow: hidden;
+            box-shadow: var(--shadow-lg), 0 0 60px rgba(57, 255, 20, 0.1);
+        }
+
+        .photo-wrapper { position: relative; background: var(--bg-0); display: flex; align-items: center; justify-content: center; min-height: 300px; overflow: hidden; }
+        .photo-wrapper img { width: 100%; height: auto; display: block; transition: opacity 0.4s ease; }
+
+        .photo-badge {
+            position: absolute; top: 12px; left: 12px; z-index: 4; background: rgba(0, 0, 0, 0.85);
+            border-left: 3px solid var(--neon); border-radius: var(--radius-sm); padding: 6px 14px;
+            font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--neon);
+            letter-spacing: 1px; backdrop-filter: blur(10px);
+        }
+
+        /* Botão para voltar à grade dentro do card */
+        .btn-voltar-grade {
+            position: absolute; top: 12px; right: 12px; z-index: 4; background: rgba(0, 0, 0, 0.85);
+            border: 1px solid var(--border-2); border-radius: var(--radius-sm); padding: 6px 12px;
+            font-family: var(--font-body); font-size: 11px; font-weight: 700; color: var(--text-0);
+            cursor: pointer; backdrop-filter: blur(10px); transition: var(--transition); display: none;
+            align-items: center; gap: 6px; text-transform: uppercase;
+        }
+        .btn-voltar-grade:hover { border-color: var(--neon); color: var(--neon); background: var(--neon-dim); }
+
+        .photo-loader { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 14px; background: var(--bg-1); z-index: 2; transition: opacity 0.4s ease; }
+        .photo-loader.hidden { opacity: 0; pointer-events: none; }
+        .spin { width: 48px; height: 48px; border: 3px solid rgba(57, 255, 20, 0.15); border-top-color: var(--neon); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loader-text { font-family: var(--font-body); font-size: 11px; font-weight: 700; color: var(--neon); letter-spacing: 2px; text-transform: uppercase; }
+
+        .photo-actions { padding: 20px 20px 24px; display: flex; flex-direction: column; gap: 10px; position: relative; z-index: 2; }
+
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 16px 24px;
+            border-radius: var(--radius-md); font-family: var(--font-body); font-size: 13px; font-weight: 800;
+            letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; border: none;
+            transition: var(--transition); text-decoration: none; position: relative; overflow: hidden;
+        }
+
+        .btn-primary { background: var(--neon); color: var(--bg-0); box-shadow: var(--neon-glow); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(57, 255, 20, 0.6); }
+        .btn-primary:disabled { background: var(--bg-4); color: var(--text-3); box-shadow: none; cursor: wait; }
+        .btn-secondary { background: transparent; border: 1px solid var(--border-2); color: var(--text-1); }
+        .btn-secondary:hover { border-color: var(--neon); color: var(--neon); background: var(--neon-dim); }
+
+        .status-msg { text-align: center; font-size: 11px; color: var(--text-3); font-weight: 600; min-height: 16px; }
+        .status-msg.success { color: var(--neon); }
+        .status-msg.error { color: var(--red); }
+
+        .info-footer { position: relative; z-index: 2; text-align: center; margin-top: 24px; font-size: 10px; color: var(--text-3); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+        .info-footer .heart { color: var(--red); margin: 0 4px; }
+
+        .error-state { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; z-index: 2; position: relative; }
+        .error-state.active { display: flex; }
+        .error-state i { font-size: 60px; color: var(--red); margin-bottom: 20px; opacity: 0.8; }
+        .error-title { font-family: var(--font-display); font-size: 20px; font-weight: 800; color: var(--text-0); margin-bottom: 8px; }
+        .error-text { font-size: 12px; color: var(--text-2); line-height: 1.5; max-width: 320px; }
+    </style>
+</head>
+<body>
+
+    <div class="header" id="main-header">
+        <h1 class="brand-title">PHOTO PRINT</h1>
+        <p class="brand-subtitle">Carregando Evento...</p>
+    </div>
+
+    <div class="photo-card" id="photo-card">
+        <!-- O conteúdo será injetado dinamicamente via JS -->
+    </div>
+
+    <div class="error-state" id="error-state">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h2 class="error-title">Nenhuma foto encontrada</h2>
+        <p class="error-text" id="error-text">
+            O evento ativo ainda não possui fotos capturadas.
+        </p>
+    </div>
+
+    <div class="info-footer">
+        Feito com <span class="heart">♥</span> por Photo Print &copy; 2026
+    </div>
+
+    <script>
+        const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
+        let fotoUrlAtual = "";
+        let listaFotosCache = [];
+        let nomeEventoCache = "";
+
+        window.addEventListener('load', init);
+
+        async function init() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const fotoKey = urlParams.get('key');
+            const fotoId = urlParams.get('id') || urlParams.get('photoId');
+            const fotoUrl = urlParams.get('dl');
+
+            if (fotoKey) {
+                const url = `${API_URL}/photo?key=${fotoKey}&t=${Date.now()}`;
+                carregarFotoUnica(url, fotoId, false);
+                return;
             }
-        } catch (e) {
-            console.error('[GALERIA] Erro ao buscar evento ativo:', e);
-            mostrarErro('Não foi possível carregar o evento ativo.');
-        }
-    }
 
-    async function carregarFotosDoEventoAtivo(nomeEvento) {
-        const loader = document.getElementById('photo-loader');
-        const card = document.getElementById('photo-card');
-        
-        try {
-            const resp = await fetch(`${API_URL}/list-photos?evento=${encodeURIComponent(nomeEvento)}`);
-            const fotos = await resp.json();
-
-            if (loader) loader.classList.add('hidden');
-
-            if (Array.isArray(fotos) && fotos.length > 0) {
-                let htmlGrid = '<div style="padding: 20px;"><h3 style="font-size: 14px; margin-bottom: 14px; color: var(--neon); text-transform: uppercase; font-family: var(--font-mono);">📸 Fotos do Evento</h3><div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; max-height: 400px; overflow-y: auto;">';
-                
-                fotos.forEach(f => {
-                    // Cada objeto retornado pelo /list-photos tem a propriedade 'key'
-                    const viewUrl = `${API_URL}/photo?key=${encodeURIComponent(f.key)}`;
-                    htmlGrid += `<div onclick="carregarFotoUnica('${viewUrl}', '')" style="cursor: pointer; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-2); aspect-ratio: 1; background: #111; display: flex; align-items: center; justify-content: center;"><img src="${viewUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="Foto"></div>`;
-                });
-                
-                htmlGrid += '</div></div>';
-                card.innerHTML = htmlGrid;
-            } else {
-                card.innerHTML = '<div style="padding: 35px 20px; text-align: center;"><i class="fas fa-camera-retro" style="font-size: 40px; color: var(--neon); margin-bottom: 14px; opacity: 0.8;"></i><h3 style="font-size: 16px; color: #fff; margin-bottom: 8px;">Painel Sincronizado</h3><p style="font-size: 11px; color: var(--text-2); line-height: 1.5;">O evento ativo ("' + nomeEvento + '") foi identificado, mas ainda não há fotos registradas para ele.</p></div>';
+            if (fotoUrl) {
+                carregarFotoUnica(decodeURIComponent(fotoUrl), fotoId, false);
+                return;
             }
-        } catch (e) {
-            card.innerHTML = '<div style="padding: 35px 20px; text-align: center;"><i class="fas fa-signal" style="font-size: 40px; color: var(--neon); margin-bottom: 14px; opacity: 0.8;"></i><h3 style="font-size: 16px; color: #fff; margin-bottom: 8px;">Conectado ao Evento Ativo</h3><p style="font-size: 11px; color: var(--text-2); line-height: 1.5;">Vinculado ao evento "' + nomeEvento + '". Pronto para exibir as fotos assim que capturadas.</p></div>';
-        }
-    }
 
-    function carregarFotoUnica(url, id) {
-        const card = document.getElementById('photo-card');
-        card.innerHTML = `
-            <div class="photo-wrapper">
-                <div class="photo-badge" id="photo-badge">${id ? '#' + id : '#----'}</div>
-                <div class="photo-loader" id="photo-loader">
-                    <div class="spin"></div>
-                    <div class="loader-text">Carregando Foto...</div>
-                </div>
-                <img id="main-photo" src="" alt="Foto do evento" style="opacity: 0;">
-            </div>
-            <div class="photo-actions">
-                <button class="btn btn-primary" id="btn-download" onclick="baixarFoto()">
-                    <i class="fas fa-download"></i> Baixar Foto
-                </button>
-                <button class="btn btn-secondary" id="btn-compartilhar" onclick="compartilharFoto()">
-                    <i class="fas fa-share-alt"></i> Compartilhar
-                </button>
-                <div class="status-msg" id="status-msg"></div>
-            </div>
-        `;
-
-        const img = document.getElementById('main-photo');
-        const loader = document.getElementById('photo-loader');
-        const badge = document.getElementById('photo-badge');
-
-        fotoUrlAtual = url;
-
-        if (id) {
-            badge.innerText = `#${id}`;
-            badge.style.display = 'block';
-        } else {
-            badge.style.display = 'none';
-        }
-
-        img.onload = () => {
-            if (loader) loader.classList.add('hidden');
-            img.style.transition = 'opacity 0.4s ease';
-            img.style.opacity = '1';
-        };
-
-        img.onerror = () => {
-            if (loader) loader.classList.add('hidden');
-            mostrarErro('Não foi possível carregar a imagem.');
-        };
-
-        img.src = url;
-    }
-
-    async function baixarFoto() {
-        const btn = document.getElementById('btn-download');
-        const status = document.getElementById('status-msg');
-        
-        if (!fotoUrlAtual) return;
-
-        try {
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparando...';
-            status.innerText = "Preparando download...";
-            status.className = "status-msg";
-
-            const response = await fetch(fotoUrlAtual);
-            if (!response.ok) throw new Error('Erro na requisição');
-
-            const blob = await response.blob();
-            const blobUrl = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-            a.href = blobUrl;
-            a.download = `photoprint_${timestamp}.jpg`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(blobUrl);
-
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check"></i> Baixada!';
-            status.innerText = "✅ Foto salva na sua galeria!";
-            status.className = "status-msg success";
-
-            setTimeout(() => {
-                btn.innerHTML = '<i class="fas fa-download"></i> Baixar Foto';
-            }, 3000);
-
-        } catch (e) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-download"></i> Baixar Foto';
-            status.innerText = "❌ Falha no download. Segure na imagem e escolha 'Salvar foto'.";
-            status.className = "status-msg error";
-        }
-    }
-
-    async function compartilharFoto() {
-        const status = document.getElementById('status-msg');
-        if (!fotoUrlAtual) return;
-
-        if (navigator.share) {
             try {
-                const response = await fetch(fotoUrlAtual);
-                const blob = await response.blob();
-                const file = new File([blob], 'photoprint.jpg', { type: blob.type });
+                const respConfig = await fetch(`${API_URL}/get-all-states`);
+                const dataConfig = await respConfig.json();
+                
+                if (dataConfig && dataConfig.config && dataConfig.config.evento) {
+                    nomeEventoCache = dataConfig.config.evento;
+                    const subtitleEl = document.querySelector('.brand-subtitle');
+                    if (subtitleEl) subtitleEl.innerText = nomeEventoCache;
 
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({
-                        files: [file],
-                        title: 'PHOTO PRINT',
-                        text: 'Olha a foto do evento! 📸'
-                    });
-                    status.innerText = "✅ Compartilhado com sucesso!";
-                    status.className = "status-msg success";
-                    return;
+                    await carregarFotosDoEventoAtivo(nomeEventoCache);
+                } else {
+                    mostrarErro('Nenhum evento ativo no momento.');
                 }
-            } catch (err) {
-                if (err.name === 'AbortError') return;
+            } catch (e) {
+                mostrarErro('Não foi possível conectar ao servidor.');
             }
         }
 
-        try {
-            await navigator.clipboard.writeText(window.location.href);
-            status.innerText = "🔗 Link copiado!";
-            status.className = "status-msg success";
-        } catch (e) {
-            status.innerText = "Compartilhamento não disponível.";
-            status.className = "status-msg error";
+        async function carregarFotosDoEventoAtivo(nomeEvento) {
+            try {
+                const resp = await fetch(`${API_URL}/list-photos?evento=${encodeURIComponent(nomeEvento)}`);
+                const fotos = await resp.json();
+
+                if (Array.isArray(fotos) && fotos.length > 0) {
+                    listaFotosCache = fotos;
+                    // Mostra a grade diretamente na tela inicial
+                    exibirGradeFotos();
+                } else {
+                    mostrarErro('O evento ativo ("' + nomeEvento + '") ainda não possui fotos registradas.');
+                }
+            } catch (e) {
+                mostrarErro('Erro ao carregar as fotos do evento.');
+            }
         }
-    }
 
-    function mostrarErro(mensagem) {
-        const photoCard = document.getElementById('photo-card');
-        const mainHeader = document.getElementById('main-header');
-        const errorState = document.getElementById('error-state');
-        const errorText = document.getElementById('error-text');
+        function exibirGradeFotos() {
+            const card = document.getElementById('photo-card');
+            const subtitleEl = document.querySelector('.brand-subtitle');
+            if (subtitleEl) subtitleEl.innerText = nomeEventoCache;
 
-        if (photoCard) photoCard.style.display = 'none';
-        if (mainHeader) mainHeader.style.display = 'none';
-        if (errorState) errorState.classList.add('active');
-        if (mensagem && errorText) {
-            errorText.innerText = mensagem;
+            card.innerHTML = `
+                <div style="padding: 24px 20px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                        <h3 style="font-size: 13px; color: var(--neon); text-transform: uppercase; font-family: var(--font-mono); letter-spacing: 1px;">
+                            <i class="fas fa-images"></i> Fotos do Evento (${listaFotosCache.length})
+                        </h3>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-height: 420px; overflow-y: auto; padding-right: 4px;">
+                        ${listaFotosCache.map((f, index) => {
+                            const u = `${API_URL}/photo?key=${encodeURIComponent(f.key)}`;
+                            return `
+                                <div onclick="selecionarFotoDaGrade(${index})" style="cursor: pointer; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-2); aspect-ratio: 1; background: #111; transition: var(--transition); position: relative;" onmouseover="this.style.borderColor='var(--neon)'" onmouseout="this.style.borderColor='var(--border-2)'">
+                                    <img src="${u}" style="width: 100%; height: 100%; object-fit: cover;" alt="Foto ${index + 1}">
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
         }
-    }
 
-    let lastTouchEnd = 0;
-    document.addEventListener('touchend', (e) => {
-        const now = Date.now();
-        if (now - lastTouchEnd <= 300) e.preventDefault();
-        lastTouchEnd = now;
-    }, false);
-</script>
+        function selecionarFotoDaGrade(index) {
+            const f = listaFotosCache[index];
+            const u = `${API_URL}/photo?key=${encodeURIComponent(f.key)}`;
+            carregarFotoUnica(u, '', true); // true indica que veio da grade e deve mostrar o botão de voltar
+        }
+
+        function carregarFotoUnica(url, id, mostrarBotaoVoltar = false) {
+            const card = document.getElementById('photo-card');
+
+            card.innerHTML = `
+                <div class="photo-wrapper">
+                    <div class="photo-badge" id="photo-badge">${id ? '#' + id : '#foto'}</div>
+                    ${mostrarBotaoVoltar && listaFotosCache.length > 0 ? `
+                        <button class="btn-voltar-grade" onclick="exibirGradeFotos()">
+                            <i class="fas fa-th"></i> Voltar
+                        </button>
+                    ` : ''}
+                    <div class="photo-loader" id="photo-loader">
+                        <div class="spin"></div>
+                        <div class="loader-text">Carregando Foto...</div>
+                    </div>
+                    <img id="main-photo" src="" alt="Foto do evento" style="opacity: 0;">
+                </div>
+                <div class="photo-actions">
+                    <button class="btn btn-primary" id="btn-download" onclick="baixarFoto()">
+                        <i class="fas fa-download"></i> Baixar Foto
+                    </button>
+                    <button class="btn btn-secondary" id="btn-compartilhar" onclick="compartilharFoto()">
+                        <i class="fas fa-share-alt"></i> Compartilhar
+                    </button>
+                    <div class="status-msg" id="status-msg"></div>
+                </div>
+            `;
+
+            const img = document.getElementById('main-photo');
+            const loader = document.getElementById('photo-loader');
+            const badge = document.getElementById('photo-badge');
+
+            fotoUrlAtual = url;
+
+            if (id) {
+                badge.innerText = `#${id}`;
+                badge.style.display = 'block';
+            } else {
+                badge.style.display = 'none';
+            }
+
+            img.onload = () => {
+                if (loader) loader.classList.add('hidden');
+                img.style.transition = 'opacity 0.4s ease';
+                img.style.opacity = '1';
+            };
+
+            img.onerror = () => {
+                if (loader) loader.classList.add('hidden');
+            };
+
+            img.src = url;
+        }
+
+        async function baixarFoto() {
+            const btn = document.getElementById('btn-download');
+            const status = document.getElementById('status-msg');
+            
+            if (!fotoUrlAtual) return;
+
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparando...';
+                status.innerText = "Preparando download...";
+                status.className = "status-msg";
+
+                const response = await fetch(fotoUrlAtual);
+                if (!response.ok) throw new Error('Erro na requisição');
+
+                const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+                a.href = blobUrl;
+                a.download = `photoprint_${timestamp}.jpg`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(blobUrl);
+
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check"></i> Baixada!';
+                status.innerText = "✅ Foto salva na sua galeria!";
+                status.className = "status-msg success";
+
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fas fa-download"></i> Baixar Foto';
+                }, 3000);
+
+            } catch (e) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-download"></i> Baixar Foto';
+                status.innerText = "❌ Falha no download. Segure na imagem e escolha 'Salvar foto'.";
+                status.className = "status-msg error";
+            }
+        }
+
+        async function compartilharFoto() {
+            const status = document.getElementById('status-msg');
+            if (!fotoUrlAtual) return;
+
+            if (navigator.share) {
+                try {
+                    const response = await fetch(fotoUrlAtual);
+                    const blob = await response.blob();
+                    const file = new File([blob], 'photoprint.jpg', { type: blob.type });
+
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            files: [file],
+                            title: 'PHOTO PRINT',
+                            text: 'Olha a foto do evento! 📸'
+                        });
+                        status.innerText = "✅ Compartilhado com sucesso!";
+                        status.className = "status-msg success";
+                        return;
+                    }
+                } catch (err) {
+                    if (err.name === 'AbortError') return;
+                }
+            }
+
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                status.innerText = "🔗 Link copiado!";
+                status.className = "status-msg success";
+            } catch (e) {
+                status.innerText = "Compartilhamento não disponível.";
+                status.className = "status-msg error";
+            }
+        }
+
+        function mostrarErro(mensagem) {
+            const photoCard = document.getElementById('photo-card');
+            const mainHeader = document.getElementById('main-header');
+            const errorState = document.getElementById('error-state');
+            const errorText = document.getElementById('error-text');
+
+            if (photoCard) photoCard.style.display = 'none';
+            if (mainHeader) mainHeader.style.display = 'none';
+            if (errorState) errorState.classList.add('active');
+            if (mensagem && errorText) {
+                errorText.innerText = mensagem;
+            }
+        }
+
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) e.preventDefault();
+            lastTouchEnd = now;
+        }, false);
+    </script>
+</body>
+</html>
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- FIM DO ARQUIVO galeria.html — v2.5                                 -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 <!-- FIM DO SCRIPT CORRIGIDO — galeria.html                             -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->

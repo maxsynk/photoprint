@@ -71,8 +71,10 @@
         function atualizarStatusUI() {
             const badge = document.getElementById('status-badge'), text = document.getElementById('status-text');
             const btn = document.getElementById('btn-trigger'), btnText = document.getElementById('btn-text'), eventName = document.getElementById('event-name');
+            
             badge.classList.toggle('online', sistemaOnline);
             text.innerText = sistemaOnline ? "Online" : "Offline";
+            
             if (!sistemaOnline || !eventoAtivo) {
                 btn.classList.add('disabled');
                 btnText.innerText = "Aguardando Sincronização";
@@ -86,23 +88,26 @@
         async function verificarSistema() {
             try {
                 const res = await fetch(`${API}/get-all-states?t=${Date.now()}`);
-                if (!res || !res.ok) throw new Error();
                 const data = await res.json();
                 
-                // CORREÇÃO: Só mostra offline se a conexão falhar. Se o status no banco for OFFLINE, 
-                // a botoeira ainda permite tentar.
-                sistemaOnline = true; 
-                
-                if (data.config && data.config.evento && data.config.evento !== 'Geral')
-                                       eventoAtivo = true; 
-                    document.getElementById('event-name').innerText = data.config.evento; 
+                // O sistema está online se conseguirmos falar com o Worker
+                sistemaOnline = true;
+                badge.classList.add('online');
+                text.innerText = "Online";
+
+                // Verifica se tem evento ativo
+                if (data.config && data.config.evento && data.config.evento !== 'Geral') {
+                    eventoAtivo = true;
+                    document.getElementById('event-name').innerText = data.config.evento;
+                } else {
+                    eventoAtivo = false;
                 }
-                else eventoAtivo = false;
+                
                 atualizarStatusUI();
-            } catch (e) { 
-                sistemaOnline = false; 
-                eventoAtivo = false; 
-                atualizarStatusUI(); 
+            } catch (e) {
+                sistemaOnline = false;
+                eventoAtivo = false;
+                atualizarStatusUI();
             }
         }
 
@@ -126,12 +131,11 @@
         }
 
         window.addEventListener('load', () => { 
-            log("Iniciando monitoramento..."); 
             verificarSistema(); 
-            intervaloSync = setInterval(verificarSistema, 3000); 
+            intervaloSync = setInterval(verificarSistema, 2000); // Sincroniza a cada 2 segundos
         });
         
         window.addEventListener('beforeunload', () => { if (intervaloSync) clearInterval(intervaloSync); });
     </script>
 </body>
-</html> 
+</html>

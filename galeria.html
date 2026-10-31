@@ -524,25 +524,21 @@ function getCapacidade() {
         }
 
         /* ════════════════ LÓGICA DA FOLHA E IMPRESSÃO ════════════════ */
-        function alimentarBuffer(url, key, parsed, origemId) {
-            const cap = getCapacidade();
-            
-            if (parsed.guestbook) {
-                sheetQueue.push({ slots: [{ url, key, tipo: 'guestbook', origemId }], layout: 'layout-guestbook', descricao: 'Guestbook' });
-                addLog(`📄 Guestbook preparado`, 'info');
-                processarFilaImpressao();
-                return;
-            }
+       function alimentarBuffer(url, key, parsed, origemId) {
+    const cap = getCapacidade();
+    const tipo = parsed.guestbook ? 'guestbook' : 'foto';
 
-            for (let i = 0; i < parsed.copias; i++) {
-                sheetBuffer.push({ url, key, tipo: 'foto', origemId });
-                if (sheetBuffer.length >= cap.slots) {
-                    fecharFolha();
-                }
-            }
-            atualizarUIFolha();
-            render();
+    // Guestbook agora entra na folha atual, igual às outras fotos
+    for (let i = 0; i < parsed.copias; i++) {
+        sheetBuffer.push({ url, key, tipo, origemId });
+        if (sheetBuffer.length >= cap.slots) {
+            fecharFolha();
         }
+    }
+    if (parsed.guestbook) addLog(`📖 Guestbook #${origemId} na folha (${parsed.copias}x)`, 'info');
+    atualizarUIFolha();
+    render();
+} 
 
         function fecharFolha() {
             if (sheetBuffer.length === 0) return;
@@ -670,7 +666,7 @@ function atualizarUIFolha() {
 
         if (data) {
             slot.classList.add('filled');
-            slot.innerHTML = `<span class="slot-label">${i+1}</span><img src="${data.url}">
+        slot.innerHTML = `<span class="slot-label">${i+1}${data.tipo === 'guestbook' ? ' · GB' : ''}</span><img src="${data.url}">    
                 <div class="remove-btn" onclick="event.stopPropagation(); removerDoBuffer(${i})"><i class="fa-solid fa-xmark"></i></div>`;
         } else {
             slot.innerHTML = `<span style="font-size:10px;color:var(--text-3);">${i+1}</span>`;

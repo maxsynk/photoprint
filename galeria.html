@@ -1,12 +1,12 @@
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- ▶▶▶ INÍCIO DO ARQUIVO galeria.html — CENTRAL v11.2 FINAL ◀◀◀        -->
+<!-- ▶▶▶ INÍCIO DO ARQUIVO galeria.html — CENTRAL v11.3 FINAL ◀◀◀        -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT — Central de Impressão v11.2</title>
+    <title>PHOTO PRINT — Central de Impressão v11.3</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -71,7 +71,7 @@
         }
 
         /* ═══════════════════════════════════════════════════════════════
-           ÁREA DE IMPRESSÃO (MATEMÁTICA EXATA PARA A4)
+           ÁREA DE IMPRESSÃO (MATEMÁTICA EXATA POR FORMATO)
            ═══════════════════════════════════════════════════════════════ */
         #print-area { display: none; }
 
@@ -90,11 +90,17 @@
                 gap: 2mm !important;
             }
 
-            /* LAYOUTS DINÂMICOS */
+            /* ── POLAROID: 6 por folha (3x2), tamanho 68x98mm ── */
             .layout-polaroid { grid-template-columns: repeat(3, 68mm) !important; grid-auto-rows: 98mm !important; }
+            
+            /* ── TIRINHA: 5 por folha (5x1), tamanho 37x180mm ── */
             .layout-tirinha { grid-template-columns: repeat(5, 37mm) !important; grid-auto-rows: 180mm !important; }
+            
+            /* ── 10x15 VERTICAL: 2 por folha (2x1), tamanho 100x150mm ── */
             .layout-10x15v { grid-template-columns: repeat(2, 100mm) !important; grid-auto-rows: 150mm !important; }
-            .layout-10x15h { grid-template-columns: repeat(2, 150mm) !important; grid-auto-rows: 100mm !important; }
+            
+            /* ── 10x15 HORIZONTAL: 2 por folha (1x2), tamanho 150x100mm ── */
+            .layout-10x15h { grid-template-columns: repeat(1, 150mm) !important; grid-auto-rows: 100mm !important; }
 
             .slot { width: 100% !important; height: 100% !important; display: flex !important; align-items: center !important; justify-content: center !important; overflow: hidden !important; background: #fff !important; }
             .slot img { width: 100% !important; height: 100% !important; object-fit: contain !important; }
@@ -392,10 +398,11 @@
 
         function getCapacidade() {
             const fmt = formatoAtual.toUpperCase();
+            // ── CONFIGURAÇÃO DE CAPACIDADE E LAYOUT POR FORMATO ──
             if (fmt.includes("POLAROID")) return { slots: fotosPorFolha, layout: "layout-polaroid" };
-            if (fmt.includes("TIRINHA")) return { slots: 5, layout: "layout-tirinha" }; // 5 por folha
-            if (fmt.includes("10X15H")) return { slots: 2, layout: "layout-10x15h" };
-            if (fmt.includes("10X15V")) return { slots: 2, layout: "layout-10x15v" };
+            if (fmt.includes("TIRINHA")) return { slots: 5, layout: "layout-tirinha" }; // 5 tirinhas em pé
+            if (fmt.includes("10X15H")) return { slots: 2, layout: "layout-10x15h" };   // 2 fotos deitadas
+            if (fmt.includes("10X15V")) return { slots: 2, layout: "layout-10x15v" };   // 2 fotos em pé
             return { slots: fotosPorFolha, layout: "layout-polaroid" };
         }
 
@@ -422,7 +429,7 @@
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `toast ${tipo}`;
-            toast.innerHTML = `<i class="fa-solid fa-${tipo==='success'?'check-circle':tipo==='error'?'exclamation-triangle':'info-circle'}" style="color:var(--${tipo==='success'?'success':tipo==='error'?'danger':'accent'})"></i>
+                        toast.innerHTML = `<i class="fa-solid fa-${tipo==='success'?'check-circle':tipo==='error'?'exclamation-triangle':'info-circle'}" style="color:var(--${tipo==='success'?'success':tipo==='error'?'danger':'accent'})"></i>
                 <div><div style="font-size:12px;font-weight:800;">${titulo}</div><div style="font-size:11px;color:var(--text-2);">${msg}</div></div>`;
             container.appendChild(toast);
             setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3500);
@@ -431,7 +438,7 @@
         /* ════════════════ SINCRONIZAÇÃO COM A API ════════════════ */
         async function atualizar() {
             try {
-                                const r1 = await fetch(`${API}/get-all-states?t=${Date.now()}`, { cache: 'no-store' });
+                const r1 = await fetch(`${API}/get-all-states?t=${Date.now()}`, { cache: 'no-store' });
                 if (!r1.ok) return;
                 
                 const config = await r1.json();
@@ -583,17 +590,19 @@
                 <div class="slot"><img src="${s.url}"></div>
             `).join('');
 
-            // ⬇️ CORREÇÃO DA ROTAÇÃO (10x15 H e V) ⬇️
+            // CORREÇÃO FINAL DA ROTAÇÃO (Força o Chrome a esquecer a anterior)
             let stylePage = document.getElementById('dynamic-page-style');
-            if (stylePage) stylePage.remove(); // Força o Chrome a esquecer a orientação anterior
+            if (stylePage) stylePage.remove();
             
             stylePage = document.createElement('style');
             stylePage.id = 'dynamic-page-style';
             document.head.appendChild(stylePage);
             
-            // Define a regra exata da folha
+            // Define a folha correta com base no layout
             let pageRule = '@page { size: A4 portrait; margin: 0; }';
-            if (folha.layout === 'layout-10x15h') {
+            
+            // Tirinha e 10x15 Horizontal precisam de folha DEITADA (Landscape)
+            if (folha.layout === 'layout-tirinha' || folha.layout === 'layout-10x15h') {
                 pageRule = '@page { size: A4 landscape; margin: 0; }';
             }
             
@@ -791,9 +800,9 @@
             atualizarUIFolha();
             atualizar();
             setInterval(atualizar, POLL_INTERVAL);
-            addLog('🚀 Central v11.2 iniciada', 'success');
+            addLog('🚀 Central v11.3 iniciada', 'success');
         });
     </script>
 </body>
 </html>
-<!-- ◀◀◀ FIM DO ARQUIVO galeria.html — v11.2 ▶▶▶ -->
+<!-- ◀◀◀ FIM DO ARQUIVO galeria.html — v11.3 ▶▶▶ -->

@@ -1,19 +1,19 @@
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- ▶▶▶ INÍCIO DO ARQUIVO galeria.html — CENTRAL v11.0 FINAL ◀◀◀        -->
+<!-- ▶▶▶ INÍCIO DO ARQUIVO galeria.html — CENTRAL v11.2 FINAL ◀◀◀        -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT — Central de Impressão v11.0</title>
+    <title>PHOTO PRINT — Central de Impressão v11.2</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* ═══════════════════════════════════════════════════════════════
-           TOKENS — AZUL ELÉTRICO (CYAN) + GRAFITE
+           TOKENS — AZUL ELÉTRICO + GRAFITE
            ═══════════════════════════════════════════════════════════════ */
         :root {
             --accent: #00E5FF;
@@ -59,7 +59,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Fundo Quadriculado */
         body {
             display: grid;
             grid-template-columns: var(--panel-width) 1fr;
@@ -92,20 +91,13 @@
             }
 
             /* LAYOUTS DINÂMICOS */
-            /* Polaroid (Padrão 9 fotos) */
-            .layout-polaroid { grid-template-columns: repeat(3, 68mm) !important; grid-auto-rows: 95mm !important; }
-            
-            /* Tirinha (3 fotos) */
-            .layout-tirinha { grid-template-columns: repeat(3, 66mm) !important; grid-auto-rows: 198mm !important; }
-            
-            /* 10x15 Vertical (2 fotos) */
+            .layout-polaroid { grid-template-columns: repeat(3, 68mm) !important; grid-auto-rows: 98mm !important; }
+            .layout-tirinha { grid-template-columns: repeat(5, 37mm) !important; grid-auto-rows: 180mm !important; }
             .layout-10x15v { grid-template-columns: repeat(2, 100mm) !important; grid-auto-rows: 150mm !important; }
-            
-            /* 10x15 Horizontal (2 fotos) - Muda a folha para paisagem */
             .layout-10x15h { grid-template-columns: repeat(2, 150mm) !important; grid-auto-rows: 100mm !important; }
 
             .slot { width: 100% !important; height: 100% !important; display: flex !important; align-items: center !important; justify-content: center !important; overflow: hidden !important; background: #fff !important; }
-            .slot img { width: 100% !important; height: 100% !important; object-fit: contain !important; } /* Não corta as fotos */
+            .slot img { width: 100% !important; height: 100% !important; object-fit: contain !important; }
         }
 
         /* ═══════════════════════════════════════════════════════════════
@@ -330,7 +322,7 @@
         <div class="sheet-section" id="sheet-section">
             <div class="sheet-header">
                 <span class="sheet-title">Folha Atual</span>
-                <span class="sheet-count" id="sheet-count">0/9</span>
+                <span class="sheet-count" id="sheet-count">0/6</span>
             </div>
             <div class="sheet-preview" id="sheet-preview"></div>
             <div style="font-size:9px; color:var(--text-3); text-align:center; margin-top:8px; text-transform:uppercase;">Arraste fotos para cá</div>
@@ -344,8 +336,8 @@
             <div class="config-row">
                 <label>Fotos/folha (Polaroid)</label>
                 <select id="config-capacidade" onchange="salvarConfigCapacidade(this.value)">
-                    <option value="9" selected>9 (Padrão A4)</option>
-                    <option value="6">6</option>
+                    <option value="6" selected>6 (Padrão A4)</option>
+                    <option value="9">9</option>
                     <option value="4">4</option>
                     <option value="2">2</option>
                 </select>
@@ -394,15 +386,14 @@
         let todasFotos = [], chavesLocais = new Set();
         let eventoAtual = "", eventoIdAtual = "", formatoAtual = "POLAROID", primeiraCarga = true;
         let sheetBuffer = [], sheetQueue = [], isPrinting = false, pausado = false;
-        let autoImpressao = true, fotosPorFolha = 9; // Agora o padrão é 9
+        let autoImpressao = true, fotosPorFolha = 6;
         let modoSelecao = false, selecionadas = new Set();
         let logHistory = [], logAberto = false;
 
         function getCapacidade() {
             const fmt = formatoAtual.toUpperCase();
-            // A capacidade muda conforme o formato escolhido no painel
             if (fmt.includes("POLAROID")) return { slots: fotosPorFolha, layout: "layout-polaroid" };
-            if (fmt.includes("TIRINHA")) return { slots: 3, layout: "layout-tirinha" };
+            if (fmt.includes("TIRINHA")) return { slots: 5, layout: "layout-tirinha" }; // 5 por folha
             if (fmt.includes("10X15H")) return { slots: 2, layout: "layout-10x15h" };
             if (fmt.includes("10X15V")) return { slots: 2, layout: "layout-10x15v" };
             return { slots: fotosPorFolha, layout: "layout-polaroid" };
@@ -418,7 +409,7 @@
         function renderLog() {
             const body = document.getElementById('log-body');
             if (!body) return;
-                        body.innerHTML = logHistory.map(l => `<div class="log-line"><span class="ts">${l.ts}</span><span style="color:${l.tipo==='error'?'var(--danger)':l.tipo==='success'?'var(--success)':'var(--text-1)'}">${l.msg}</span></div>`).join('');
+            body.innerHTML = logHistory.map(l => `<div class="log-line"><span class="ts">${l.ts}</span><span style="color:${l.tipo==='error'?'var(--danger)':l.tipo==='success'?'var(--success)':'var(--text-1)'}">${l.msg}</span></div>`).join('');
             body.scrollTop = body.scrollHeight;
         }
 
@@ -440,8 +431,8 @@
         /* ════════════════ SINCRONIZAÇÃO COM A API ════════════════ */
         async function atualizar() {
             try {
-                const r1 = await fetch(`${API}/get-all-states?t=${Date.now()}`, { cache: 'no-store' });
-                if (!r1.ok) return; // 503 silencioso
+                                const r1 = await fetch(`${API}/get-all-states?t=${Date.now()}`, { cache: 'no-store' });
+                if (!r1.ok) return;
                 
                 const config = await r1.json();
                 const evt = (config.config && config.config.evento) ? config.config.evento : "Geral";
@@ -511,7 +502,6 @@
         function alimentarBuffer(url, key, parsed, origemId) {
             const cap = getCapacidade();
             
-            // Se tiver guestbook, vai direto pra fila sem esperar a folha encher
             if (parsed.guestbook) {
                 sheetQueue.push({ slots: [{ url, key, tipo: 'guestbook', origemId }], layout: 'layout-guestbook', descricao: 'Guestbook' });
                 addLog(`📄 Guestbook preparado`, 'info');
@@ -521,8 +511,6 @@
 
             for (let i = 0; i < parsed.copias; i++) {
                 sheetBuffer.push({ url, key, tipo: 'foto', origemId });
-                
-                // ⬇️ AUTO-IMPRESSÃO: quando atinge a capacidade (ex: 9), fecha a folha
                 if (sheetBuffer.length >= cap.slots) {
                     fecharFolha();
                 }
@@ -550,7 +538,7 @@
                 return mostrarToast('Fila Vazia', 'Não há fotos na folha atual para imprimir.', 'error');
             }
             const cap = getCapacidade();
-            const slots = sheetBuffer.splice(0); // Pega tudo o que tem
+            const slots = sheetBuffer.splice(0);
             
             sheetQueue.push({ slots, layout: cap.layout, descricao: `Folha Parcial (${slots.length})` });
             
@@ -595,19 +583,23 @@
                 <div class="slot"><img src="${s.url}"></div>
             `).join('');
 
+            // ⬇️ CORREÇÃO DA ROTAÇÃO (10x15 H e V) ⬇️
             let stylePage = document.getElementById('dynamic-page-style');
-            if (!stylePage) {
-                stylePage = document.createElement('style');
-                stylePage.id = 'dynamic-page-style';
-                document.head.appendChild(stylePage);
-            }
+            if (stylePage) stylePage.remove(); // Força o Chrome a esquecer a orientação anterior
             
+            stylePage = document.createElement('style');
+            stylePage.id = 'dynamic-page-style';
+            document.head.appendChild(stylePage);
+            
+            // Define a regra exata da folha
             let pageRule = '@page { size: A4 portrait; margin: 0; }';
-            if (folha.layout === 'layout-10x15h') pageRule = '@page { size: A4 landscape; margin: 0; }';
+            if (folha.layout === 'layout-10x15h') {
+                pageRule = '@page { size: A4 landscape; margin: 0; }';
+            }
             
             stylePage.innerHTML = `@media print { ${pageRule} }`;
 
-            await new Promise(r => setTimeout(r, 500)); // Garante carregamento das imagens
+            await new Promise(r => setTimeout(r, 600)); // Aguarda renderizar
             window.print();
         }
 
@@ -634,13 +626,10 @@
             document.getElementById('fila-count').innerText = sheetQueue.length;
             
             const container = document.getElementById('sheet-preview');
-            // Calcula colunas baseado no total de slots
-            let cols = 1;
-            if (cap.slots === 9) cols = 3;
-            else if (cap.slots === 6) cols = 3;
-            else if (cap.slots === 4) cols = 2;
-            else if (cap.slots === 3) cols = 3;
+            let cols = 3;
+            if (cap.slots === 4) cols = 2;
             else if (cap.slots === 2) cols = 2;
+            else if (cap.slots === 5) cols = 5;
             
             container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
             container.innerHTML = '';
@@ -802,9 +791,9 @@
             atualizarUIFolha();
             atualizar();
             setInterval(atualizar, POLL_INTERVAL);
-            addLog('🚀 Central v11.0 iniciada', 'success');
+            addLog('🚀 Central v11.2 iniciada', 'success');
         });
     </script>
 </body>
 </html>
-<!-- ◀◀◀ FIM DO ARQUIVO galeria.html — v11.0 ▶▶▶ -->
+<!-- ◀◀◀ FIM DO ARQUIVO galeria.html — v11.2 ▶▶▶ -->

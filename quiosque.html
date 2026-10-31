@@ -1,6 +1,3 @@
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- INÍCIO DO ARQUIVO quiosque.html — QUIOSQUE PRO v2.2 (DEFINITIVO)   -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -8,489 +5,98 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#000000">
-    <title>PHOTO CLOUD — Quiosque Pro v2.2</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>PHOTO CLOUD — Quiosque Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
     <style>
-        :root {
-            --neon: #39ff14;
-            --neon-dim: rgba(57, 255, 20, 0.12);
-            --neon-glow: 0 0 20px rgba(57, 255, 20, 0.4);
-            --red: #ff3131;
-            --blue: #0096ff;
-            --yellow: #ffb800;
-
-            --bg-0: #000000;
-            --bg-1: #0a0a0a;
-            --bg-2: #111111;
-            --bg-3: #1a1a1a;
-            --bg-4: #222222;
-
-            --text-0: #ffffff;
-            --text-1: #e0e0e0;
-            --text-2: #999999;
-            --text-3: #555555;
-
-            --border-1: rgba(255, 255, 255, 0.06);
-            --border-2: rgba(255, 255, 255, 0.1);
-            --border-neon: rgba(57, 255, 20, 0.3);
-
-            --radius-sm: 8px;
-            --radius-md: 14px;
-            --radius-lg: 20px;
-            --radius-xl: 28px;
-
-            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
-            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.6);
-
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-fast: all 0.15s ease;
-
-            --font-display: 'Outfit', sans-serif;
-            --font-mono: 'Space Grotesk', sans-serif;
-            --font-body: 'Plus Jakarta Sans', -apple-system, sans-serif;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-        html, body {
-            font-family: var(--font-body);
-            background: var(--bg-0);
-            color: var(--text-0);
-            height: 100vh;
-            overflow: hidden;
-            -webkit-font-smoothing: antialiased;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-
-        body {
-            background:
-                radial-gradient(circle at 50% -20%, rgba(26, 58, 18, 0.5) 0%, transparent 50%),
-                radial-gradient(circle at 90% 100%, rgba(57, 255, 20, 0.03) 0%, transparent 40%),
-                var(--bg-0);
-        }
-
-        /* HEADER */
-        header {
-            background: rgba(10, 10, 10, 0.8);
-            padding: 30px 40px 20px;
-            border-bottom: 1px solid var(--border-1);
-            position: relative;
-            backdrop-filter: blur(20px);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            z-index: 10;
-        }
-
-        .event-label {
-            position: absolute;
-            left: 40px;
-            top: 35px;
-            border-left: 3px solid var(--neon);
-            padding-left: 16px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-        }
-        .event-prefix {
-            font-size: 9px;
-            color: var(--text-3);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-weight: 800;
-        }
-        .event-name {
-            margin: 2px 0 0;
-            font-family: var(--font-display);
-            font-size: 18px;
-            text-transform: uppercase;
-            color: var(--neon);
-            letter-spacing: 2px;
-            text-shadow: 0 0 15px rgba(57, 255, 20, 0.4);
-        }
-
+        html, body { user-select: none; -webkit-user-select: none; display: flex; flex-direction: column; background: radial-gradient(circle at 50% -20%, rgba(0,229,255,0.05) 0%, transparent 50%), var(--bg-0); }
+        header { background: rgba(10,10,10,0.8); padding: 30px 40px 20px; border-bottom: 1px solid var(--border-1); position: relative; backdrop-filter: blur(20px); display: flex; flex-direction: column; align-items: center; z-index: 10; }
+        .event-label { position: absolute; left: 40px; top: 35px; border-left: 3px solid var(--accent); padding-left: 16px; display: flex; flex-direction: column; align-items: flex-start; }
+        .event-prefix { font-size: 9px; color: var(--text-3); text-transform: uppercase; letter-spacing: 2px; font-weight: 800; }
+        .event-name { margin: 2px 0 0; font-family: var(--font-display); font-size: 18px; text-transform: uppercase; color: var(--accent); letter-spacing: 2px; text-shadow: var(--accent-glow); }
         .brand-center { text-align: center; margin-bottom: 20px; }
-        .brand-center h1 {
-            font-family: var(--font-display);
-            margin: 0;
-            font-size: 52px;
-            color: var(--neon);
-            font-weight: 900;
-            letter-spacing: 8px;
-            text-transform: uppercase;
-            text-shadow: var(--neon-glow), 0 0 50px rgba(57, 255, 20, 0.2);
-            animation: titleGlow 3s ease-in-out infinite;
-        }
-        @keyframes titleGlow {
-            0%, 100% { text-shadow: 0 0 15px rgba(57, 255, 20, 0.5); }
-            50% { text-shadow: 0 0 30px rgba(57, 255, 20, 0.8), 0 0 50px rgba(57, 255, 20, 0.4); }
-        }
-        .brand-center p {
-            margin: 6px 0 0;
-            font-size: 11px;
-            color: var(--text-3);
-            letter-spacing: 6px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .search-trigger {
-            background: rgba(0, 0, 0, 0.6);
-            border: 1px solid var(--border-neon);
-            color: var(--neon);
-            width: 85%;
-            max-width: 400px;
-            padding: 16px;
-            border-radius: var(--radius-md);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            font-family: var(--font-body);
-            font-size: 14px;
-            font-weight: 800;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            transition: var(--transition);
-            border-bottom: 3px solid var(--neon);
-            box-shadow: 0 0 20px rgba(57, 255, 20, 0.1);
-        }
-        .search-trigger:hover, .search-trigger:active {
-            background: var(--neon-dim);
-            box-shadow: 0 0 30px rgba(57, 255, 20, 0.3);
-        }
-        .search-trigger i { font-size: 16px; }
-
-        /* GALERIA */
-        #galeria {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 18px;
-            padding: 30px;
-            height: calc(100vh - 230px);
-            overflow-y: auto;
-            align-items: start;
-        }
-        #galeria::-webkit-scrollbar { width: 8px; }
-        #galeria::-webkit-scrollbar-thumb { background: var(--bg-4); border-radius: 4px; }
-        #galeria::-webkit-scrollbar-thumb:hover { background: var(--neon-dim); }
-
-        .foto-item {
-            background: var(--bg-1);
-            border-radius: var(--radius-md);
-            overflow: hidden;
-            position: relative;
-            border: 1px solid var(--border-1);
-            transition: var(--transition);
-            box-shadow: var(--shadow-md);
-            cursor: pointer;
-            animation: fadeInScale 0.4s ease-out;
-        }
-        @keyframes fadeInScale {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        .foto-item:hover, .foto-item:active {
-            transform: scale(1.03);
-            border-color: var(--neon);
-            box-shadow: 0 0 25px rgba(57, 255, 20, 0.3);
-        }
-        .foto-item img {
-            width: 100%;
-            display: block;
-            aspect-ratio: 1/1;
-            object-fit: cover;
-            transition: var(--transition);
-        }
-        .foto-item:hover img { transform: scale(1.05); }
-        .foto-id {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.9);
-            color: var(--neon);
-            padding: 5px 12px;
-            border-radius: var(--radius-sm);
-            font-family: var(--font-mono);
-            font-size: 11px;
-            font-weight: 800;
-            z-index: 10;
-            border-left: 3px solid var(--neon);
-            letter-spacing: 0.5px;
-        }
-
-        /* NUMPAD */
-        #numpad-overlay {
-            display: none;
-            position: fixed; inset: 0;
-            background: rgba(0, 0, 0, 0.96);
-            z-index: 2000;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(20px);
-        }
+        .brand-center h1 { font-family: var(--font-display); margin: 0; font-size: 52px; color: var(--accent); font-weight: 900; letter-spacing: 8px; text-transform: uppercase; text-shadow: var(--accent-glow); animation: titleGlow 3s infinite; }
+        @keyframes titleGlow { 0%,100%{text-shadow:0 0 15px rgba(0,229,255,0.5);} 50%{text-shadow:0 0 30px rgba(0,229,255,0.8);} }
+        .brand-center p { margin: 6px 0 0; font-size: 11px; color: var(--text-3); letter-spacing: 6px; font-weight: 700; text-transform: uppercase; }
+        .search-trigger { background: rgba(0,0,0,0.6); border: 1px solid var(--accent); color: var(--accent); width: 85%; max-width: 400px; padding: 16px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; gap: 12px; font-family: var(--font-body); font-size: 14px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: all 0.3s; border-bottom: 3px solid var(--accent); }
+        .search-trigger:hover { background: var(--accent-dim); }
+        #galeria { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 18px; padding: 30px; height: calc(100vh - 230px); overflow-y: auto; align-items: start; }
+        .foto-item { background: var(--bg-1); border-radius: var(--radius-md); overflow: hidden; position: relative; border: 1px solid var(--border-1); transition: all 0.3s; cursor: pointer; }
+        .foto-item:hover { transform: scale(1.03); border-color: var(--accent); box-shadow: 0 0 25px rgba(0,229,255,0.3); }
+        .foto-item img { width: 100%; display: block; aspect-ratio: 1/1; object-fit: cover; }
+        .foto-id { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.9); color: var(--accent); padding: 5px 12px; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 11px; font-weight: 800; z-index: 10; border-left: 3px solid var(--accent); }
+        #numpad-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 2000; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(20px); }
         #numpad-overlay.active { display: flex; }
-
         .numpad-content { width: 340px; max-width: 92vw; text-align: center; }
-        .numpad-title {
-            font-family: var(--font-display);
-            font-size: 16px;
-            color: var(--neon);
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            font-weight: 800;
-            margin-bottom: 20px;
-        }
-        #input-busca {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            border: 1px solid var(--bg-4);
-            color: var(--neon);
-            font-size: 56px;
-            font-weight: 700;
-            font-family: var(--font-mono);
-            text-align: center;
-            margin-bottom: 24px;
-            outline: none;
-            text-shadow: 0 0 25px var(--neon);
-            border-radius: var(--radius-md);
-            letter-spacing: 8px;
-            padding: 12px;
-            transition: var(--transition);
-        }
-        #input-busca:focus { border-color: var(--neon); }
-
+        .numpad-title { font-family: var(--font-display); font-size: 16px; color: var(--accent); letter-spacing: 3px; text-transform: uppercase; font-weight: 800; margin-bottom: 20px; }
+        #input-busca { width: 100%; background: rgba(0,0,0,0.8); border: 1px solid var(--bg-4); color: var(--accent); font-size: 56px; font-weight: 700; font-family: var(--font-mono); text-align: center; margin-bottom: 24px; outline: none; text-shadow: 0 0 25px var(--accent); border-radius: var(--radius-md); letter-spacing: 8px; padding: 12px; }
+        #input-busca:focus { border-color: var(--accent); }
         .numpad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-        .num-btn {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid var(--bg-4);
-            color: var(--text-0);
-            width: 100%;
-            height: 68px;
-            border-radius: var(--radius-md);
-            font-family: var(--font-mono);
-            font-size: 26px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: var(--transition-fast);
-            outline: none;
-        }
-        .num-btn:hover { border-color: var(--border-neon); background: var(--neon-dim); }
-        .num-btn:active {
-            background: var(--neon);
-            color: var(--bg-0);
-            box-shadow: 0 0 30px var(--neon);
-            transform: scale(0.95);
-        }
-        .btn-ok { background: var(--neon); color: var(--bg-0); border-color: var(--neon); font-family: var(--font-display); font-size: 16px; font-weight: 900; letter-spacing: 1px; }
-        .btn-ok:hover { box-shadow: var(--neon-glow); }
-        .btn-c { color: var(--red); border-color: rgba(255, 49, 49, 0.3); font-size: 14px; font-weight: 800; }
-        .btn-c:hover { background: rgba(255, 49, 49, 0.1); border-color: var(--red); }
-
-        .btn-fechar {
-            margin-top: 24px;
-            background: transparent;
-            border: 1px solid var(--bg-4);
-            color: var(--text-3);
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            padding: 14px;
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            width: 100%;
-            transition: var(--transition-fast);
-            font-family: var(--font-body);
-        }
-        .btn-fechar:hover { color: var(--red); border-color: var(--red); }
-
-        /* MODAL PREVIEW */
-        #modal {
-            display: none;
-            position: fixed; inset: 0;
-            background: rgba(0, 0, 0, 0.98);
-            z-index: 3000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            backdrop-filter: blur(20px);
-        }
+        .num-btn { background: rgba(255,255,255,0.04); border: 1px solid var(--bg-4); color: var(--text-0); width: 100%; height: 68px; border-radius: var(--radius-md); font-family: var(--font-mono); font-size: 26px; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; outline: none; }
+        .num-btn:hover { border-color: var(--accent); background: var(--accent-dim); }
+        .num-btn:active { background: var(--accent); color: var(--bg-0); transform: scale(0.95); }
+        .btn-ok { background: var(--accent); color: var(--bg-0); border-color: var(--accent); font-family: var(--font-display); font-size: 16px; font-weight: 900; }
+        .btn-c { color: var(--danger); border-color: rgba(255,49,49,0.3); font-size: 14px; font-weight: 800; }
+        .btn-fechar { margin-top: 24px; background: transparent; border: 1px solid var(--bg-4); color: var(--text-3); font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; padding: 14px; border-radius: var(--radius-md); cursor: pointer; width: 100%; }
+        .btn-fechar:hover { color: var(--danger); border-color: var(--danger); }
+        #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 3000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(20px); }
         #modal.active { display: flex; }
-
-        .modal-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 28px;
-            width: 100%;
-            max-width: 950px;
-            animation: fadeInScale 0.4s ease-out;
-        }
-        #full-photo {
-            max-height: 50vh;
-            max-width: 90%;
-            border-radius: var(--radius-md);
-            border: 2px solid var(--border-neon);
-            box-shadow: 0 0 60px rgba(57, 255, 20, 0.2);
-            object-fit: contain;
-        }
-
-        .qr-panel {
-            background: #fff;
-            padding: 32px;
-            border-radius: var(--radius-lg);
-            text-align: center;
-            color: #000;
-            width: 280px;
-            box-shadow: 0 0 60px rgba(57, 255, 20, 0.3);
-        }
+        .modal-container { display: flex; flex-direction: column; align-items: center; gap: 28px; width: 100%; max-width: 950px; }
+        #full-photo { max-height: 50vh; max-width: 90%; border-radius: var(--radius-md); border: 2px solid var(--accent); box-shadow: 0 0 60px rgba(0,229,255,0.2); object-fit: contain; }
+        .qr-panel { background: #fff; padding: 32px; border-radius: var(--radius-lg); text-align: center; color: #000; width: 280px; box-shadow: 0 0 60px rgba(0,229,255,0.3); }
         .instr-header { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 2px; font-weight: 800; margin-bottom: 6px; }
-        .instr-text { font-family: var(--font-display); font-weight: 800; font-size: 16px; color: #000; margin-bottom: 16px; letter-spacing: 0.5px; text-transform: uppercase; line-height: 1.3; }
+        .instr-text { font-family: var(--font-display); font-weight: 800; font-size: 16px; color: #000; margin-bottom: 16px; text-transform: uppercase; }
         #qrcode { display: flex; justify-content: center; margin: 16px 0; }
         #qrcode img { border: 4px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-
         #photo-id-label { font-family: var(--font-mono); font-weight: 700; font-size: 34px; color: #000; margin-top: 8px; letter-spacing: 2px; }
-
-        .close-btn {
-            background: var(--neon); color: var(--bg-0); border: none; padding: 16px;
-            border-radius: var(--radius-md); font-family: var(--font-body); font-weight: 900;
-            font-size: 14px; cursor: pointer; width: 100%; text-transform: uppercase;
-            letter-spacing: 2px; margin-top: 20px; transition: var(--transition);
-        }
-        .close-btn:hover { box-shadow: var(--neon-glow); transform: translateY(-1px); }
-
-        /* SCREENSAVER */
+        .close-btn { background: var(--accent); color: var(--bg-0); border: none; padding: 16px; border-radius: var(--radius-md); font-family: var(--font-body); font-weight: 900; font-size: 14px; cursor: pointer; width: 100%; text-transform: uppercase; letter-spacing: 2px; margin-top: 20px; }
+        .close-btn:hover { box-shadow: var(--accent-glow); }
         #screensaver { display: none; position: fixed; inset: 0; background: #000; z-index: 5000; cursor: pointer; }
         #screensaver.active { display: block; }
         #ss-img { width: 100%; height: 100%; object-fit: contain; filter: brightness(0.5) contrast(1.1); transition: opacity 0.6s ease; }
-        .ss-msg {
-            position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8); border: 2px solid var(--neon); color: var(--neon);
-            padding: 20px 50px; border-radius: var(--radius-md); font-family: var(--font-display);
-            font-weight: 900; font-size: 22px; text-transform: uppercase; box-shadow: 0 0 25px var(--neon);
-            animation: pulseBlink 2s infinite; letter-spacing: 4px; border-left: 8px solid var(--neon);
-            backdrop-filter: blur(10px);
-        }
-        @keyframes pulseBlink { 0%, 100% { opacity: 1; text-shadow: 0 0 10px var(--neon); } 50% { opacity: 0.6; text-shadow: 0 0 25px var(--neon); } }
-
-        /* MOBILE DOWNLOAD */
-        #mobile-download-screen {
-            display: none; position: fixed; inset: 0;
-            background: radial-gradient(circle at 50% 50%, rgba(26, 58, 18, 0.6) 0%, #000 100%);
-            z-index: 9999; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center;
-        }
+        .ss-msg { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); border: 2px solid var(--accent); color: var(--accent); padding: 20px 50px; border-radius: var(--radius-md); font-family: var(--font-display); font-weight: 900; font-size: 22px; text-transform: uppercase; box-shadow: 0 0 25px var(--accent); letter-spacing: 4px; border-left: 8px solid var(--accent); animation: pulseBlink 2s infinite; }
+        @keyframes pulseBlink { 0%,100%{opacity:1} 50%{opacity:0.6} }
+        #mobile-download-screen { display: none; position: fixed; inset: 0; background: radial-gradient(circle at 50% 50%, rgba(0,229,255,0.1) 0%, #000 100%); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; }
         #mobile-download-screen.active { display: flex; }
-        .mobile-badge { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 3px; font-weight: 800; margin-bottom: 8px; }
-        .mobile-title { font-family: var(--font-display); color: var(--neon); letter-spacing: 4px; margin: 0 0 24px; font-size: 28px; text-transform: uppercase; font-weight: 900; text-shadow: var(--neon-glow); }
-        #mobile-img { max-width: 100%; max-height: 50vh; border-radius: var(--radius-md); border: 2px solid var(--border-neon); box-shadow: 0 0 40px rgba(57, 255, 20, 0.2); }
-        .btn-baixar {
-            background: var(--neon); color: var(--bg-0); padding: 20px 56px; border-radius: var(--radius-md);
-            text-decoration: none; font-family: var(--font-body); font-weight: 900; font-size: 15px;
-            margin-top: 28px; box-shadow: var(--neon-glow); text-transform: uppercase; letter-spacing: 2px;
-            border: none; cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; gap: 10px;
-        }
-        .btn-baixar:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(57, 255, 20, 0.6); }
-        .btn-baixar:disabled { background: var(--bg-4); color: var(--text-3); box-shadow: none; cursor: wait; }
-        #msg-status { font-family: var(--font-body); font-size: 11px; color: var(--text-3); margin-top: 16px; font-weight: 600; }
-
-        /* EMPTY STATE */
-        .empty-galeria { grid-column: 1 / -1; text-align: center; padding: 80px 20px; color: var(--text-3); }
+        .mobile-title { font-family: var(--font-display); color: var(--accent); letter-spacing: 4px; margin: 0 0 24px; font-size: 28px; text-transform: uppercase; font-weight: 900; }
+        #mobile-img { max-width: 100%; max-height: 50vh; border-radius: var(--radius-md); border: 2px solid var(--accent); }
+        .btn-baixar { background: var(--accent); color: var(--bg-0); padding: 20px 56px; border-radius: var(--radius-md); text-decoration: none; font-family: var(--font-body); font-weight: 900; font-size: 15px; margin-top: 28px; text-transform: uppercase; letter-spacing: 2px; border: none; cursor: pointer; display: inline-flex; gap: 10px; }
+        .empty-galeria { grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--text-3); }
         .empty-galeria i { font-size: 60px; margin-bottom: 16px; opacity: 0.3; display: block; }
-        .empty-galeria h3 { font-family: var(--font-display); font-size: 18px; color: var(--text-2); margin-bottom: 6px; font-weight: 700; }
-        .empty-galeria p { font-size: 12px; }
-
-        /* RESPONSIVO */
-        @media (min-width: 768px) {
-            .modal-container { flex-direction: row; justify-content: center; }
-            #full-photo { max-height: 80vh; max-width: 60%; }
-        }
-        @media (max-width: 600px) {
-            header { padding: 70px 20px 20px; }
-            .event-label { top: 20px; left: 20px; }
-            .brand-center h1 { font-size: 36px; letter-spacing: 4px; }
-            #galeria { padding: 20px; gap: 14px; }
-            .modal-container { gap: 20px; }
-            #full-photo { max-height: 40vh; }
-            .qr-panel { width: 260px; padding: 24px; }
-            .ss-msg { font-size: 16px; padding: 16px 30px; }
-            .mobile-title { font-size: 22px; }
-        }
+        @media (min-width: 768px) { .modal-container { flex-direction: row; justify-content: center; } #full-photo { max-height: 80vh; max-width: 60%; } }
     </style>
 </head>
 <body>
-
-    <!-- TELA DE DOWNLOAD MOBILE -->
     <div id="mobile-download-screen">
-        <div class="mobile-badge">SISTEMA PRONTO</div>
+        <div style="font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 3px; margin-bottom: 8px;">SISTEMA PRONTO</div>
         <h2 class="mobile-title">Baixar Foto</h2>
         <img id="mobile-img" src="" alt="Foto">
-        <button id="btn-forcar-download" class="btn-baixar">
-            <i class="fas fa-download"></i> Confirmar Download
-        </button>
-        <p id="msg-status"></p>
+        <button id="btn-forcar-download" class="btn-baixar"><i class="fas fa-download"></i> Confirmar Download</button>
+        <p id="msg-status" style="font-size: 11px; color: var(--text-3); margin-top: 16px;"></p>
     </div>
 
-    <!-- CONTEÚDO PRINCIPAL DO QUIOSQUE -->
     <div id="conteudo-quiosque">
-        <header id="main-header">
-            <div class="event-label">
-                <div class="event-prefix">Evento Ativo</div>
-                <h2 class="event-name" id="ev-titulo">SINCRONIZANDO...</h2>
-            </div>
-            <div class="brand-center">
-                <h1>PHOTO CLOUD</h1>
-                <p>Colecionando Momentos</p>
-            </div>
-            <div class="search-trigger" onclick="toggleNumpad(true)">
-                <i class="fas fa-search"></i> Digite o ID da sua foto
-            </div>
+        <header>
+            <div class="event-label"><div class="event-prefix">Evento Ativo</div><h2 class="event-name" id="ev-titulo">SINCRONIZANDO...</h2></div>
+            <div class="brand-center"><h1>PHOTO CLOUD</h1><p>Colecionando Momentos</p></div>
+            <div class="search-trigger" onclick="toggleNumpad(true)"><i class="fas fa-search"></i> Digite o ID da sua foto</div>
         </header>
-
         <div id="galeria"></div>
-
-        <!-- Screensaver -->
-        <div id="screensaver" onclick="stopScreensaver()">
-            <img id="ss-img" src="" alt="">
-            <div class="ss-msg">Toque para buscar</div>
-        </div>
-
-        <!-- Numpad -->
+        <div id="screensaver" onclick="stopScreensaver()"><img id="ss-img" src="" alt=""><div class="ss-msg">Toque para buscar</div></div>
         <div id="numpad-overlay">
             <div class="numpad-content">
                 <div class="numpad-title">Digite o ID da foto</div>
                 <input type="text" id="input-busca" placeholder="----" readonly>
                 <div class="numpad-grid">
-                    <button class="num-btn" onclick="addNum(1)">1</button>
-                    <button class="num-btn" onclick="addNum(2)">2</button>
-                    <button class="num-btn" onclick="addNum(3)">3</button>
-                    <button class="num-btn" onclick="addNum(4)">4</button>
-                    <button class="num-btn" onclick="addNum(5)">5</button>
-                    <button class="num-btn" onclick="addNum(6)">6</button>
-                    <button class="num-btn" onclick="addNum(7)">7</button>
-                    <button class="num-btn" onclick="addNum(8)">8</button>
-                    <button class="num-btn" onclick="addNum(9)">9</button>
-                    <button class="num-btn btn-c" onclick="limparBusca()">ESC</button>
-                    <button class="num-btn" onclick="addNum(0)">0</button>
-                    <button class="num-btn btn-ok" onclick="buscarEAbrirFoto()">OK</button>
+                    <button class="num-btn" onclick="addNum(1)">1</button><button class="num-btn" onclick="addNum(2)">2</button><button class="num-btn" onclick="addNum(3)">3</button>
+                    <button class="num-btn" onclick="addNum(4)">4</button><button class="num-btn" onclick="addNum(5)">5</button><button class="num-btn" onclick="addNum(6)">6</button>
+                    <button class="num-btn" onclick="addNum(7)">7</button><button class="num-btn" onclick="addNum(8)">8</button><button class="num-btn" onclick="addNum(9)">9</button>
+                    <button class="num-btn btn-c" onclick="limparBusca()">ESC</button><button class="num-btn" onclick="addNum(0)">0</button><button class="num-btn btn-ok" onclick="buscarEAbrirFoto()">OK</button>
                 </div>
                 <button class="btn-fechar" onclick="toggleNumpad(false)">Fechar</button>
             </div>
         </div>
-
-        <!-- Modal Preview -->
         <div id="modal">
             <div class="modal-container">
                 <img id="full-photo" src="" alt="Preview">
@@ -506,29 +112,16 @@
     </div>
 
     <script>
-        const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
+        const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
         let eventoAtivo = "", todasFotos = [], inactivityTimer, ssInterval;
+        const qr = new QRCode(document.getElementById("qrcode"), { width: 190, height: 190, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
         
-        const qr = new QRCode(document.getElementById("qrcode"), {
-            width: 190, height: 190, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H
-        });
-
         window.addEventListener('load', () => {
             const params = new URLSearchParams(window.location.search);
-            const fotoUrl = params.get('dl');
-            const fotoKey = params.get('key');
-            
-            if (fotoUrl) {
-                exibirTelaDownload(decodeURIComponent(fotoUrl));
-            } else if (fotoKey) {
-                syncDados().then(() => {
-                    const url = `${API_URL}/photo?key=${encodeURIComponent(fotoKey)}&t=${Date.now()}`;
-                    exibirTelaDownload(url);
-                });
-            } else {
-                syncDados();
-                resetInactivityTimer();
-            }
+            const fotoUrl = params.get('dl'), fotoKey = params.get('key');
+            if (fotoUrl) exibirTelaDownload(decodeURIComponent(fotoUrl));
+            else if (fotoKey) syncDados().then(() => exibirTelaDownload(`${API}/photo?key=${encodeURIComponent(fotoKey)}&t=${Date.now()}`));
+            else { syncDados(); resetInactivityTimer(); }
         });
 
         function exibirTelaDownload(url) {
@@ -539,212 +132,72 @@
         }
 
         async function forcarDownload(url) {
-            const btn = document.getElementById('btn-forcar-download');
-            const status = document.getElementById('msg-status');
+            const btn = document.getElementById('btn-forcar-download'), status = document.getElementById('msg-status');
             try {
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
-                status.innerText = "Preparando download...";
-                
-                const r = await fetch(url);
-                const blob = await r.blob();
-                const blobUrl = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = blobUrl;
-                a.download = "fotocloud_" + Date.now() + ".jpg";
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(blobUrl);
-                
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-download"></i> Confirmar Download';
-                status.innerText = "Download concluído!";
-            } catch (e) {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Tentar novamente';
-                status.innerText = "Se falhar, segure na imagem e 'Salvar Foto'";
-            }
+                btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...'; status.innerText = "Preparando download...";
+                const r = await fetch(url), blob = await r.blob(), blobUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = blobUrl; a.download = "fotocloud_" + Date.now() + ".jpg";
+                document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(blobUrl);
+                btn.disabled = false; btn.innerHTML = '<i class="fas fa-download"></i> Confirmar Download'; status.innerText = "Download concluído!";
+            } catch (e) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Tentar novamente'; status.innerText = "Se falhar, segure na imagem e 'Salvar Foto'"; }
         }
 
         async function syncDados() {
             try {
-                // Pega o evento ativo
-                const r1 = await fetch(`${API_URL}/get-all-states?t=${Date.now()}`);
-                const data = await r1.json();
-                const config = data.config || data;
+                const r1 = await fetch(`${API}/get-all-states?t=${Date.now()}`), data = await r1.json(), config = data.config || data;
                 const novoEvento = (config.evento && config.evento !== 'Geral') ? config.evento : "";
-
-                if (novoEvento !== eventoAtivo) {
-                    eventoAtivo = novoEvento;
-                    document.getElementById('ev-titulo').innerText = eventoAtivo ? eventoAtivo.toUpperCase() : "AGUARDANDO EVENTO";
-                    todasFotos = [];
-                }
-
-                // Busca as fotos
-                let url = `${API_URL}/list-photos?t=${Date.now()}`;
+                if (novoEvento !== eventoAtivo) { eventoAtivo = novoEvento; document.getElementById('ev-titulo').innerText = eventoAtivo ? eventoAtivo.toUpperCase() : "AGUARDANDO EVENTO"; todasFotos = []; }
+                let url = `${API}/list-photos?t=${Date.now()}`;
                 if (eventoAtivo) url += `&evento=${encodeURIComponent(eventoAtivo)}`;
-                
-                const r2 = await fetch(url);
-                const fotos = await r2.json();
-                
-                if (!Array.isArray(fotos)) return; // Proteção contra erro
-                
+                const r2 = await fetch(url), fotos = await r2.json();
+                if (!Array.isArray(fotos)) return;
                 const invertidas = fotos.reverse();
-                
-                if (JSON.stringify(invertidas.map(f => f.key || f.id)) !== JSON.stringify(todasFotos.map(f => f.key || f.id))) {
-                    todasFotos = invertidas;
-                    renderizarGaleria();
-                }
-            } catch (e) {
-                console.error('Erro syncDados:', e);
-            }
+                if (JSON.stringify(invertidas.map(f => f.key || f.id)) !== JSON.stringify(todasFotos.map(f => f.key || f.id))) { todasFotos = invertidas; renderizarGaleria(); }
+            } catch (e) { console.error(e); }
         }
 
         function renderizarGaleria() {
-            const container = document.getElementById('galeria');
-            const termo = document.getElementById('input-busca').value;
+            const container = document.getElementById('galeria'), termo = document.getElementById('input-busca').value;
             const comId = todasFotos.map((f, i) => ({ ...f, displayId: todasFotos.length - i }));
             const filtradas = termo === "" ? comId : comId.filter(f => f.displayId.toString().includes(termo));
-            
-            if (filtradas.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-galeria">
-                        <i class="fas fa-image"></i>
-                        <h3>Nenhuma foto encontrada</h3>
-                        <p>As fotos aparecerão aqui conforme forem capturadas</p>
-                    </div>
-                `;
-                return;
-            }
-            
+            if (filtradas.length === 0) { container.innerHTML = `<div class="empty-galeria"><i class="fas fa-image"></i><h3>Nenhuma foto encontrada</h3><p>As fotos aparecerão aqui conforme forem capturadas</p></div>`; return; }
             container.innerHTML = filtradas.map(f => {
                 const key = f.key || f.id || f.nome;
-                const imgUrl = `${API_URL}/photo?key=${encodeURIComponent(key)}&t=${Date.now()}`;
-                return `<div class="foto-item" onclick="abrirModal('${key}', '${f.displayId}')">
-                    <div class="foto-id">#${f.displayId}</div>
-                    <img src="${imgUrl}" loading="lazy" alt="Foto ${f.displayId}">
-                </div>`;
+                return `<div class="foto-item" onclick="abrirModal('${key}', '${f.displayId}')"><div class="foto-id">#${f.displayId}</div><img src="${API}/photo?key=${encodeURIComponent(key)}&t=${Date.now()}" loading="lazy" alt="Foto ${f.displayId}"></div>`;
             }).join('');
         }
 
-        function resetInactivityTimer() {
-            clearTimeout(inactivityTimer);
-            inactivityTimer = setTimeout(() => {
-                if (todasFotos.length > 0 && !document.getElementById('modal').classList.contains('active')) {
-                    document.getElementById('screensaver').classList.add('active');
-                    runSlideshow();
-                    clearInterval(ssInterval);
-                    ssInterval = setInterval(runSlideshow, 5000);
-                }
-            }, 60000);
-        }
-
-        function runSlideshow() {
-            if (todasFotos.length === 0) return;
-            const f = todasFotos[Math.floor(Math.random() * todasFotos.length)];
-            const key = f.key || f.id || f.nome;
-            const img = document.getElementById('ss-img');
-            img.style.opacity = '0';
-            setTimeout(() => {
-                img.src = `${API_URL}/photo?key=${encodeURIComponent(key)}&t=${Date.now()}`;
-                img.style.opacity = '1';
-            }, 300);
-        }
-
-        function stopScreensaver() {
-            document.getElementById('screensaver').classList.remove('active');
-            clearInterval(ssInterval);
-            resetInactivityTimer();
-        }
-
-        function addNum(n) {
-            const inp = document.getElementById('input-busca');
-            if (inp.value.length < 4) inp.value += n;
-            renderizarGaleria();
-        }
-
-        function limparBusca() {
-            document.getElementById('input-busca').value = "";
-            renderizarGaleria();
-        }
-
-        function toggleNumpad(show) {
-            document.getElementById('numpad-overlay').classList.toggle('active', show);
-            if (show) {
-                document.getElementById('input-busca').value = "";
-                renderizarGaleria();
-            }
-        }
-
+        function resetInactivityTimer() { clearTimeout(inactivityTimer); inactivityTimer = setTimeout(() => { if (todasFotos.length > 0 && !document.getElementById('modal').classList.contains('active')) { document.getElementById('screensaver').classList.add('active'); runSlideshow(); clearInterval(ssInterval); ssInterval = setInterval(runSlideshow, 5000); } }, 60000); }
+        function runSlideshow() { if (todasFotos.length === 0) return; const f = todasFotos[Math.floor(Math.random() * todasFotos.length)], key = f.key || f.id || f.nome, img = document.getElementById('ss-img'); img.style.opacity = '0'; setTimeout(() => { img.src = `${API}/photo?key=${encodeURIComponent(key)}&t=${Date.now()}`; img.style.opacity = '1'; }, 300); }
+        function stopScreensaver() { document.getElementById('screensaver').classList.remove('active'); clearInterval(ssInterval); resetInactivityTimer(); }
+        function addNum(n) { const inp = document.getElementById('input-busca'); if (inp.value.length < 4) inp.value += n; renderizarGaleria(); }
+        function limparBusca() { document.getElementById('input-busca').value = ""; renderizarGaleria(); }
+        function toggleNumpad(show) { document.getElementById('numpad-overlay').classList.toggle('active', show); if (show) { document.getElementById('input-busca').value = ""; renderizarGaleria(); } }
+        
         function buscarEAbrirFoto() {
             const termo = document.getElementById('input-busca').value;
             if (!termo) return;
             const comId = todasFotos.map((f, i) => ({ ...f, displayId: todasFotos.length - i }));
             const achada = comId.find(f => f.displayId.toString() === termo);
-            if (achada) {
-                toggleNumpad(false);
-                abrirModal(achada.key || achada.id || achada.nome, achada.displayId);
-            } else {
-                const input = document.getElementById('input-busca');
-                input.style.borderColor = 'var(--red)';
-                input.style.color = 'var(--red)';
-                input.value = "ERRO";
-                setTimeout(() => {
-                    input.style.borderColor = '';
-                    input.style.color = '';
-                    limparBusca();
-                }, 1000);
-            }
+            if (achada) { toggleNumpad(false); abrirModal(achada.key || achada.id || achada.nome, achada.displayId); }
+            else { const input = document.getElementById('input-busca'); input.style.borderColor = 'var(--danger)'; input.style.color = 'var(--danger)'; input.value = "ERRO"; setTimeout(() => { input.style.borderColor = ''; input.style.color = ''; limparBusca(); }, 1000); }
         }
 
         function abrirModal(key, id) {
             stopScreensaver();
-            const url = `${API_URL}/photo?key=${encodeURIComponent(key)}&t=${Date.now()}`;
-            const img = document.getElementById('full-photo');
-            img.onerror = function() { this.src = url + '&retry=1'; };
-            img.src = url;
+            const url = `${API}/photo?key=${encodeURIComponent(key)}&t=${Date.now()}`;
+            const img = document.getElementById('full-photo'); img.onerror = function() { this.src = url + '&retry=1'; }; img.src = url;
             document.getElementById('photo-id-label').innerText = "#" + id;
-            
-                        // Link para a Galeria (com a Key da foto)
             const linkCurto = new URL(window.location.href.split('?')[0]);
             linkCurto.pathname = linkCurto.pathname.replace('quiosque.html', 'galeria.html');
-            linkCurto.searchParams.set('key', key);
-            linkCurto.searchParams.set('id', id);
-            
-            qr.clear();
-            qr.makeCode(linkCurto.toString());
+            linkCurto.searchParams.set('key', key); linkCurto.searchParams.set('id', id);
+            qr.clear(); qr.makeCode(linkCurto.toString());
             document.getElementById('modal').classList.add('active');
         }
-
-        function fecharModal() {
-            document.getElementById('modal').classList.remove('active');
-            limparBusca();
-            resetInactivityTimer();
-        }
-
-        // Loop de sincronização automática (atualiza a cada 5s)
+        function fecharModal() { document.getElementById('modal').classList.remove('active'); limparBusca(); resetInactivityTimer(); }
         setInterval(syncDados, 5000);
-
-        // Atalho: fechar modal / numpad com ESC
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                if (document.getElementById('modal').classList.contains('active')) {
-                    fecharModal();
-                } else if (document.getElementById('numpad-overlay').classList.contains('active')) {
-                    toggleNumpad(false);
-                }
-            }
-        });
-
-        // Cleanup ao sair
-        window.addEventListener('beforeunload', () => {
-            if (inactivityTimer) clearTimeout(inactivityTimer);
-            if (ssInterval) clearInterval(ssInterval);
-        });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (document.getElementById('modal').classList.contains('active')) fecharModal(); else if (document.getElementById('numpad-overlay').classList.contains('active')) toggleNumpad(false); } });
+        window.addEventListener('beforeunload', () => { if (inactivityTimer) clearTimeout(inactivityTimer); if (ssInterval) clearInterval(ssInterval); });
     </script>
 </body>
 </html>
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- FIM DO ARQUIVO quiosque.html — QUIOSQUE PRO v2.2                   -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->

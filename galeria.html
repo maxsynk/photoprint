@@ -1,44 +1,33 @@
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- ▶▶▶ INÍCIO DO ARQUIVO galeria.html — CENTRAL v9.0 REDESIGN ◀◀◀    -->
-<!-- (SUBSTITUA O ARQUIVO INTEIRO POR ESTE)                              -->
+<!-- ▶▶▶ INÍCIO DO ARQUIVO galeria.html — CENTRAL v10.0 FINAL ◀◀◀       -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT — Central de Impressão v9.0</title>
+    <title>PHOTO PRINT — Central de Impressão v10.0</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* ═══════════════════════════════════════════════════════════════
-           TOKENS v9.0 — GRAFITE + PRATA + DOURADO FOSCO
+           TOKENS — GRAFITE + PRATA + DOURADO FOSCO
            ═══════════════════════════════════════════════════════════════ */
         :root {
-            /* Acento principal: prata/off-white para títulos e destaques */
-            --accent:      #E8E8E8;
-            --accent-dim:  rgba(232, 232, 232, 0.08);
-            --accent-glow: 0 0 24px rgba(232, 232, 232, 0.15);
+            --accent: #E8E8E8;
+            --accent-dim: rgba(232, 232, 232, 0.08);
+            --gold: #D4AF37;
+            --gold-dim: rgba(212, 175, 55, 0.12);
+            --gold-glow: 0 0 20px rgba(212, 175, 55, 0.35);
+            --danger: #E5484D;
+            --danger-dim: rgba(229, 72, 77, 0.15);
+            --info: #6EA8FE;
+            --warn: #E8A100;
+            --success: #3CCF91;
 
-            /* Acento secundário: dourado fosco (luxo) */
-            --gold:        #D4AF37;
-            --gold-dim:    rgba(212, 175, 55, 0.12);
-            --gold-glow:   0 0 20px rgba(212, 175, 55, 0.35);
-
-            /* Semânticas */
-            --danger:      #E5484D;
-            --danger-dim:  rgba(229, 72, 77, 0.15);
-            --info:        #6EA8FE;
-            --info-dim:    rgba(110, 168, 254, 0.12);
-            --warn:        #E8A100;
-            --warn-dim:    rgba(232, 161, 0, 0.15);
-            --success:     #3CCF91;
-            --success-dim: rgba(60, 207, 145, 0.12);
-
-            /* Escala de cinza premium */
-            --bg-0: #0A0A0B;   /* preto com leve tom azulado */
+            --bg-0: #0A0A0B;
             --bg-1: #141416;
             --bg-2: #1C1C1F;
             --bg-3: #26262A;
@@ -57,24 +46,17 @@
             --radius-sm: 8px;
             --radius-md: 12px;
             --radius-lg: 18px;
-            --radius-xl: 24px;
 
             --shadow-sm: 0 2px 8px rgba(0,0,0,0.6);
             --shadow-md: 0 8px 24px rgba(0,0,0,0.7);
-            --shadow-lg: 0 20px 60px rgba(0,0,0,0.85);
-
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-fast: all 0.15s ease;
 
             --font-display: 'Outfit', sans-serif;
             --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
             --font-mono: 'Space Grotesk', monospace;
-
             --panel-width: 340px;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
         html, body {
             font-family: var(--font-body);
             background: var(--bg-0);
@@ -83,50 +65,22 @@
             overflow: hidden;
             -webkit-font-smoothing: antialiased;
         }
-
         body {
-            background:
-                radial-gradient(circle at 20% 0%, rgba(212, 175, 55, 0.03) 0%, transparent 45%),
-                radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.02) 0%, transparent 40%),
-                var(--bg-0);
             display: grid;
             grid-template-columns: var(--panel-width) 1fr;
-            grid-template-rows: 100vh;
+            background: radial-gradient(circle at 20% 0%, rgba(212, 175, 55, 0.03) 0%, transparent 45%), var(--bg-0);
         }
-
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image:
-                linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px);
-            background-size: 64px 64px;
-            pointer-events: none;
-            z-index: 0;
-            mask-image: radial-gradient(circle at 70% 30%, black 20%, transparent 80%);
-            -webkit-mask-image: radial-gradient(circle at 70% 30%, black 20%, transparent 80%);
-        }
-
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--bg-4); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
 
         /* ═══════════════════════════════════════════════════════════════
-           ÁREA DE IMPRESSÃO — POLAROID FIXA 68×98mm
-           ═══════════════════════════════════════════════════════════════
-           O SEGREDO: usamos mm reais, não 1fr.
-           Cada slot é 68×98mm INDEPENDENTE de quantos por folha.
+           ÁREA DE IMPRESSÃO (GRID DINÂMICO POR FORMATO)
            ═══════════════════════════════════════════════════════════════ */
         #print-area { display: none; }
 
         @media print {
             @page { size: A4 portrait; margin: 0; }
-
             body * { visibility: hidden !important; display: none !important; }
-            #print-area, #print-area * { visibility: visible !important; display: block !important; }
-
+            #print-area, #print-area * { visibility: visible !important; display: grid !important; }
+            
             #print-area {
                 position: absolute !important;
                 inset: 0 !important;
@@ -134,1120 +88,250 @@
                 height: 297mm !important;
                 background: #fff !important;
                 margin: 0 !important;
-                padding: 0 !important;
-                overflow: hidden !important;
-            }
-
-            /* Container da folha: 210×297mm com padding de segurança */
-            .print-sheet {
-                width: 210mm !important;
-                height: 297mm !important;
                 padding: 3mm !important;
-                display: flex !important;
-                flex-wrap: wrap !important;
-                align-content: flex-start !important;
-                justify-content: center !important;
-                gap: 2mm !important;
-                background: #fff !important;
-                box-sizing: border-box !important;
-            }
-
-            /* Slot FIXO em mm — 68×98mm para Polaroid */
-            .print-sheet .slot {
-                width: 68mm !important;
-                height: 98mm !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
                 overflow: hidden !important;
-                background: #fff !important;
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
-                flex-shrink: 0 !important;
+                display: grid !important;
+                grid-template-columns: repeat(3, 68mm) !important;
+                grid-auto-rows: 98mm !important;
+                gap: 2mm !important;
+                justify-content: center !important;
+                align-content: flex-start !important;
             }
+            /* Ajuste para outros formatos (futuro) */
+            .print-sheet.layout-tirinha { grid-template-columns: repeat(3, 62mm) !important; grid-auto-rows: 180mm !important; }
+            .print-sheet.layout-10x15v { grid-template-columns: repeat(2, 100mm) !important; grid-auto-rows: 150mm !important; }
+            .print-sheet.layout-10x15h { grid-template-columns: repeat(1, 150mm) !important; grid-auto-rows: 100mm !important; }
 
-            .print-sheet .slot img {
-                width: 100% !important;
-                height: 100% !important;
-                object-fit: cover !important;
-                display: block !important;
+            .print-sheet { display: contents !important; }
+            .slot {
+                width: 100% !important; height: 100% !important;
+                display: flex !important; align-items: center !important; justify-content: center !important;
+                overflow: hidden !important; background: #fff !important;
             }
-
-            /* Ajustes para outros formatos (futuro) */
-            .print-sheet.layout-tirinha .slot { width: 100mm !important; height: 150mm !important; }
-            .print-sheet.layout-10x15v .slot { width: 100mm !important; height: 150mm !important; }
-            .print-sheet.layout-10x15h .slot { width: 150mm !important; height: 100mm !important; }
-            .print-sheet.layout-guestbook .slot { width: 100mm !important; height: 150mm !important; }
+            .slot img { width: 100% !important; height: 100% !important; object-fit: cover !important; }
         }
 
         /* ═══════════════════════════════════════════════════════════════
-           PAINEL LATERAL ESQUERDO
+           PAINEL ESQUERDO
            ═══════════════════════════════════════════════════════════════ */
         .panel {
-            position: relative;
-            z-index: 20;
-            background: var(--bg-1);
-            border-right: 1px solid var(--border-1);
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-            height: 100vh;
+            background: var(--bg-1); border-right: 1px solid var(--border-1);
+            display: flex; flex-direction: column; overflow-y: auto; height: 100vh;
         }
-
-        /* Header do painel */
-        .panel-header {
-            padding: 24px 24px 20px;
-            border-bottom: 1px solid var(--border-1);
-            position: relative;
-            flex-shrink: 0;
-        }
+        .panel-header { padding: 24px; border-bottom: 1px solid var(--border-1); position: relative; }
         .panel-header::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 24px;
-            right: 24px;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--gold), transparent);
-            opacity: 0.4;
+            content: ''; position: absolute; bottom: 0; left: 24px; right: 24px; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: 0.4;
         }
-        .brand-title {
-            font-family: var(--font-display);
-            font-size: 22px;
-            font-weight: 900;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            line-height: 1;
-            margin-bottom: 6px;
-        }
-        .brand-subtitle {
-            font-size: 9px;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: var(--text-3);
-            font-weight: 800;
-        }
+        .brand-title { font-family: var(--font-display); font-size: 22px; font-weight: 900; color: var(--accent); letter-spacing: 4px; }
+        .brand-subtitle { font-size: 9px; letter-spacing: 3px; color: var(--text-3); text-transform: uppercase; font-weight: 800; }
 
-        /* Status card */
-        .status-card {
-            margin: 20px 20px 0;
-            padding: 16px 18px;
-            background: var(--bg-2);
-            border: 1px solid var(--border-2);
-            border-left: 3px solid var(--gold);
-            border-radius: var(--radius-md);
-            flex-shrink: 0;
-        }
-        .status-label {
-            font-size: 9px;
-            letter-spacing: 2px;
-            color: var(--text-3);
-            font-weight: 800;
-            text-transform: uppercase;
-            margin-bottom: 6px;
-        }
-        #nome-evento {
-            font-family: var(--font-display);
-            font-size: 15px;
-            font-weight: 800;
-            color: var(--text-0);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
-            line-height: 1.2;
-        }
-        #tipo-formato {
-            font-size: 10px;
-            color: var(--gold);
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        /* Status */
+        .status-card { margin: 20px 20px 0; padding: 16px; background: var(--bg-2); border-left: 3px solid var(--gold); border-radius: var(--radius-md); }
+        .status-label { font-size: 9px; letter-spacing: 2px; color: var(--text-3); font-weight: 800; text-transform: uppercase; margin-bottom: 6px; }
+        #nome-evento { font-family: var(--font-display); font-size: 15px; font-weight: 800; color: var(--text-0); text-transform: uppercase; }
+        #tipo-formato { font-size: 10px; color: var(--gold); font-weight: 800; text-transform: uppercase; margin-top: 4px; }
 
-        /* Barra de status de impressão */
+        /* Barra de status */
         .print-status-bar {
-            margin: 14px 20px 0;
-            padding: 10px 14px;
-            background: var(--bg-2);
-            border: 1px solid var(--border-2);
-            border-radius: var(--radius-md);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-family: var(--font-mono);
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            color: var(--text-2);
-            transition: var(--transition);
+            margin: 14px 20px 0; padding: 10px 14px; background: var(--bg-2); border: 1px solid var(--border-2);
+            border-radius: var(--radius-md); display: flex; align-items: center; gap: 10px;
+            font-family: var(--font-mono); font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-2);
         }
-        .print-status-bar .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--text-3);
-            flex-shrink: 0;
-        }
-        .print-status-bar.active { color: var(--gold); border-color: var(--border-gold); }
-        .print-status-bar.active .dot {
-            background: var(--gold);
-            box-shadow: 0 0 10px var(--gold);
-            animation: pulseDot 1s ease-in-out infinite;
-        }
-        .print-status-bar.paused { color: var(--warn); border-color: rgba(232, 161, 0, 0.4); }
-        .print-status-bar.paused .dot {
-            background: var(--warn);
-            box-shadow: 0 0 10px var(--warn);
-            animation: pulseDot 2s ease-in-out infinite;
-        }
-        @keyframes pulseDot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.75); }
-        }
+        .print-status-bar .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-3); }
+        .print-status-bar.active { color: var(--gold); border-color: var(--gold); }
+        .print-status-bar.active .dot { background: var(--gold); box-shadow: 0 0 10px var(--gold); animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
         /* Controles */
-        .controls {
-            margin: 16px 20px 0;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            flex-shrink: 0;
-        }
+        .controls { margin: 16px 20px 0; display: flex; flex-direction: column; gap: 8px; }
         .ctrl-btn {
-            width: 100%;
-            padding: 12px 16px;
-            background: var(--bg-2);
-            border: 1px solid var(--border-2);
-            color: var(--text-1);
-            border-radius: var(--radius-md);
-            font-family: var(--font-body);
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: var(--transition-fast);
-            text-align: left;
+            width: 100%; padding: 12px 16px; background: var(--bg-2); border: 1px solid var(--border-2);
+            color: var(--text-1); border-radius: var(--radius-md); font-family: var(--font-body);
+            font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
+            display: flex; align-items: center; gap: 10px; transition: 0.2s;
         }
-        .ctrl-btn i { width: 16px; text-align: center; font-size: 13px; flex-shrink: 0; }
-        .ctrl-btn:hover { border-color: var(--border-3); background: var(--bg-3); }
-        .ctrl-btn.active {
-            background: var(--gold-dim);
-            border-color: var(--gold);
-            color: var(--gold);
-        }
-        .ctrl-btn.pause.active {
-            background: var(--warn-dim);
-            border-color: var(--warn);
-            color: var(--warn);
-        }
-        .ctrl-btn .badge-qty {
-            margin-left: auto;
-            background: var(--gold);
-            color: var(--bg-0);
-            font-family: var(--font-mono);
-            font-size: 10px;
-            font-weight: 900;
-            padding: 2px 8px;
-            border-radius: 20px;
-        }
-        .ctrl-btn.active .badge-qty {
-            background: var(--gold);
-            color: var(--bg-0);
-        }
+        .ctrl-btn:hover { border-color: var(--gold); color: var(--gold); }
+        .ctrl-btn.active { background: var(--gold-dim); border-color: var(--gold); color: var(--gold); }
+        .ctrl-btn .badge-qty { margin-left: auto; background: var(--gold); color: var(--bg-0); font-family: var(--font-mono); padding: 2px 8px; border-radius: 20px; }
 
         /* Busca */
-        .search-box {
-            margin: 16px 20px 0;
-            display: flex;
-            gap: 8px;
-            flex-shrink: 0;
-        }
+        .search-box { margin: 16px 20px 0; display: flex; gap: 8px; }
         .search-box input {
-            flex: 1;
-            background: var(--bg-0);
-            border: 1px solid var(--border-2);
-            color: var(--text-0);
-            padding: 10px 14px;
-            border-radius: var(--radius-md);
-            font-family: var(--font-mono);
-            font-size: 12px;
-            font-weight: 700;
-            outline: none;
-            letter-spacing: 1px;
-            transition: var(--transition-fast);
+            flex: 1; background: var(--bg-0); border: 1px solid var(--border-2); color: var(--text-0);
+            padding: 10px 14px; border-radius: var(--radius-md); font-family: var(--font-mono); font-size: 12px; outline: none;
         }
-        .search-box input:focus {
-            border-color: var(--gold);
-            box-shadow: 0 0 0 3px var(--gold-dim);
-        }
-        .search-box input::placeholder {
-            color: var(--text-3);
-            font-family: var(--font-body);
-            letter-spacing: 1.5px;
-            font-size: 10px;
-        }
-        .search-btn {
-            background: var(--gold);
-            color: var(--bg-0);
-            border: none;
-            padding: 0 14px;
-            border-radius: var(--radius-md);
-            font-weight: 900;
-            font-size: 13px;
-            cursor: pointer;
-            transition: var(--transition-fast);
-        }
-        .search-btn:hover { box-shadow: var(--gold-glow); }
+        .search-box input:focus { border-color: var(--gold); }
+        .search-btn { background: var(--gold); color: var(--bg-0); border: none; padding: 0 14px; border-radius: var(--radius-md); cursor: pointer; }
 
-        /* ═══════════════════════════════════════════════════════════════
-           PREVIEW DA FOLHA (dropzone)
-           ═══════════════════════════════════════════════════════════════ */
+        /* Preview Folha (Dropzone) */
         .sheet-section {
-            margin: 20px 20px;
-            padding: 16px;
-            background: var(--bg-2);
-            border: 1px solid var(--border-2);
-            border-radius: var(--radius-md);
-            flex-shrink: 0;
-            transition: var(--transition-fast);
+            margin: 20px; padding: 16px; background: var(--bg-2); border: 1px dashed var(--border-2);
+            border-radius: var(--radius-md); transition: 0.2s;
         }
-        .sheet-section.drag-over {
-            border-color: var(--gold);
-            background: var(--gold-dim);
-            box-shadow: var(--gold-glow);
+        .sheet-section.drag-over { border-color: var(--gold); background: var(--gold-dim); box-shadow: var(--gold-glow); }
+        .sheet-header { display: flex; justify-content: space-between; margin-bottom: 12px; }
+        .sheet-title { font-size: 10px; font-weight: 800; color: var(--text-2); text-transform: uppercase; }
+        .sheet-count { font-family: var(--font-mono); font-size: 11px; font-weight: 900; color: var(--gold); }
+        
+        /* Grid da folha */
+        .sheet-preview { display: grid; gap: 4px; background: var(--bg-0); padding: 6px; border-radius: 6px; aspect-ratio: 210/297; max-width: 180px; margin: 0 auto; }
+        .sheet-preview-slot { background: var(--bg-3); border: 1px dashed var(--border-2); border-radius: 3px; position: relative; display: flex; align-items: center; justify-content: center; }
+        .sheet-preview-slot.filled { border: 1px solid var(--gold); }
+        .sheet-preview-slot img { width: 100%; height: 100%; object-fit: cover; border-radius: 3px; }
+        .sheet-preview-slot .remove-btn {
+            position: absolute; top: 2px; right: 2px; background: var(--danger); color: #fff;
+            width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 8px; cursor: pointer; z-index: 10; opacity: 0; transition: 0.2s;
         }
-        .sheet-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        .sheet-title {
-            font-size: 10px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: var(--text-2);
-        }
-        .sheet-count {
-            font-family: var(--font-mono);
-            font-size: 11px;
-            font-weight: 900;
-            color: var(--gold);
-        }
+        .sheet-preview-slot:hover .remove-btn { opacity: 1; }
+        .sheet-preview-slot .slot-label { position: absolute; top: 2px; left: 4px; font-size: 8px; color: var(--gold); background: rgba(0,0,0,0.7); padding: 1px 3px; border-radius: 2px; }
 
-        /* Preview em miniatura da folha A4 (mantém proporção 210:297) */
-        .sheet-preview {
-            display: grid;
-            gap: 3px;
-            background: var(--bg-0);
-            border-radius: 6px;
-            padding: 4px;
-            /* Proporção A4: 210:297 → aspect-ratio */
-            aspect-ratio: 210 / 297;
-            max-width: 200px;
-            margin: 0 auto;
-            box-shadow: inset 0 0 0 1px var(--border-1);
-            transition: var(--transition-fast);
+        /* Configurações Escondidas */
+        .config-toggle {
+            margin: auto 20px 20px; padding: 12px; background: transparent; border: 1px solid var(--border-2);
+            color: var(--text-2); border-radius: var(--radius-md); cursor: pointer; font-size: 10px;
+            display: flex; align-items: center; justify-content: space-between; text-transform: uppercase; font-weight: 800;
         }
-        .sheet-preview-slot {
-            background: var(--bg-2);
-            border: 1px dashed var(--border-2);
-            border-radius: 3px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 8px;
-            color: var(--text-3);
-            font-family: var(--font-mono);
-            overflow: hidden;
-            position: relative;
-            transition: var(--transition-fast);
-        }
-        .sheet-preview-slot.filled {
-            border-style: solid;
-            border-color: var(--gold);
-            box-shadow: inset 0 0 8px rgba(212, 175, 55, 0.2);
-        }
-        .sheet-preview-slot.filled img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-        .sheet-preview-slot .slot-label {
-            position: absolute;
-            top: 1px;
-            left: 2px;
-            font-size: 6px;
-            font-weight: 900;
-            color: var(--gold);
-            background: rgba(0,0,0,0.8);
-            padding: 0 3px;
-            border-radius: 2px;
-            z-index: 2;
-        }
-
-        /* Barra de seleção (dentro do painel) */
-        .selection-bar {
-            display: none;
-            margin: 0 20px 20px;
-            padding: 12px 14px;
-            background: var(--gold-dim);
-            border: 1px solid var(--gold);
-            border-radius: var(--radius-md);
-            flex-direction: column;
-            gap: 10px;
-            flex-shrink: 0;
-            animation: slideDown 0.3s ease;
-        }
-        .selection-bar.active { display: flex; }
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .selection-bar-label {
-            font-size: 10px;
-            font-weight: 800;
-            color: var(--gold);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            text-align: center;
-        }
-        .selection-bar-btns {
-            display: flex;
-            gap: 6px;
-        }
-        .selection-bar-btns .ctrl-btn {
-            flex: 1;
-            padding: 10px 8px;
-            font-size: 10px;
-            justify-content: center;
-        }
-        .selection-bar-btns .ctrl-btn.primary {
-            background: var(--gold);
-            color: var(--bg-0);
-            border-color: var(--gold);
-        }
-        .selection-bar-btns .ctrl-btn.primary:hover {
-            box-shadow: var(--gold-glow);
-        }
-
-        /* Configurações na parte inferior do painel */
-        .config-section {
-            margin: auto 20px 20px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-1);
-            flex-shrink: 0;
-        }
-        .config-section-title {
-            font-size: 9px;
-            font-weight: 900;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--text-3);
-            margin-bottom: 10px;
-        }
-        .config-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 0;
-            gap: 10px;
-        }
-        .config-row label {
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            color: var(--text-1);
-            text-transform: uppercase;
-        }
-        .config-row select {
-            background: var(--bg-0);
-            border: 1px solid var(--border-2);
-            color: var(--text-0);
-            padding: 5px 8px;
-            border-radius: 6px;
-            font-family: var(--font-mono);
-            font-size: 11px;
-            font-weight: 700;
-            outline: none;
-            width: 120px;
-            text-align: center;
-        }
-        .config-row select:focus { border-color: var(--gold); }
+        .config-toggle:hover { color: var(--text-0); border-color: var(--border-3); }
+        .config-panel { display: none; margin: 0 20px 20px; padding: 16px; background: var(--bg-2); border-radius: var(--radius-md); }
+        .config-panel.active { display: block; }
+        .config-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; gap: 10px; }
+        .config-row label { font-size: 10px; font-weight: 700; color: var(--text-1); }
+        .config-row select { background: var(--bg-0); border: 1px solid var(--border-2); color: var(--text-0); padding: 6px 10px; border-radius: 6px; outline: none; }
 
         /* ═══════════════════════════════════════════════════════════════
-           ÁREA PRINCIPAL — GRID DE FOTOS
+           ÁREA PRINCIPAL (GRID DE FOTOS)
            ═══════════════════════════════════════════════════════════════ */
-        .main-area {
-            position: relative;
-            overflow-y: auto;
-            padding: 24px 32px 100px;
-            z-index: 2;
-        }
-        .main-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .main-title {
-            font-family: var(--font-display);
-            font-size: 18px;
-            font-weight: 800;
-            color: var(--text-0);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-        .main-count {
-            font-family: var(--font-mono);
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-2);
-            background: var(--bg-2);
-            padding: 6px 14px;
-            border-radius: 20px;
-            border: 1px solid var(--border-2);
-        }
+        .main-area { padding: 24px 32px; overflow-y: auto; height: 100vh; }
+        .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .main-title { font-family: var(--font-display); font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; }
+        .main-count { font-family: var(--font-mono); font-size: 12px; background: var(--bg-2); padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border-2); }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 16px;
-        }
-
-        .card {
-            background: var(--bg-1);
-            border-radius: var(--radius-md);
-            overflow: hidden;
-            border: 1px solid var(--border-1);
-            cursor: pointer;
-            transition: var(--transition);
-            position: relative;
-            box-shadow: var(--shadow-sm);
-            animation: cardIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) backwards;
-        }
-        @keyframes cardIn {
-            from { opacity: 0; transform: translateY(12px) scale(0.97); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .card:hover {
-            transform: translateY(-3px);
-            border-color: var(--border-3);
-            box-shadow: var(--shadow-md);
-        }
-        .card.selected {
-            border-color: var(--gold);
-            box-shadow: 0 0 0 3px var(--gold-dim), var(--shadow-md);
-        }
-        .card.dragging {
-            opacity: 0.5;
-            cursor: grabbing;
-        }
-        .card img {
-            width: 100%;
-            display: block;
-            aspect-ratio: 3/4;
-            object-fit: cover;
-            transition: var(--transition);
-            pointer-events: none;
-        }
-        .card:hover img { transform: scale(1.02); }
-
-        .card .badge-id {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            background: var(--gold);
-            color: var(--bg-0);
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-family: var(--font-mono);
-            font-size: 10px;
-            font-weight: 900;
-            z-index: 2;
-            letter-spacing: 0.5px;
-        }
-        .card .badge-copias {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: rgba(0, 0, 0, 0.9);
-            border: 1px solid var(--border-3);
-            color: var(--text-0);
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-family: var(--font-mono);
-            font-size: 10px;
-            font-weight: 900;
-            z-index: 2;
-            backdrop-filter: blur(6px);
-        }
-        .card .badge-guestbook {
-            position: absolute;
-            bottom: 38px;
-            right: 8px;
-            background: rgba(110, 168, 254, 0.95);
-            border: 1px solid var(--info);
-            color: #fff;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 9px;
-            font-weight: 900;
-            z-index: 2;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            letter-spacing: 0.5px;
-        }
-        .card .print-state {
-            position: absolute;
-            bottom: 8px;
-            left: 8px;
-            right: 8px;
-            background: rgba(0, 0, 0, 0.9);
-            border: 1px solid var(--border-2);
-            color: var(--text-2);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-family: var(--font-mono);
-            font-size: 9px;
-            font-weight: 900;
-            z-index: 2;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            justify-content: center;
-            backdrop-filter: blur(6px);
-        }
-        .card .print-state.done {
-            border-color: var(--gold);
-            color: var(--gold);
-            background: rgba(212, 175, 55, 0.1);
-        }
-        .card .print-state.printing {
-            border-color: var(--warn);
-            color: var(--warn);
-            background: rgba(232, 161, 0, 0.1);
-            animation: pulseDot 1.2s infinite;
-        }
-        .card .check-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(212, 175, 55, 0.2);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1;
-            font-size: 42px;
-            color: var(--gold);
-            text-shadow: 0 0 20px rgba(212, 175, 55, 0.8);
-        }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+        .card { background: var(--bg-1); border-radius: var(--radius-md); border: 1px solid var(--border-1); position: relative; cursor: pointer; overflow: hidden; }
+        .card:hover { transform: translateY(-3px); border-color: var(--border-3); }
+        .card.dragging { opacity: 0.5; }
+        .card img { width: 100%; aspect-ratio: 3/4; object-fit: cover; pointer-events: none; }
+        .badge-id { position: absolute; top: 8px; left: 8px; background: var(--gold); color: var(--bg-0); padding: 3px 8px; border-radius: 4px; font-family: var(--font-mono); font-size: 10px; font-weight: 900; }
+        .badge-copias { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.9); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 10px; border: 1px solid var(--border-3); }
+        .print-state { position: absolute; bottom: 8px; left: 8px; right: 8px; background: rgba(0,0,0,0.85); color: var(--text-2); padding: 4px; border-radius: 4px; font-size: 9px; text-align: center; font-weight: 800; }
+        .print-state.done { color: var(--gold); border: 1px solid var(--gold); }
+        .check-overlay { position: absolute; inset: 0; background: rgba(212, 175, 55, 0.2); display: none; align-items: center; justify-content: center; font-size: 40px; color: var(--gold); }
+        .card.selected { border-color: var(--gold); }
         .card.selected .check-overlay { display: flex; }
 
-        /* Empty state */
-        .empty-state {
-            grid-column: 1/-1;
-            text-align: center;
-            padding: 100px 20px;
-            color: var(--text-3);
-        }
-        .empty-state i {
-            font-size: 64px;
-            display: block;
-            margin-bottom: 20px;
-            opacity: 0.2;
-            color: var(--gold);
-        }
-        .empty-state-title {
-            font-family: var(--font-display);
-            font-size: 16px;
-            color: var(--text-2);
-            font-weight: 800;
-            margin-bottom: 6px;
-        }
-        .empty-state-sub {
-            font-size: 11px;
-            letter-spacing: 1px;
-            font-weight: 600;
-        }
+        /* Modais / Toast */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 6000; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal img { max-height: 70vh; border: 2px solid var(--gold); border-radius: var(--radius-md); }
+        .modal-controls { margin-top: 20px; display: flex; gap: 10px; }
+        .btn { padding: 12px 24px; border-radius: 30px; border: none; font-weight: 900; text-transform: uppercase; cursor: pointer; }
+        .btn-close { background: var(--bg-3); color: #fff; }
+        .btn-print { background: var(--gold); color: #000; }
+
+        .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 7000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: var(--bg-2); border-left: 4px solid var(--gold); padding: 14px 20px; border-radius: 8px; box-shadow: var(--shadow-md); display: flex; gap: 12px; align-items: center; animation: slideDown 0.3s; }
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--danger); }
+        @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } }
 
         /* ═══════════════════════════════════════════════════════════════
-           MENU HAMBURGER (canto superior direito)
+           LOG E BOTÕES FLUTUANTES
            ═══════════════════════════════════════════════════════════════ */
-        .menu-trigger {
-            position: fixed;
-            right: 24px;
-            top: 24px;
-            z-index: 5100;
-            width: 44px;
-            height: 44px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            background: rgba(20, 20, 22, 0.95);
-            border: 1px solid var(--border-2);
-            border-radius: 10px;
-            cursor: pointer;
-            backdrop-filter: blur(12px);
-            transition: var(--transition-fast);
-        }
-        .menu-trigger:hover { border-color: var(--gold); }
-        .menu-trigger span {
-            display: block;
-            width: 18px;
-                        height: 2px;
-            background: var(--text-0);
-            border-radius: 2px;
-            transition: var(--transition);
-        }
-        .menu-trigger.active span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
-        .menu-trigger.active span:nth-child(2) { opacity: 0; }
-        .menu-trigger.active span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
-
-        /* ═══════════════════════════════════════════════════════════════
-           SIDEBAR DIREITA (menu de ações)
-           ═══════════════════════════════════════════════════════════════ */
-        .sidebar {
-            position: fixed;
-            right: -360px;
-            top: 0;
-            width: 320px;
-            height: 100%;
-            background: rgba(20, 20, 22, 0.99);
-            z-index: 5000;
-            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            padding: 90px 24px 24px;
-            border-left: 1px solid var(--border-gold);
-            backdrop-filter: blur(24px);
-            box-shadow: -20px 0 60px rgba(0,0,0,0.9);
-            overflow-y: auto;
-        }
-        .sidebar.active { right: 0; }
-        .sidebar-title {
-            font-family: var(--font-display);
-            font-size: 10px;
-            font-weight: 900;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: var(--gold);
-            margin-bottom: 18px;
-            padding-left: 4px;
-        }
-        .sidebar-btn {
-            width: 100%;
-            padding: 14px 16px;
-            margin-bottom: 10px;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border-2);
-            background: rgba(255, 255, 255, 0.02);
-            color: var(--text-0);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-family: var(--font-body);
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            text-align: left;
-            transition: var(--transition-fast);
-        }
-        .sidebar-btn i {
-            width: 18px;
-            text-align: center;
-            font-size: 13px;
-            color: var(--gold);
-            flex-shrink: 0;
-        }
-        .sidebar-btn:hover { border-color: var(--gold); background: var(--gold-dim); }
-        .sidebar-btn.danger i { color: var(--danger); }
-        .sidebar-btn.danger:hover { border-color: var(--danger); background: var(--danger-dim); }
-
-        /* ═══════════════════════════════════════════════════════════════
-           LOG DRAWER (canto inferior direito)
-           ═══════════════════════════════════════════════════════════════ */
-        .log-drawer {
-            position: fixed;
-            bottom: 88px;
-            right: 24px;
-            width: 340px;
-            max-height: 280px;
-            background: rgba(20, 20, 22, 0.98);
-            border: 1px solid var(--border-gold);
-            border-radius: var(--radius-md);
-            backdrop-filter: blur(20px);
-            z-index: 400;
-            box-shadow: var(--shadow-lg);
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
-            animation: logIn 0.3s ease;
-        }
+        .log-toggle { position: fixed; bottom: 24px; right: 24px; width: 48px; height: 48px; background: var(--bg-2); border: 1px solid var(--gold); border-radius: 50%; color: var(--gold); cursor: pointer; z-index: 500; }
+        .log-drawer { position: fixed; bottom: 84px; right: 24px; width: 300px; max-height: 250px; background: var(--bg-1); border: 1px solid var(--gold); border-radius: 12px; z-index: 500; display: none; flex-direction: column; }
         .log-drawer.active { display: flex; }
-        @keyframes logIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .log-header {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--border-1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--gold-dim);
-        }
-        .log-title {
-            font-family: var(--font-display);
-            font-size: 10px;
-            font-weight: 900;
-            letter-spacing: 2px;
-            color: var(--gold);
-            text-transform: uppercase;
-        }
-        .log-close {
-            background: none;
-            border: none;
-            color: var(--text-3);
-            cursor: pointer;
-            font-size: 14px;
-            padding: 2px 6px;
-            transition: var(--transition-fast);
-        }
-        .log-close:hover { color: var(--danger); }
-        .log-body {
-            flex: 1;
-            overflow-y: auto;
-            padding: 8px 10px;
-            font-family: var(--font-mono);
-            font-size: 10px;
-        }
-        .log-line {
-            padding: 5px 8px;
-            border-radius: 4px;
-            margin-bottom: 3px;
-            display: flex;
-            gap: 8px;
-            align-items: flex-start;
-            line-height: 1.4;
-        }
-        .log-line .ts { color: var(--text-3); flex-shrink: 0; font-size: 9px; }
-        .log-line .msg { color: var(--text-1); flex: 1; }
-        .log-line.success .msg { color: var(--success); }
-        .log-line.error .msg { color: var(--danger); }
-        .log-line.warn .msg { color: var(--warn); }
-        .log-line.info .msg { color: var(--info); }
-
-        .log-toggle {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            width: 48px;
-            height: 48px;
-            background: rgba(20, 20, 22, 0.95);
-            border: 1px solid var(--border-gold);
-            border-radius: 50%;
-            color: var(--gold);
-            font-size: 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 401;
-            backdrop-filter: blur(12px);
-            box-shadow: var(--shadow-md);
-            transition: var(--transition-fast);
-        }
-        .log-toggle:hover { box-shadow: var(--gold-glow); transform: scale(1.05); }
-        .log-toggle .badge-count {
-            position: absolute;
-            top: -4px;
-            right: -4px;
-            background: var(--danger);
-            color: #fff;
-            font-family: var(--font-mono);
-            font-size: 9px;
-            font-weight: 900;
-            min-width: 18px;
-            height: 18px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 4px;
-        }
-
-        /* ═══════════════════════════════════════════════════════════════
-           MODAL DE ZOOM
-           ═══════════════════════════════════════════════════════════════ */
-        .modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(5, 5, 6, 0.98);
-            z-index: 6000;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-            backdrop-filter: blur(12px);
-        }
-        .modal.active { display: flex; animation: modalIn 0.3s ease; }
-        @keyframes modalIn { from { opacity: 0; } to { opacity: 1; } }
-        .modal img {
-            max-width: 90%;
-            max-height: 65vh;
-            border: 1px solid var(--gold);
-            border-radius: var(--radius-md);
-            margin-bottom: 22px;
-            box-shadow: 0 0 60px rgba(212, 175, 55, 0.2);
-            object-fit: contain;
-        }
-        .modal-info {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 22px;
-            font-family: var(--font-mono);
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .modal-info > div {
-            background: var(--bg-1);
-            border: 1px solid var(--border-2);
-            padding: 8px 16px;
-            border-radius: 20px;
-        }
-        .modal-info span { color: var(--text-3); }
-        .modal-info strong { color: var(--gold); }
-        .modal-controls {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .btn-act {
-            border: none;
-            padding: 12px 24px;
-            border-radius: 24px;
-            font-family: var(--font-body);
-            font-size: 11px;
-            font-weight: 900;
-            letter-spacing: 1px;
-            cursor: pointer;
-            text-transform: uppercase;
-            transition: var(--transition-fast);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-act:hover { transform: translateY(-2px); }
-        .btn-voltar { background: var(--bg-3); color: var(--text-0); }
-        .btn-voltar:hover { background: var(--bg-4); }
-        .btn-reimprimir { background: var(--gold); color: var(--bg-0); }
-        .btn-reimprimir:hover { box-shadow: var(--gold-glow); }
-        .btn-excluir { background: var(--danger); color: #fff; }
-        .btn-excluir:hover { background: #c8302f; box-shadow: 0 0 20px rgba(229, 72, 77, 0.5); }
-
-        /* ═══════════════════════════════════════════════════════════════
-           TOAST
-           ═══════════════════════════════════════════════════════════════ */
-        .toast-container {
-            position: fixed;
-            top: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 7000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            width: calc(100% - 40px);
-            max-width: 380px;
-            pointer-events: none;
-        }
-        .toast {
-            position: relative;
-            background: rgba(20, 20, 22, 0.98);
-            border: 1px solid var(--border-2);
-            border-left: 3px solid var(--gold);
-            border-radius: var(--radius-md);
-            padding: 14px 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: var(--shadow-lg);
-            pointer-events: auto;
-            backdrop-filter: blur(16px);
-            animation: toastIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .toast.error { border-left-color: var(--danger); }
-        .toast.info { border-left-color: var(--info); }
-        .toast.warning { border-left-color: var(--warn); }
-        .toast-icon {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            flex-shrink: 0;
-            background: var(--gold-dim);
-            color: var(--gold);
-        }
-        .toast.error .toast-icon { background: var(--danger-dim); color: var(--danger); }
-        .toast.info .toast-icon { background: var(--info-dim); color: var(--info); }
-        .toast.warning .toast-icon { background: var(--warn-dim); color: var(--warn); }
-        .toast-title { font-size: 12px; font-weight: 800; margin-bottom: 3px; }
-        .toast-message { font-size: 11px; color: var(--text-2); line-height: 1.3; }
-        @keyframes toastIn {
-            from { opacity: 0; transform: translateY(-16px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .toast.removing { animation: toastOut 0.3s ease forwards; }
-        @keyframes toastOut { to { opacity: 0; transform: translateY(-16px) scale(0.95); } }
-
-        /* ═══════════════════════════════════════════════════════════════
-           RESPONSIVO
-           ═══════════════════════════════════════════════════════════════ */
-        @media (max-width: 900px) {
-            body { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
-            .panel { height: auto; max-height: 50vh; }
-            .main-area { padding: 16px 16px 100px; }
-            .grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
-            .log-drawer { right: 12px; width: calc(100% - 24px); max-width: 340px; }
-        }
+        .log-header { padding: 10px; border-bottom: 1px solid var(--border-2); font-size: 10px; font-weight: 900; color: var(--gold); display: flex; justify-content: space-between; }
+        .log-body { padding: 10px; overflow-y: auto; font-size: 10px; font-family: var(--font-mono); }
+        .log-line { margin-bottom: 4px; display: flex; gap: 6px; }
+        .log-line .ts { color: var(--text-3); }
     </style>
 </head>
 <body>
 
-    <!-- ═══════════════════════════════════════════════════════════════
-         PAINEL LATERAL ESQUERDO
-         ═══════════════════════════════════════════════════════════════ -->
+    <!-- PAINEL ESQUERDO -->
     <aside class="panel">
-
-        <!-- Header -->
         <div class="panel-header">
             <div class="brand-title">PHOTO PRINT</div>
             <div class="brand-subtitle">Central de Impressão</div>
         </div>
 
-        <!-- Status do evento -->
         <div class="status-card">
             <div class="status-label">Evento Ativo</div>
             <div id="nome-evento">Carregando...</div>
             <div id="tipo-formato">--</div>
         </div>
 
-        <!-- Barra de status de impressão -->
         <div class="print-status-bar" id="print-status-bar">
             <span class="dot"></span>
             <span id="print-status-text">Aguardando fotos</span>
         </div>
 
-        <!-- Controles -->
         <div class="controls">
             <button class="ctrl-btn pause" id="btn-pause" onclick="togglePausa()">
-                <i class="fa-solid fa-pause"></i>
-                <span id="btn-pause-text">Pausar</span>
+                <i class="fa-solid fa-pause"></i> <span id="btn-pause-text">Pausar</span>
             </button>
             <button class="ctrl-btn" onclick="limparFilaManual()">
-                <i class="fa-solid fa-broom"></i>
-                <span>Limpar Fila</span>
-                <span class="badge-qty" id="fila-count">0</span>
+                <i class="fa-solid fa-broom"></i> Limpar Fila <span class="badge-qty" id="fila-count">0</span>
             </button>
             <button class="ctrl-btn" id="btn-selecao" onclick="toggleModoSelecao()">
-                <i class="fa-solid fa-check-square"></i>
-                <span id="btn-selecao-text">Selecionar Fotos</span>
+                <i class="fa-solid fa-check-square"></i> <span id="btn-selecao-text">Selecionar</span>
             </button>
         </div>
 
-        <!-- Barra de seleção -->
-        <div class="selection-bar" id="selection-bar">
-            <div class="selection-bar-label">
+        <!-- Barra de Seleção -->
+        <div class="selection-bar" id="selection-bar" style="display:none; padding: 10px 20px; background: var(--gold-dim); margin: 10px 20px; border-radius: 8px;">
+            <div style="font-size: 10px; color: var(--gold); font-weight: 800; margin-bottom: 8px;">
                 <span id="selection-count">0</span> foto(s) selecionada(s)
             </div>
-            <div class="selection-bar-btns">
-                <button class="ctrl-btn primary" onclick="imprimirSelecionadas()">
+            <div style="display: flex; gap: 8px;">
+                <button class="ctrl-btn" style="background: var(--gold); color: #000;" onclick="imprimirSelecionadas()">
                     <i class="fa-solid fa-print"></i> Imprimir
                 </button>
-                <button class="ctrl-btn" onclick="cancelarSelecao()">
-                    <i class="fa-solid fa-times"></i> Cancelar
-                </button>
+                <button class="ctrl-btn" onclick="cancelarSelecao()"><i class="fa-solid fa-times"></i></button>
             </div>
         </div>
 
-        <!-- Busca -->
         <div class="search-box">
-            <input type="number" id="input-busca" placeholder="BUSCAR POR ID"
-                   onkeydown="if(event.key==='Enter') executarBusca()">
-            <button class="search-btn" onclick="executarBusca()">
-                <i class="fa-solid fa-magnifying-glass"></i>
-            </button>
+            <input type="number" id="input-busca" placeholder="BUSCAR ID" onkeydown="if(event.key==='Enter') executarBusca()">
+            <button class="search-btn" onclick="executarBusca()"><i class="fa-solid fa-magnifying-glass"></i></button>
         </div>
 
-        <!-- Preview da folha (DROPZONE) -->
+        <!-- DROPZONE -->
         <div class="sheet-section" id="sheet-section">
             <div class="sheet-header">
-                <span class="sheet-title">Folha A4 (Atual)</span>
+                <span class="sheet-title">Folha Atual</span>
                 <span class="sheet-count" id="sheet-count">0/6</span>
             </div>
             <div class="sheet-preview" id="sheet-preview"></div>
-            <div style="font-size:9px; color:var(--text-3); text-align:center; margin-top:8px; letter-spacing:1px; text-transform:uppercase; font-weight:700;">
-                Arraste fotos para cá
-            </div>
+            <div style="font-size:9px; color:var(--text-3); text-align:center; margin-top:8px; text-transform:uppercase;">Arraste fotos para cá</div>
         </div>
 
-        <!-- Configurações -->
-        <div class="config-section">
-            <div class="config-section-title">Configurações</div>
+        <button class="config-toggle" onclick="document.getElementById('config-panel').classList.toggle('active')">
+            <span><i class="fa-solid fa-cog"></i> Configurações</span>
+            <i class="fa-solid fa-chevron-up"></i>
+        </button>
+        <div class="config-panel" id="config-panel">
             <div class="config-row">
                 <label>Fotos/folha</label>
                 <select id="config-capacidade" onchange="salvarConfigCapacidade(this.value)">
-                    <option value="2">2 por A4</option>
-                    <option value="4">4 por A4</option>
-                    <option value="6" selected>6 por A4</option>
-                </select>
-            </div>
-            <div class="config-row">
-                <label>Delay</label>
-                <select id="config-delay" onchange="salvarConfigDelay(this.value)">
-                    <option value="1000">1s</option>
-                    <option value="1500">1.5s</option>
-                    <option value="2000">2s</option>
-                    <option value="2500" selected>2.5s</option>
-                    <option value="3000">3s</option>
-                    <option value="4000">4s</option>
-                    <option value="5000">5s</option>
+                    <option value="6">6 (Padrão)</option>
+                    <option value="4">4</option>
+                    <option value="2">2</option>
                 </select>
             </div>
             <div class="config-row">
                 <label>Auto-impressão</label>
                 <select id="config-auto" onchange="salvarConfigAuto(this.value)">
-                    <option value="1" selected>Ativada</option>
+                    <option value="1">Ativada</option>
                     <option value="0">Desativada</option>
                 </select>
             </div>
         </div>
-
     </aside>
 
-    <!-- ═══════════════════════════════════════════════════════════════
-         ÁREA PRINCIPAL — GRID DE FOTOS
-         ═══════════════════════════════════════════════════════════════ -->
+    <!-- ÁREA PRINCIPAL -->
     <main class="main-area">
         <div class="main-header">
             <h2 class="main-title">Galeria do Evento</h2>
@@ -1256,370 +340,99 @@
         <div class="grid" id="grid-fotos"></div>
     </main>
 
-    <!-- ═══════════════════════════════════════════════════════════════
-         MENU HAMBURGER + SIDEBAR DIREITA
-         ═══════════════════════════════════════════════════════════════ -->
-    <div class="menu-trigger" id="menu-trigger" onclick="toggleSidebar()">
-        <span></span><span></span><span></span>
-    </div>
-
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-title">Menu de Controle</div>
-        <button class="sidebar-btn" onclick="baixarZip()">
-            <i class="fa-solid fa-download"></i>
-            Baixar Galeria (.zip)
-        </button>
-        <button class="sidebar-btn danger" onclick="limparTudo()">
-            <i class="fa-solid fa-trash"></i>
-            Apagar Servidor
-        </button>
-    </aside>
-
-    <!-- ═══════════════════════════════════════════════════════════════
-         MODAL DE ZOOM
-         ═══════════════════════════════════════════════════════════════ -->
+    <!-- MODAL ZOOM -->
     <div class="modal" id="modal-zoom">
-        <img id="img-zoom" src="" alt="Zoom">
-        <div class="modal-info">
-            <div><span>ID:</span> <strong id="zoom-id">#--</strong></div>
-            <div><span>Cópias:</span> <strong id="zoom-copias">--</strong></div>
-            <div><span>Guestbook:</span> <strong id="zoom-guestbook">--</strong></div>
-        </div>
-        <div class="modal-controls">
-            <button class="btn-act btn-voltar" onclick="fecharZoom()">
-                <i class="fa-solid fa-arrow-left"></i> Voltar
-            </button>
-            <button class="btn-act btn-reimprimir" onclick="reimprimirAtual()">
-                <i class="fa-solid fa-print"></i> Reimprimir
-            </button>
-            <button class="btn-act btn-excluir" id="btn-excluir-zoom">
-                <i class="fa-solid fa-trash"></i> Excluir
-            </button>
+        <div style="text-align: center;">
+            <img id="img-zoom" src="">
+            <div class="modal-controls">
+                <button class="btn btn-close" onclick="fecharZoom()">Voltar</button>
+                <button class="btn btn-print" onclick="reimprimirAtual()">Reimprimir</button>
+            </div>
         </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════════════
-         LOG DRAWER
-         ═══════════════════════════════════════════════════════════════ -->
+    <!-- LOG -->
+    <button class="log-toggle" onclick="toggleLog()"><i class="fa-solid fa-terminal"></i></button>
     <div class="log-drawer" id="log-drawer">
-        <div class="log-header">
-            <span class="log-title"><i class="fa-solid fa-terminal"></i> Log</span>
-            <button class="log-close" onclick="toggleLog()"><i class="fa-solid fa-times"></i></button>
-        </div>
+        <div class="log-header"><span>Log</span><span style="cursor:pointer" onclick="toggleLog()">X</span></div>
         <div class="log-body" id="log-body"></div>
     </div>
 
-    <button class="log-toggle" id="log-toggle" onclick="toggleLog()">
-        <i class="fa-solid fa-terminal"></i>
-        <span class="badge-count" id="log-badge" style="display:none">0</span>
-    </button>
-
-    <!-- Área de impressão A4 (invisível) -->
     <div id="print-area"></div>
-
-    <!-- Toasts -->
     <div class="toast-container" id="toast-container"></div>
 
-    <!-- ═══════════════════════════════════════════════════════════════
-         SCRIPT PRINCIPAL v9.0
-         ═══════════════════════════════════════════════════════════════ -->
     <script>
-        /* ═══════════════════════════════════════════════════════════════
-           CONFIGURAÇÕES
-           ═══════════════════════════════════════════════════════════════ */
         const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
-        const POLL_INTERVAL_MS = 4000;
-        const MAX_LOG_LINES = 30;
+        const POLL_INTERVAL = 4000;
+        
+        let todasFotos = [], chavesLocais = new Set();
+        let eventoAtual = "", eventoIdAtual = "", formatoAtual = "POLAROID", primeiraCarga = true;
+        let sheetBuffer = [], sheetQueue = [], isPrinting = false, pausado = false;
+        let autoImpressao = true, fotosPorFolha = 6;
+        let modoSelecao = false, selecionadas = new Set();
+        let logHistory = [], logAberto = false;
 
-        const LS_CONFIG = 'pp_print_config_v9';
-        const LS_HISTORY = 'pp_print_history_v9';
-        const SS_BUFFER = 'pp_sheet_buffer_v9';
-        const SS_QUEUE = 'pp_sheet_queue_v9';
-
-        let fotosPorFolha = 6;
-
-        function getCapacidadeA4() {
-            const fmt = (formatoAtual || 'POLAROID').toUpperCase();
-            if (fmt.includes('POLAROID')) {
-                return { slots: fotosPorFolha, layout: 'layout-polaroid', orientacao: 'portrait' };
-            }
-            if (fmt.includes('TIRINHA')) {
-                return { slots: 2, layout: 'layout-tirinha', orientacao: 'portrait' };
-            }
-            if (fmt.includes('10X15H')) {
-                return { slots: 2, layout: 'layout-10x15h', orientacao: 'landscape' };
-            }
-            return { slots: 2, layout: 'layout-10x15v', orientacao: 'portrait' };
+        // Definição de tamanhos baseada no evento
+        function getCapacidade() {
+            const fmt = formatoAtual.toUpperCase();
+            if (fmt.includes("POLAROID")) return { slots: fotosPorFolha, layout: "layout-polaroid" };
+            if (fmt.includes("TIRINHA")) return { slots: 3, layout: "layout-tirinha" };
+            if (fmt.includes("10X15H")) return { slots: 2, layout: "layout-10x15h" };
+            if (fmt.includes("10X15V")) return { slots: 2, layout: "layout-10x15v" };
+            return { slots: fotosPorFolha, layout: "layout-polaroid" };
         }
 
-        /* ═══════════════════════════════════════════════════════════════
-           ESTADO GLOBAL
-           ═══════════════════════════════════════════════════════════════ */
-        let todasFotos = [];
-        let chavesLocais = new Set();
-        let eventoAtual = "";
-        let eventoIdAtual = "";
-        let formatoAtual = "POLAROID";
-        let primeiraCarga = true;
+        function debug(msg) { console.log(msg); addLog(msg, 'info'); }
 
-        let sheetBuffer = [];
-        let sheetQueue = [];
-        let isPrinting = false;
-        let pausado = false;
-        let printDelayMs = 2500;
-        let autoImpressao = true;
-        let folhaAtualImprimindo = null;
-
-        let modoSelecao = false;
-        let selecionadas = new Set();
-
-        let logHistory = [];
-        let logNaoLidas = 0;
-        let logAberto = false;
-
-        /* ═══════════════════════════════════════════════════════════════
-           PERSISTÊNCIA
-           ═══════════════════════════════════════════════════════════════ */
-        function salvarEstado() {
-            try {
-                sessionStorage.setItem(SS_BUFFER, JSON.stringify(sheetBuffer));
-                sessionStorage.setItem(SS_QUEUE, JSON.stringify(sheetQueue));
-            } catch(e) {}
-        }
-        function carregarEstado() {
-            try {
-                const b = sessionStorage.getItem(SS_BUFFER);
-                const q = sessionStorage.getItem(SS_QUEUE);
-                if (b) sheetBuffer = JSON.parse(b) || [];
-                if (q) sheetQueue = JSON.parse(q) || [];
-            } catch(e) { sheetBuffer = []; sheetQueue = []; }
-        }
-        function limparEstadoStorage() {
-            try {
-                sessionStorage.removeItem(SS_BUFFER);
-                sessionStorage.removeItem(SS_QUEUE);
-            } catch(e) {}
-        }
-
-        function salvarConfig() {
-            try {
-                localStorage.setItem(LS_CONFIG, JSON.stringify({
-                    printDelayMs, autoImpressao, fotosPorFolha
-                }));
-            } catch(e) {}
-        }
-        function carregarConfig() {
-            try {
-                const raw = localStorage.getItem(LS_CONFIG);
-                if (raw) {
-                    const c = JSON.parse(raw);
-                    if (typeof c.printDelayMs === 'number') printDelayMs = c.printDelayMs;
-                    if (typeof c.autoImpressao === 'boolean') autoImpressao = c.autoImpressao;
-                    if (typeof c.fotosPorFolha === 'number') fotosPorFolha = c.fotosPorFolha;
-                }
-            } catch(e) {}
-        }
-
-        function salvarHistorico() {
-            try { localStorage.setItem(LS_HISTORY, JSON.stringify(logHistory.slice(-MAX_LOG_LINES))); } catch(e) {}
-        }
-        function carregarHistorico() {
-            try {
-                const raw = localStorage.getItem(LS_HISTORY);
-                if (raw) logHistory = JSON.parse(raw) || [];
-            } catch(e) { logHistory = []; }
-        }
-
-        /* ═══════════════════════════════════════════════════════════════
-           HELPERS
-           ═══════════════════════════════════════════════════════════════ */
-        function traduzirFormato(f) {
-            if (!f) return "--";
-            const up = f.toUpperCase().trim();
-            if (up.includes("10X15H")) return "10x15 Horizontal";
-            if (up.includes("10X15V")) return "10x15 Vertical";
-            if (up.includes("TIRINHA")) return "Tirinha";
-            if (up.includes("POLAROID")) return "Polaroid";
-            return up;
-        }
-
-        function mostrarToast(titulo, mensagem, tipo = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${tipo}`;
-            const iconMap = {
-                success: 'fa-check',
-                error: 'fa-exclamation-triangle',
-                info: 'fa-info-circle',
-                warning: 'fa-exclamation'
-            };
-            toast.innerHTML = `
-                <div class="toast-icon"><i class="fas ${iconMap[tipo] || 'fa-check'}"></i></div>
-                <div class="toast-content">
-                    <div class="toast-title">${titulo}</div>
-                    <div class="toast-message">${mensagem}</div>
-                </div>`;
-            container.appendChild(toast);
-            setTimeout(() => {
-                toast.classList.add('removing');
-                setTimeout(() => toast.remove(), 300);
-            }, 3200);
-        }
-
-        /* ═══════════════════════════════════════════════════════════════
-           LOG
-           ═══════════════════════════════════════════════════════════════ */
         function addLog(msg, tipo = 'info') {
-            const agora = new Date();
-            const ts = `${String(agora.getHours()).padStart(2,'0')}:${String(agora.getMinutes()).padStart(2,'0')}:${String(agora.getSeconds()).padStart(2,'0')}`;
-            const entry = { ts, msg, tipo };
-            logHistory.push(entry);
-            if (logHistory.length > MAX_LOG_LINES) logHistory.shift();
-            renderLogEntry(entry);
-            salvarHistorico();
-            if (!logAberto) {
-                logNaoLidas++;
-                const badge = document.getElementById('log-badge');
-                if (badge) {
-                    badge.innerText = logNaoLidas > 99 ? '99+' : logNaoLidas;
-                    badge.style.display = 'flex';
-                }
-            }
+            const ts = new Date().toLocaleTimeString('pt-BR');
+            logHistory.push({ ts, msg, tipo });
+            if (logHistory.length > 30) logHistory.shift();
+            renderLog();
         }
-        function renderLogEntry(entry) {
+
+        function renderLog() {
             const body = document.getElementById('log-body');
             if (!body) return;
-            const line = document.createElement('div');
-            line.className = `log-line ${entry.tipo}`;
-            line.innerHTML = `<span class="ts">${entry.ts}</span><span class="msg">${entry.msg}</span>`;
-            body.appendChild(line);
-            while (body.children.length > MAX_LOG_LINES) body.removeChild(body.firstChild);
+            body.innerHTML = logHistory.map(l => `<div class="log-line"><span class="ts">${l.ts}</span><span style="color:${l.tipo==='error'?'var(--danger)':l.tipo==='success'?'var(--success)':'var(--text-1)'}">${l.msg}</span></div>`).join('');
             body.scrollTop = body.scrollHeight;
         }
-        function renderLogCompleto() {
-            const body = document.getElementById('log-body');
-            if (!body) return;
-            body.innerHTML = '';
-            logHistory.forEach(entry => renderLogEntry(entry));
-        }
+
         function toggleLog() {
             logAberto = !logAberto;
             document.getElementById('log-drawer').classList.toggle('active', logAberto);
-            if (logAberto) {
-                logNaoLidas = 0;
-                const badge = document.getElementById('log-badge');
-                if (badge) badge.style.display = 'none';
-                renderLogCompleto();
-            }
         }
 
-        /* ═══════════════════════════════════════════════════════════════
-           SIDEBAR + CONFIG
-           ═══════════════════════════════════════════════════════════════ */
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
-            document.getElementById('menu-trigger').classList.toggle('active');
-        }
-        function salvarConfigCapacidade(valor) {
-            fotosPorFolha = parseInt(valor, 10);
-            salvarConfig();
-            atualizarIndicadorFolha();
-            atualizarPreviewFolha();
-            mostrarToast('Configuração salva', `${fotosPorFolha} foto(s) por folha A4`, 'info');
-        }
-        function salvarConfigDelay(valor) {
-            printDelayMs = parseInt(valor, 10) || 2500;
-            salvarConfig();
-            mostrarToast('Configuração salva', `Delay: ${printDelayMs}ms`, 'info');
-        }
-        function salvarConfigAuto(valor) {
-            autoImpressao = valor === '1';
-            salvarConfig();
-            mostrarToast('Configuração salva', `Auto-impressão ${autoImpressao ? 'ativada' : 'desativada'}`, autoImpressao ? 'success' : 'warning');
+        function mostrarToast(titulo, msg, tipo = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${tipo}`;
+            toast.innerHTML = `<i class="fa-solid fa-${tipo==='success'?'check-circle':tipo==='error'?'exclamation-triangle':'info-circle'}" style="color:var(--${tipo==='success'?'success':tipo==='error'?'danger':'info'})"></i>
+                <div><div style="font-size:12px;font-weight:800;">${titulo}</div><div style="font-size:11px;color:var(--text-2);">${msg}</div></div>`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3500);
         }
 
-        /* ═══════════════════════════════════════════════════════════════
-           SELEÇÃO MANUAL
-           ═══════════════════════════════════════════════════════════════ */
-        function toggleModoSelecao() {
-            modoSelecao = !modoSelecao;
-            selecionadas.clear();
-            document.getElementById('btn-selecao').classList.toggle('active', modoSelecao);
-            document.getElementById('btn-selecao-text').innerText = modoSelecao ? 'Cancelar Seleção' : 'Selecionar Fotos';
-            atualizarBarraSelecao();
-            render();
-        }
-        function cancelarSelecao() {
-            selecionadas.clear();
-            modoSelecao = false;
-            document.getElementById('btn-selecao').classList.remove('active');
-            document.getElementById('btn-selecao-text').innerText = 'Selecionar Fotos';
-            atualizarBarraSelecao();
-            render();
-        }
-        function toggleSelecionada(id) {
-            if (!modoSelecao) return;
-            if (selecionadas.has(id)) selecionadas.delete(id);
-            else selecionadas.add(id);
-            atualizarBarraSelecao();
-            render();
-        }
-        function atualizarBarraSelecao() {
-            const bar = document.getElementById('selection-bar');
-            if (modoSelecao && selecionadas.size > 0) {
-                bar.classList.add('active');
-                document.getElementById('selection-count').innerText = selecionadas.size;
-            } else {
-                bar.classList.remove('active');
-            }
-        }
-        function imprimirSelecionadas() {
-            if (selecionadas.size === 0) return;
-            const fotos = todasFotos.filter(f => selecionadas.has(f.id));
-            for (const foto of fotos) {
-                alimentarBuffer(foto.url, foto.key, { copias: foto.copias, guestbook: foto.guestbook }, foto.id);
-            }
-            addLog(`🖨️ Impressão manual: ${fotos.length} foto(s)`, 'info');
-            selecionadas.clear();
-            atualizarBarraSelecao();
-            render();
-        }
-
-        /* ═══════════════════════════════════════════════════════════════
-           ATUALIZAÇÃO DA GALERIA
-           ═══════════════════════════════════════════════════════════════ */
+        /* ════════════════ SINCRONIZAÇÃO COM A API ════════════════ */
         async function atualizar() {
             try {
-                const r1 = await fetch(`${API}/get-all-states?t=${Date.now()}`).catch(() => null);
-                if (!r1 || !r1.ok) return;
-
-                const config = await r1.json();
+                const r = await fetch(`${API}/get-all-states?t=${Date.now()}`, { cache: 'no-store' });
+                if (!r.ok) return; // 503 silencioso
+                const config = await r.json();
+                
                 const evt = (config.config && config.config.evento) ? config.config.evento : "Geral";
-                const evtId = (config.config && config.config.eventoId) ? config.config.eventoId : "";
-                const novoFormato = (config.config && config.config.formato)
-                    ? config.config.formato.toUpperCase().trim()
-                    : "POLAROID";
+                const evtId = (config.config && config.config.eventoId) ? String(config.config.eventoId) : "";
+                const novoFormato = (config.config && config.config.formato) ? String(config.config.formato).toUpperCase().trim() : "POLAROID";
 
                 if (eventoIdAtual !== evtId) {
-                                       eventoAtual = evt;
-                    eventoIdAtual = evtId;
-                    formatoAtual = novoFormato;
-                    todasFotos = [];
-                    chavesLocais.clear();
-                    sheetBuffer = [];
-                    sheetQueue = [];
-                    limparEstadoStorage();
-                    primeiraCarga = true;
+                    eventoAtual = evt; eventoIdAtual = evtId; formatoAtual = novoFormato;
+                    todasFotos = []; chavesLocais.clear(); sheetBuffer = []; sheetQueue = []; primeiraCarga = true;
                     document.getElementById('grid-fotos').innerHTML = "";
-                    atualizarBarraStatus();
-                    atualizarIndicadorFolha();
-                    atualizarPreviewFolha();
-                    addLog(`🔄 Evento: ${evt} (${traduzirFormato(formatoAtual)})`, 'info');
+                    addLog(`🔄 Evento: ${evt} (${traduzirFormato(formatoAtual)})`, 'success');
+                    atualizarUIStatus();
                 } else if (formatoAtual !== novoFormato) {
                     formatoAtual = novoFormato;
-                    addLog(`📐 Formato: ${traduzirFormato(formatoAtual)}`, 'info');
-                    atualizarIndicadorFolha();
-                    atualizarPreviewFolha();
+                    atualizarUIStatus();
                 }
 
                 document.getElementById('nome-evento').innerText = eventoAtual;
@@ -1627,16 +440,11 @@
 
                 if (!eventoIdAtual) return;
 
-                const r2 = await fetch(
-                    `${API}/list-photos?evento=${encodeURIComponent(eventoAtual)}&t=${Date.now()}`
-                ).catch(() => null);
-                if (!r2 || !r2.ok) return;
-
+                const r2 = await fetch(`${API}/list-photos?evento=${encodeURIComponent(eventoAtual)}&t=${Date.now()}`, { cache: 'no-store' });
+                if (!r2.ok) return;
                 const dados = await r2.json();
-                const fotosValidas = Array.isArray(dados)
-                    ? dados.filter(f => !f.key.toLowerCase().includes('moldura'))
-                    : [];
 
+                const fotosValidas = Array.isArray(dados) ? dados.filter(f => f.key && !f.key.toLowerCase().includes('moldura')) : [];
                 const novas = fotosValidas.filter(f => !chavesLocais.has(f.key));
 
                 if (novas.length > 0) {
@@ -1644,29 +452,16 @@
                         const url = `${API}/photo?key=${encodeURIComponent(f.key)}`;
                         const parsed = analisarNomeFoto(f.key);
                         const idFoto = todasFotos.length + 1;
-
-                        todasFotos.push({
-                            id: idFoto,
-                            url,
-                            key: f.key,
-                            copias: parsed.copias,
-                            guestbook: parsed.guestbook,
-                            impressa: primeiraCarga
-                        });
+                        todasFotos.push({ id: idFoto, url, key: f.key, copias: parsed.copias, guestbook: parsed.guestbook, impressa: primeiraCarga });
                         chavesLocais.add(f.key);
-
-                        if (!primeiraCarga && autoImpressao) {
-                            alimentarBuffer(url, f.key, parsed, idFoto);
-                            addLog(`📥 Nova: ${parsed.copias}× ${parsed.guestbook ? '+ gb' : ''}`, 'success');
-                        }
+                        if (!primeiraCarga && autoImpressao) alimentarBuffer(url, f.key, parsed, idFoto);
                     }
-                    render();
-                    atualizarBarraStatus();
+                    render(); atualizarUIFolha();
                 }
-
                 primeiraCarga = false;
-            } catch (e) {
-                console.error('[GALERIA]', e);
+            } catch (e) { console.error(e); }
+                    } catch (e) { 
+                console.error('[GALERIA]', e); 
             }
         }
 
@@ -1679,555 +474,262 @@
             return { copias, guestbook };
         }
 
-        /* ═══════════════════════════════════════════════════════════════
-           CORE: ALIMENTAR BUFFER A4 + FECHAR FOLHA
-           ═══════════════════════════════════════════════════════════════ */
-        function alimentarBuffer(url, key, parsed, origemId) {
-            const { copias, guestbook } = parsed;
-            const cap = getCapacidadeA4();
+        function traduzirFormato(f) {
+            if (!f) return "--";
+            const up = f.toUpperCase().trim();
+            if (up.includes("10X15H")) return "10x15 Horizontal";
+            if (up.includes("10X15V")) return "10x15 Vertical";
+            if (up.includes("TIRINHA")) return "Tirinha";
+            if (up.includes("POLAROID")) return "Polaroid";
+            return up;
+        }
 
-            if (guestbook) {
-                sheetQueue.push({
-                    slots: [{ url, key, tipo: 'guestbook', origemId }],
-                    layout: 'layout-guestbook',
-                    totalSlots: 1,
-                    descricao: 'Guestbook (folha dedicada)'
-                });
-                addLog(`📄 Guestbook preparado (foto #${origemId})`, 'info');
-                salvarEstado();
+        /* ════════════════ LÓGICA DA FOLHA E IMPRESSÃO ════════════════ */
+        function alimentarBuffer(url, key, parsed, origemId) {
+            const cap = getCapacidade();
+            
+            if (parsed.guestbook) {
+                sheetQueue.push({ slots: [{ url, key, tipo: 'guestbook', origemId }], layout: 'layout-guestbook', descricao: 'Guestbook' });
+                addLog(`📄 Guestbook preparado`, 'info');
                 processarFilaImpressao();
                 return;
             }
 
-            for (let i = 0; i < copias; i++) {
+            for (let i = 0; i < parsed.copias; i++) {
                 sheetBuffer.push({ url, key, tipo: 'foto', origemId });
                 if (sheetBuffer.length >= cap.slots) {
                     fecharFolha();
                 }
             }
-
-            salvarEstado();
-            atualizarIndicadorFolha();
-            atualizarPreviewFolha();
-            atualizarBarraStatus();
+            atualizarUIFolha();
             render();
         }
 
         function fecharFolha() {
             if (sheetBuffer.length === 0) return;
-            const cap = getCapacidadeA4();
+            const cap = getCapacidade();
             const slots = sheetBuffer.splice(0, cap.slots);
-
-            sheetQueue.push({
-                slots,
-                layout: cap.layout,
-                totalSlots: slots.length,
-                descricao: `Folha ${traduzirFormato(formatoAtual)} (${slots.length})`
-            });
-
-            addLog(`📄 Folha fechada: ${slots.length}/${cap.slots}`, 'success');
-            salvarEstado();
-            atualizarIndicadorFolha();
-            atualizarPreviewFolha();
-            atualizarBarraStatus();
+            
+            sheetQueue.push({ slots, layout: cap.layout, descricao: `Folha ${traduzirFormato(formatoAtual)}` });
+            
+            // Aviso sonoro/visual de que a folha encheu
+            mostrarToast('Folha Completa!', 'A foto foi enviada para a impressora.', 'success');
+            addLog(`📄 Folha fechada (${slots.length} slots). Enviando para impressão...`, 'success');
+            
+            atualizarUIFolha();
             processarFilaImpressao();
         }
 
-        /* ═══════════════════════════════════════════════════════════════
-           INDICADOR + PREVIEW DA FOLHA (dropzone)
-           ═══════════════════════════════════════════════════════════════ */
-        function atualizarIndicadorFolha() {
-            const cap = getCapacidadeA4();
-            const usados = sheetBuffer.length;
-            const el = document.getElementById('sheet-count');
-            if (el) el.innerText = `${usados}/${cap.slots}`;
-        }
-
-        function atualizarPreviewFolha() {
-            const container = document.getElementById('sheet-preview');
-            if (!container) return;
-
-            const cap = getCapacidadeA4();
-            container.innerHTML = '';
-
-            // Grid de colunas conforme capacidade (para parecer uma folha A4 real)
-            let cols, rows;
-            if (cap.slots === 6) { cols = 3; rows = 2; }
-            else if (cap.slots === 4) { cols = 2; rows = 2; }
-            else if (cap.slots === 2) { cols = 2; rows = 1; }
-            else { cols = 1; rows = 1; }
-
-            container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-            container.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
-
-            for (let i = 0; i < cap.slots; i++) {
-                const slot = document.createElement('div');
-                slot.className = 'sheet-preview-slot';
-                const slotData = sheetBuffer[i];
-                if (slotData) {
-                    slot.classList.add('filled');
-                    slot.innerHTML = `
-                        <span class="slot-label">${i + 1}</span>
-                        <img src="${slotData.url}" alt="Slot ${i+1}">
-                    `;
-                } else {
-                    slot.innerHTML = `<span>${i + 1}</span>`;
-                }
-                container.appendChild(slot);
-            }
-        }
-
-        /* ═══════════════════════════════════════════════════════════════
-           DRAG & DROP — arrastar foto para dentro do preview da folha
-           ═══════════════════════════════════════════════════════════════ */
-        function configurarDragDrop() {
-            const section = document.getElementById('sheet-section');
-            if (!section) return;
-
-            section.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                e.dataTransfer.dropEffect = 'copy';
-                section.classList.add('drag-over');
-            });
-
-            section.addEventListener('dragleave', (e) => {
-                // Só remove se saiu do container (não de um filho)
-                if (!section.contains(e.relatedTarget)) {
-                    section.classList.remove('drag-over');
-                }
-            });
-
-            section.addEventListener('drop', (e) => {
-                e.preventDefault();
-                section.classList.remove('drag-over');
-                const id = parseInt(e.dataTransfer.getData('text/photo-id'), 10);
-                if (!id || isNaN(id)) return;
-                const foto = todasFotos.find(f => f.id === id);
-                if (!foto) return;
-                alimentarBuffer(foto.url, foto.key, { copias: 1, guestbook: foto.guestbook }, foto.id);
-                addLog(`🖱️ Drag&drop: foto #${foto.id}`, 'info');
-                mostrarToast('Foto adicionada', `Foto #${foto.id} enviada para a folha.`, 'success');
-            });
-        }
-
-        /* ═══════════════════════════════════════════════════════════════
-           BARRA DE STATUS + PAUSA
-           ═══════════════════════════════════════════════════════════════ */
-        function atualizarBarraStatus() {
-            const bar = document.getElementById('print-status-bar');
-            const txt = document.getElementById('print-status-text');
-            const filaCount = document.getElementById('fila-count');
-            const btnPause = document.getElementById('btn-pause');
-            const btnPauseText = document.getElementById('btn-pause-text');
-
-            if (filaCount) filaCount.innerText = sheetQueue.length;
-            bar.classList.remove('active', 'paused');
-
-            if (pausado) {
-                bar.classList.add('paused');
-                txt.innerText = `⏸️ Pausado (${sheetQueue.length} na fila)`;
-                btnPause.classList.add('active');
-                btnPauseText.innerText = 'Retomar';
-                btnPause.querySelector('i').className = 'fa-solid fa-play';
-            } else if (isPrinting && folhaAtualImprimindo) {
-                bar.classList.add('active');
-                txt.innerText = `🖨️ ${folhaAtualImprimindo.descricao}`;
-                btnPause.classList.remove('active');
-                btnPauseText.innerText = 'Pausar';
-                btnPause.querySelector('i').className = 'fa-solid fa-pause';
-            } else if (sheetQueue.length > 0) {
-                bar.classList.add('active');
-                txt.innerText = `${sheetQueue.length} folha(s) pronta(s)`;
-            } else if (sheetBuffer.length > 0) {
-                const cap = getCapacidadeA4();
-                bar.classList.add('active');
-                txt.innerText = `Preenchendo: ${sheetBuffer.length}/${cap.slots}`;
-            } else {
-                txt.innerText = 'Aguardando fotos';
-                btnPause.classList.remove('active');
-                btnPauseText.innerText = 'Pausar';
-                btnPause.querySelector('i').className = 'fa-solid fa-pause';
-            }
-        }
-
-        function togglePausa() {
-            pausado = !pausado;
-            if (pausado) {
-                addLog('⏸️ Pausado', 'warn');
-                mostrarToast('Pausado', 'A impressão foi pausada.', 'warning');
-            } else {
-                addLog('▶️ Retomado', 'success');
-                mostrarToast('Retomado', 'Impressão retomada.', 'success');
-                processarFilaImpressao();
-            }
-            atualizarBarraStatus();
+        function removerDoBuffer(index) {
+            sheetBuffer.splice(index, 1);
+            atualizarUIFolha();
             render();
+            addLog(`🗑️ Foto removida da folha`, 'warn');
         }
 
-        function limparFilaManual() {
-            const total = sheetQueue.length + sheetBuffer.length;
-            if (total === 0) {
-                mostrarToast('Fila vazia', 'Nada pendente.', 'info');
-                return;
-            }
-            if (!confirm(`Limpar ${sheetQueue.length} folha(s) + ${sheetBuffer.length} slot(s)?`)) return;
-            sheetQueue = [];
-            sheetBuffer = [];
-            limparEstadoStorage();
-            addLog(`🗑️ Fila limpa (${total} itens)`, 'warn');
-            atualizarBarraStatus();
-            atualizarIndicadorFolha();
-            atualizarPreviewFolha();
-            render();
-            mostrarToast('Fila limpa', `${total} item(ns) removidos.`, 'info');
-        }
-
-        /* ═══════════════════════════════════════════════════════════════
-           PROCESSAMENTO DA FILA
-           ═══════════════════════════════════════════════════════════════ */
         async function processarFilaImpressao() {
-            if (isPrinting) return;
-            if (pausado) { atualizarBarraStatus(); return; }
-            if (sheetQueue.length === 0) {
-                isPrinting = false;
-                folhaAtualImprimindo = null;
-                atualizarBarraStatus();
-                render();
-                return;
-            }
-
+            if (isPrinting || pausado || sheetQueue.length === 0) return;
+            
             isPrinting = true;
-            folhaAtualImprimindo = sheetQueue.shift();
-            salvarEstado();
-            atualizarBarraStatus();
-            render();
+            const folha = sheetQueue.shift();
+            atualizarUIFolha();
 
             try {
-                await executarImpressaoFolha(folhaAtualImprimindo);
-                addLog(`✅ ${folhaAtualImprimindo.descricao}`, 'success');
+                await imprimirFolhaReal(folha);
             } catch (e) {
-                addLog(`❌ Erro: ${e.message}`, 'error');
+                addLog(`❌ Erro na impressão: ${e.message}`, 'error');
             }
 
             setTimeout(() => {
                 isPrinting = false;
-                folhaAtualImprimindo = null;
-                atualizarBarraStatus();
-                render();
                 processarFilaImpressao();
-            }, printDelayMs);
+            }, 2500);
         }
 
-        async function executarImpressaoFolha(folha) {
-            await Promise.all(folha.slots.map(s => preloadImagem(s.url)));
-
+        async function imprimirFolhaReal(folha) {
             const printArea = document.getElementById('print-area');
-            const sheet = document.createElement('div');
-            sheet.className = `print-sheet ${folha.layout || 'layout-polaroid'}`;
+            // Força o grid a usar as classes de layout corretas
+            printArea.className = `print-sheet ${folha.layout}`;
+            
+            printArea.innerHTML = folha.slots.map(s => `
+                <div class="slot"><img src="${s.url}"></div>
+            `).join('');
 
-            for (const slot of folha.slots) {
-                const slotEl = document.createElement('div');
-                slotEl.className = 'slot';
-                const img = document.createElement('img');
-                img.src = slot.url;
-                img.alt = slot.tipo || 'foto';
-                slotEl.appendChild(img);
-                sheet.appendChild(slotEl);
-            }
-
-            printArea.innerHTML = '';
-            printArea.appendChild(sheet);
-
-            const cap = getCapacidadeA4();
+            // Define o tamanho do papel baseado no formato
             let stylePage = document.getElementById('dynamic-page-style');
             if (!stylePage) {
                 stylePage = document.createElement('style');
                 stylePage.id = 'dynamic-page-style';
                 document.head.appendChild(stylePage);
             }
-            const orient = cap.orientacao === 'landscape' ? 'A4 landscape' : 'A4 portrait';
-            stylePage.innerHTML = `@media print { @page { size: ${orient}; margin: 0; } }`;
+            
+            let pageRule = '@page { size: A4 portrait; margin: 0; }';
+            if (folha.layout === 'layout-10x15h') pageRule = '@page { size: A4 landscape; margin: 0; }';
+            
+            stylePage.innerHTML = `@media print { ${pageRule} }`;
 
-            await new Promise(r => setTimeout(r, 400));
-            window.focus();
+            await new Promise(r => setTimeout(r, 500)); // Garante carregamento das imagens
             window.print();
         }
 
-        function preloadImagem(url) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.onload = () => resolve(true);
-                img.onerror = () => resolve(false);
-                img.src = url;
-                setTimeout(() => resolve(false), 8000);
-            });
+        /* ════════════════ INTERFACE (UI) ════════════════ */
+        function atualizarUIStatus() {
+            const bar = document.getElementById('print-status-bar');
+            const txt = document.getElementById('print-status-text');
+            
+            if (pausado) {
+                bar.className = 'print-status-bar paused';
+                txt.innerText = 'Pausado';
+            } else if (isPrinting) {
+                bar.className = 'print-status-bar active';
+                txt.innerText = 'Imprimindo...';
+            } else {
+                bar.className = 'print-status-bar';
+                txt.innerText = sheetQueue.length > 0 ? `${sheetQueue.length} na fila` : 'Aguardando fotos';
+            }
         }
 
-        /* ═══════════════════════════════════════════════════════════════
-           RENDER DO GRID
-           ═══════════════════════════════════════════════════════════════ */
+        function atualizarUIFolha() {
+            const cap = getCapacidade();
+            document.getElementById('sheet-count').innerText = `${sheetBuffer.length}/${cap.slots}`;
+            document.getElementById('fila-count').innerText = sheetQueue.length;
+            
+            const container = document.getElementById('sheet-preview');
+            container.style.gridTemplateColumns = `repeat(${cap.slots === 6 ? 3 : cap.slots === 4 ? 2 : 1}, 1fr)`;
+            container.innerHTML = '';
+
+            for (let i = 0; i < cap.slots; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'sheet-preview-slot';
+                const data = sheetBuffer[i];
+                
+                if (data) {
+                    slot.classList.add('filled');
+                    slot.innerHTML = `<span class="slot-label">${i+1}</span><img src="${data.url}">
+                        <div class="remove-btn" onclick="event.stopPropagation(); removerDoBuffer(${i})"><i class="fa-solid fa-xmark"></i></div>`;
+                } else {
+                    slot.innerHTML = `<span style="font-size:10px;color:var(--text-3);">${i+1}</span>`;
+                }
+                container.appendChild(slot);
+            }
+            atualizarUIStatus();
+        }
+
         function render() {
             const grid = document.getElementById('grid-fotos');
-            const mainCount = document.getElementById('main-count');
-            if (mainCount) mainCount.innerText = `${todasFotos.length} foto${todasFotos.length !== 1 ? 's' : ''}`;
-
+            document.getElementById('main-count').innerText = `${todasFotos.length} fotos`;
+            
             if (todasFotos.length === 0) {
-                grid.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fa-solid fa-camera-retro"></i>
-                        <div class="empty-state-title">Nenhuma foto ainda</div>
-                        <div class="empty-state-sub">As fotos aparecerão aqui conforme forem capturadas</div>
-                    </div>`;
+                grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:50px; color:var(--text-3);"><i class="fa-solid fa-camera-retro" style="font-size:48px;margin-bottom:16px;opacity:0.3;"></i><br>Nenhuma foto ainda</div>`;
                 return;
             }
 
-            const keysNaFila = new Set([
-                ...sheetBuffer.map(s => s.key),
-                ...sheetQueue.flatMap(f => f.slots.map(s => s.key))
-            ]);
-            const keysImprimindo = folhaAtualImprimindo
-                ? new Set(folhaAtualImprimindo.slots.map(s => s.key))
-                : new Set();
-
-            grid.innerHTML = todasFotos.slice().reverse().map((f, i) => {
-                const estaSelecionada = selecionadas.has(f.id);
-                let printStateClass = '';
-                let printStateIcon = 'fa-clock';
-                let printStateText = 'NA FILA';
-
-                if (f.impressa) {
-                    printStateClass = 'done';
-                    printStateIcon = 'fa-check-circle';
-                    printStateText = 'IMPRESSA';
-                } else if (keysImprimindo.has(f.key)) {
-                    printStateClass = 'printing';
-                    printStateIcon = 'fa-spinner fa-spin';
-                    printStateText = 'IMPRIMINDO';
-                } else if (keysNaFila.has(f.key)) {
-                    printStateClass = 'printing';
-                    printStateIcon = 'fa-hourglass-half';
-                    printStateText = 'AGUARDANDO';
-                }
-
-                const clickHandler = modoSelecao
-                    ? `onclick="toggleSelecionada(${f.id})"`
-                    : `onclick="abrirZoom(${f.id})"`;
-
+            grid.innerHTML = todasFotos.slice().reverse().map(f => {
+                const sel = selecionadas.has(f.id);
+                const click = modoSelecao ? `toggleSelecionada(${f.id})` : `abrirZoom(${f.id})`;
                 return `
-                    <div class="card ${estaSelecionada ? 'selected' : ''}"
-                         draggable="true"
-                         data-id="${f.id}"
-                         style="animation-delay:${Math.min(i * 20, 300)}ms"
-                         ${clickHandler}
-                         ondragstart="onCardDragStart(event, ${f.id})"
-                         ondragend="onCardDragEnd(event)">
+                    <div class="card ${sel ? 'selected' : ''}" draggable="true" onclick="${click}"
+                         ondragstart="event.dataTransfer.setData('text', ${f.id}); this.classList.add('dragging')"
+                         ondragend="this.classList.remove('dragging')">
                         <div class="check-overlay"><i class="fa-solid fa-check-circle"></i></div>
                         <span class="badge-id">#${f.id}</span>
-                        <span class="badge-copias">${f.copias}× cópia${f.copias > 1 ? 's' : ''}</span>
-                        ${f.guestbook
-                            ? `<span class="badge-guestbook"><i class="fa-solid fa-book-open"></i> GB</span>`
-                            : ''}
-                        <span class="print-state ${printStateClass}">
-                            <i class="fa-solid ${printStateIcon}"></i> ${printStateText}
-                        </span>
-                        <img src="${f.url}" loading="lazy" alt="Foto #${f.id}">
+                        <span class="badge-copias">${f.copias}x</span>
+                        <span class="print-state ${f.impressa ? 'done' : ''}">${f.impressa ? 'IMPRESSA' : 'NA FILA'}</span>
+                        <img src="${f.url}">
                     </div>`;
             }).join('');
         }
 
-        /* ═══════════════════════════════════════════════════════════════
-           DRAG HANDLERS
-           ═══════════════════════════════════════════════════════════════ */
-        function onCardDragStart(e, id) {
-            e.dataTransfer.setData('text/photo-id', String(id));
-            e.dataTransfer.effectAllowed = 'copy';
-            e.currentTarget.classList.add('dragging');
+        /* ════════════════ DRAG & DROP ════════════════ */
+        const section = document.getElementById('sheet-section');
+        section.addEventListener('dragover', e => { e.preventDefault(); section.classList.add('drag-over'); });
+        section.addEventListener('dragleave', () => section.classList.remove('drag-over'));
+        section.addEventListener('drop', e => {
+            e.preventDefault();
+            section.classList.remove('drag-over');
+            const id = parseInt(e.dataTransfer.getData('text'), 10);
+            const foto = todasFotos.find(f => f.id === id);
+            if (foto) {
+                alimentarBuffer(foto.url, foto.key, { copias: 1, guestbook: foto.guestbook }, foto.id);
+                mostrarToast('Adicionada', `Foto #${id} na folha.`, 'info');
+            }
+        });
+
+        /* ════════════════ SELEÇÃO E CONFIG ════════════════ */
+        function toggleModoSelecao() {
+            modoSelecao = !modoSelecao;
+            selecionadas.clear();
+            document.getElementById('btn-selecao').classList.toggle('active', modoSelecao);
+            atualizarBarraSelecao(); render();
         }
-        function onCardDragEnd(e) {
-            e.currentTarget.classList.remove('dragging');
+        function toggleSelecionada(id) {
+            if (!modoSelecao) return;
+            selecionadas.has(id) ? selecionadas.delete(id) : selecionadas.add(id);
+            atualizarBarraSelecao(); render();
+        }
+        function atualizarBarraSelecao() {
+            const bar = document.getElementById('selection-bar');
+            if (modoSelecao && selecionadas.size > 0) {
+                bar.style.display = 'block';
+                document.getElementById('selection-count').innerText = selecionadas.size;
+            } else { bar.style.display = 'none'; }
+        }
+        function cancelarSelecao() { modoSelecao = false; selecionadas.clear(); toggleModoSelecao(); }
+        function imprimirSelecionadas() {
+            const fotos = todasFotos.filter(f => selecionadas.has(f.id));
+            fotos.forEach(f => alimentarBuffer(f.url, f.key, { copias: f.copias, guestbook: f.guestbook }, f.id));
+            cancelarSelecao();
         }
 
-        /* ═══════════════════════════════════════════════════════════════
-           MODAL DE ZOOM
-           ═══════════════════════════════════════════════════════════════ */
+        function salvarConfigCapacidade(v) { fotosPorFolha = parseInt(v); atualizarUIFolha(); }
+        function salvarConfigAuto(v) { autoImpressao = v === '1'; }
+
+        function togglePausa() {
+            pausado = !pausado;
+            document.getElementById('btn-pause').classList.toggle('active', pausado);
+            document.getElementById('btn-pause-text').innerText = pausado ? 'Retomar' : 'Pausar';
+            atualizarUIStatus();
+            if (!pausado) processarFilaImpressao();
+        }
+
+        function limparFilaManual() {
+            if (!confirm('Limpar todas as fotos da folha atual?')) return;
+            sheetBuffer = []; sheetQueue = [];
+            atualizarUIFolha(); render();
+        }
+
+        /* ════════════════ MODAL E BUSCA ════════════════ */
         function abrirZoom(id) {
-            const foto = todasFotos.find(f => f.id === id);
-            if (!foto) return;
-            document.getElementById('img-zoom').src = foto.url;
-            document.getElementById('zoom-id').innerText = `#${foto.id}`;
-            document.getElementById('zoom-copias').innerText = `${foto.copias}×`;
-            document.getElementById('zoom-guestbook').innerText = foto.guestbook ? 'SIM' : 'NÃO';
-            document.getElementById('btn-excluir-zoom').onclick = () => excluirFoto(foto.key);
-            document.getElementById('modal-zoom').classList.add('active');
+            const f = todasFotos.find(x => x.id === id);
+            if (f) {
+                document.getElementById('img-zoom').src = f.url;
+                document.getElementById('modal-zoom').classList.add('active');
+            }
         }
-        function fecharZoom() {
-            document.getElementById('modal-zoom').classList.remove('active');
-        }
+        function fecharZoom() { document.getElementById('modal-zoom').classList.remove('active'); }
         function reimprimirAtual() {
             const url = document.getElementById('img-zoom').src;
-            if (!url) return;
             const foto = todasFotos.find(f => f.url === url);
-            if (!foto) {
-                alimentarBuffer(url, `manual_${Date.now()}`, { copias: 1, guestbook: false }, 0);
-                return;
-            }
-            alimentarBuffer(foto.url, foto.key, { copias: foto.copias, guestbook: foto.guestbook }, foto.id);
-            addLog(`🔁 Reimpressão #${foto.id}`, 'info');
+            if (foto) alimentarBuffer(foto.url, foto.key, { copias: foto.copias, guestbook: foto.guestbook }, foto.id);
             fecharZoom();
         }
-        async function excluirFoto(key) {
-            if (!confirm("Excluir esta foto?")) return;
-            try {
-                await fetch(`${API}/photo?key=${encodeURIComponent(key)}`, { method: 'DELETE' });
-                todasFotos = todasFotos.filter(f => f.key !== key);
-                chavesLocais.delete(key);
-                todasFotos.forEach((f, i) => f.id = i + 1);
-                sheetBuffer = sheetBuffer.filter(s => s.key !== key);
-                sheetQueue = sheetQueue.map(folha => ({
-                    ...folha,
-                    slots: folha.slots.filter(s => s.key !== key)
-                })).filter(folha => folha.slots.length > 0);
-                salvarEstado();
-                fecharZoom();
-                render();
-                atualizarBarraStatus();
-                atualizarIndicadorFolha();
-                atualizarPreviewFolha();
-                addLog(`🗑️ Foto excluída`, 'warn');
-            } catch (e) {
-                mostrarToast('Erro', 'Não foi possível excluir.', 'error');
-            }
-        }
-
-        /* ═══════════════════════════════════════════════════════════════
-           BUSCA
-           ═══════════════════════════════════════════════════════════════ */
         function executarBusca() {
-            const input = document.getElementById('input-busca');
-            const idBusca = parseInt(input.value, 10);
-            if (!idBusca || isNaN(idBusca)) {
-                mostrarToast('ID inválido', 'Digite um número.', 'error');
-                return;
-            }
-            const foto = todasFotos.find(f => f.id === idBusca);
-            if (foto) {
-                abrirZoom(foto.id);
-                input.value = '';
-            } else {
-                mostrarToast('Não encontrada', `ID #${idBusca}`, 'warning');
-            }
+            const id = parseInt(document.getElementById('input-busca').value);
+            const foto = todasFotos.find(f => f.id === id);
+            if (foto) abrirZoom(foto.id);
+            else mostrarToast('Não encontrada', 'ID inválido.', 'error');
         }
 
-        /* ═══════════════════════════════════════════════════════════════
-           SIDEBAR: ZIP + LIMPAR SERVIDOR
-           ═══════════════════════════════════════════════════════════════ */
-        async function baixarZip() {
-            if (todasFotos.length === 0) {
-                mostrarToast('Sem fotos', 'Nenhuma foto.', 'info');
-                return;
-            }
-            mostrarToast('Preparando ZIP', `${todasFotos.length} foto(s)...`, 'info');
-            try {
-                const zip = new JSZip();
-                let baixadas = 0;
-                for (const f of todasFotos) {
-                    try {
-                        const blob = await fetch(f.url).then(r => r.blob());
-                        const nome = `foto_${String(f.id).padStart(3, '0')}_${f.copias}c${f.guestbook ? '_gb' : ''}.jpg`;
-                        zip.file(nome, blob);
-                        baixadas++;
-                    } catch (e) {}
-                }
-                if (baixadas === 0) {
-                    mostrarToast('Erro', 'Nenhuma pôde ser baixada.', 'error');
-                    return;
-                }
-                const content = await zip.generateAsync({ type: "blob" });
-                const nomeZip = `galeria_${eventoAtual.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.zip`;
-                saveAs(content, nomeZip);
-                addLog(`✅ ZIP gerado (${baixadas})`, 'success');
-            } catch (e) {
-                addLog(`❌ Erro ZIP: ${e.message}`, 'error');
-            }
-        }
-        async function limparTudo() {
-            if (!confirm("⚠️ APAGAR TODAS AS FOTOS?\n\nIrreversível.")) return;
-            const senha = prompt("Senha mestra:");
-            if (senha !== "1234") {
-                mostrarToast('Cancelado', 'Senha incorreta.', 'error');
-                return;
-            }
-            try {
-                await fetch(`${API}/photo?key=all`, { method: 'DELETE' });
-                todasFotos = [];
-                chavesLocais.clear();
-                sheetBuffer = [];
-                sheetQueue = [];
-                limparEstadoStorage();
-                render();
-                atualizarBarraStatus();
-                atualizarIndicadorFolha();
-                atualizarPreviewFolha();
-                addLog(`🗑️ Servidor limpo`, 'warn');
-                mostrarToast('Servidor limpo', 'Fotos removidas.', 'success');
-            } catch (e) {
-                addLog(`❌ Erro: ${e.message}`, 'error');
-            }
-        }
-
-        /* ═══════════════════════════════════════════════════════════════
-           EVENTOS GLOBAIS + INICIALIZAÇÃO
-           ═══════════════════════════════════════════════════════════════ */
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                if (document.getElementById('modal-zoom').classList.contains('active')) fecharZoom();
-                else if (document.getElementById('sidebar').classList.contains('active')) toggleSidebar();
-                else if (logAberto) toggleLog();
-                else if (modoSelecao) cancelarSelecao();
-            }
-        });
-        document.getElementById('modal-zoom').addEventListener('click', (e) => {
-            if (e.target.id === 'modal-zoom') fecharZoom();
-        });
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) atualizar();
-        });
-        window.addEventListener('beforeunload', () => {
-            salvarEstado();
-        });
-
+        /* ════════════════ INICIALIZAÇÃO ════════════════ */
         window.addEventListener('load', () => {
-            carregarConfig();
-            carregarHistorico();
-            renderLogCompleto();
-
-            document.getElementById('config-delay').value = String(printDelayMs);
-            document.getElementById('config-auto').value = autoImpressao ? '1' : '0';
-            document.getElementById('config-capacidade').value = String(fotosPorFolha);
-
-            carregarEstado();
-            configurarDragDrop();
-
-            addLog('🚀 Central v9.0 iniciada', 'success');
-
-            atualizarIndicadorFolha();
-            atualizarPreviewFolha();
-            atualizarBarraStatus();
-
-            if (sheetQueue.length > 0) {
-                addLog(`♻️ Fila restaurada (${sheetQueue.length})`, 'info');
-                processarFilaImpressao();
-            }
-            if (sheetBuffer.length > 0) {
-                addLog(`♻️ Buffer restaurado (${sheetBuffer.length})`, 'info');
-            }
-
+            atualizarUIFolha();
             atualizar();
-            setInterval(atualizar, POLL_INTERVAL_MS);
+            setInterval(atualizar, POLL_INTERVAL);
+            addLog('🚀 Central v10.0 iniciada', 'success');
         });
     </script>
 </body>
 </html>
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- ◀◀◀ FIM DO ARQUIVO galeria.html — CENTRAL v9.0 REDESIGN ▶▶▶       -->
-<!-- ═══════════════════════════════════════════════════════════════════ --> 
+<!-- ◀◀◀ FIM DO ARQUIVO galeria.html — v10.0 ▶▶▶ -->
+
+        function

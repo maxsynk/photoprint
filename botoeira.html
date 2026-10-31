@@ -1,423 +1,122 @@
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- INÍCIO DO ARQUIVO botoeira.html — v3.0                             -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT — Botoeira v3.0</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>PHOTO PRINT — Botoeira</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- ═══════════════════════════════════════════════════════════ -->
-    <!-- INÍCIO DO BLOCO DE ESTILOS (CSS)                            -->
-    <!-- ═══════════════════════════════════════════════════════════ -->
+    <link rel="stylesheet" href="style.css">
     <style>
-        :root {
-            --neon: #39ff14;
-            --neon-dim: rgba(57, 255, 20, 0.12);
-            --neon-glow: 0 0 20px rgba(57, 255, 20, 0.4);
-            --red: #ff3131;
-            --red-dim: rgba(255, 49, 49, 0.15);
-            --blue: #0096ff;
-            --blue-dim: rgba(0, 150, 255, 0.12);
-            --yellow: #ffb800;
-            --yellow-dim: rgba(255, 184, 0, 0.15);
-
-            --bg-0: #000000;
-            --bg-1: #0a0a0a;
-            --bg-2: #111111;
-            --bg-3: #1a1a1a;
-            --bg-4: #222222;
-
-            --text-0: #ffffff;
-            --text-1: #e0e0e0;
-            --text-2: #999999;
-            --text-3: #555555;
-
-            --border-1: rgba(255, 255, 255, 0.06);
-            --border-2: rgba(255, 255, 255, 0.1);
-            --border-neon: rgba(57, 255, 20, 0.3);
-
-            --radius-sm: 10px;
-            --radius-md: 14px;
-            --radius-lg: 20px;
-            --radius-xl: 28px;
-
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
-            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
-            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.6);
-
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-fast: all 0.15s ease;
-
-            --font-display: 'Outfit', sans-serif;
-            --font-mono: 'Space Grotesk', sans-serif;
-            --font-body: 'Plus Jakarta Sans', -apple-system, sans-serif;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-        html, body {
-            font-family: var(--font-body);
-            background: var(--bg-0);
-            color: var(--text-0);
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        body {
-            background:
-                radial-gradient(circle at 50% 20%, rgba(26, 58, 18, 0.4) 0%, transparent 50%),
-                radial-gradient(circle at 90% 90%, rgba(57, 255, 20, 0.03) 0%, transparent 40%),
-                var(--bg-0);
-            padding: 20px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 480px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            z-index: 10;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .brand-title {
-            font-family: var(--font-display);
-            font-size: clamp(28px, 8vw, 38px);
-            font-weight: 900;
-            color: var(--neon);
-            text-shadow: var(--neon-glow);
-            letter-spacing: 3px;
-            text-transform: uppercase;
-        }
-        .subtitle {
-            font-size: 11px;
-            letter-spacing: 4px;
-            color: var(--text-3);
-            text-transform: uppercase;
-            font-weight: 700;
-            margin-top: 4px;
-        }
-
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin: 0 auto 20px;
-            padding: 8px 16px;
-            background: var(--bg-1);
-            border: 1px solid var(--border-2);
-            border-radius: 20px;
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: var(--red);
-        }
-        .status-badge.online { color: var(--neon); border-color: var(--border-neon); }
-        .status-badge .dot {
-            width: 8px; height: 8px; border-radius: 50%;
-            background: currentColor; box-shadow: 0 0 8px currentColor;
-            animation: pulseDot 2s infinite;
-        }
+        html, body { height: 100vh; overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 20px; background: radial-gradient(circle at 50% 20%, rgba(0,229,255,0.05) 0%, transparent 50%), var(--bg-0); }
+        .container { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 20px; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .brand-title { font-family: var(--font-display); font-size: clamp(28px, 8vw, 38px); font-weight: 900; color: var(--accent); text-shadow: var(--accent-glow); letter-spacing: 3px; text-transform: uppercase; }
+        .subtitle { font-size: 11px; letter-spacing: 4px; color: var(--text-3); text-transform: uppercase; font-weight: 700; margin-top: 4px; }
+        .status-badge { display: inline-flex; align-items: center; gap: 8px; margin: 0 auto 20px; padding: 8px 16px; background: var(--bg-1); border: 1px solid var(--border-2); border-radius: 20px; font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--danger); }
+        .status-badge.online { color: var(--accent); border-color: var(--accent); }
+        .status-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; animation: pulseDot 2s infinite; }
         @keyframes pulseDot { 0%,100%{opacity:1} 50%{opacity:0.4} }
-
-        .card {
-            background: var(--bg-1);
-            border: 1px solid var(--border-1);
-            border-radius: var(--radius-xl);
-            padding: 32px 24px;
-            box-shadow: var(--shadow-lg);
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, var(--neon), transparent);
-            animation: scan 3s ease-in-out infinite;
-        }
+        .card { background: var(--bg-1); border: 1px solid var(--border-1); border-radius: var(--radius-xl); padding: 32px 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); text-align: center; position: relative; overflow: hidden; }
+        .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, var(--accent), transparent); animation: scan 3s ease-in-out infinite; }
         @keyframes scan { 0%,100%{opacity:0.3} 50%{opacity:1} }
-
-        .event-info {
-            margin-bottom: 24px;
-        }
-        .event-label {
-            font-size: 10px; color: var(--text-3); font-weight: 800;
-            letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px;
-        }
-        .event-name {
-            font-family: var(--font-display);
-            font-size: 22px; font-weight: 800; color: var(--neon);
-            text-transform: uppercase; letter-spacing: 1px;
-        }
-
-        .btn-main {
-            width: 100%;
-            padding: 24px;
-            border-radius: var(--radius-lg);
-            border: 2px solid var(--neon);
-            background: rgba(57, 255, 20, 0.08);
-            color: var(--neon);
-            font-family: var(--font-display);
-            font-size: 20px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            transition: var(--transition);
-            position: relative;
-        }
+        .event-info { margin-bottom: 24px; }
+        .event-label { font-size: 10px; color: var(--text-3); font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+        .event-name { font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+        .btn-main { width: 100%; padding: 24px; border-radius: var(--radius-lg); border: 2px solid var(--accent); background: rgba(0,229,255,0.08); color: var(--accent); font-family: var(--font-display); font-size: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 12px; transition: all 0.3s; }
         .btn-main i { font-size: 32px; }
-        .btn-main:hover { background: var(--neon); color: var(--bg-0); box-shadow: var(--neon-glow); }
+        .btn-main:hover { background: var(--accent); color: var(--bg-0); box-shadow: var(--accent-glow); }
         .btn-main:active { transform: scale(0.97); }
-        .btn-main.disabled {
-            opacity: 0.3; pointer-events: none; filter: grayscale(1);
-        }
-
-        .btn-main.processing {
-            background: var(--yellow-dim);
-            border-color: var(--yellow);
-            color: var(--yellow);
-            pointer-events: none;
-        }
-
-        .btn-main.success {
-            background: var(--neon);
-            color: var(--bg-0);
-            box-shadow: var(--neon-glow);
-        }
-
-        .btn-main.error {
-            background: var(--red-dim);
-            border-color: var(--red);
-            color: var(--red);
-        }
-
-        .footer-info {
-            text-align: center;
-            font-size: 10px;
-            color: var(--text-3);
-            font-weight: 600;
-            letter-spacing: 1px;
-            margin-top: 20px;
-        }
-
-        /* LOGS */
-        .log-box {
-            background: var(--bg-0);
-            border: 1px solid var(--border-1);
-            border-radius: var(--radius-md);
-            padding: 12px;
-            max-height: 100px;
-            overflow-y: auto;
-            font-family: var(--font-mono);
-            font-size: 10px;
-            color: var(--text-2);
-            text-align: left;
-            margin-top: 16px;
-        }
+        .btn-main.disabled { opacity: 0.3; pointer-events: none; filter: grayscale(1); }
+        .btn-main.processing { background: rgba(255,204,0,0.15); border-color: var(--warn); color: var(--warn); pointer-events: none; }
+        .btn-main.success { background: var(--accent); color: var(--bg-0); box-shadow: var(--accent-glow); }
+        .btn-main.error { background: var(--danger-dim); border-color: var(--danger); color: var(--danger); }
+        .footer-info { text-align: center; font-size: 10px; color: var(--text-3); font-weight: 600; letter-spacing: 1px; margin-top: 20px; }
+        .log-box { background: var(--bg-0); border: 1px solid var(--border-1); border-radius: var(--radius-md); padding: 12px; max-height: 100px; overflow-y: auto; font-family: var(--font-mono); font-size: 10px; color: var(--text-2); text-align: left; margin-top: 16px; }
         .log-line { padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
-        .log-line.error { color: var(--red); }
-        .log-line.success { color: var(--neon); }
+        .log-line.error { color: var(--danger); }
+        .log-line.success { color: var(--accent); }
     </style>
-    <!-- ═══════════════════════════════════════════════════════════ -->
-    <!-- FIM DO BLOCO DE ESTILOS (CSS)                               -->
-    <!-- ═══════════════════════════════════════════════════════════ -->
 </head>
 <body>
-
     <div class="container">
         <div class="header">
             <h1 class="brand-title">PHOTO PRINT</h1>
             <p class="subtitle">Controle Botoeira</p>
         </div>
-
         <div style="text-align: center;">
-            <div class="status-badge" id="status-badge">
-                <span class="dot"></span>
-                <span id="status-text">Conectando...</span>
-            </div>
+            <div class="status-badge" id="status-badge"><span class="dot"></span><span id="status-text">Conectando...</span></div>
         </div>
-
         <div class="card">
-            <div class="event-info">
-                <div class="event-label">Evento Ativo</div>
-                <div class="event-name" id="event-name">—</div>
-            </div>
-
+            <div class="event-info"><div class="event-label">Evento Ativo</div><div class="event-name" id="event-name">—</div></div>
             <button class="btn-main disabled" id="btn-trigger" onclick="dispararCaptura()">
-                <i class="fas fa-camera"></i>
-                <span id="btn-text">Aguardando Sincronização</span>
+                <i class="fas fa-camera"></i><span id="btn-text">Aguardando Sincronização</span>
             </button>
-
-            <div class="log-box" id="log-box">
-                <div class="log-line">Sistema iniciado.</div>
-            </div>
+            <div class="log-box" id="log-box"><div class="log-line">Sistema iniciado.</div></div>
         </div>
-
-        <div class="footer-info">
-            Pressione o botão físico ou toque aqui para capturar
-        </div>
+        <div class="footer-info">Pressione o botão para capturar</div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════════ -->
-    <!-- INÍCIO DO BLOCO DE SCRIPTS (JavaScript)                     -->
-    <!-- ═══════════════════════════════════════════════════════════ -->
     <script>
         const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
-        let sistemaOnline = false;
-        let eventoAtivo = false;
-        let processando = false;
-        let intervaloSync = null;
+        let sistemaOnline = false, eventoAtivo = false, processando = false, intervaloSync = null;
 
         function log(msg, tipo = '') {
-            const box = document.getElementById('log-box');
-            const line = document.createElement('div');
+            const box = document.getElementById('log-box'), line = document.createElement('div');
             line.className = `log-line ${tipo}`;
-            const hh = new Date().toLocaleTimeString('pt-BR');
-            line.innerText = `[${hh}] ${msg}`;
-            box.appendChild(line);
-            box.scrollTop = box.scrollHeight;
+            line.innerText = `[${new Date().toLocaleTimeString('pt-BR')}] ${msg}`;
+            box.appendChild(line); box.scrollTop = box.scrollHeight;
             if (box.children.length > 15) box.removeChild(box.firstChild);
         }
 
         function atualizarStatusUI() {
-            const badge = document.getElementById('status-badge');
-            const text = document.getElementById('status-text');
-            const btn = document.getElementById('btn-trigger');
-            const btnText = document.getElementById('btn-text');
-            const eventName = document.getElementById('event-name');
-
-            if (sistemaOnline) {
-                badge.classList.add('online');
-                text.innerText = "Online";
-            } else {
-                badge.classList.remove('online');
-                text.innerText = "Offline";
-            }
-
+            const badge = document.getElementById('status-badge'), text = document.getElementById('status-text');
+            const btn = document.getElementById('btn-trigger'), btnText = document.getElementById('btn-text'), eventName = document.getElementById('event-name');
+            badge.classList.toggle('online', sistemaOnline);
+            text.innerText = sistemaOnline ? "Online" : "Offline";
             if (!sistemaOnline || !eventoAtivo) {
                 btn.classList.add('disabled');
                 btnText.innerText = "Aguardando Sincronização";
                 eventName.innerText = sistemaOnline ? "Nenhum evento ativo" : "—";
             } else {
                 btn.classList.remove('disabled');
-                if (!processando) {
-                    btnText.innerText = "DISPARAR CAPTURA";
-                }
+                if (!processando) btnText.innerText = "DISPARAR CAPTURA";
             }
         }
 
         async function verificarSistema() {
             try {
                 const res = await fetch(`${API}/get-all-states?t=${Date.now()}`);
-                if (!res.ok) throw new Error('Falha na conexão');
                 const data = await res.json();
-                
                 if (data.config && data.config.status === 'ONLINE') {
                     sistemaOnline = true;
-                    if (data.config.evento && data.config.evento !== 'Geral') {
-                        eventoAtivo = true;
-                        document.getElementById('event-name').innerText = data.config.evento;
-                    } else {
-                        eventoAtivo = false;
-                    }
-                } else {
-                    sistemaOnline = false;
-                    eventoAtivo = false;
-                }
+                    if (data.config.evento && data.config.evento !== 'Geral') { eventoAtivo = true; document.getElementById('event-name').innerText = data.config.evento; }
+                    else eventoAtivo = false;
+                } else { sistemaOnline = false; eventoAtivo = false; }
                 atualizarStatusUI();
-            } catch (e) {
-                if (sistemaOnline !== false) log("Erro de conexão com o servidor.", "error");
-                sistemaOnline = false;
-                eventoAtivo = false;
-                atualizarStatusUI();
-            }
+            } catch (e) { sistemaOnline = false; eventoAtivo = false; atualizarStatusUI(); }
         }
 
         async function dispararCaptura() {
             if (processando || !sistemaOnline || !eventoAtivo) return;
-            
             processando = true;
-            const btn = document.getElementById('btn-trigger');
-            const btnText = document.getElementById('btn-text');
-            
-            btn.classList.add('processing');
-            btnText.innerText = "Processando...";
-            log("Comando de captura enviado...", "success");
-
+            const btn = document.getElementById('btn-trigger'), btnText = document.getElementById('btn-text');
+            btn.classList.add('processing'); btnText.innerText = "Processando..."; log("Comando enviado...", "success");
             try {
-                const res = await fetch(`${API}/set-state`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ state: 'capturing' })
-                });
-                
+                const res = await fetch(`${API}/set-state`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state: 'capturing' }) });
                 if (res.ok) {
                     log("Sucesso! Câmera acionada.", "success");
-                    btn.classList.remove('processing');
-                    btn.classList.add('success');
-                    btnText.innerText = "CAPTURADO!";
-                    
-                    setTimeout(() => {
-                        btn.classList.remove('success');
-                        btn.classList.remove('processing');
-                        processando = false;
-                        btnText.innerText = "DISPARAR CAPTURA";
-                    }, 2000);
-                } else {
-                    throw new Error('Falha no comando');
-                }
+                    btn.classList.remove('processing'); btn.classList.add('success'); btnText.innerText = "CAPTURADO!";
+                    setTimeout(() => { btn.classList.remove('success'); processando = false; btnText.innerText = "DISPARAR CAPTURA"; }, 2000);
+                } else throw new Error('Falha');
             } catch (e) {
                 log("Erro ao enviar comando.", "error");
-                btn.classList.remove('processing');
-                btn.classList.add('error');
-                btnText.innerText = "ERRO - TENTE NOVAMENTE";
-                
-                setTimeout(() => {
-                    btn.classList.remove('error');
-                    processando = false;
-                    atualizarStatusUI();
-                }, 2000);
+                btn.classList.remove('processing'); btn.classList.add('error'); btnText.innerText = "ERRO";
+                setTimeout(() => { btn.classList.remove('error'); processando = false; atualizarStatusUI(); }, 2000);
             }
         }
 
-        function init() {
-            log("Iniciando monitoramento...");
-            verificarSistema();
-            intervaloSync = setInterval(verificarSistema, 3000);
-        }
-
-        window.addEventListener('load', init);
-        window.addEventListener('beforeunload', () => {
-            if (intervaloSync) clearInterval(intervaloSync);
-        });
+        window.addEventListener('load', () => { log("Iniciando monitoramento..."); verificarSistema(); intervaloSync = setInterval(verificarSistema, 3000); });
+        window.addEventListener('beforeunload', () => { if (intervaloSync) clearInterval(intervaloSync); });
     </script>
-    <!-- ═══════════════════════════════════════════════════════════ -->
-    <!-- FIM DO BLOCO DE SCRIPTS (JavaScript)                        -->
-    <!-- ═══════════════════════════════════════════════════════════ -->
 </body>
 </html>
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- FIM DO ARQUIVO botoeira.html — v3.0                                -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->

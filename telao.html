@@ -1,240 +1,660 @@
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- INÍCIO DO ARQUIVO telao.html — TV SLIDESHOW v2.0                   -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT | TV SLIDESHOW PRO v1.1</title>
+    <title>PHOTO PRINT — Telão Slideshow v2.0</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- INÍCIO DO BLOCO DE ESTILOS (CSS)                            -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
     <style>
-        :root { 
-            --neon: #39ff14; 
-            --bg: #000; 
-            --border: rgba(57, 255, 20, 0.2);
+        :root {
+            --neon: #39ff14;
+            --neon-dim: rgba(57, 255, 20, 0.12);
+            --neon-glow: 0 0 20px rgba(57, 255, 20, 0.4);
+            --red: #ff3131;
+            --blue: #0096ff;
+            
+            --bg-0: #000000;
+            --bg-1: #0a0a0a;
+            
+            --text-0: #ffffff;
+            --text-2: #999999;
+            --text-3: #555555;
+            
+            --border-1: rgba(255, 255, 255, 0.06);
+            --border-neon: rgba(57, 255, 20, 0.3);
+            
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            --font-display: 'Outfit', sans-serif;
+            --font-body: 'Plus Jakarta Sans', -apple-system, sans-serif;
         }
 
-        body { 
-            margin: 0; padding: 0; 
-            background-color: var(--bg); 
-            background: radial-gradient(circle at 50% -20%, #1a3a12 0%, #000 80%);
-            overflow: hidden; 
-            font-family: 'Segoe UI', sans-serif; 
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            font-family: var(--font-body);
+            background: var(--bg-0);
+            color: var(--text-0);
             height: 100vh;
-        }
-        
-        header { 
-            position: absolute; top: 40px; left: 40px; z-index: 100;
-            display: flex; flex-direction: column; align-items: flex-start;
-            border-left: 4px solid var(--neon); padding-left: 15px;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
-        .brand-box h1 { 
-            margin: 0; font-size: 28px; color: var(--neon); 
-            font-weight: 900; letter-spacing: 4px; text-transform: uppercase;
-            text-shadow: 0 0 15px rgba(57, 255, 20, 0.5); line-height: 1;
-        }
-        .brand-box p { 
-            margin: 5px 0 0; font-size: 10px; color: #666; 
-            letter-spacing: 3px; font-weight: bold; text-transform: uppercase; 
+        body {
+            background:
+                radial-gradient(circle at 50% -20%, rgba(26, 58, 18, 0.4) 0%, transparent 60%),
+                var(--bg-0);
         }
 
+        /* ═══════════ HEADER FLUTUANTE ═══════════ */
+        header {
+            position: absolute;
+            top: 40px;
+            left: 48px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            border-left: 4px solid var(--neon);
+            padding-left: 18px;
+            animation: fadeInLeft 0.8s ease-out;
+        }
+        @keyframes fadeInLeft {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .brand-box h1 {
+            font-family: var(--font-display);
+            margin: 0;
+            font-size: 32px;
+            color: var(--neon);
+            font-weight: 900;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            text-shadow: var(--neon-glow), 0 0 40px rgba(57, 255, 20, 0.2);
+            line-height: 1;
+        }
+        .brand-box p {
+            margin: 8px 0 0;
+            font-size: 10px;
+            color: var(--text-3);
+            letter-spacing: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        /* ═══════════ DISPLAY DE SLIDES ═══════════ */
         #display {
-            width: 100vw; height: calc(100vh - 140px); 
-            position: relative; overflow: hidden;
-            display: flex; align-items: center; justify-content: center;
+            width: 100vw;
+            height: calc(100vh - 140px);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .slide-container {
-            position: absolute; inset: 0; 
-            display: flex; align-items: center; justify-content: center;
-            opacity: 0; transition: opacity 1.5s ease-in-out;
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+            z-index: 1;
         }
+        .slide-container.active { opacity: 1; z-index: 2; }
 
-        .active { opacity: 1; }
-
+        /* Fundo desfocado */
         .slide-bg {
-            position: absolute; width: 100%; height: 100%;
-            object-fit: cover; filter: blur(50px) brightness(0.4);
-            transform: scale(1.1); z-index: 1;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: blur(50px) brightness(0.3) saturate(1.3);
+            transform: scale(1.15);
+            z-index: 1;
         }
 
+        /* Foto principal */
         .slide-main {
-            position: relative; max-width: 92%; max-height: 92%;
-            object-fit: contain; z-index: 2;
-            box-shadow: 0 0 80px rgba(0,0,0,0.9);
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 4px;
+            position: relative;
+            max-width: 92%;
+            max-height: 92%;
+            object-fit: contain;
+            z-index: 2;
+            box-shadow:
+                0 0 100px rgba(0, 0, 0, 0.9),
+                0 0 40px rgba(57, 255, 20, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            animation: zoomIn 1.5s ease-out;
+        }
+        @keyframes zoomIn {
+            from { transform: scale(0.95); opacity: 0.8; }
+            to { transform: scale(1); opacity: 1; }
         }
 
+        /* ═══════════ TELA DE ESPERA ═══════════ */
+        #waiting-msg {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            text-align: center;
+            padding: 20px;
+            animation: fadeIn 0.6s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .waiting-icon {
+            font-size: 60px;
+            color: var(--neon);
+            opacity: 0.5;
+            margin-bottom: 24px;
+            animation: pulseIcon 2s ease-in-out infinite;
+        }
+        @keyframes pulseIcon {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.08); opacity: 0.8; }
+        }
+
+        .waiting-title {
+            font-family: var(--font-display);
+            font-size: clamp(20px, 3vw, 32px);
+            font-weight: 800;
+            color: var(--neon);
+            text-transform: uppercase;
+            letter-spacing: 8px;
+            text-shadow: var(--neon-glow);
+            margin-bottom: 12px;
+            animation: titlePulse 3s ease-in-out infinite;
+        }
+        @keyframes titlePulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        .waiting-sub {
+            font-size: 12px;
+            color: var(--text-3);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        /* Spinner na tela de espera */
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(57, 255, 20, 0.15);
+            border-top-color: var(--neon);
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+            margin-bottom: 28px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ═══════════ BARRA DE PATROCINADORES ═══════════ */
         #sponsor-bar {
-            width: 100vw; height: 140px; background: rgba(0, 0, 0, 0.85);
-            border-top: 1px solid var(--border); position: absolute; bottom: 0;
-            display: flex; align-items: center; justify-content: space-around; 
-            padding: 10px 60px; box-sizing: border-box; z-index: 200;
-            backdrop-filter: blur(10px);
+            width: 100vw;
+            height: 140px;
+            background: rgba(0, 0, 0, 0.85);
+            border-top: 1px solid var(--border-neon);
+            position: absolute;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 20px 80px;
+            z-index: 200;
+            backdrop-filter: blur(15px);
+            transition: var(--transition);
         }
 
-        .sponsor-logo { max-height: 90px; max-width: calc(100% / 5 - 30px); object-fit: contain; }
+        .sponsor-logo {
+            max-height: 80px;
+            max-width: calc(100% / 5 - 40px);
+            object-fit: contain;
+            filter: brightness(0.9);
+            transition: var(--transition);
+            animation: fadeInScale 0.4s ease-out;
+        }
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .sponsor-logo:hover { filter: brightness(1.2); transform: scale(1.05); }
+
         .sponsor-label {
-            color: var(--neon); font-size: 9px; text-transform: uppercase;
-            letter-spacing: 3px; position: absolute; top: 12px; left: 30px;
-            font-weight: bold; opacity: 0.5;
+            position: absolute;
+            top: 12px;
+            left: 40px;
+            font-size: 9px;
+            color: var(--neon);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 800;
+            opacity: 0.6;
         }
 
+        /* ═══════════ BOTÃO DE CONFIGURAÇÃO (oculto) ═══════════ */
         .config-trigger {
-            position: absolute; top: 10px; right: 15px; width: 20px; height: 20px;
-            border: 1px solid rgba(57, 255, 20, 0.3); border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            color: var(--neon); font-size: 10px; font-weight: bold;
-            cursor: pointer; opacity: 0.4; transition: 0.3s;
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            width: 28px;
+            height: 28px;
+            border: 1px solid rgba(57, 255, 20, 0.25);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--neon);
+            font-size: 12px;
+            font-weight: 900;
+            cursor: pointer;
+            opacity: 0.25;
+            transition: var(--transition);
+            font-family: var(--font-body);
+        }
+        .config-trigger:hover {
+            opacity: 1;
+            background: var(--neon-dim);
+            border-color: var(--neon);
+            transform: rotate(90deg);
         }
 
-        #waiting-msg { 
-            color: var(--neon); font-size: 24px; text-transform: uppercase; 
-            letter-spacing: 10px; position: absolute; z-index: 10; text-align: center;
+        /* ═══════════ INDICADOR DE STATUS (cantos) ═══════════ */
+        .status-dot-top {
+            position: absolute;
+            top: 48px;
+            right: 48px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--border-1);
+            border-radius: 24px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-3);
+            transition: var(--transition);
+        }
+        .status-dot-top .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--red);
+            box-shadow: 0 0 8px var(--red);
+            animation: pulseDot 2s infinite;
+        }
+        .status-dot-top.online {
+            color: var(--neon);
+            border-color: var(--border-neon);
+        }
+        .status-dot-top.online .dot {
+            background: var(--neon);
+            box-shadow: 0 0 8px var(--neon);
+        }
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.85); }
+        }
+
+        /* ═══════════ CONTAINER DE LOGOS ═══════════ */
+        #logos-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            width: 100%;
+            gap: 40px;
+        }
+
+        /* ═══════════ RESPONSIVO ═══════════ */
+        @media (max-width: 768px) {
+            header { top: 20px; left: 20px; }
+            .brand-box h1 { font-size: 22px; letter-spacing: 3px; }
+            #sponsor-bar { height: 100px; padding: 15px 30px; }
+            .sponsor-logo { max-height: 50px; }
+            .status-dot-top { top: 20px; right: 20px; padding: 8px 14px; font-size: 9px; }
         }
     </style>
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- FIM DO BLOCO DE ESTILOS (CSS)                               -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
 </head>
 <body>
 
-<input type="file" id="logo-upload" multiple accept="image/*" style="display:none">
+    <!-- Input oculto para upload de logos -->
+    <input type="file" id="logo-upload" multiple accept="image/*" style="display:none">
 
-<header>
-    <div class="brand-box">
-        <h1>Photo Print</h1>
-        <p>colecionando momentos</p>
+    <!-- ═══════════ HEADER ═══════════ -->
+    <header>
+        <div class="brand-box">
+            <h1>PHOTO PRINT</h1>
+            <p>Colecionando Momentos</p>
+        </div>
+    </header>
+
+    <!-- ═══════════ STATUS ONLINE/OFFLINE ═══════════ -->
+    <div class="status-dot-top" id="status-indicator">
+        <span class="dot"></span>
+        <span id="status-text">Conectando...</span>
     </div>
-</header>
 
-<div id="display">
-    <div id="waiting-msg">Sincronizando Sistema...</div>
-</div>
+    <!-- ═══════════ DISPLAY DO SLIDESHOW ═══════════ -->
+    <div id="display">
+        <div id="waiting-msg">
+            <div class="spinner"></div>
+            <div class="waiting-title">Sincronizando</div>
+            <div class="waiting-sub" id="waiting-sub">Conectando ao servidor...</div>
+        </div>
+    </div>
 
-<div id="sponsor-bar">
-    <span class="sponsor-label">Parceiros Oficiais</span>
-    <div class="config-trigger" onclick="document.getElementById('logo-upload').click()">L</div>
-    <div id="logos-container" style="display:contents;"></div>
-</div>
+    <!-- ═══════════ BARRA DE PATROCINADORES ═══════════ -->
+    <div id="sponsor-bar">
+        <span class="sponsor-label">Parceiros Oficiais</span>
+        <div class="config-trigger" onclick="document.getElementById('logo-upload').click()" title="Configurar logos">
+            <i class="fas fa-cog"></i>
+        </div>
+        <div id="logos-container"></div>
+    </div>
 
-<script>
-    const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
-    let eventoAtivo = "";
-    let fotos = [];
-    let currentIndex = 0;
-    let slideInterval = null;
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- INÍCIO DO BLOCO DE SCRIPTS (JavaScript)                     -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <script>
+        /* ═══════════ CONFIGURAÇÕES ═══════════ */
+        const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
+        const INTERVALO_SLIDE = 8000;
+        const INTERVALO_SYNC = 10000;
 
-    const containerLogos = document.getElementById('logos-container');
-    const fileInput = document.getElementById('logo-upload');
+        let eventoAtivo = "";
+        let fotos = [];
+        let currentIndex = 0;
+        let slideInterval = null;
+        let syncInterval = null;
+        let estadoAtual = 'aguardando'; // aguardando | exibindo | offline
+        let fotosComErro = new Set(); // rastreia fotos que falharam para evitar loop
 
-    fileInput.addEventListener('change', function() {
-        const files = Array.from(this.files).slice(0, 5); 
-        const logosData = [];
-        containerLogos.innerHTML = "";
-        files.forEach(file => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const imgBase64 = e.target.result;
-                renderLogo(imgBase64);
-                logosData.push(imgBase64);
-                localStorage.setItem('pp_logos', JSON.stringify(logosData));
-            };
-            reader.readAsDataURL(file);
-        });
-    });
+        const containerLogos = document.getElementById('logos-container');
+        const fileInput = document.getElementById('logo-upload');
 
-    function renderLogo(src) {
-        const img = document.createElement('img');
-        img.src = src;
-        img.className = 'sponsor-logo';
-        containerLogos.appendChild(img);
-    }
-
-    async function sync() {
-        try {
-            const resStatus = await fetch(`${API_URL}/status?t=${Date.now()}`);
-            const dataStatus = await resStatus.json();
+        /* ═══════════ UPLOAD DE LOGOS (com compressão) ═══════════ */
+        fileInput.addEventListener('change', async function() {
+            const files = Array.from(this.files).slice(0, 5);
+            containerLogos.innerHTML = "";
             
-            if (dataStatus.evento) {
+            const logosData = [];
+            for (const file of files) {
+                try {
+                    const base64 = await comprimirImagem(file, 400, 0.85);
+                    renderLogo(base64);
+                    logosData.push(base64);
+                } catch (err) {
+                    console.error('Erro ao processar logo:', err);
+                }
+            }
+            
+            try {
+                localStorage.setItem('pp_logos', JSON.stringify(logosData));
+            } catch (err) {
+                console.warn('Logos grandes demais para salvar permanentemente.');
+            }
+            this.value = '';
+        });
+
+        function comprimirImagem(file, maxW = 400, qualidade = 0.85) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        let { width, height } = img;
+                        if (width > maxW) {
+                            height = Math.round(height * (maxW / width));
+                            width = maxW;
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/png'));
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function renderLogo(src) {
+            const img = document.createElement('img');
+            img.src = src;
+            img.className = 'sponsor-logo';
+            img.alt = 'Patrocinador';
+            containerLogos.appendChild(img);
+        }
+
+        /* ═══════════ SINCRONIZAÇÃO ═══════════ */
+        async function sync() {
+            try {
+                // 1. Buscar status (evento ativo)
+                const resStatus = await fetch(`${API_URL}/status?t=${Date.now()}`);
+                const dataStatus = await resStatus.json();
+
+                // 2. Sem evento ativo
+                if (!dataStatus.evento || dataStatus.evento === 'Geral') {
+                    eventoAtivo = "";
+                    atualizarStatusIndicator(false);
+                    mostrarAviso('aguardando', 'Aguardando Evento Ativo', 'Inicie um evento no painel de controle');
+                    pararSlides();
+                    return;
+                }
+
+                // 3. Mudou de evento → resetar
                 if (dataStatus.evento !== eventoAtivo) {
                     eventoAtivo = dataStatus.evento;
                     fotos = [];
                     currentIndex = 0;
+                    fotosComErro.clear();
+                    pararSlides();
                 }
 
-                const resFotos = await fetch(`${API_URL}/list-photos?evento=${encodeURIComponent(eventoAtivo)}&t=${Date.now()}`);
+                atualizarStatusIndicator(true);
+
+                // 4. Buscar fotos do evento
+                const resFotos = await fetch(
+                    `${API_URL}/list-photos?evento=${encodeURIComponent(eventoAtivo)}&t=${Date.now()}`
+                );
                 const novasFotos = await resFotos.json();
-                
+
                 if (Array.isArray(novasFotos) && novasFotos.length > 0) {
-                    document.getElementById('waiting-msg').style.display = 'none';
-                    if (JSON.stringify(novasFotos) !== JSON.stringify(fotos)) {
-                        fotos = novasFotos.reverse();
+                    // Ordena por timestamp (mais recentes primeiro)
+                    const invertidas = novasFotos.reverse();
+                    
+                    // Verifica se houve mudança real
+                    const novaLista = JSON.stringify(invertidas.map(f => f.key));
+                    const listaAtual = JSON.stringify(fotos.map(f => f.key));
+                    
+                    if (novaLista !== listaAtual) {
+                        fotos = invertidas;
                         if (!slideInterval) {
-                            renderNextSlide();
-                            slideInterval = setInterval(renderNextSlide, 8000);
+                            iniciarSlides();
                         }
                     }
                 } else {
-                    mostrarAviso("Evento sem fotos no momento...");
+                    mostrarAviso('aguardando', 'Evento sem Fotos', 'As fotos aparecerão aqui conforme forem capturadas');
+                    pararSlides();
                 }
-            } else {
-                eventoAtivo = "";
-                mostrarAviso("Aguardando Evento Ativo...");
+            } catch (e) {
+                console.error('Erro sync:', e);
+                atualizarStatusIndicator(false);
+            }
+        }
+
+        /* ═══════════ INDICADOR DE STATUS ═══════════ */
+        function atualizarStatusIndicator(online) {
+            const indicator = document.getElementById('status-indicator');
+            const text = document.getElementById('status-text');
+            indicator.classList.toggle('online', online);
+            text.innerText = online ? 'Ao Vivo' : 'Offline';
+        }
+
+        /* ═══════════ TELA DE ESPERA ═══════════ */
+        function mostrarAviso(estado, titulo, subtitulo) {
+            // Evita re-render se já está no mesmo estado
+            if (estadoAtual === estado && document.getElementById('waiting-msg')?.style.display !== 'none') {
+                document.getElementById('waiting-sub').innerText = subtitulo;
+                return;
+            }
+            estadoAtual = estado;
+
+            const display = document.getElementById('display');
+            const antigo = document.getElementById('waiting-msg');
+            if (antigo) antigo.remove();
+
+            // Remove slides existentes
+            display.querySelectorAll('.slide-container').forEach(s => s.remove());
+
+            const msg = document.createElement('div');
+            msg.id = 'waiting-msg';
+            msg.innerHTML = `
+                ${estado === 'aguardando' ? '<div class="spinner"></div>' : '<i class="fas fa-image waiting-icon"></i>'}
+                <div class="waiting-title">${titulo}</div>
+                <div class="waiting-sub">${subtitulo}</div>
+            `;
+            display.appendChild(msg);
+        }
+
+        /* ═══════════ SLIDES ═══════════ */
+        function iniciarSlides() {
+            document.querySelectorAll('#waiting-msg').forEach(el => el.remove());
+            estadoAtual = 'exibindo';
+            currentIndex = 0;
+            renderNextSlide();
+            if (slideInterval) clearInterval(slideInterval);
+            slideInterval = setInterval(renderNextSlide, INTERVALO_SLIDE);
+        }
+
+        function pararSlides() {
+            if (slideInterval) {
+                clearInterval(slideInterval);
+                slideInterval = null;
+            }
+            const display = document.getElementById('display');
+            display.querySelectorAll('.slide-container').forEach(s => s.remove());
+        }
+
+        function renderNextSlide() {
+            if (fotos.length === 0) return;
+            if (fotosComErro.size >= fotos.length) {
+                mostrarAviso('aguardando', 'Erro ao carregar fotos', 'Verifique a conexão com o servidor');
                 pararSlides();
+                return;
             }
-        } catch (e) { console.error("Erro na sincronização:", e); }
-    }
 
-    function mostrarAviso(txt) {
-        const msg = document.getElementById('waiting-msg');
-        msg.innerText = txt;
-        msg.style.display = 'block';
-    }
-
-    function pararSlides() {
-        clearInterval(slideInterval);
-        slideInterval = null;
-        const display = document.getElementById('display');
-        const slides = display.querySelectorAll('.slide-container');
-        slides.forEach(s => s.remove());
-    }
-
-    function renderNextSlide() {
-        if (fotos.length === 0) return;
-        const display = document.getElementById('display');
-        const fotoObjeto = fotos[currentIndex];
-        // CORRIGIDO: usa ?key= em vez de /photo/
-        const urlFinal = `${API_URL}/photo?key=${encodeURIComponent(fotoObjeto.key)}&t=${Date.now()}`;
-        
-        const slideContainer = document.createElement('div');
-        slideContainer.className = 'slide-container';
-        const imgMain = new Image();
-        imgMain.className = 'slide-main';
-        const imgBg = new Image();
-        imgBg.className = 'slide-bg';
-
-        imgMain.onload = () => {
-            const oldSlides = display.querySelectorAll('.slide-container');
-            imgBg.src = imgMain.src;
-            slideContainer.appendChild(imgBg);
-            slideContainer.appendChild(imgMain);
-            display.appendChild(slideContainer);
-            setTimeout(() => slideContainer.classList.add('active'), 100);
-            if (oldSlides.length > 0) {
-                setTimeout(() => { oldSlides.forEach(s => s.remove()); }, 1600);
+            // Pula fotos que já falharam
+            let tentativas = 0;
+            while (fotosComErro.has(fotos[currentIndex].key) && tentativas < fotos.length) {
+                currentIndex = (currentIndex + 1) % fotos.length;
+                tentativas++;
             }
-            currentIndex = (currentIndex + 1) % fotos.length;
-        };
 
-        imgMain.onerror = () => {
-            currentIndex = (currentIndex + 1) % fotos.length;
-            setTimeout(() => renderNextSlide(), 1000); 
-        };
-        imgMain.src = urlFinal;
-    }
+            const fotoObjeto = fotos[currentIndex];
+            const urlFinal = `${API_URL}/photo?key=${encodeURIComponent(fotoObjeto.key)}&t=${Date.now()}`;
 
-    window.onload = () => {
-        const saved = JSON.parse(localStorage.getItem('pp_logos') || "[]");
-        saved.forEach(src => renderLogo(src));
-        sync();
-        setInterval(sync, 10000);
-    };
-</script>
+            const display = document.getElementById('display');
+            const slideContainer = document.createElement('div');
+            slideContainer.className = 'slide-container';
+
+            const imgMain = new Image();
+            imgMain.className = 'slide-main';
+            imgMain.alt = 'Foto do evento';
+
+            const imgBg = new Image();
+            imgBg.className = 'slide-bg';
+            imgBg.alt = '';
+
+            imgMain.onload = () => {
+                const oldSlides = display.querySelectorAll('.slide-container');
+                imgBg.src = imgMain.src;
+                slideContainer.appendChild(imgBg);
+                slideContainer.appendChild(imgMain);
+                display.appendChild(slideContainer);
+                requestAnimationFrame(() => slideContainer.classList.add('active'));
+
+                if (oldSlides.length > 0) {
+                    setTimeout(() => oldSlides.forEach(s => s.remove()), 1600);
+                }
+                currentIndex = (currentIndex + 1) % fotos.length;
+            };
+
+            imgMain.onerror = () => {
+                fotosComErro.add(fotoObjeto.key);
+                currentIndex = (currentIndex + 1) % fotos.length;
+                setTimeout(() => renderNextSlide(), 1000);
+            };
+
+            imgMain.src = urlFinal;
+        }
+
+        /* ═══════════ INICIALIZAÇÃO ═══════════ */
+        window.addEventListener('load', () => {
+            // Restaurar logos salvos
+            try {
+                const saved = JSON.parse(localStorage.getItem('pp_logos') || "[]");
+                saved.forEach(src => renderLogo(src));
+            } catch (e) {
+                console.warn('Erro ao restaurar logos:', e);
+            }
+
+            // Iniciar sync
+            sync();
+            syncInterval = setInterval(sync, INTERVALO_SYNC);
+
+            // Re-sync quando voltar ao foco
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) sync();
+            });
+        });
+
+        // Cleanup
+        window.addEventListener('beforeunload', () => {
+            if (slideInterval) clearInterval(slideInterval);
+            if (syncInterval) clearInterval(syncInterval);
+        });
+    </script>
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- FIM DO BLOCO DE SCRIPTS (JavaScript)                        -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
 </body>
 </html>
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- FIM DO ARQUIVO telao.html — TV SLIDESHOW v2.0                      -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->

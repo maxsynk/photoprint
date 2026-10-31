@@ -447,31 +447,73 @@
             mostrarErro('Nenhuma foto especificada. Use o link recebido no quiosque.');
         }
 
-                /* ═══════════ CARREGAR FOTO POR KEY (com fallback) ═══════════ */
+                     /* ═══════════ CARREGAR FOTO POR KEY (tenta vários formatos) ═══════════ */
         function carregarFotoPorKey(key, id) {
-            // ✅ CORREÇÃO: decodifica a key caso venha URL-encoded
             const keyDecodificada = decodeURIComponent(key);
             
-            // ✅ CORREÇÃO: log de debug para você ver o que está chegando
-            console.log('[GALERIA] Key recebida:', key);
-            console.log('[GALERIA] Key decodificada:', keyDecodificada);
-            console.log('[GALERIA] URL final:', `${API_URL}/photo?key=${encodeURIComponent(keyDecodificada)}`);
+            // Lista de URLs para tentar (em ordem de preferência)
+            const urlsParaTentar = [
+                `${API_URL}/photo?key=${encodeURIComponent(keyDecodificada)}`,
+                `${API_URL}/foto?key=${encodeURIComponent(keyDecodificada)}`,
+                `${API_URL}/photo/${encodeURIComponent(keyDecodificada)}`,
+                `${API_URL}/fotos/${encodeURIComponent(keyDecodificada)}`
+            ];
             
-            const url = `${API_URL}/photo?key=${encodeURIComponent(keyDecodificada)}&t=${Date.now()}`;
+            console.log('[GALERIA] Key:', keyDecodificada);
+            console.log('[GALERIA] URLs a tentar:', urlsParaTentar);
+            
+            tentarUrlsEmSequencia(urlsParaTentar, 0, id);
+        }
+
+        function carregarFotoDireta(url, id) {
             carregarFoto(url, id);
         }
 
-        /* ═══════════ CARREGAR FOTO (com retry automático) ═══════════ */
+        /* Tenta as URLs uma por uma até uma funcionar */
+        function tentarUrlsEmSequencia(urls, index, id) {
+            if (index >= urls.length) {
+                // Todas falharam
+                document.getElementById('photo-loader').classList.add('hidden');
+                mostrarErro(
+                    'Não foi possível carregar a foto.\n' +
+                    'Testamos ' + urls.length + ' formatos de URL diferentes e todos falharam.\n' +
+                    'Verifique o console (F12) para mais detalhes.'
+                );
+                return;
+            }
+
+            const url = `${urls[index]}&t=${Date.now()}`;
+            console.log(`[GALERIA] Tentando URL ${index + 1}/${urls.length}:`, url);
+            
+            const img = new Image();
+            const timeout = setTimeout(() => {
+                console.warn(`[GALERIA] Timeout na URL ${index + 1}`);
+                tentarUrlsEmSequencia(urls, index + 1, id);
+            }, 4000);
+
+            img.onload = () => {
+                clearTimeout(timeout);
+                console.log(`✅ [GALERIA] URL ${index + 1} funcionou!`);
+                carregarFoto(url, id);
+            };
+
+            img.onerror = () => {
+                clearTimeout(timeout);
+                console.warn(`❌ [GALERIA] URL ${index + 1} falhou`);
+                tentarUrlsEmSequencia(urls, index + 1, id);
+            };
+
+            img.src = url;
+        }
+
+        /* ═══════════ CARREGAR FOTO (comportamento final) ═══════════ */
         function carregarFoto(url, id) {
             const img = document.getElementById('main-photo');
             const loader = document.getElementById('photo-loader');
             const badge = document.getElementById('photo-badge');
 
             fotoUrlAtual = url;
-            let tentativas = 0;
-            const MAX_TENTATIVAS = 2;
 
-            // Badge com ID
             if (id) {
                 badge.innerText = `#${id}`;
                 badge.style.display = 'block';
@@ -479,38 +521,21 @@
                 badge.style.display = 'none';
             }
 
-            function tentarCarregar() {
-                tentativas++;
-                console.log(`[GALERIA] Tentativa ${tentativas} de carregar foto`);
-                
-                img.onload = () => {
-                    console.log('✅ [GALERIA] Foto carregada com sucesso!');
-                    loader.classList.add('hidden');
-                    img.style.transition = 'opacity 0.4s ease';
-                    img.style.opacity = '1';
-                };
+            img.onload = () => {
+                console.log('✅ [GALERIA] Foto exibida com sucesso');
+                loader.classList.add('hidden');
+                img.style.transition = 'opacity 0.4s ease';
+                img.style.opacity = '1';
+            };
 
-                img.onerror = () => {
-                    console.error(`❌ [GALERIA] Erro na tentativa ${tentativas}:`, url);
-                    
-                    if (tentativas < MAX_TENTATIVAS) {
-                        // Tenta novamente com cache-bust
-                        console.log('[GALERIA] Tentando novamente...');
-                        setTimeout(tentarCarregar, 800);
-                    } else {
-                        loader.classList.add('hidden');
-                        mostrarErro(
-                            'Não foi possível carregar a foto. Verifique:\n' +
-                            '1. Se a foto ainda existe no servidor\n' +
-                            '2. Sua conexão com a internet\n' +
-                            '3. Se o link do QR Code está correto'
-                        );
-                    }
-                };
+            img.onerror = () => {
+                console.error('❌ [GALERIA] Erro final ao carregar:', url);
+                loader.classList.add('hidden');
+                mostrarErro('Não foi possível carregar a imagem. Verifique o console (F12).');
+            };
 
-                // Cache-bust diferente a cada tentativa
-                img.src = `${url}${url.includes('?') ? '&' : '?'}retry=${tentativas}&t=${Date.now()}`;
-            }
+            img.src = url;
+        }   
 
             tentarCarregar();
 

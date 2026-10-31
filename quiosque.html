@@ -1,5 +1,5 @@
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- INÍCIO DO ARQUIVO quiosque.html — QUIOSQUE PRO v2.1 (CORRIGIDO)    -->
+<!-- INÍCIO DO ARQUIVO quiosque.html — QUIOSQUE PRO v2.2 (DEFINITIVO)   -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#000000">
-    <title>PHOTO CLOUD — Quiosque Pro v2.1</title>
+    <title>PHOTO CLOUD — Quiosque Pro v2.2</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -513,7 +513,6 @@
             width: 190, height: 190, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H
         });
 
-        /* INICIALIZAÇÃO */
         window.addEventListener('load', () => {
             const params = new URLSearchParams(window.location.search);
             const fotoUrl = params.get('dl');
@@ -532,7 +531,6 @@
             }
         });
 
-        /* CONTROLE DE DOWNLOAD MOBILE */
         function exibirTelaDownload(url) {
             document.getElementById('conteudo-quiosque').style.display = 'none';
             document.getElementById('mobile-download-screen').classList.add('active');
@@ -569,10 +567,9 @@
             }
         }
 
-        /* SINCRONIZAÇÃO DE DADOS (CORRIGIDO) */
-                async function syncDados() {
+        async function syncDados() {
             try {
-                // 1. Pega o evento ativo
+                // Pega o evento ativo
                 const r1 = await fetch(`${API_URL}/get-all-states?t=${Date.now()}`);
                 const data = await r1.json();
                 const config = data.config || data;
@@ -584,47 +581,26 @@
                     todasFotos = [];
                 }
 
-                // 2. Busca as fotos
+                // Busca as fotos
                 let url = `${API_URL}/list-photos?t=${Date.now()}`;
                 if (eventoAtivo) url += `&evento=${encodeURIComponent(eventoAtivo)}`;
                 
                 const r2 = await fetch(url);
-                const textoBruto = await r2.text(); // Pega o texto puro para não quebrar se não for JSON
+                const fotos = await r2.json();
                 
-                let fotos = [];
-                try {
-                    const json = JSON.parse(textoBruto);
-                    console.log("🔍 [DEBUG] O que a API mandou:", json);
-                    
-                    // Tenta achar o array de fotos em qualquer lugar da resposta
-                    if (Array.isArray(json)) {
-                        fotos = json;
-                    } else if (json.fotos && Array.isArray(json.fotos)) {
-                        fotos = json.fotos;
-                    } else if (json.data && Array.isArray(json.data)) {
-                        fotos = json.data;
-                    } else if (json.sucesso && json.dados) {
-                        fotos = json.dados;
-                    }
-                } catch(e) {
-                    console.error("❌ [DEBUG] A API não retornou um JSON válido:", textoBruto);
-                    return;
-                }
-
-                console.log(`📸 [DEBUG] Fotos encontradas para o evento "${eventoAtivo}":`, fotos.length);
-
+                if (!Array.isArray(fotos)) return; // Proteção contra erro
+                
                 const invertidas = fotos.reverse();
                 
-                if (JSON.stringify(invertidas.map(f => f.key || f.id || f.nome)) !== JSON.stringify(todasFotos.map(f => f.key || f.id || f.nome))) {
+                if (JSON.stringify(invertidas.map(f => f.key || f.id)) !== JSON.stringify(todasFotos.map(f => f.key || f.id))) {
                     todasFotos = invertidas;
                     renderizarGaleria();
                 }
             } catch (e) {
-                console.error('❌ Erro fatal no syncDados:', e);
+                console.error('Erro syncDados:', e);
             }
         }
 
-        /* RENDERIZAÇÃO DA GALERIA */
         function renderizarGaleria() {
             const container = document.getElementById('galeria');
             const termo = document.getElementById('input-busca').value;
@@ -643,7 +619,7 @@
             }
             
             container.innerHTML = filtradas.map(f => {
-                const key = f.key || f.id;
+                const key = f.key || f.id || f.nome;
                 const imgUrl = `${API_URL}/photo?key=${encodeURIComponent(key)}&t=${Date.now()}`;
                 return `<div class="foto-item" onclick="abrirModal('${key}', '${f.displayId}')">
                     <div class="foto-id">#${f.displayId}</div>
@@ -652,7 +628,6 @@
             }).join('');
         }
 
-        /* TIMER DE INATIVIDADE (RESTAURADO) */
         function resetInactivityTimer() {
             clearTimeout(inactivityTimer);
             inactivityTimer = setTimeout(() => {
@@ -668,7 +643,7 @@
         function runSlideshow() {
             if (todasFotos.length === 0) return;
             const f = todasFotos[Math.floor(Math.random() * todasFotos.length)];
-            const key = f.key || f.id;
+            const key = f.key || f.id || f.nome;
             const img = document.getElementById('ss-img');
             img.style.opacity = '0';
             setTimeout(() => {
@@ -683,7 +658,6 @@
             resetInactivityTimer();
         }
 
-        /* NUMPAD */
         function addNum(n) {
             const inp = document.getElementById('input-busca');
             if (inp.value.length < 4) inp.value += n;
@@ -703,7 +677,6 @@
             }
         }
 
-        /* BUSCA E MODAL */
         function buscarEAbrirFoto() {
             const termo = document.getElementById('input-busca').value;
             if (!termo) return;
@@ -711,7 +684,7 @@
             const achada = comId.find(f => f.displayId.toString() === termo);
             if (achada) {
                 toggleNumpad(false);
-                abrirModal(achada.key || achada.id, achada.displayId);
+                abrirModal(achada.key || achada.id || achada.nome, achada.displayId);
             } else {
                 const input = document.getElementById('input-busca');
                 input.style.borderColor = 'var(--red)';
@@ -733,10 +706,10 @@
             img.src = url;
             document.getElementById('photo-id-label').innerText = "#" + id;
             
-            // Gera o link para o QR Code passando a KEY e o ID
+                        // Link para a Galeria (com a Key da foto)
             const linkCurto = new URL(window.location.href.split('?')[0]);
-            linkCurto.pathname = linkCurto.pathname.replace('quiosque.html', 'galeria.html
-                       linkCurto.searchParams.set('key', key);
+            linkCurto.pathname = linkCurto.pathname.replace('quiosque.html', 'galeria.html');
+            linkCurto.searchParams.set('key', key);
             linkCurto.searchParams.set('id', id);
             
             qr.clear();
@@ -750,7 +723,7 @@
             resetInactivityTimer();
         }
 
-        // Loop de sincronização automática
+        // Loop de sincronização automática (atualiza a cada 5s)
         setInterval(syncDados, 5000);
 
         // Atalho: fechar modal / numpad com ESC
@@ -773,5 +746,5 @@
 </body>
 </html>
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- FIM DO ARQUIVO quiosque.html — QUIOSQUE PRO v2.1                   -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->                                                           
+<!-- FIM DO ARQUIVO quiosque.html — QUIOSQUE PRO v2.2                   -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->

@@ -1,5 +1,5 @@
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- ▶▶▶ INÍCIO DO ARQUIVO galeria.html — CENTRAL v7.0 (A6 AUTO) ◀◀◀    -->
+<!-- ▶▶▶ INÍCIO DO ARQUIVO galeria.html — CENTRAL v8.0 (A4 AGGREGATOR) ◀◀◀ -->
 <!-- (SUBSTITUA O ARQUIVO INTEIRO POR ESTE)                              -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 <!DOCTYPE html>
@@ -7,49 +7,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT — Central de Impressão v7.0</title>
+    <title>PHOTO PRINT — Central de Impressão v8.0</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* ═══════════════════════════════════════════════════════════════
-           TOKENS
+           TOKENS — PALETA v8.0 (Lime Sofisticado)
            ═══════════════════════════════════════════════════════════════ */
         :root {
-            --accent: #39ff14;
-            --accent-dim: rgba(57, 255, 20, 0.12);
-            --accent-glow: 0 0 24px rgba(57, 255, 20, 0.45);
-            --danger: #ff3131;
-            --danger-dim: rgba(255, 49, 49, 0.15);
-            --info: #00e5ff;
+            --accent: #A8FF00;
+            --accent-dim: rgba(168, 255, 0, 0.12);
+            --accent-glow: 0 0 24px rgba(168, 255, 0, 0.35);
+            --danger: #EF4444;
+            --danger-dim: rgba(239, 68, 68, 0.15);
+            --info: #00E5FF;
             --info-dim: rgba(0, 229, 255, 0.12);
-            --warn: #ffb800;
-            --warn-dim: rgba(255, 184, 0, 0.15);
+            --warn: #F59E0B;
+            --warn-dim: rgba(245, 158, 11, 0.15);
 
-            --bg-0: #000000;
-            --bg-1: #0a0a0a;
-            --bg-2: #111111;
-            --bg-3: #1a1a1a;
-            --bg-4: #222222;
+            --bg-0: #050505;
+            --bg-1: #0F0F0F;
+            --bg-2: #181818;
+            --bg-3: #222222;
+            --bg-4: #2A2A2A;
 
-            --text-0: #ffffff;
-            --text-1: #e0e0e0;
-            --text-2: #999999;
-            --text-3: #555555;
+            --text-0: #F5F5F5;
+            --text-1: #D4D4D4;
+            --text-2: #8A8A8A;
+            --text-3: #525252;
 
-            --border-1: rgba(255, 255, 255, 0.06);
-            --border-2: rgba(255, 255, 255, 0.1);
-            --border-accent: rgba(57, 255, 20, 0.3);
+            --border-1: rgba(255, 255, 255, 0.07);
+            --border-2: rgba(255, 255, 255, 0.12);
+            --border-accent: rgba(168, 255, 0, 0.35);
 
-            --radius-sm: 10px;
-            --radius-md: 14px;
-            --radius-lg: 20px;
-            --radius-xl: 28px;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 18px;
+            --radius-xl: 24px;
 
-            --shadow-sm: 0 2px 8px rgba(0,0,0,0.4);
-            --shadow-md: 0 8px 24px rgba(0,0,0,0.5);
-            --shadow-lg: 0 20px 60px rgba(0,0,0,0.65);
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.5);
+            --shadow-md: 0 8px 24px rgba(0,0,0,0.6);
+            --shadow-lg: 0 20px 60px rgba(0,0,0,0.75);
 
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             --transition-fast: all 0.15s ease;
@@ -72,8 +72,7 @@
 
         body {
             background:
-                radial-gradient(circle at 50% 0%, rgba(26, 58, 18, 0.5) 0%, transparent 50%),
-                radial-gradient(circle at 100% 100%, rgba(57, 255, 20, 0.03) 0%, transparent 40%),
+                radial-gradient(circle at 50% 0%, rgba(168, 255, 0, 0.04) 0%, transparent 50%),
                 var(--bg-0);
         }
 
@@ -82,9 +81,9 @@
             position: fixed;
             inset: 0;
             background-image:
-                linear-gradient(rgba(57, 255, 20, 0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(57, 255, 20, 0.02) 1px, transparent 1px);
-            background-size: 50px 50px;
+                linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+            background-size: 60px 60px;
             pointer-events: none;
             z-index: 0;
             mask-image: radial-gradient(circle at 50% 30%, black 30%, transparent 75%);
@@ -97,13 +96,13 @@
         ::-webkit-scrollbar-thumb:hover { background: var(--accent-dim); }
 
         /* ═══════════════════════════════════════════════════════════════
-           ÁREA DE IMPRESSÃO (@media print) — A6
+           ÁREA DE IMPRESSÃO — A4 portrait, grid 3×2 (6 polaroids)
            ═══════════════════════════════════════════════════════════════ */
         #print-area { display: none; }
 
         @media print {
             @page {
-                size: A6 portrait;
+                size: A4 portrait;
                 margin: 0;
             }
             body * {
@@ -125,14 +124,13 @@
                 overflow: hidden !important;
             }
             .print-sheet {
-                display: flex !important;
-                flex-wrap: wrap !important;
-                justify-content: center !important;
-                align-items: center !important;
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+                grid-template-rows: repeat(2, 1fr) !important;
+                gap: 2mm !important;
+                padding: 3mm !important;
                 width: 100% !important;
                 height: 100% !important;
-                gap: 2mm !important;
-                padding: 2mm !important;
                 background: #fff !important;
                 box-sizing: border-box !important;
             }
@@ -141,29 +139,21 @@
                 align-items: center !important;
                 justify-content: center !important;
                 overflow: hidden !important;
+                background: #fff !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
             }
             .print-sheet .slot img {
-                object-fit: contain !important;
-                display: block !important;
-                max-width: 100% !important;
-                max-height: 100% !important;
-            }
-            /* Layout: 1 foto por folha (10x15V, 10x15H) */
-            .print-sheet.layout-1 .slot {
                 width: 100% !important;
                 height: 100% !important;
+                object-fit: contain !important;
+                display: block !important;
             }
-            /* Layout: 2 fotos lado a lado (Polaroid, Tirinha) */
-            .print-sheet.layout-2 {
-                flex-wrap: nowrap !important;
-                flex-direction: row !important;
-            }
-            .print-sheet.layout-2 .slot {
-                width: calc(50% - 1mm) !important;
-                height: 100% !important;
-            }
+            /* Layouts alternativos (mantidos para futuro) */
+            .print-sheet.layout-1 { grid-template-columns: 1fr !important; grid-template-rows: 1fr !important; }
+            .print-sheet.layout-2 { grid-template-columns: repeat(2, 1fr) !important; grid-template-rows: 1fr !important; }
+            .print-sheet.layout-4 { grid-template-columns: repeat(2, 1fr) !important; grid-template-rows: repeat(2, 1fr) !important; }
+            .print-sheet.layout-6 { grid-template-columns: repeat(3, 1fr) !important; grid-template-rows: repeat(2, 1fr) !important; }
         }
 
         /* ═══════════════════════════════════════════════════════════════
@@ -201,7 +191,6 @@
             color: var(--accent);
             text-transform: uppercase;
             letter-spacing: 1px;
-            text-shadow: 0 0 15px rgba(57, 255, 20, 0.3);
         }
         #tipo-formato {
             font-size: 11px;
@@ -217,16 +206,11 @@
             font-family: var(--font-display);
             font-size: clamp(32px, 5vw, 48px);
             color: var(--accent);
-            text-shadow: var(--accent-glow), 0 0 60px rgba(57, 255, 20, 0.25);
+            text-shadow: var(--accent-glow);
             letter-spacing: 8px;
             font-weight: 900;
             text-transform: uppercase;
             line-height: 1;
-            animation: titleGlow 3s ease-in-out infinite;
-        }
-        @keyframes titleGlow {
-            0%, 100% { text-shadow: var(--accent-glow), 0 0 60px rgba(57,255,20,0.25); }
-            50% { text-shadow: var(--accent-glow), 0 0 90px rgba(57,255,20,0.45); }
         }
         .brand-subtitle {
             font-size: 11px;
@@ -244,7 +228,7 @@
             align-items: center;
             gap: 12px;
             padding: 10px 22px;
-            background: rgba(10, 10, 10, 0.85);
+            background: rgba(15, 15, 15, 0.9);
             border: 1px solid var(--border-1);
             border-radius: 30px;
             font-family: var(--font-mono);
@@ -254,7 +238,6 @@
             text-transform: uppercase;
             color: var(--text-2);
             backdrop-filter: blur(12px);
-            transition: var(--transition);
         }
         .print-status-bar .dot {
             width: 8px;
@@ -269,7 +252,7 @@
             box-shadow: 0 0 10px var(--accent);
             animation: pulseDot 1s ease-in-out infinite;
         }
-        .print-status-bar.paused { color: var(--warn); border-color: rgba(255, 184, 0, 0.4); }
+        .print-status-bar.paused { color: var(--warn); border-color: rgba(245, 158, 11, 0.4); }
         .print-status-bar.paused .dot {
             background: var(--warn);
             box-shadow: 0 0 10px var(--warn);
@@ -289,7 +272,7 @@
             justify-content: center;
         }
         .ctrl-btn {
-            background: rgba(10, 10, 10, 0.85);
+            background: rgba(15, 15, 15, 0.9);
             border: 1px solid var(--border-2);
             color: var(--text-1);
             padding: 9px 16px;
@@ -306,8 +289,8 @@
             transition: var(--transition-fast);
         }
         .ctrl-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
-        .ctrl-btn.pause:hover { border-color: var(--warn); color: var(--warn); background: var(--warn-dim); }
-        .ctrl-btn.pause.active { border-color: var(--warn); color: var(--warn); background: var(--warn-dim); }
+        .ctrl-btn.active { border-color: var(--accent); color: var(--bg-0); background: var(--accent); }
+        .ctrl-btn.pause.active { border-color: var(--warn); color: var(--bg-0); background: var(--warn); }
         .ctrl-btn .badge-qty {
             background: var(--accent);
             color: var(--bg-0);
@@ -316,19 +299,25 @@
             font-weight: 900;
             padding: 2px 8px;
             border-radius: 20px;
-            letter-spacing: 0;
         }
+        .ctrl-btn.active .badge-qty { background: var(--bg-0); color: var(--accent); }
 
         /* ═══════════════════════════════════════════════════════════════
-           SLOT BUFFER (indicador de folha atual)
+           PREVIEW DA FOLHA (slot indicator + miniaturas em tempo real)
            ═══════════════════════════════════════════════════════════════ */
+        .sheet-preview-wrap {
+            margin-top: 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
         .slot-indicator {
-            margin-top: 16px;
             display: flex;
             align-items: center;
             gap: 12px;
             padding: 10px 18px;
-            background: rgba(10, 10, 10, 0.85);
+            background: rgba(15, 15, 15, 0.9);
             border: 1px solid var(--border-1);
             border-radius: 30px;
             backdrop-filter: blur(12px);
@@ -348,7 +337,7 @@
         .slot-dot {
             width: 14px;
             height: 14px;
-            border-radius: 50%;
+            border-radius: 4px;
             border: 2px solid var(--border-2);
             background: transparent;
             transition: var(--transition-fast);
@@ -356,14 +345,90 @@
         .slot-dot.filled {
             background: var(--accent);
             border-color: var(--accent);
-            box-shadow: 0 0 8px var(--accent);
+            box-shadow: 0 0 8px rgba(168, 255, 0, 0.5);
         }
         .slot-indicator-count {
             font-family: var(--font-mono);
             font-size: 11px;
             font-weight: 900;
             color: var(--accent);
-            letter-spacing: 0.5px;
+        }
+
+        .sheet-preview {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 8px;
+            padding: 14px;
+            background: rgba(15, 15, 15, 0.9);
+            border: 1px solid var(--border-accent);
+            border-radius: var(--radius-md);
+            width: 280px;
+            height: 200px;
+            box-shadow: var(--shadow-md);
+        }
+        .sheet-preview-slot {
+            border: 1.5px dashed var(--border-2);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.02);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            color: var(--text-3);
+            font-family: var(--font-mono);
+            overflow: hidden;
+            position: relative;
+            transition: var(--transition-fast);
+        }
+        .sheet-preview-slot.filled {
+            border-style: solid;
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(168, 255, 0, 0.25);
+        }
+        .sheet-preview-slot.filled img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .sheet-preview-slot .slot-label {
+            position: absolute;
+            top: 2px;
+            left: 3px;
+            font-size: 8px;
+            font-weight: 900;
+            color: var(--accent);
+            background: rgba(0,0,0,0.75);
+            padding: 1px 3px;
+            border-radius: 3px;
+            z-index: 2;
+        }
+
+        /* Barra de seleção */
+        .selection-bar {
+            display: none;
+            margin-top: 12px;
+            padding: 12px 20px;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent);
+            border-radius: 30px;
+            align-items: center;
+            gap: 12px;
+            justify-content: center;
+            animation: slideDown 0.3s ease;
+        }
+        .selection-bar.active { display: flex; }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .selection-bar-label {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         /* Busca */
@@ -403,7 +468,7 @@
         .search-btn:hover { box-shadow: var(--accent-glow); transform: translateY(-1px); }
 
         /* ═══════════════════════════════════════════════════════════════
-           BOTÃO MENU + SIDEBAR
+           MENU + SIDEBAR
            ═══════════════════════════════════════════════════════════════ */
         .menu-trigger {
             position: fixed;
@@ -417,14 +482,14 @@
             align-items: center;
             justify-content: center;
             gap: 5px;
-            background: rgba(10, 10, 10, 0.85);
+            background: rgba(15, 15, 15, 0.9);
             border: 1px solid var(--border-2);
             border-radius: 12px;
             cursor: pointer;
             backdrop-filter: blur(12px);
             transition: var(--transition-fast);
         }
-        .menu-trigger:hover { border-color: var(--accent); box-shadow: var(--accent-glow); }
+        .menu-trigger:hover { border-color: var(--accent); }
         .menu-trigger span {
             display: block;
             width: 22px;
@@ -439,11 +504,11 @@
 
         .sidebar {
             position: fixed;
-            right: -360px;
+            right: -380px;
             top: 0;
-            width: 320px;
+            width: 340px;
             height: 100%;
-            background: rgba(10, 10, 10, 0.98);
+            background: rgba(15, 15, 15, 0.98);
             z-index: 5000;
             transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             padding: 100px 24px 24px;
@@ -533,7 +598,7 @@
             font-size: 12px;
             font-weight: 700;
             outline: none;
-            width: 110px;
+            width: 130px;
             text-align: center;
         }
         .config-row select:focus { border-color: var(--accent); }
@@ -551,7 +616,7 @@
         }
 
         .card {
-            background: linear-gradient(160deg, rgba(20,20,20,0.9) 0%, rgba(10,10,10,0.9) 100%);
+            background: linear-gradient(160deg, rgba(24,24,24,0.9) 0%, rgba(15,15,15,0.9) 100%);
             border-radius: var(--radius-md);
             overflow: hidden;
             border: 1px solid var(--border-1);
@@ -568,7 +633,11 @@
         .card:hover {
             transform: translateY(-4px);
             border-color: var(--border-accent);
-            box-shadow: var(--shadow-md), 0 0 30px rgba(57, 255, 20, 0.15);
+            box-shadow: var(--shadow-md);
+        }
+        .card.selected {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim), var(--shadow-md);
         }
         .card img {
             width: 100%;
@@ -591,8 +660,6 @@
             font-size: 11px;
             font-weight: 900;
             z-index: 2;
-            letter-spacing: 0.5px;
-            box-shadow: 0 0 12px rgba(57,255,20,0.4);
         }
         .card .badge-copias {
             position: absolute;
@@ -624,8 +691,6 @@
             display: flex;
             align-items: center;
             gap: 5px;
-            letter-spacing: 0.5px;
-            box-shadow: 0 0 12px rgba(0,229,255,0.35);
         }
         .card .print-state {
             position: absolute;
@@ -644,21 +709,32 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            letter-spacing: 0.5px;
             justify-content: center;
             backdrop-filter: blur(6px);
         }
         .card .print-state.done {
             border-color: var(--accent);
             color: var(--accent);
-            background: rgba(57, 255, 20, 0.08);
+            background: rgba(168, 255, 0, 0.08);
         }
         .card .print-state.printing {
             border-color: var(--warn);
             color: var(--warn);
-            background: rgba(255, 184, 0, 0.08);
+            background: rgba(245, 158, 11, 0.08);
             animation: pulseDot 1.2s infinite;
         }
+        .card .check-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(168, 255, 0, 0.15);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+            font-size: 48px;
+            color: var(--accent);
+        }
+        .card.selected .check-overlay { display: flex; }
 
         .empty-state {
             grid-column: 1/-1;
@@ -695,13 +771,13 @@
             right: 24px;
             width: 320px;
             max-height: 280px;
-            background: rgba(10, 10, 10, 0.96);
+            background: rgba(15, 15, 15, 0.98);
             border: 1px solid var(--border-accent);
             border-radius: var(--radius-md);
             backdrop-filter: blur(20px);
             z-index: 400;
             box-shadow: var(--shadow-lg);
-            display: none;
+                        display: none;
             flex-direction: column;
             overflow: hidden;
             animation: logIn 0.3s ease;
@@ -717,7 +793,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(57, 255, 20, 0.04);
+            background: rgba(168, 255, 0, 0.04);
         }
         .log-title {
             font-family: var(--font-display);
@@ -770,7 +846,7 @@
             right: 24px;
             width: 52px;
             height: 52px;
-            background: rgba(10, 10, 10, 0.95);
+            background: rgba(15, 15, 15, 0.95);
             border: 1px solid var(--border-accent);
             border-radius: 50%;
             color: var(--accent);
@@ -802,6 +878,7 @@
             justify-content: center;
             padding: 0 4px;
         }
+
         /* ═══════════════════════════════════════════════════════════════
            MODAL DE ZOOM
            ═══════════════════════════════════════════════════════════════ */
@@ -825,7 +902,7 @@
             border: 2px solid var(--accent);
             border-radius: var(--radius-md);
             margin-bottom: 22px;
-            box-shadow: 0 0 60px rgba(57, 255, 20, 0.35);
+            box-shadow: 0 0 60px rgba(168, 255, 0, 0.3);
             object-fit: contain;
         }
         .modal-info {
@@ -841,7 +918,7 @@
             justify-content: center;
         }
         .modal-info > div {
-            background: rgba(10, 10, 10, 0.7);
+            background: rgba(15, 15, 15, 0.8);
             border: 1px solid var(--border-2);
             padding: 8px 16px;
             border-radius: 24px;
@@ -875,7 +952,7 @@
         .btn-reimprimir { background: var(--accent); color: var(--bg-0); }
         .btn-reimprimir:hover { box-shadow: var(--accent-glow); }
         .btn-excluir { background: var(--danger); color: #fff; }
-        .btn-excluir:hover { background: #e02020; box-shadow: 0 0 20px rgba(255,49,49,0.5); }
+        .btn-excluir:hover { background: #e02020; box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
 
         /* ═══════════════════════════════════════════════════════════════
            DEBUG BAR + TOAST
@@ -915,7 +992,7 @@
         }
         .toast {
             position: relative;
-            background: rgba(10, 10, 10, 0.96);
+            background: rgba(15, 15, 15, 0.97);
             border: 1px solid var(--border-2);
             border-left: 3px solid var(--accent);
             border-radius: var(--radius-md);
@@ -973,6 +1050,7 @@
             .grid { padding: 16px 20px 140px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
             .log-drawer { right: 12px; width: calc(100% - 24px); max-width: 340px; }
             .brand-center h1 { letter-spacing: 4px; }
+            .sheet-preview { width: 240px; height: 170px; }
         }
     </style>
 </head>
@@ -997,7 +1075,7 @@
 
         <div class="brand-center">
             <h1>PHOTO PRINT</h1>
-            <div class="brand-subtitle">central de impressão A6</div>
+            <div class="brand-subtitle">central de impressão A4</div>
 
             <div class="print-status-bar" id="print-status-bar">
                 <span class="dot"></span>
@@ -1014,13 +1092,33 @@
                     Limpar Fila
                     <span class="badge-qty" id="fila-count">0</span>
                 </button>
+                <button class="ctrl-btn" id="btn-selecao" onclick="toggleModoSelecao()">
+                    <i class="fa-solid fa-check-square"></i>
+                    <span id="btn-selecao-text">Selecionar</span>
+                </button>
             </div>
 
-            <!-- Indicador do buffer da folha atual -->
-            <div class="slot-indicator" id="slot-indicator">
-                <span class="slot-indicator-label">Folha Atual</span>
-                <div class="slot-dots" id="slot-dots"></div>
-                <span class="slot-indicator-count" id="slot-count">0/0</span>
+            <!-- Barra de seleção (aparece ao marcar fotos) -->
+            <div class="selection-bar" id="selection-bar">
+                <span class="selection-bar-label">
+                    <span id="selection-count">0</span> foto(s) selecionada(s)
+                </span>
+                <button class="ctrl-btn active" onclick="imprimirSelecionadas()">
+                    <i class="fa-solid fa-print"></i> Imprimir Selecionadas
+                </button>
+                <button class="ctrl-btn" onclick="cancelarSelecao()">
+                    <i class="fa-solid fa-times"></i> Cancelar
+                </button>
+            </div>
+
+            <!-- Preview da folha em tempo real -->
+            <div class="sheet-preview-wrap">
+                <div class="slot-indicator">
+                    <span class="slot-indicator-label">Folha Atual</span>
+                    <div class="slot-dots" id="slot-dots"></div>
+                    <span class="slot-indicator-count" id="slot-count">0/0</span>
+                </div>
+                <div class="sheet-preview" id="sheet-preview"></div>
             </div>
 
             <div class="search-box">
@@ -1051,6 +1149,15 @@
 
         <div class="sidebar-section">
             <div class="sidebar-section-title">Configurações</div>
+
+            <div class="config-row">
+                <label>Fotos por folha</label>
+                <select id="config-capacidade" onchange="salvarConfigCapacidade(this.value)">
+                    <option value="2">2 por folha A4</option>
+                    <option value="4">4 por folha A4</option>
+                    <option value="6" selected>6 por folha A4</option>
+                </select>
+            </div>
 
             <div class="config-row">
                 <label>Delay entre folhas</label>
@@ -1121,7 +1228,7 @@
         <span class="badge-count" id="log-badge" style="display:none">0</span>
     </button>
 
-    <!-- Área de impressão A6 (invisível) -->
+    <!-- Área de impressão A4 (invisível) -->
     <div id="print-area"></div>
 
     <!-- Debug + toasts -->
@@ -1129,7 +1236,7 @@
     <div class="toast-container" id="toast-container"></div>
 
     <!-- ═══════════════════════════════════════════════════════════════
-         SCRIPT PRINCIPAL v7.0 — A6 AUTO-BATCH
+         SCRIPT PRINCIPAL v8.0 — A4 AGGREGATOR + SELEÇÃO MANUAL
          ═══════════════════════════════════════════════════════════════ -->
     <script>
         /* ═══════════════════════════════════════════════════════════════
@@ -1139,28 +1246,47 @@
         const POLL_INTERVAL_MS = 4000;
         const MAX_LOG_LINES = 30;
 
-        const LS_CONFIG = 'pp_print_config_v7';
-        const LS_HISTORY = 'pp_print_history_v7';
-        const SS_BUFFER = 'pp_sheet_buffer_v7';   // buffer da folha atual
-        const SS_QUEUE = 'pp_sheet_queue_v7';     // fila de FOLHAS prontas para imprimir
+        const LS_CONFIG = 'pp_print_config_v8';
+        const LS_HISTORY = 'pp_print_history_v8';
+        const SS_BUFFER = 'pp_sheet_buffer_v8';
+        const SS_QUEUE = 'pp_sheet_queue_v8';
 
         /*
          * ═══════════════════════════════════════════════════════════════
-         * CAPACIDADE DE FOLHA A6 POR FORMATO DE FOTO
+         * CAPACIDADE DE FOLHA A4 POR FORMATO DE FOTO
          * ═══════════════════════════════════════════════════════════════
-         * A6 = 105×148mm. Cada formato ocupa:
-         *   Polaroid (54×86mm)     → 2 por folha (lado a lado, landscape)
-         *   10x15V (100×150mm)     → 1 por folha (não cabe 2)
-         *   10x15H (150×100mm)     → 1 por folha
-         *   Tirinha (50×150mm)     → 2 por folha (lado a lado, portrait)
+         * A4 = 210×297mm. Margem Epson L3250 ≈ 3mm cada lado.
+         * Área útil: 204×291mm.
+         *
+         * Polaroid 68×98mm (proporcional a 70×100, cabe na Epson):
+         *   6 por folha (3×2) → 204×196mm ✓
+         *   4 por folha (2×2) → 136×196mm ✓
+         *   2 por folha (1×2) → 68×196mm  ✓
+         *
+         * 10x15V (100×150mm): 4 por folha (2×2) → 200×300 (não cabe exato) → 2 por folha
+         * 10x15H (150×100mm): 2 por folha (1×2) → 150×200 ✓
+         * Tirinha (50×150mm): 2 por folha (2×1) → 100×150 ✓
          * ═══════════════════════════════════════════════════════════════
          */
-        const CAPACIDADE_A6 = {
-            "POLAROID": { slots: 2, layout: 'layout-2', orientacao: 'portrait' },
-            "TIRINHA":  { slots: 2, layout: 'layout-2', orientacao: 'portrait' },
-            "10X15V":   { slots: 1, layout: 'layout-1', orientacao: 'portrait' },
-            "10X15H":   { slots: 1, layout: 'layout-1', orientacao: 'landscape' }
-        };
+        let fotosPorFolha = 6;  // configurável: 2, 4 ou 6 (polaroid)
+
+        function getCapacidadeA4() {
+            const fmt = formatoAtual.toUpperCase();
+            if (fmt.includes('POLAROID')) {
+                const layout = fotosPorFolha === 6 ? 'layout-6'
+                              : fotosPorFolha === 4 ? 'layout-4'
+                              : 'layout-2';
+                return { slots: fotosPorFolha, layout, orientacao: 'portrait' };
+            }
+            if (fmt.includes('TIRINHA')) {
+                return { slots: 2, layout: 'layout-2', orientacao: 'portrait' };
+            }
+            if (fmt.includes('10X15H')) {
+                return { slots: 2, layout: 'layout-2', orientacao: 'landscape' };
+            }
+            // 10X15V (default)
+            return { slots: 2, layout: 'layout-2', orientacao: 'portrait' };
+        }
 
         /* ═══════════════════════════════════════════════════════════════
            ESTADO GLOBAL
@@ -1169,17 +1295,20 @@
         let chavesLocais = new Set();
         let eventoAtual = "";
         let eventoIdAtual = "";
-        let formatoAtual = "10X15V";
+        let formatoAtual = "POLAROID";
         let primeiraCarga = true;
 
-        // Buffer da folha atual (slots acumulando até completar)
-        let sheetBuffer = [];      // [{ url, key, tipo, origemId }]
-        let sheetQueue = [];       // folhas prontas para imprimir
+        let sheetBuffer = [];
+        let sheetQueue = [];
         let isPrinting = false;
         let pausado = false;
         let printDelayMs = 2500;
         let autoImpressao = true;
         let folhaAtualImprimindo = null;
+
+        // Seleção manual
+        let modoSelecao = false;
+        let selecionadas = new Set();
 
         let logHistory = [];
         let logNaoLidas = 0;
@@ -1211,7 +1340,9 @@
 
         function salvarConfig() {
             try {
-                localStorage.setItem(LS_CONFIG, JSON.stringify({ printDelayMs, autoImpressao }));
+                localStorage.setItem(LS_CONFIG, JSON.stringify({
+                    printDelayMs, autoImpressao, fotosPorFolha
+                }));
             } catch(e) {}
         }
         function carregarConfig() {
@@ -1221,6 +1352,7 @@
                     const c = JSON.parse(raw);
                     if (typeof c.printDelayMs === 'number') printDelayMs = c.printDelayMs;
                     if (typeof c.autoImpressao === 'boolean') autoImpressao = c.autoImpressao;
+                    if (typeof c.fotosPorFolha === 'number') fotosPorFolha = c.fotosPorFolha;
                 }
             } catch(e) {}
         }
@@ -1288,7 +1420,6 @@
             if (logHistory.length > MAX_LOG_LINES) logHistory.shift();
             renderLogEntry(entry);
             salvarHistorico();
-
             if (!logAberto) {
                 logNaoLidas++;
                 const badge = document.getElementById('log-badge');
@@ -1316,8 +1447,7 @@
         }
         function toggleLog() {
             logAberto = !logAberto;
-            const drawer = document.getElementById('log-drawer');
-            drawer.classList.toggle('active', logAberto);
+            document.getElementById('log-drawer').classList.toggle('active', logAberto);
             if (logAberto) {
                 logNaoLidas = 0;
                 const badge = document.getElementById('log-badge');
@@ -1330,10 +1460,15 @@
            SIDEBAR + CONFIG
            ═══════════════════════════════════════════════════════════════ */
         function toggleSidebar() {
-            const sb = document.getElementById('sidebar');
-            const trigger = document.getElementById('menu-trigger');
-            sb.classList.toggle('active');
-            trigger.classList.toggle('active');
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('menu-trigger').classList.toggle('active');
+        }
+        function salvarConfigCapacidade(valor) {
+            fotosPorFolha = parseInt(valor, 10);
+            salvarConfig();
+            atualizarIndicadorFolha();
+            atualizarPreviewFolha();
+            mostrarToast('Configuração salva', `${fotosPorFolha} foto(s) por folha A4`, 'info');
         }
         function salvarConfigDelay(valor) {
             printDelayMs = parseInt(valor, 10) || 2500;
@@ -1343,23 +1478,62 @@
         function salvarConfigAuto(valor) {
             autoImpressao = valor === '1';
             salvarConfig();
-            mostrarToast(
-                'Configuração salva',
-                `Auto-impressão ${autoImpressao ? 'ativada' : 'desativada'}`,
-                autoImpressao ? 'success' : 'warning'
-            );
+            mostrarToast('Configuração salva', `Auto-impressão ${autoImpressao ? 'ativada' : 'desativada'}`, autoImpressao ? 'success' : 'warning');
         }
 
         /* ═══════════════════════════════════════════════════════════════
-           CAPACIDADE ATUAL DA FOLHA A6
+           SELEÇÃO MANUAL
            ═══════════════════════════════════════════════════════════════ */
-        function getCapacidadeA6() {
-            const cfg = CAPACIDADE_A6[formatoAtual] || CAPACIDADE_A6["10X15V"];
-            return cfg;
+        function toggleModoSelecao() {
+            modoSelecao = !modoSelecao;
+            selecionadas.clear();
+            document.getElementById('btn-selecao').classList.toggle('active', modoSelecao);
+            document.getElementById('btn-selecao-text').innerText = modoSelecao ? 'Cancelar Seleção' : 'Selecionar';
+            atualizarBarraSelecao();
+            render();
+        }
+
+        function cancelarSelecao() {
+            selecionadas.clear();
+            modoSelecao = false;
+            document.getElementById('btn-selecao').classList.remove('active');
+            document.getElementById('btn-selecao-text').innerText = 'Selecionar';
+            atualizarBarraSelecao();
+            render();
+        }
+
+        function toggleSelecionada(id) {
+            if (!modoSelecao) return;
+            if (selecionadas.has(id)) selecionadas.delete(id);
+            else selecionadas.add(id);
+            atualizarBarraSelecao();
+            render();
+        }
+
+        function atualizarBarraSelecao() {
+            const bar = document.getElementById('selection-bar');
+            if (modoSelecao && selecionadas.size > 0) {
+                bar.classList.add('active');
+                document.getElementById('selection-count').innerText = selecionadas.size;
+            } else {
+                bar.classList.remove('active');
+            }
+        }
+
+        function imprimirSelecionadas() {
+            if (selecionadas.size === 0) return;
+            const fotos = todasFotos.filter(f => selecionadas.has(f.id));
+            for (const foto of fotos) {
+                alimentarBuffer(foto.url, foto.key, { copias: foto.copias, guestbook: foto.guestbook }, foto.id);
+            }
+            addLog(`🖨️ Impressão manual: ${fotos.length} foto(s)`, 'info');
+            selecionadas.clear();
+            atualizarBarraSelecao();
+            render();
         }
 
         /* ═══════════════════════════════════════════════════════════════
-           ATUALIZAÇÃO DA GALERIA (polling)
+           ATUALIZAÇÃO DA GALERIA
            ═══════════════════════════════════════════════════════════════ */
         async function atualizar() {
             try {
@@ -1371,7 +1545,7 @@
                 const evtId = (config.config && config.config.eventoId) ? config.config.eventoId : "";
                 const novoFormato = (config.config && config.config.formato)
                     ? config.config.formato.toUpperCase().trim()
-                    : "10X15V";
+                    : "POLAROID";
 
                 if (eventoIdAtual !== evtId) {
                     eventoAtual = evt;
@@ -1386,16 +1560,17 @@
                     document.getElementById('grid-fotos').innerHTML = "";
                     atualizarBarraStatus();
                     atualizarIndicadorFolha();
-                    addLog(`🔄 Troca de evento: ${evt} (${traduzirFormato(formatoAtual)})`, 'info');
-                    debug('🔄 Evento: ' + evt);
+                    atualizarPreviewFolha();
+                    addLog(`🔄 Evento: ${evt} (${traduzirFormato(formatoAtual)})`, 'info');
                 } else if (formatoAtual !== novoFormato) {
                     formatoAtual = novoFormato;
-                    addLog(`📐 Formato alterado: ${traduzirFormato(formatoAtual)}`, 'info');
+                    addLog(`📐 Formato: ${traduzirFormato(formatoAtual)}`, 'info');
                     atualizarIndicadorFolha();
+                    atualizarPreviewFolha();
                 }
 
                 document.getElementById('nome-evento').innerText = eventoAtual;
-                document.getElementById('tipo-formato').innerText = traduzirFormato(formatoAtual);
+                                document.getElementById('tipo-formato').innerText = traduzirFormato(formatoAtual);
 
                 if (!eventoIdAtual) {
                     debug('⏳ Aguardando evento ativo...');
@@ -1416,7 +1591,6 @@
 
                 if (novas.length > 0) {
                     debug(`📷 ${novas.length} nova(s) foto(s)`);
-
                     for (const f of novas) {
                         const url = `${API}/photo?key=${encodeURIComponent(f.key)}`;
                         const parsed = analisarNomeFoto(f.key);
@@ -1432,14 +1606,13 @@
                         });
                         chavesLocais.add(f.key);
 
-                        // Se auto-impressão ativada e NÃO é primeira carga → alimenta o buffer
                         if (!primeiraCarga && autoImpressao) {
                             alimentarBuffer(url, f.key, parsed, idFoto);
+                            addLog(`📥 Nova: ${parsed.copias}× ${parsed.guestbook ? '+ guestbook' : ''}`, 'success');
                         } else if (!primeiraCarga && !autoImpressao) {
-                            addLog(`⏸️ Foto recebida (auto-impressão off): ${f.key.split('/').pop()}`, 'warn');
+                            addLog(`⏸️ Foto recebida (auto off): ${f.key.split('/').pop()}`, 'warn');
                         }
                     }
-
                     render();
                     atualizarBarraStatus();
                     debug(`✅ ${todasFotos.length} foto(s) na galeria`);
@@ -1461,38 +1634,27 @@
         }
 
         /* ═══════════════════════════════════════════════════════════════
-           ▶▶▶ CORE: ALIMENTAR BUFFER A6 + FECHAR FOLHA ◀◀◀
-           ═══════════════════════════════════════════════════════════════
-           Esta é a função mais importante. Ela:
-           1) Adiciona N cópias da foto ao buffer da folha atual
-           2) Se guestbook, envia para folha guestbook dedicada
-           3) Quando o buffer atinge a capacidade da A6 → fecha a folha
-           4) Folhas prontas vão para sheetQueue → imprime automaticamente
+           CORE: ALIMENTAR BUFFER A4 + FECHAR FOLHA
            ═══════════════════════════════════════════════════════════════ */
         function alimentarBuffer(url, key, parsed, origemId) {
             const { copias, guestbook } = parsed;
-            const cap = getCapacidadeA6();
+            const cap = getCapacidadeA4();
 
-            // ─── Guestbook: sempre em folha dedicada separada ───
             if (guestbook) {
-                // Guestbook é uma foto única por folha (não agrupa com outras)
                 sheetQueue.push({
                     slots: [{ url, key, tipo: 'guestbook', origemId }],
                     layout: 'layout-1',
                     totalSlots: 1,
                     descricao: 'Guestbook (folha dedicada)'
                 });
-                addLog(`📄 Folha Guestbook preparada (foto #${origemId})`, 'info');
+                addLog(`📄 Guestbook preparado (foto #${origemId})`, 'info');
                 salvarEstado();
                 processarFilaImpressao();
                 return;
             }
 
-            // ─── Foto comum: adiciona N slots ao buffer ───
             for (let i = 0; i < copias; i++) {
                 sheetBuffer.push({ url, key, tipo: 'foto', origemId });
-
-                // Se o buffer encheu a folha → fecha folha
                 if (sheetBuffer.length >= cap.slots) {
                     fecharFolha();
                 }
@@ -1500,21 +1662,14 @@
 
             salvarEstado();
             atualizarIndicadorFolha();
+            atualizarPreviewFolha();
             atualizarBarraStatus();
             render();
-
-            // Se a foto tem 2 cópias mas a folha só cabe 1 → imprime cada uma sozinha
-            // (o loop acima já cuida disso, pois sheetBuffer.length >= cap.slots a cada push)
         }
 
-        /**
-         * Fecha a folha atual (buffer cheio) e envia para a fila de impressão.
-         */
         function fecharFolha() {
             if (sheetBuffer.length === 0) return;
-
-            const cap = getCapacidadeA6();
-            // Pega os slots do buffer (até a capacidade)
+            const cap = getCapacidadeA4();
             const slots = sheetBuffer.splice(0, cap.slots);
 
             sheetQueue.push({
@@ -1527,40 +1682,20 @@
             addLog(`📄 Folha fechada: ${slots.length}/${cap.slots} slots`, 'success');
             salvarEstado();
             atualizarIndicadorFolha();
-            atualizarBarraStatus();
-            processarFilaImpressao();
-        }
-
-        /**
-         * Força o fechamento da folha atual mesmo que não esteja cheia.
-         * (usado quando o operador clica "Limpar Fila" ou quando dá timeout)
-         */
-        function forcarFecharFolha() {
-            if (sheetBuffer.length === 0) return;
-            const cap = getCapacidadeA6();
-            const slots = sheetBuffer.splice(0);
-            sheetQueue.push({
-                slots,
-                layout: cap.layout,
-                totalSlots: slots.length,
-                descricao: `Folha parcial (${slots.length}/${cap.slots})`
-            });
-            addLog(`📄 Folha parcial fechada: ${slots.length}/${cap.slots}`, 'warn');
-            salvarEstado();
-            atualizarIndicadorFolha();
+            atualizarPreviewFolha();
             atualizarBarraStatus();
             processarFilaImpressao();
         }
 
         /* ═══════════════════════════════════════════════════════════════
-           INDICADOR VISUAL DA FOLHA ATUAL
+           INDICADOR + PREVIEW DA FOLHA
            ═══════════════════════════════════════════════════════════════ */
         function atualizarIndicadorFolha() {
             const dots = document.getElementById('slot-dots');
             const count = document.getElementById('slot-count');
             if (!dots || !count) return;
 
-            const cap = getCapacidadeA6();
+            const cap = getCapacidadeA4();
             const usados = sheetBuffer.length;
 
             dots.innerHTML = '';
@@ -1572,10 +1707,44 @@
             count.innerText = `${usados}/${cap.slots}`;
         }
 
+        /**
+         * PREVIEW em tempo real — mostra os slots da folha atual
+         * (o "esquema da moldura sendo montada")
+         */
+        function atualizarPreviewFolha() {
+            const container = document.getElementById('sheet-preview');
+            if (!container) return;
+
+            const cap = getCapacidadeA4();
+            container.innerHTML = '';
+
+            // Define colunas do preview conforme capacidade
+            const cols = cap.slots >= 6 ? 3 : cap.slots >= 4 ? 2 : cap.slots;
+            const rows = cap.slots >= 6 ? 2 : cap.slots >= 4 ? 2 : 1;
+            container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            container.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+
+            for (let i = 0; i < cap.slots; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'sheet-preview-slot';
+                const slotData = sheetBuffer[i];
+                if (slotData) {
+                    slot.classList.add('filled');
+                    slot.innerHTML = `
+                        <span class="slot-label">${i + 1}</span>
+                        <img src="${slotData.url}" alt="Slot ${i+1}">
+                    `;
+                } else {
+                    slot.innerHTML = `<span>${i + 1}</span>`;
+                }
+                container.appendChild(slot);
+            }
+        }
+
         /* ═══════════════════════════════════════════════════════════════
            BARRA DE STATUS + PAUSA
            ═══════════════════════════════════════════════════════════════ */
-                function atualizarBarraStatus() {
+        function atualizarBarraStatus() {
             const bar = document.getElementById('print-status-bar');
             const txt = document.getElementById('print-status-text');
             const filaCount = document.getElementById('fila-count');
@@ -1583,7 +1752,6 @@
             const btnPauseText = document.getElementById('btn-pause-text');
 
             if (filaCount) filaCount.innerText = sheetQueue.length;
-
             bar.classList.remove('active', 'paused');
 
             if (pausado) {
@@ -1600,9 +1768,9 @@
                 btnPause.querySelector('i').className = 'fa-solid fa-pause';
             } else if (sheetQueue.length > 0) {
                 bar.classList.add('active');
-                txt.innerText = `${sheetQueue.length} folha(s) pronta(s) para imprimir`;
+                txt.innerText = `${sheetQueue.length} folha(s) pronta(s)`;
             } else if (sheetBuffer.length > 0) {
-                const cap = getCapacidadeA6();
+                const cap = getCapacidadeA4();
                 bar.classList.add('active');
                 txt.innerText = `Preenchendo folha: ${sheetBuffer.length}/${cap.slots}`;
             } else {
@@ -1617,7 +1785,7 @@
             pausado = !pausado;
             if (pausado) {
                 addLog('⏸️ Impressão pausada', 'warn');
-                mostrarToast('Pausado', 'A impressão de folhas foi pausada.', 'warning');
+                mostrarToast('Pausado', 'A impressão foi pausada.', 'warning');
             } else {
                 addLog('▶️ Impressão retomada', 'success');
                 mostrarToast('Retomado', 'A impressão foi retomada.', 'success');
@@ -1633,20 +1801,20 @@
                 mostrarToast('Fila vazia', 'Não há folhas pendentes.', 'info');
                 return;
             }
-            if (!confirm(`Limpar ${sheetQueue.length} folha(s) prontas + ${sheetBuffer.length} slot(s) do buffer?`)) return;
-
+            if (!confirm(`Limpar ${sheetQueue.length} folha(s) + ${sheetBuffer.length} slot(s)?`)) return;
             sheetQueue = [];
             sheetBuffer = [];
             limparEstadoStorage();
-            addLog(`🗑️ Fila limpa (${total} itens removidos)`, 'warn');
+            addLog(`🗑️ Fila limpa (${total} itens)`, 'warn');
             atualizarBarraStatus();
             atualizarIndicadorFolha();
+            atualizarPreviewFolha();
             render();
             mostrarToast('Fila limpa', `${total} item(ns) removidos.`, 'info');
         }
 
         /* ═══════════════════════════════════════════════════════════════
-           ▶▶▶ PROCESSAMENTO DA FILA DE FOLHAS ◀◀◀
+           PROCESSAMENTO DA FILA DE FOLHAS
            ═══════════════════════════════════════════════════════════════ */
         async function processarFilaImpressao() {
             if (isPrinting) return;
@@ -1669,9 +1837,8 @@
                 await executarImpressaoFolha(folhaAtualImprimindo);
                 addLog(`✅ Impresso: ${folhaAtualImprimindo.descricao}`, 'success');
             } catch (e) {
-                console.error('Erro ao imprimir folha:', e);
-                addLog(`❌ Erro ao imprimir: ${e.message}`, 'error');
-                debug('❌ Erro: ' + e.message);
+                console.error('Erro ao imprimir:', e);
+                addLog(`❌ Erro: ${e.message}`, 'error');
             }
 
             setTimeout(() => {
@@ -1683,21 +1850,14 @@
             }, printDelayMs);
         }
 
-        /**
-         * Executa a impressão real de uma folha A6.
-         * Monta o HTML com N slots lado a lado, aguarda carregar e chama print().
-         */
         async function executarImpressaoFolha(folha) {
-            debug(`🖨️ Imprimindo folha: ${folha.descricao}`);
-
-            // Pré-carrega todas as imagens da folha
+            debug(`🖨️ Imprimindo: ${folha.descricao}`);
             await Promise.all(folha.slots.map(s => preloadImagem(s.url)));
 
             const printArea = document.getElementById('print-area');
             const sheet = document.createElement('div');
-            sheet.className = `print-sheet ${folha.layout || 'layout-1'}`;
+            sheet.className = `print-sheet ${folha.layout || 'layout-6'}`;
 
-            // Cria um slot para cada foto
             for (const slot of folha.slots) {
                 const slotEl = document.createElement('div');
                 slotEl.className = 'slot';
@@ -1711,25 +1871,21 @@
             printArea.innerHTML = '';
             printArea.appendChild(sheet);
 
-            // Ajusta a orientação da página A6 conforme o layout
-            const cap = getCapacidadeA6();
-            const orientacao = cap.orientacao === 'landscape' ? 'A6 landscape' : 'A6 portrait';
+            // Orientação dinâmica
+            const cap = getCapacidadeA4();
             let stylePage = document.getElementById('dynamic-page-style');
             if (!stylePage) {
                 stylePage = document.createElement('style');
                 stylePage.id = 'dynamic-page-style';
                 document.head.appendChild(stylePage);
             }
-            stylePage.innerHTML = `@media print { @page { size: ${orientacao}; margin: 0; } }`;
+            const orient = cap.orientacao === 'landscape' ? 'A4 landscape' : 'A4 portrait';
+            stylePage.innerHTML = `@media print { @page { size: ${orient}; margin: 0; } }`;
 
-            // Aguarda renderização
             await new Promise(r => setTimeout(r, 400));
-
-            // Dispara impressão
             window.focus();
             window.print();
-
-            debug(`✅ Folha "${folha.descricao}" enviada para impressora`);
+            debug(`✅ Folha enviada`);
         }
 
         function preloadImagem(url) {
@@ -1743,11 +1899,10 @@
         }
 
         /* ═══════════════════════════════════════════════════════════════
-           ▶▶▶ RENDERIZAÇÃO DO GRID ◀◀◀
+           RENDER DO GRID (com seleção)
            ═══════════════════════════════════════════════════════════════ */
         function render() {
             const grid = document.getElementById('grid-fotos');
-
             if (todasFotos.length === 0) {
                 grid.innerHTML = `
                     <div class="empty-state">
@@ -1758,7 +1913,6 @@
                 return;
             }
 
-            // Conjunto de chaves que estão no buffer OU na fila (para mostrar "na fila")
             const keysNaFila = new Set([
                 ...sheetBuffer.map(s => s.key),
                 ...sheetQueue.flatMap(f => f.slots.map(s => s.key))
@@ -1768,6 +1922,7 @@
                 : new Set();
 
             grid.innerHTML = todasFotos.slice().reverse().map((f, i) => {
+                const estaSelecionada = selecionadas.has(f.id);
                 let printStateClass = '';
                 let printStateIcon = 'fa-clock';
                 let printStateText = 'NA FILA';
@@ -1786,8 +1941,16 @@
                     printStateText = 'AGUARDANDO';
                 }
 
+                // Clique: se em modo seleção, alterna; senão abre zoom
+                const clickHandler = modoSelecao
+                    ? `onclick="toggleSelecionada(${f.id})"`
+                    : `onclick="abrirZoom(${f.id})"`;
+
                 return `
-                    <div class="card" style="animation-delay:${Math.min(i * 20, 300)}ms" onclick="abrirZoom(${f.id})">
+                    <div class="card ${estaSelecionada ? 'selected' : ''}"
+                         style="animation-delay:${Math.min(i * 20, 300)}ms"
+                         ${clickHandler}>
+                        <div class="check-overlay"><i class="fa-solid fa-check-circle"></i></div>
                         <span class="badge-id">#${f.id}</span>
                         <span class="badge-copias">${f.copias}× cópia${f.copias > 1 ? 's' : ''}</span>
                         ${f.guestbook
@@ -1802,77 +1965,66 @@
         }
 
         /* ═══════════════════════════════════════════════════════════════
-           ▶▶▶ MODAL DE ZOOM ◀◀◀
+           MODAL DE ZOOM
            ═══════════════════════════════════════════════════════════════ */
         function abrirZoom(id) {
             const foto = todasFotos.find(f => f.id === id);
             if (!foto) return;
-
             document.getElementById('img-zoom').src = foto.url;
             document.getElementById('zoom-id').innerText = `#${foto.id}`;
             document.getElementById('zoom-copias').innerText = `${foto.copias}×`;
             document.getElementById('zoom-guestbook').innerText = foto.guestbook ? 'SIM' : 'NÃO';
-
             document.getElementById('btn-excluir-zoom').onclick = () => excluirFoto(foto.key);
             document.getElementById('modal-zoom').classList.add('active');
         }
-
         function fecharZoom() {
             document.getElementById('modal-zoom').classList.remove('active');
         }
-
         function reimprimirAtual() {
             const url = document.getElementById('img-zoom').src;
             if (!url) return;
-
             const foto = todasFotos.find(f => f.url === url);
             if (!foto) {
                 alimentarBuffer(url, `manual_${Date.now()}`, { copias: 1, guestbook: false }, 0);
                 return;
             }
-
             alimentarBuffer(foto.url, foto.key, { copias: foto.copias, guestbook: foto.guestbook }, foto.id);
             addLog(`🔁 Reimpressão: ${foto.copias}× ${foto.guestbook ? '+ guestbook' : ''}`, 'info');
             fecharZoom();
         }
 
         async function excluirFoto(key) {
-            if (!confirm("Deseja realmente excluir esta foto?")) return;
-
+            if (!confirm("Excluir esta foto?")) return;
             try {
                 await fetch(`${API}/photo?key=${encodeURIComponent(key)}`, { method: 'DELETE' });
-
                 todasFotos = todasFotos.filter(f => f.key !== key);
                 chavesLocais.delete(key);
                 todasFotos.forEach((f, i) => f.id = i + 1);
-
-                // Remove slots do buffer/fila que usem essa foto
                 sheetBuffer = sheetBuffer.filter(s => s.key !== key);
                 sheetQueue = sheetQueue.map(folha => ({
                     ...folha,
                     slots: folha.slots.filter(s => s.key !== key)
                 })).filter(folha => folha.slots.length > 0);
-
                 salvarEstado();
                 fecharZoom();
                 render();
                 atualizarBarraStatus();
                 atualizarIndicadorFolha();
-                addLog(`🗑️ Foto excluída: ${key.split('/').pop()}`, 'warn');
-                debug('🗑️ Foto excluída');
+                atualizarPreviewFolha();
+                addLog(`🗑️ Foto excluída`, 'warn');
             } catch (e) {
-                mostrarToast('Erro', 'Não foi possível excluir a foto.', 'error');
+                mostrarToast('Erro', 'Não foi possível excluir.', 'error');
             }
         }
 
         /* ═══════════════════════════════════════════════════════════════
-           ▶▶▶ BUSCA ◀◀◀
+           BUSCA
            ═══════════════════════════════════════════════════════════════ */
         function executarBusca() {
             const input = document.getElementById('input-busca');
             const idBusca = parseInt(input.value, 10);
             if (!idBusca || isNaN(idBusca)) {
-                mostrarToast('ID inválido', 'Digite um número válido.', 'error');
+                mostrarToast('ID inválido', 'Digite um número.', 'error');
                 return;
             }
             const foto = todasFotos.find(f => f.id === idBusca);
@@ -1880,58 +2032,50 @@
                 abrirZoom(foto.id);
                 input.value = '';
             } else {
-                mostrarToast('Não encontrada', `ID #${idBusca} não existe.`, 'warning');
+                mostrarToast('Não encontrada', `ID #${idBusca}`, 'warning');
             }
         }
 
         /* ═══════════════════════════════════════════════════════════════
-           ▶▶▶ SIDEBAR: BAIXAR ZIP ◀◀◀
+           SIDEBAR: ZIP + LIMPAR SERVIDOR
            ═══════════════════════════════════════════════════════════════ */
         async function baixarZip() {
             if (todasFotos.length === 0) {
-                mostrarToast('Sem fotos', 'Nenhuma foto para baixar.', 'info');
+                mostrarToast('Sem fotos', 'Nenhuma foto.', 'info');
                 return;
             }
-            mostrarToast('Preparando ZIP', `${todasFotos.length} foto(s) para baixar...`, 'info');
-            addLog(`📦 Iniciando ZIP (${todasFotos.length} fotos)`, 'info');
-
+            mostrarToast('Preparando ZIP', `${todasFotos.length} foto(s)...`, 'info');
             try {
                 const zip = new JSZip();
                 let baixadas = 0;
                 for (const f of todasFotos) {
                     try {
                         const blob = await fetch(f.url).then(r => r.blob());
-                        const nome = `foto_${String(f.id).padStart(3, '0')}_${f.copias}c${f.guestbook ? '_guestbook' : ''}.jpg`;
+                        const nome = `foto_${String(f.id).padStart(3, '0')}_${f.copias}c${f.guestbook ? '_gb' : ''}.jpg`;
                         zip.file(nome, blob);
                         baixadas++;
                     } catch (e) {}
                 }
                 if (baixadas === 0) {
-                    mostrarToast('Erro', 'Nenhuma foto pôde ser baixada.', 'error');
+                    mostrarToast('Erro', 'Nenhuma pôde ser baixada.', 'error');
                     return;
                 }
                 const content = await zip.generateAsync({ type: "blob" });
                 const nomeZip = `galeria_${eventoAtual.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.zip`;
                 saveAs(content, nomeZip);
                 addLog(`✅ ZIP gerado (${baixadas} fotos)`, 'success');
-                mostrarToast('Download iniciado', `${baixadas} foto(s) no ZIP.`, 'success');
             } catch (e) {
-                addLog(`❌ Erro no ZIP: ${e.message}`, 'error');
-                mostrarToast('Erro', 'Falha ao gerar o ZIP.', 'error');
+                addLog(`❌ Erro ZIP: ${e.message}`, 'error');
             }
         }
 
-        /* ═══════════════════════════════════════════════════════════════
-           ▶▶▶ SIDEBAR: LIMPAR SERVIDOR ◀◀◀
-           ═══════════════════════════════════════════════════════════════ */
         async function limparTudo() {
-            if (!confirm("⚠️ ATENÇÃO!\n\nIsso vai APAGAR TODAS as fotos do evento ativo no servidor.\n\nEsta ação é IRREVERSÍVEL.\n\nDeseja continuar?")) return;
-            const senha = prompt("Digite a senha mestra para confirmar:");
+            if (!confirm("⚠️ APAGAR TODAS AS FOTOS do evento ativo?\n\nIrreversível.")) return;
+            const senha = prompt("Senha mestra:");
             if (senha !== "1234") {
                 mostrarToast('Cancelado', 'Senha incorreta.', 'error');
                 return;
             }
-            mostrarToast('Apagando', 'Removendo fotos do servidor...', 'warning');
             try {
                 await fetch(`${API}/photo?key=all`, { method: 'DELETE' });
                 todasFotos = [];
@@ -1942,62 +2086,53 @@
                 render();
                 atualizarBarraStatus();
                 atualizarIndicadorFolha();
+                atualizarPreviewFolha();
                 addLog(`🗑️ Servidor limpo`, 'warn');
-                mostrarToast('Servidor limpo', 'Todas as fotos foram removidas.', 'success');
+                mostrarToast('Servidor limpo', 'Fotos removidas.', 'success');
             } catch (e) {
-                addLog(`❌ Erro ao limpar: ${e.message}`, 'error');
-                mostrarToast('Erro', 'Não foi possível limpar o servidor.', 'error');
+                addLog(`❌ Erro: ${e.message}`, 'error');
             }
         }
 
         /* ═══════════════════════════════════════════════════════════════
-           ▶▶▶ EVENTOS GLOBAIS ◀◀◀
+           EVENTOS GLOBAIS + INICIALIZAÇÃO
            ═══════════════════════════════════════════════════════════════ */
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                if (document.getElementById('modal-zoom').classList.contains('active')) {
-                    fecharZoom();
-                } else if (document.getElementById('sidebar').classList.contains('active')) {
-                    toggleSidebar();
-                } else if (logAberto) {
-                    toggleLog();
-                }
+                if (document.getElementById('modal-zoom').classList.contains('active')) fecharZoom();
+                else if (document.getElementById('sidebar').classList.contains('active')) toggleSidebar();
+                else if (logAberto) toggleLog();
+                else if (modoSelecao) cancelarSelecao();
             }
         });
-
         document.getElementById('modal-zoom').addEventListener('click', (e) => {
             if (e.target.id === 'modal-zoom') fecharZoom();
         });
-
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden) atualizar();
         });
-
         window.addEventListener('beforeunload', () => {
             salvarEstado();
         });
 
-        /* ═══════════════════════════════════════════════════════════════
-           ▶▶▶ INICIALIZAÇÃO ◀◀◀
-           ═══════════════════════════════════════════════════════════════ */
         window.addEventListener('load', () => {
             carregarConfig();
             carregarHistorico();
             renderLogCompleto();
 
-            const selDelay = document.getElementById('config-delay');
-            if (selDelay) selDelay.value = String(printDelayMs);
-            const selAuto = document.getElementById('config-auto');
-            if (selAuto) selAuto.value = autoImpressao ? '1' : '0';
+            document.getElementById('config-delay').value = String(printDelayMs);
+            document.getElementById('config-auto').value = autoImpressao ? '1' : '0';
+            document.getElementById('config-capacidade').value = String(fotosPorFolha);
 
             carregarEstado();
 
-            addLog('🚀 Central A6 v7.0 iniciada', 'success');
-            debug('🚀 Central A6 v7.0 pronta');
+            addLog('🚀 Central A4 v8.0 iniciada', 'success');
+            debug('🚀 Central A4 v8.0 pronta');
 
-            // Se buffer/fila já existia (F5), atualiza UI
             atualizarIndicadorFolha();
+            atualizarPreviewFolha();
             atualizarBarraStatus();
+
             if (sheetQueue.length > 0) {
                 addLog(`♻️ Fila restaurada (${sheetQueue.length} folha(s))`, 'info');
                 processarFilaImpressao();
@@ -2013,6 +2148,5 @@
 </body>
 </html>
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- ◀◀◀ FIM DO ARQUIVO galeria.html — CENTRAL v7.0 (A6 AUTO) ▶▶▶       -->
+<!-- ◀◀◀ FIM DO ARQUIVO galeria.html — CENTRAL v8.0 (A4 AGGREGATOR) ▶▶▶ -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-       

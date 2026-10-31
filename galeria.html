@@ -1,5 +1,5 @@
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- ▶▶▶ INÍCIO DO ARQUIVO galeria.html — GALERIA CLIENTE v3.0 ◀◀◀      -->
+<!-- ▶▶▶ INÍCIO DO ARQUIVO galeria.html — CENTRAL DE IMPRESSÃO v4.0 ◀◀◀  -->
 <!-- (SUBSTITUA O ARQUIVO INTEIRO POR ESTE)                              -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 <!DOCTYPE html>
@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#000000">
-    <title>PHOTO PRINT — Sua Foto</title>
+    <title>PHOTO PRINT — Central de Impressão</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,20 +23,38 @@
             --neon-dim: rgba(57, 255, 20, 0.12);
             --neon-glow: 0 0 20px rgba(57, 255, 20, 0.4);
             --red: #ff3131;
+            --red-dim: rgba(255, 49, 49, 0.15);
+            --blue: #00e5ff;
+            --blue-dim: rgba(0, 229, 255, 0.12);
+            --yellow: #ffb800;
+            --yellow-dim: rgba(255, 184, 0, 0.15);
+
             --bg-0: #000000;
             --bg-1: #0a0a0a;
+            --bg-2: #111111;
+            --bg-3: #1a1a1a;
             --bg-4: #222222;
+
             --text-0: #ffffff;
             --text-1: #e0e0e0;
             --text-2: #999999;
             --text-3: #555555;
+
+            --border-1: rgba(255, 255, 255, 0.06);
             --border-2: rgba(255, 255, 255, 0.1);
             --border-neon: rgba(57, 255, 20, 0.3);
+
             --radius-sm: 10px;
             --radius-md: 16px;
             --radius-lg: 24px;
+            --radius-xl: 32px;
+
+            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
             --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.6);
+
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-fast: all 0.15s ease;
+
             --font-display: 'Outfit', sans-serif;
             --font-mono: 'Space Grotesk', sans-serif;
             --font-body: 'Plus Jakarta Sans', -apple-system, sans-serif;
@@ -56,10 +74,12 @@
                 radial-gradient(circle at 50% 0%, rgba(26, 58, 18, 0.5) 0%, transparent 50%),
                 radial-gradient(circle at 100% 100%, rgba(57, 255, 20, 0.03) 0%, transparent 40%),
                 var(--bg-0);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 24px 16px;
+            display: flex; flex-direction: column; align-items: center;
+            padding: 24px 16px 120px;
         }
-        .header { position: relative; z-index: 2; text-align: center; margin-bottom: 24px; }
+
+        /* ═══════════ HEADER ═══════════ */
+        .header { position: relative; z-index: 2; text-align: center; margin-bottom: 20px; width: 100%; max-width: 720px; }
         .brand-title {
             font-family: var(--font-display); font-size: clamp(26px, 7vw, 36px); font-weight: 900;
             color: var(--neon); text-shadow: var(--neon-glow); letter-spacing: 4px;
@@ -67,129 +87,414 @@
         }
         .brand-subtitle { font-size: 10px; letter-spacing: 5px; color: var(--text-3); text-transform: uppercase; font-weight: 700; margin-top: 6px; }
 
-        .photo-card {
-            position: relative; z-index: 2; width: 100%; max-width: 420px; background: var(--bg-1);
-            border: 1px solid var(--border-neon); border-radius: var(--radius-lg); overflow: hidden;
-            box-shadow: var(--shadow-lg), 0 0 60px rgba(57, 255, 20, 0.1);
+        /* ═══════════ TOOLBAR ═══════════ */
+        .toolbar {
+            position: relative; z-index: 2;
+            width: 100%; max-width: 720px;
+            display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+            gap: 12px; padding: 14px 18px;
+            background: var(--bg-1); border: 1px solid var(--border-1);
+            border-radius: var(--radius-md); margin-bottom: 18px;
         }
+        .toolbar-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+        .toolbar-event { font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--neon); letter-spacing: 0.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .toolbar-count { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        .toolbar-actions { display: flex; gap: 8px; flex-shrink: 0; }
+        .btn-mini {
+            background: transparent; border: 1px solid var(--border-2); color: var(--text-1);
+            padding: 8px 14px; border-radius: var(--radius-sm); font-family: var(--font-body);
+            font-size: 11px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
+            cursor: pointer; transition: var(--transition-fast); display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-mini:hover { border-color: var(--neon); color: var(--neon); background: var(--neon-dim); }
+        .btn-mini.danger:hover { border-color: var(--red); color: var(--red); background: var(--red-dim); }
 
-        /* Grade de fotos */
-        .grid-wrap { padding: 24px 20px; }
-        .grid-title {
-            font-size: 13px; color: var(--neon); text-transform: uppercase;
-            font-family: var(--font-mono); letter-spacing: 1px; margin-bottom: 16px;
+        /* ═══════════ GRADE DE FOTOS ═══════════ */
+        .grid-wrap {
+            position: relative; z-index: 2; width: 100%; max-width: 720px;
         }
         .photo-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
-            max-height: 460px; overflow-y: auto; padding-right: 4px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px;
         }
         .grid-item {
-            cursor: pointer; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-2);
-            aspect-ratio: 1; background: #111; transition: var(--transition);
+            position: relative; cursor: pointer; border-radius: var(--radius-md); overflow: hidden;
+            border: 2px solid var(--border-2); aspect-ratio: 1; background: #111;
+            transition: var(--transition); box-shadow: var(--shadow-md);
         }
-        .grid-item:hover { border-color: var(--neon); }
-        .grid-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .grid-item:hover { border-color: var(--neon); transform: translateY(-2px); }
+        .grid-item.selected { border-color: var(--neon); box-shadow: 0 0 0 3px var(--neon-dim), var(--neon-glow); }
+        .grid-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: var(--transition); }
+        .grid-item:hover img { transform: scale(1.05); }
 
-        /* Foto única */
-        .photo-wrapper { position: relative; background: var(--bg-0); display: flex; align-items: center; justify-content: center; min-height: 300px; overflow: hidden; }
-        .photo-wrapper img { width: 100%; height: auto; display: block; transition: opacity 0.4s ease; }
-        .photo-badge {
-            position: absolute; top: 12px; left: 12px; z-index: 4; background: rgba(0, 0, 0, 0.85);
-            border-left: 3px solid var(--neon); border-radius: var(--radius-sm); padding: 6px 14px;
-            font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--neon);
-            letter-spacing: 1px; backdrop-filter: blur(10px);
+        .check-badge {
+            position: absolute; top: 8px; right: 8px; z-index: 3;
+            width: 28px; height: 28px; border-radius: 50%;
+            background: rgba(0, 0, 0, 0.75); border: 2px solid var(--border-2);
+            display: flex; align-items: center; justify-content: center;
+            color: transparent; font-size: 12px; transition: var(--transition-fast);
+            backdrop-filter: blur(6px);
         }
-        .btn-voltar-grade {
-            position: absolute; top: 12px; right: 12px; z-index: 4; background: rgba(0, 0, 0, 0.85);
-            border: 1px solid var(--border-2); border-radius: var(--radius-sm); padding: 6px 12px;
-            font-family: var(--font-body); font-size: 11px; font-weight: 700; color: var(--text-0);
-            cursor: pointer; backdrop-filter: blur(10px); transition: var(--transition);
-            display: inline-flex; align-items: center; gap: 6px; text-transform: uppercase;
+        .grid-item.selected .check-badge {
+            background: var(--neon); border-color: var(--neon); color: var(--bg-0);
+            box-shadow: 0 0 12px rgba(57, 255, 20, 0.5);
         }
-        .btn-voltar-grade:hover { border-color: var(--neon); color: var(--neon); background: var(--neon-dim); }
-
-        .photo-loader { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 14px; background: var(--bg-1); z-index: 2; transition: opacity 0.4s ease; }
-        .photo-loader.hidden { opacity: 0; pointer-events: none; }
-        .spin { width: 48px; height: 48px; border: 3px solid rgba(57, 255, 20, 0.15); border-top-color: var(--neon); border-radius: 50%; animation: spin 0.8s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loader-text { font-size: 11px; font-weight: 700; color: var(--neon); letter-spacing: 2px; text-transform: uppercase; }
-
-        .photo-actions { padding: 20px 20px 24px; display: flex; flex-direction: column; gap: 10px; position: relative; z-index: 2; }
-        .btn {
-            display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 16px 24px;
-            border-radius: var(--radius-md); font-family: var(--font-body); font-size: 13px; font-weight: 800;
-            letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; border: none; transition: var(--transition);
+        .qty-badge {
+            position: absolute; bottom: 8px; left: 8px; z-index: 3;
+            background: var(--blue); color: var(--bg-0);
+            font-family: var(--font-mono); font-weight: 800; font-size: 11px;
+            padding: 3px 10px; border-radius: 20px; letter-spacing: 0.5px;
+            display: none; box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
         }
-        .btn-primary { background: var(--neon); color: var(--bg-0); box-shadow: var(--neon-glow); }
-        .btn-primary:hover { transform: translateY(-2px); }
-        .btn-primary:disabled { background: var(--bg-4); color: var(--text-3); box-shadow: none; cursor: wait; }
-        .btn-secondary { background: transparent; border: 1px solid var(--border-2); color: var(--text-1); }
-        .btn-secondary:hover { border-color: var(--neon); color: var(--neon); background: var(--neon-dim); }
-        .status-msg { text-align: center; font-size: 11px; color: var(--text-3); font-weight: 600; min-height: 16px; }
-        .status-msg.success { color: var(--neon); }
-        .status-msg.error { color: var(--red); }
+        .grid-item.selected .qty-badge { display: block; }
+        .photo-num {
+            position: absolute; top: 8px; left: 8px; z-index: 3;
+            background: rgba(0, 0, 0, 0.75); color: var(--text-1);
+            font-family: var(--font-mono); font-weight: 700; font-size: 10px;
+            padding: 3px 8px; border-radius: 6px; backdrop-filter: blur(6px);
+        }
 
-        .info-footer { position: relative; z-index: 2; text-align: center; margin-top: 24px; font-size: 10px; color: var(--text-3); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
-        .info-footer .heart { color: var(--red); margin: 0 4px; }
+        /* ═══════════ BARRA FLUTUANTE DE IMPRESSÃO ═══════════ */
+        .print-bar {
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 500;
+            background: rgba(10, 10, 10, 0.96); border-top: 2px solid var(--neon);
+            padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+            backdrop-filter: blur(20px);
+            transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8), 0 -2px 20px rgba(57, 255, 20, 0.2);
+        }
+        .print-bar.active { transform: translateY(0); }
+        .print-bar-inner {
+            max-width: 720px; margin: 0 auto;
+            display: flex; align-items: center; gap: 16px;
+            flex-wrap: wrap;
+        }
+        .print-bar-summary { flex: 1; min-width: 140px; }
+        .print-bar-total {
+            font-family: var(--font-display); font-size: 22px; font-weight: 900;
+            color: var(--neon); line-height: 1; letter-spacing: 1px;
+        }
+        .print-bar-label { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800; margin-top: 4px; }
+        .btn-print {
+            background: var(--neon); color: var(--bg-0); border: none;
+            padding: 16px 28px; border-radius: var(--radius-md);
+            font-family: var(--font-body); font-size: 13px; font-weight: 900;
+            letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 10px;
+            box-shadow: var(--neon-glow); transition: var(--transition);
+        }
+        .btn-print:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(57, 255, 20, 0.6); }
+        .btn-print:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
-        .state-box { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; z-index: 2; position: relative; }
+        /* ═══════════ LIGHTBOX ═══════════ */
+        .lightbox {
+            position: fixed; inset: 0; z-index: 1000; background: rgba(0, 0, 0, 0.96);
+            display: none; align-items: center; justify-content: center; flex-direction: column;
+            padding: 20px; backdrop-filter: blur(20px);
+        }
+        .lightbox.active { display: flex; animation: lbIn 0.3s ease; }
+        @keyframes lbIn { from { opacity: 0; } to { opacity: 1; } }
+        .lightbox-img {
+            max-width: 92%; max-height: 60vh;
+            border: 2px solid var(--neon); border-radius: var(--radius-md);
+            box-shadow: 0 0 60px rgba(57, 255, 20, 0.3);
+            object-fit: contain;
+        }
+        .lightbox-close {
+            position: absolute; top: 20px; right: 20px;
+            width: 44px; height: 44px; border-radius: 50%;
+            background: rgba(10, 10, 10, 0.9); border: 1px solid var(--border-2);
+            color: var(--text-0); font-size: 18px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition-fast); z-index: 2;
+        }
+        .lightbox-close:hover { border-color: var(--red); color: var(--red); background: var(--red-dim); }
+
+        .lightbox-panel {
+            width: 100%; max-width: 420px; margin-top: 24px;
+            background: var(--bg-1); border: 1px solid var(--border-neon);
+            border-radius: var(--radius-lg); padding: 20px;
+            box-shadow: var(--shadow-lg);
+        }
+        .lb-title { font-family: var(--font-display); font-size: 15px; font-weight: 800; color: var(--neon); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 1px; text-align: center; }
+        .qty-stepper { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 16px; }
+        .qty-btn {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: transparent; border: 2px solid var(--border-2);
+            color: var(--text-0); font-size: 20px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition-fast);
+        }
+        .qty-btn:hover { border-color: var(--neon); color: var(--neon); background: var(--neon-dim); }
+        .qty-value {
+            font-family: var(--font-mono); font-size: 44px; font-weight: 800;
+            color: var(--neon); min-width: 80px; text-align: center;
+            text-shadow: 0 0 20px rgba(57, 255, 20, 0.5);
+        }
+        .btn-primary-full {
+            width: 100%; padding: 16px; border-radius: var(--radius-md);
+            background: var(--neon); color: var(--bg-0); border: none;
+            font-family: var(--font-body); font-size: 13px; font-weight: 900;
+            letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            transition: var(--transition);
+        }
+        .btn-primary-full:hover { box-shadow: var(--neon-glow); transform: translateY(-1px); }
+        .btn-outline-full {
+            width: 100%; padding: 14px; margin-top: 10px; border-radius: var(--radius-md);
+            background: transparent; border: 1px solid var(--border-2); color: var(--text-2);
+            font-family: var(--font-body); font-size: 12px; font-weight: 800;
+            letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
+            transition: var(--transition-fast);
+        }
+        .btn-outline-full:hover { border-color: var(--red); color: var(--red); background: var(--red-dim); }
+
+        /* ═══════════ MODAL DE CONFIRMAÇÃO ═══════════ */
+        .modal-overlay {
+            position: fixed; inset: 0; z-index: 1500;
+            background: rgba(0, 0, 0, 0.92); backdrop-filter: blur(16px);
+            display: none; align-items: center; justify-content: center; padding: 20px;
+        }
+        .modal-overlay.active { display: flex; animation: lbIn 0.3s ease; }
+        .modal-card {
+            width: 100%; max-width: 460px; background: var(--bg-1);
+            border: 1px solid var(--border-neon); border-radius: var(--radius-xl);
+            padding: 32px 24px; box-shadow: var(--shadow-lg), 0 0 60px rgba(57, 255, 20, 0.15);
+            position: relative; overflow: hidden; text-align: center;
+        }
+        .modal-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, transparent, var(--neon), transparent);
+            animation: scanLine 2s ease-in-out infinite;
+        }
+        @keyframes scanLine { 0%,100% { opacity: 0.3 } 50% { opacity: 1 } }
+
+        .modal-icon {
+            width: 72px; height: 72px; margin: 0 auto 20px;
+            background: var(--neon-dim); border: 2px solid var(--neon);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: var(--neon); font-size: 30px;
+            box-shadow: 0 0 30px rgba(57, 255, 20, 0.3);
+        }
+        .modal-title {
+            font-family: var(--font-display); font-size: 20px; font-weight: 900;
+            color: var(--neon); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;
+        }
+        .modal-sub { font-size: 12px; color: var(--text-2); margin-bottom: 24px; line-height: 1.5; }
+
+        .order-code-box {
+            background: var(--bg-0); border: 2px dashed var(--neon);
+            border-radius: var(--radius-md); padding: 20px; margin-bottom: 20px;
+            position: relative;
+        }
+        .order-code-label { font-size: 9px; color: var(--text-3); text-transform: uppercase; letter-spacing: 2px; font-weight: 800; margin-bottom: 6px; }
+        .order-code {
+            font-family: var(--font-mono); font-size: 32px; font-weight: 800;
+            color: var(--neon); letter-spacing: 4px;
+            text-shadow: 0 0 20px rgba(57, 255, 20, 0.5);
+        }
+        .order-details {
+            display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px;
+            text-align: left; font-size: 12px;
+        }
+        .order-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 0; border-bottom: 1px solid var(--border-1);
+        }
+        .order-row:last-child { border-bottom: none; }
+        .order-row-label { color: var(--text-3); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; font-size: 10px; }
+        .order-row-value { color: var(--text-0); font-weight: 700; font-family: var(--font-mono); }
+
+        /* ═══════════ TELAS DE ESTADO ═══════════ */
+        .state-box {
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            padding: 60px 20px; text-align: center; position: relative; z-index: 2;
+            width: 100%; max-width: 420px;
+        }
         .state-box.active { display: flex; }
         .state-box i { font-size: 56px; color: var(--red); margin-bottom: 20px; opacity: 0.8; }
+        .state-box.loading i { color: var(--neon); animation: pulseLoad 1.5s ease-in-out infinite; }
+        @keyframes pulseLoad { 0%,100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.1); } }
         .state-title { font-family: var(--font-display); font-size: 20px; font-weight: 800; margin-bottom: 8px; }
         .state-text { font-size: 12px; color: var(--text-2); line-height: 1.5; max-width: 320px; }
-        .state-box .btn { margin-top: 20px; }
+        .state-box .btn-mini { margin-top: 20px; }
+
+        /* ═══════════ TOAST ═══════════ */
+        .toast-container {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 3000; display: flex; flex-direction: column; gap: 10px;
+            width: calc(100% - 40px); max-width: 380px; pointer-events: none;
+        }
+        .toast {
+            position: relative; background: rgba(10, 10, 10, 0.96);
+            border: 1px solid var(--border-2); border-left: 3px solid var(--neon);
+            border-radius: var(--radius-md); padding: 14px 16px;
+            display: flex; align-items: center; gap: 12px;
+            box-shadow: var(--shadow-lg); pointer-events: auto;
+            animation: toastIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(16px);
+        }
+        .toast.error { border-left-color: var(--red); }
+        .toast.info { border-left-color: var(--blue); }
+        .toast.warning { border-left-color: var(--yellow); }
+        .toast-icon {
+            width: 30px; height: 30px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; flex-shrink: 0; background: var(--neon-dim); color: var(--neon);
+        }
+        .toast.error .toast-icon { background: var(--red-dim); color: var(--red); }
+        .toast.info .toast-icon { background: var(--blue-dim); color: var(--blue); }
+        .toast.warning .toast-icon { background: var(--yellow-dim); color: var(--yellow); }
+        .toast-title { font-size: 12px; font-weight: 800; margin-bottom: 3px; }
+        .toast-message { font-size: 11px; color: var(--text-2); line-height: 1.3; }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(-20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .toast.removing { animation: toastOut 0.3s ease forwards; }
+        @keyframes toastOut { to { opacity: 0; transform: translateY(-20px) scale(0.95); } }
+
+        .info-footer { position: relative; z-index: 2; text-align: center; margin-top: 40px; font-size: 10px; color: var(--text-3); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+        .info-footer .heart { color: var(--red); margin: 0 4px; }
     </style>
     <!-- ═══════════ ◀ FIM DO BLOCO DE ESTILOS (CSS) ═══════════ -->
 </head>
 <body>
 
     <!-- ═══════════ ▶ INÍCIO DO HTML DA PÁGINA ═══════════ -->
+
+    <!-- HEADER -->
     <div class="header" id="main-header">
         <h1 class="brand-title">PHOTO PRINT</h1>
-        <p class="brand-subtitle" id="subtitulo">Carregando Evento...</p>
+        <p class="brand-subtitle" id="subtitulo">Central de Impressão</p>
     </div>
 
-    <div class="photo-card" id="photo-card">
-        <div class="photo-wrapper">
-            <div class="photo-loader">
-                <div class="spin"></div>
-                <div class="loader-text">Carregando...</div>
-            </div>
+    <!-- TOOLBAR -->
+    <div class="toolbar" id="toolbar" style="display:none;">
+        <div class="toolbar-info">
+            <div class="toolbar-event" id="toolbar-event">—</div>
+            <div class="toolbar-count" id="toolbar-count">0 fotos disponíveis</div>
+        </div>
+        <div class="toolbar-actions">
+            <button class="btn-mini" onclick="selecionarTodas()" id="btn-select-all">
+                <i class="fas fa-check-square"></i> Todas
+            </button>
+            <button class="btn-mini danger" onclick="limparSelecao()">
+                <i class="fas fa-times"></i> Limpar
+            </button>
         </div>
     </div>
 
-    <div class="state-box" id="error-state">
+    <!-- GRADE DE FOTOS -->
+    <div class="grid-wrap" id="grid-wrap"></div>
+
+    <!-- TELAS DE ESTADO -->
+    <div class="state-box loading active" id="state-loading">
+        <i class="fas fa-circle-notch fa-spin"></i>
+        <h2 class="state-title">Carregando galeria</h2>
+        <p class="state-text">Buscando as fotos do evento...</p>
+    </div>
+
+    <div class="state-box" id="state-error">
         <i class="fas fa-exclamation-triangle"></i>
         <h2 class="state-title" id="error-title">Nenhuma foto encontrada</h2>
         <p class="state-text" id="error-text"></p>
-        <button class="btn btn-secondary" onclick="location.reload()"><i class="fas fa-sync-alt"></i> Tentar novamente</button>
+        <button class="btn-mini" onclick="location.reload()"><i class="fas fa-sync-alt"></i> Tentar novamente</button>
     </div>
 
     <div class="info-footer">
         Feito com <span class="heart">♥</span> por Photo Print &copy; 2026
     </div>
+
+    <!-- BARRA FLUTUANTE DE IMPRESSÃO -->
+    <div class="print-bar" id="print-bar">
+        <div class="print-bar-inner">
+            <div class="print-bar-summary">
+                <div class="print-bar-total" id="print-total">0</div>
+                <div class="print-bar-label" id="print-label">cópias selecionadas</div>
+            </div>
+            <button class="btn-print" id="btn-print" onclick="enviarPedido()" disabled>
+                <i class="fas fa-print"></i> Imprimir Agora
+            </button>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX -->
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close" onclick="fecharLightbox()"><i class="fas fa-times"></i></button>
+        <img class="lightbox-img" id="lightbox-img" src="" alt="Preview">
+        <div class="lightbox-panel">
+            <div class="lb-title">Quantas cópias desta foto?</div>
+            <div class="qty-stepper">
+                <button class="qty-btn" onclick="alterarQtd(-1)"><i class="fas fa-minus"></i></button>
+                <div class="qty-value" id="qty-value">0</div>
+                <button class="qty-btn" onclick="alterarQtd(1)"><i class="fas fa-plus"></i></button>
+            </div>
+            <button class="btn-primary-full" onclick="confirmarSelecao()">
+                <i class="fas fa-check"></i> Confirmar Seleção
+            </button>
+            <button class="btn-outline-full" onclick="fecharLightbox()">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONFIRMAÇÃO -->
+    <div class="modal-overlay" id="modal-confirm">
+        <div class="modal-card">
+            <div class="modal-icon"><i class="fas fa-check"></i></div>
+            <div class="modal-title">Pedido Enviado!</div>
+            <div class="modal-sub">Apresente este código no balcão para retirar suas fotos.</div>
+
+            <div class="order-code-box">
+                <div class="order-code-label">Código do Pedido</div>
+                <div class="order-code" id="order-code">-----</div>
+            </div>
+
+            <div class="order-details" id="order-details"></div>
+
+            <button class="btn-primary-full" onclick="fecharConfirmacao()">
+                <i class="fas fa-th-large"></i> Voltar à Galeria
+            </button>
+        </div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toast-container"></div>
+
     <!-- ═══════════ ◀ FIM DO HTML DA PÁGINA ═══════════ -->
 
     <!-- ═══════════ ▶ INÍCIO DO BLOCO DE SCRIPTS (JavaScript) ═══════════ -->
     <script>
+        /* ═══════════ CONFIGURAÇÕES ═══════════ */
         const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
-        const INTERVALO_ATUALIZACAO = 20000; // 20s — detecta troca de evento / novas fotos
+        const INTERVALO_ATUALIZACAO = 20000;
 
-        let fotoUrlAtual = "";
+        let eventoAtual = { id: "", nome: "", formato: "" };
         let listaFotosCache = [];
-        let eventoAtualId = "";
-        let nomeEventoCache = "";
-        let modoAtual = "grade";      // "grade" | "foto"
+        let selecao = {};      // { "key_da_foto": quantidade }
+        let fotoAberta = null; // key da foto no lightbox
         let timerAtualizacao = null;
 
-        const urlFoto = (key) => `${API_URL}/photo?key=${encodeURIComponent(key)}`;
         const el = (id) => document.getElementById(id);
+        const urlFoto = (key) => `${API_URL}/photo?key=${encodeURIComponent(key)}`;
 
-        /* ───────────────────────────────────────────────
-           ▶ INÍCIO: BUSCA DO EVENTO ATIVO + FOTOS
-           ─────────────────────────────────────────────── */
+        /* ═══════════ TOAST ═══════════ */
+        function mostrarToast(titulo, mensagem, tipo = 'success') {
+            const container = el('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${tipo}`;
+            const iconMap = { success: 'fa-check', error: 'fa-exclamation-triangle', info: 'fa-info-circle', warning: 'fa-exclamation' };
+            toast.innerHTML = `
+                <div class="toast-icon"><i class="fas ${iconMap[tipo] || 'fa-check'}"></i></div>
+                <div class="toast-content">
+                    <div class="toast-title">${titulo}</div>
+                    <div class="toast-message">${mensagem}</div>
+                </div>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('removing');
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+
+        /* ═══════════ BUSCA DE DADOS ═══════════ */
         async function buscarEventoAtivo() {
-            // 1) Rota nova do worker (retorna evento ativo + fotos de uma vez)
+            // Rota nova
             try {
                 const r = await fetch(`${API_URL}/fotos-ativas?t=${Date.now()}`, { cache: 'no-store' });
                 if (r.ok) {
@@ -198,17 +503,18 @@
                         ativo: !!d.ativo,
                         eventoId: String(d.eventoId || ""),
                         nome: d.evento || "",
+                        formato: d.formato || "",
                         fotos: Array.isArray(d.fotos) ? d.fotos : []
                     };
                 }
-            } catch (e) { /* cai no fallback */ }
+            } catch (e) {}
 
-            // 2) Fallback (worker antigo): get-all-states + list-photos
+            // Fallback
             const rc = await fetch(`${API_URL}/get-all-states?t=${Date.now()}`, { cache: 'no-store' });
             const dc = await rc.json();
             const cfg = dc && dc.config;
             if (!cfg || cfg.status !== "ONLINE" || !cfg.evento) {
-                return { ativo: false, eventoId: "", nome: "", fotos: [] };
+                return { ativo: false, eventoId: "", nome: "", formato: "", fotos: [] };
             }
             const rf = await fetch(`${API_URL}/list-photos?evento=${encodeURIComponent(cfg.evento)}`, { cache: 'no-store' });
             const fotos = await rf.json();
@@ -216,275 +522,291 @@
                 ativo: true,
                 eventoId: String(cfg.eventoId || ""),
                 nome: cfg.evento,
+                formato: cfg.formato || "",
                 fotos: Array.isArray(fotos) ? fotos : []
             };
         }
 
-        function ordenarFotos(fotos) {
+                function ordenarFotos(fotos) {
             return [...fotos].sort((a, b) => new Date(b.uploaded || 0) - new Date(a.uploaded || 0));
         }
-        /* ◀ FIM: BUSCA DO EVENTO ATIVO + FOTOS */
 
-        /* ───────────────────────────────────────────────
-           ▶ INÍCIO: INICIALIZAÇÃO
-           ─────────────────────────────────────────────── */
+        /* ═══════════ INICIALIZAÇÃO ═══════════ */
         window.addEventListener('load', init);
 
         async function init() {
             const p = new URLSearchParams(window.location.search);
             const fotoKey = p.get('key');
             const fotoId = p.get('id') || p.get('photoId');
-            const fotoDl = p.get('dl');
 
-            // Link direto de uma foto (QR Code do quiosque)
+            // Se veio de link direto (QR do quiosque) — já seleciona e abre
             if (fotoKey) {
-                el('subtitulo').innerText = 'Sua Foto Está Pronta';
-                carregarFotoUnica(`${API_URL}/photo?key=${encodeURIComponent(fotoKey)}&t=${Date.now()}`, fotoId, true);
-                return;
-            }
-            if (fotoDl) {
-                el('subtitulo').innerText = 'Sua Foto Está Pronta';
-                carregarFotoUnica(decodeURIComponent(fotoDl), fotoId, true);
+                await carregarGaleria(true);
+                if (listaFotosCache.length > 0) {
+                    const alvo = listaFotosCache.find(f => f.key === fotoKey) || listaFotosCache[0];
+                    selecao[alvo.key] = 1;
+                    atualizarSelecaoUI();
+                    abrirLightbox(alvo.key);
+                }
+                timerAtualizacao = setInterval(atualizarSilencioso, INTERVALO_ATUALIZACAO);
                 return;
             }
 
-            await carregarGaleriaDoEventoAtivo(true);
+            await carregarGaleria(true);
             timerAtualizacao = setInterval(atualizarSilencioso, INTERVALO_ATUALIZACAO);
         }
 
-        async function carregarGaleriaDoEventoAtivo(primeiraVez) {
+        async function carregarGaleria(primeiraVez) {
             try {
                 const d = await buscarEventoAtivo();
                 if (!d.ativo) {
                     mostrarErro('Nenhum evento ativo', 'Nenhum evento está ativo no painel no momento.');
                     return;
                 }
-                aplicarDados(d);
+                eventoAtual = { id: d.eventoId, nome: d.nome, formato: d.formato };
+                listaFotosCache = ordenarFotos(d.fotos);
+
                 if (listaFotosCache.length === 0) {
                     mostrarErro('Nenhuma foto encontrada',
-                        `O evento ativo ("${nomeEventoCache}") ainda não possui fotos registradas.`);
+                        `O evento ativo ("${eventoAtual.nome}") ainda não possui fotos registradas.`);
                     return;
                 }
-                esconderErro();
-                exibirGradeFotos();
+                esconderEstados();
+                renderizarGrade();
             } catch (e) {
                 mostrarErro('Sem conexão', 'Não foi possível conectar ao servidor.');
             }
         }
 
-        function aplicarDados(d) {
-            eventoAtualId = d.eventoId;
-            nomeEventoCache = d.nome;
-            listaFotosCache = ordenarFotos(d.fotos);
-            el('subtitulo').innerText = nomeEventoCache;
-        }
-
-        // Verifica se o evento ativo mudou ou se chegaram fotos novas
         async function atualizarSilencioso() {
-            if (modoAtual !== 'grade') return;
             try {
                 const d = await buscarEventoAtivo();
-                if (!d.ativo) {
-                    listaFotosCache = [];
-                    mostrarErro('Nenhum evento ativo', 'Nenhum evento está ativo no painel no momento.');
-                    return;
-                }
-                const mudouEvento = d.eventoId !== eventoAtualId;
+                if (!d.ativo) return;
+                const mudouEvento = d.eventoId !== eventoAtual.id;
                 const mudouQtd = d.fotos.length !== listaFotosCache.length;
                 if (mudouEvento || mudouQtd) {
-                    aplicarDados(d);
+                    eventoAtual = { id: d.eventoId, nome: d.nome, formato: d.formato };
+                    listaFotosCache = ordenarFotos(d.fotos);
+                    // limpa seleções de fotos que não existem mais
+                    const keysValidas = new Set(listaFotosCache.map(f => f.key));
+                    Object.keys(selecao).forEach(k => { if (!keysValidas.has(k)) delete selecao[k]; });
                     if (listaFotosCache.length === 0) {
                         mostrarErro('Nenhuma foto encontrada',
-                            `O evento ativo ("${nomeEventoCache}") ainda não possui fotos registradas.`);
-                    } else {
-                        esconderErro();
-                        exibirGradeFotos();
-                    }
-                }
-            } catch (e) { /* mantém a tela atual */ }
-        }
-        /* ◀ FIM: INICIALIZAÇÃO */
-
-        /* ───────────────────────────────────────────────
-           ▶ INÍCIO: GRADE DE FOTOS
-           ─────────────────────────────────────────────── */
-        async function exibirGradeFotos() {
-            modoAtual = 'grade';
-            // Veio de link direto e ainda não carregou a lista do evento
-            if (listaFotosCache.length === 0) {
-                await carregarGaleriaDoEventoAtivo(false);
-                if (!timerAtualizacao) timerAtualizacao = setInterval(atualizarSilencioso, INTERVALO_ATUALIZACAO);
-                return;
-            }
-
-            const card = el('photo-card');
-            card.style.display = '';
-            el('main-header').style.display = '';
-            el('subtitulo').innerText = nomeEventoCache;
-
-            card.innerHTML = `
-                <div class="grid-wrap">
-                    <h3 class="grid-title"><i class="fas fa-images"></i> Fotos do Evento (${listaFotosCache.length})</h3>
-                    <div class="photo-grid">
-                        ${listaFotosCache.map((f, i) => `
-                            <div class="grid-item" onclick="selecionarFotoDaGrade(${i})">
-                                <img src="${urlFoto(f.key)}" loading="lazy" alt="Foto ${i + 1}">
-                            </div>`).join('')}
-                    </div>
-                </div>`;
-        }
-
-        function selecionarFotoDaGrade(index) {
-            const f = listaFotosCache[index];
-            if (!f) return;
-            carregarFotoUnica(urlFoto(f.key), '', true);
-        }
-        /* ◀ FIM: GRADE DE FOTOS */
-
-        /* ───────────────────────────────────────────────
-           ▶ INÍCIO: FOTO ÚNICA (VISUALIZAR / BAIXAR / COMPARTILHAR)
-           ─────────────────────────────────────────────── */
-        function carregarFotoUnica(url, id, mostrarBotaoVoltar) {
-            modoAtual = 'foto';
-            const card = el('photo-card');
-            card.style.display = '';
-            el('main-header').style.display = '';
-
-            card.innerHTML = `
-                <div class="photo-wrapper">
-                    <div class="photo-badge" id="photo-badge" style="display:none"></div>
-                    ${mostrarBotaoVoltar ? `
-                        <button class="btn-voltar-grade" onclick="exibirGradeFotos()">
-                            <i class="fas fa-th"></i> Fotos do evento
-                        </button>` : ''}
-                    <div class="photo-loader" id="photo-loader">
-                        <div class="spin"></div>
-                        <div class="loader-text">Carregando Foto...</div>
-                    </div>
-                    <img id="main-photo" src="" alt="Foto do evento" style="opacity: 0;">
-                </div>
-                <div class="photo-actions">
-                    <button class="btn btn-primary" id="btn-download" onclick="baixarFoto()">
-                        <i class="fas fa-download"></i> Baixar Foto
-                    </button>
-                    <button class="btn btn-secondary" id="btn-compartilhar" onclick="compartilharFoto()">
-                        <i class="fas fa-share-alt"></i> Compartilhar
-                    </button>
-                    <div class="status-msg" id="status-msg"></div>
-                </div>`;
-
-            const img = el('main-photo');
-            const loader = el('photo-loader');
-            const badge = el('photo-badge');
-
-            fotoUrlAtual = url;
-
-            if (id) {
-                badge.innerText = `#${id}`;
-                badge.style.display = 'block';
-            }
-
-            img.onload = () => {
-                loader.classList.add('hidden');
-                img.style.opacity = '1';
-            };
-            img.onerror = () => {
-                loader.classList.add('hidden');
-                el('status-msg').innerText = '❌ Não foi possível carregar a imagem.';
-                el('status-msg').className = 'status-msg error';
-            };
-            img.src = url;
-        }
-
-        async function baixarFoto() {
-            const btn = el('btn-download');
-            const status = el('status-msg');
-            if (!fotoUrlAtual) return;
-
-            try {
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparando...';
-                status.innerText = "Preparando download...";
-                status.className = "status-msg";
-
-                const response = await fetch(fotoUrlAtual);
-                if (!response.ok) throw new Error('Erro na requisição');
-
-                const blob = await response.blob();
-                const blobUrl = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-                a.href = blobUrl;
-                a.download = `photoprint_${timestamp}.jpg`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(blobUrl);
-
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-check"></i> Baixada!';
-                status.innerText = "✅ Foto salva na sua galeria!";
-                status.className = "status-msg success";
-                setTimeout(() => { btn.innerHTML = '<i class="fas fa-download"></i> Baixar Foto'; }, 3000);
-            } catch (e) {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-download"></i> Baixar Foto';
-                status.innerText = "❌ Falha no download. Segure na imagem e escolha 'Salvar foto'.";
-                status.className = "status-msg error";
-            }
-        }
-
-        async function compartilharFoto() {
-            const status = el('status-msg');
-            if (!fotoUrlAtual) return;
-
-            if (navigator.share) {
-                try {
-                    const response = await fetch(fotoUrlAtual);
-                    const blob = await response.blob();
-                    const file = new File([blob], 'photoprint.jpg', { type: blob.type });
-                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        await navigator.share({ files: [file], title: 'PHOTO PRINT', text: 'Olha a foto do evento! 📸' });
-                        status.innerText = "✅ Compartilhado com sucesso!";
-                        status.className = "status-msg success";
+                            `O evento ativo ("${eventoAtual.nome}") ainda não possui fotos registradas.`);
                         return;
                     }
-                } catch (err) {
-                    if (err.name === 'AbortError') return;
+                    esconderEstados();
+                    renderizarGrade();
+                    atualizarSelecaoUI();
                 }
+            } catch (e) {}
+        }
+
+        /* ═══════════ RENDERIZAÇÃO DA GRADE ═══════════ */
+        function renderizarGrade() {
+            el('toolbar').style.display = 'flex';
+            el('toolbar-event').innerText = eventoAtual.nome;
+            el('toolbar-count').innerText = `${listaFotosCache.length} foto${listaFotosCache.length !== 1 ? 's' : ''} disponíve${listaFotosCache.length !== 1 ? 'is' : 'l'}`;
+
+            const wrap = el('grid-wrap');
+            wrap.innerHTML = `
+                <div class="photo-grid" id="photo-grid">
+                    ${listaFotosCache.map((f, i) => {
+                        const sel = selecao[f.key] > 0;
+                        const qtd = selecao[f.key] || 0;
+                        return `
+                            <div class="grid-item ${sel ? 'selected' : ''}" data-key="${f.key}" onclick="abrirLightbox('${f.key}')">
+                                <span class="photo-num">#${i + 1}</span>
+                                <div class="check-badge"><i class="fas fa-check"></i></div>
+                                <div class="qty-badge">${qtd}x</div>
+                                <img src="${urlFoto(f.key)}" loading="lazy" alt="Foto ${i + 1}">
+                            </div>`;
+                    }).join('')}
+                </div>`;
+        }
+
+        function atualizarSelecaoUI() {
+            document.querySelectorAll('.grid-item').forEach(item => {
+                const key = item.dataset.key;
+                const qtd = selecao[key] || 0;
+                item.classList.toggle('selected', qtd > 0);
+                const qtyBadge = item.querySelector('.qty-badge');
+                if (qtyBadge) qtyBadge.innerText = `${qtd}x`;
+            });
+
+            const totalCopias = Object.values(selecao).reduce((a, b) => a + b, 0);
+            const qtdFotos = Object.keys(selecao).length;
+
+            el('print-total').innerText = totalCopias;
+            el('print-label').innerText = totalCopias === 1 ? 'cópia selecionada' : 'cópias selecionadas';
+            el('btn-print').disabled = totalCopias === 0;
+            el('print-bar').classList.toggle('active', totalCopias > 0);
+        }
+
+        /* ═══════════ SELEÇÃO EM MASSA ═══════════ */
+        function selecionarTodas() {
+            if (listaFotosCache.length === 0) return;
+            listaFotosCache.forEach(f => {
+                if (!selecao[f.key]) selecao[f.key] = 1;
+            });
+            atualizarSelecaoUI();
+            mostrarToast('Todas selecionadas', `${listaFotosCache.length} fotos marcadas com 1 cópia.`, 'info');
+        }
+
+        function limparSelecao() {
+            selecao = {};
+            atualizarSelecaoUI();
+            mostrarToast('Seleção limpa', 'Nenhuma foto selecionada.', 'info');
+        }
+
+        /* ═══════════ LIGHTBOX ═══════════ */
+        function abrirLightbox(key) {
+            fotoAberta = key;
+            el('lightbox-img').src = urlFoto(key);
+            el('qty-value').innerText = selecao[key] || 0;
+            el('lightbox').classList.add('active');
+        }
+
+        function fecharLightbox() {
+            el('lightbox').classList.remove('active');
+            fotoAberta = null;
+        }
+
+        function alterarQtd(delta) {
+            if (!fotoAberta) return;
+            const atual = selecao[fotoAberta] || 0;
+            let novo = atual + delta;
+            if (novo < 0) novo = 0;
+            if (novo > 99) novo = 99;
+            el('qty-value').innerText = novo;
+        }
+
+        function confirmarSelecao() {
+            if (!fotoAberta) return;
+            const qtd = parseInt(el('qty-value').innerText, 10) || 0;
+            if (qtd === 0) {
+                delete selecao[fotoAberta];
+            } else {
+                selecao[fotoAberta] = qtd;
             }
+            atualizarSelecaoUI();
+            const nomeCurto = fotoAberta.split('/').pop().slice(0, 20);
+            mostrarToast(
+                qtd > 0 ? 'Foto adicionada' : 'Foto removida',
+                qtd > 0 ? `${qtd} cópia${qtd > 1 ? 's' : ''} — ${nomeCurto}...` : 'Foto removida do pedido.',
+                qtd > 0 ? 'success' : 'info'
+            );
+            fecharLightbox();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (el('lightbox').classList.contains('active')) fecharLightbox();
+                else if (el('modal-confirm').classList.contains('active')) fecharConfirmacao();
+            }
+        });
+
+        /* ═══════════ ENVIO DO PEDIDO ═══════════ */
+        async function enviarPedido() {
+            const totalCopias = Object.values(selecao).reduce((a, b) => a + b, 0);
+            if (totalCopias === 0) return;
+
+            const btn = el('btn-print');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+
+            // Monta payload: só key + quantidade (não envia imagem, worker já tem)
+            const itens = Object.entries(selecao)
+                .filter(([_, qtd]) => qtd > 0)
+                .map(([key, qtd]) => ({ key, qtd }));
+
+            const pedido = {
+                eventoId: eventoAtual.id,
+                eventoNome: eventoAtual.nome,
+                formato: eventoAtual.formato,
+                itens,
+                totalCopias,
+                criadoEm: new Date().toISOString()
+            };
+
             try {
-                await navigator.clipboard.writeText(window.location.href);
-                status.innerText = "🔗 Link copiado!";
-                status.className = "status-msg success";
+                const res = await fetch(`${API_URL}/criar-pedido`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(pedido)
+                });
+                if (!res.ok) throw new Error('Falha ao criar pedido');
+                const data = await res.json();
+                if (!data.success || !data.codigo) throw new Error('Resposta inválida');
+
+                mostrarConfirmacao(data.codigo, pedido);
+                selecao = {};
+                atualizarSelecaoUI();
             } catch (e) {
-                status.innerText = "Compartilhamento não disponível.";
-                status.className = "status-msg error";
+                mostrarToast('Erro ao enviar', 'Verifique sua conexão e tente novamente.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-print"></i> Imprimir Agora';
             }
         }
-        /* ◀ FIM: FOTO ÚNICA */
 
-        /* ───────────────────────────────────────────────
-           ▶ INÍCIO: TELAS DE ERRO / ESTADO VAZIO
-           ─────────────────────────────────────────────── */
+        function mostrarConfirmacao(codigo, pedido) {
+            el('order-code').innerText = codigo;
+
+            const qtdFotos = pedido.itens.length;
+            el('order-details').innerHTML = `
+                <div class="order-row">
+                    <span class="order-row-label">Evento</span>
+                    <span class="order-row-value">${pedido.eventoNome}</span>
+                </div>
+                <div class="order-row">
+                    <span class="order-row-label">Fotos selecionadas</span>
+                    <span class="order-row-value">${qtdFotos}</span>
+                </div>
+                <div class="order-row">
+                    <span class="order-row-label">Total de cópias</span>
+                    <span class="order-row-value">${pedido.totalCopias}</span>
+                </div>
+                <div class="order-row">
+                    <span class="order-row-label">Formato</span>
+                    <span class="order-row-value">${pedido.formato || '—'}</span>
+                </div>
+            `;
+
+            el('modal-confirm').classList.add('active');
+        }
+
+        function fecharConfirmacao() {
+            el('modal-confirm').classList.remove('active');
+        }
+
+        /* ═══════════ CONTROLE DE ESTADOS ═══════════ */
         function mostrarErro(titulo, mensagem) {
-            el('photo-card').style.display = 'none';
-            el('main-header').style.display = 'none';
+            el('state-loading').classList.remove('active');
+            el('grid-wrap').innerHTML = '';
+            el('toolbar').style.display = 'none';
+            el('print-bar').classList.remove('active');
             el('error-title').innerText = titulo;
             el('error-text').innerText = mensagem;
-            el('error-state').classList.add('active');
+            el('state-error').classList.add('active');
         }
 
-        function esconderErro() {
-            el('error-state').classList.remove('active');
-            el('photo-card').style.display = '';
-            el('main-header').style.display = '';
+        function esconderEstados() {
+            el('state-loading').classList.remove('active');
+            el('state-error').classList.remove('active');
         }
-        /* ◀ FIM: TELAS DE ERRO / ESTADO VAZIO */
+
+        window.addEventListener('beforeunload', () => {
+            if (timerAtualizacao) clearInterval(timerAtualizacao);
+        });
+
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) atualizarSilencioso();
+        });
     </script>
     <!-- ═══════════ ◀ FIM DO BLOCO DE SCRIPTS (JavaScript) ═══════════ -->
 </body>
 </html>
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- ◀◀◀ FIM DO ARQUIVO galeria.html — GALERIA CLIENTE v3.0 ▶▶▶         -->
+<!-- ◀◀◀ FIM DO ARQUIVO galeria.html — CENTRAL DE IMPRESSÃO v4.0 ▶▶▶    -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->

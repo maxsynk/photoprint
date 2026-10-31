@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#000000">
-    <title>PHOTO CLOUD — Quiosque Pro v2.0</title>
+    <title>PHOTO CLOUD — Quiosque Pro v2.1</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -746,117 +746,68 @@
             }
         }
 
+                /* ═══════════ SINCRONIZAÇÃO CORRIGIDA ═══════════ */
         async function syncDados() {
             try {
-                const r1 = await fetch(`${API_URL}/status?t=${Date.now()}`);
-                const config = await r1.json();
-                if (config.evento !== eventoAtivo) {
-                    eventoAtivo = config.evento;
-                    document.getElementById('ev-titulo').innerText = eventoAtivo ? eventoAtivo.toUpperCase() : "GERAL";
+                // ✅ CORREÇÃO: usa /get-all-states (mesmo endpoint que funciona no painel/celular)
+                const r1 = await fetch(`${API_URL}/get-all-states?t=${Date.now()}`);
+                const data = await r1.json();
+                
+                // ✅ CORREÇÃO: extrai o evento de data.config.evento
+                const config = data.config || data;
+                const eventoRecebido = config.evento || "";
+                const novoEvento = (eventoRecebido && eventoRecebido !== 'Geral') ? eventoRecebido : "";
+
+                // Atualiza título se mudou
+                if (novoEvento !== eventoAtivo) {
+                    eventoAtivo = novoEvento;
+                    const titulo = document.getElementById('ev-titulo');
+                    if (titulo) {
+                        titulo.innerText = eventoAtivo ? eventoAtivo.toUpperCase() : "AGUARDANDO EVENTO";
+                    }
+                    // ✅ Reset da lista quando troca de evento
+                    todasFotos = [];
+                }
+
+                // Busca fotos do evento
+                let url = `${API_URL}/list-photos?t=${Date.now()}`;
+                if (eventoAtivo) {
+                    url += `&evento=${encodeURIComponent(eventoAtivo)}`;
                 }
                 
-                let url = `${API_URL}/list-photos?t=${Date.now()}`;
-                if (eventoAtivo) url += `&evento=${encodeURIComponent(eventoAtivo)}`;
                 const r2 = await fetch(url);
                 const fotos = await r2.json();
+                
+                if (!Array.isArray(fotos)) {
+                    console.warn('Resposta inesperada de list-photos:', fotos);
+                    return;
+                }
+                
                 const invertidas = fotos.reverse();
                 
-                if (JSON.stringify(invertidas) !== JSON.stringify(todasFotos)) {
+                // Só re-renderiza se realmente mudou
+                if (JSON.stringify(invertidas.map(f => f.key)) !== JSON.stringify(todasFotos.map(f => f.key))) {
                     todasFotos = invertidas;
                     renderizarGaleria();
                 }
             } catch (e) {
-                console.error('Erro sync:', e);
+                console.error('❌ Erro syncDados:', e);
             }
         }
 
-        function renderizarGaleria() {
-            const container = document.getElementById('galeria');
-            const termo = document.getElementById('input-busca').value;
-            const comId = todasFotos.map((f, i) => ({ ...f, displayId: todasFotos.length - i }));
-            const filtradas = termo === "" ? comId : comId.filter(f => f.displayId.toString().includes(termo));
-            
-            if (filtradas.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-galeria">
-                        <i class="fas fa-image"></i>
-                        <h3>Nenhuma foto encontrada</h3>
-                        <p>As fotos aparecerão aqui conforme forem capturadas</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = filtradas.map(f => {
-                const imgUrl = `${API_URL}/photo?key=${encodeURIComponent(f.key)}&t=${Date.now()}`;
-                return `<div class="foto-item" onclick="abrirModal('${f.key.replace(/'/g, "\\'")}', '${f.displayId}')">
-                    <div class="foto-id">#${f.displayId}</div>
-                    <img src="${imgUrl}" loading="lazy" alt="Foto ${f.displayId}">
-                </div>`;
-            }).join('');
-        }
-
-        function resetInactivityTimer() {
-            clearTimeout(inactivityTimer);
-            inactivityTimer = setTimeout(() => {
-                if (todasFotos.length > 0 && !document.getElementById('modal').classList.contains('active')) {
-                    document.getElementById('screensaver').classList.add('active');
-                    runSlideshow();
-                    clearInterval(ssInterval);
-                    ssInterval = setInterval(runSlideshow, 5000);
-                }
-            }, 60000);
-        }
-
-        function runSlideshow() {
-            if (todasFotos.length === 0) return;
-            const f = todasFotos[Math.floor(Math.random() * todasFotos.length)];
-            const img = document.getElementById('ss-img');
-            img.style.opacity = '0';
-            setTimeout(() => {
-                img.src = `${API_URL}/photo?key=${encodeURIComponent(f.key)}&t=${Date.now()}`;
-                img.style.opacity = '1';
-            }, 300);
-        }
-
-        function stopScreensaver() {
-            document.getElementById('screensaver').classList.remove('active');
-            clearInterval(ssInterval);
-            resetInactivityTimer();
-        }
-
-        function addNum(n) {
-            const inp = document.getElementById('input-busca');
-            if (inp.value.length < 4) inp.value += n;
-            renderizarGaleria();
-        }
-
-        function limparBusca() {
-            document.getElementById('input-busca').value = "";
-            renderizarGaleria();
-        }
-
-        function toggleNumpad(show) {
-            document.getElementById('numpad-overlay').classList.toggle('active', show);
-            if (show) {
-                document.getElementById('input-busca').value = "";
-                renderizarGaleria();
-            }
-        }
-
+        /* ═══════════ BUSCA POR ID (SEM ERRO DE SINTAXE) ═══════════ */
         function buscarEAbrirFoto() {
             const termo = document.getElementById('input-busca').value;
             if (!termo) return;
+
             const comId = todasFotos.map((f, i) => ({ ...f, displayId: todasFotos.length - i }));
             const achada = comId.find(f => f.displayId.toString() === termo);
+
             if (achada) {
-                toggleNumpad(false);
-                abrirModal(achada.key, achada.displayId
-                        if (achada) {
                 toggleNumpad(false);
                 abrirModal(achada.key, achada.displayId);
             } else {
-                // Substituído alert() por feedback visual
+                // Feedback visual de erro (sem alert)
                 const input = document.getElementById('input-busca');
                 input.style.borderColor = 'var(--red)';
                 input.style.color = 'var(--red)';

@@ -570,9 +570,9 @@
         }
 
         /* SINCRONIZAÇÃO DE DADOS (CORRIGIDO) */
-        async function syncDados() {
+                async function syncDados() {
             try {
-                // Pega o evento ativo
+                // 1. Pega o evento ativo
                 const r1 = await fetch(`${API_URL}/get-all-states?t=${Date.now()}`);
                 const data = await r1.json();
                 const config = data.config || data;
@@ -581,27 +581,46 @@
                 if (novoEvento !== eventoAtivo) {
                     eventoAtivo = novoEvento;
                     document.getElementById('ev-titulo').innerText = eventoAtivo ? eventoAtivo.toUpperCase() : "AGUARDANDO EVENTO";
-                    todasFotos = []; // Reseta ao trocar de evento
+                    todasFotos = [];
                 }
 
-                // Busca as fotos
+                // 2. Busca as fotos
                 let url = `${API_URL}/list-photos?t=${Date.now()}`;
                 if (eventoAtivo) url += `&evento=${encodeURIComponent(eventoAtivo)}`;
                 
                 const r2 = await fetch(url);
-                let resposta = await r2.json();
+                const textoBruto = await r2.text(); // Pega o texto puro para não quebrar se não for JSON
                 
-                // Trata a resposta (pode vir array direto ou objeto com .fotos)
-                let fotos = Array.isArray(resposta) ? resposta : (resposta.fotos || resposta.data || []);
-                
+                let fotos = [];
+                try {
+                    const json = JSON.parse(textoBruto);
+                    console.log("🔍 [DEBUG] O que a API mandou:", json);
+                    
+                    // Tenta achar o array de fotos em qualquer lugar da resposta
+                    if (Array.isArray(json)) {
+                        fotos = json;
+                    } else if (json.fotos && Array.isArray(json.fotos)) {
+                        fotos = json.fotos;
+                    } else if (json.data && Array.isArray(json.data)) {
+                        fotos = json.data;
+                    } else if (json.sucesso && json.dados) {
+                        fotos = json.dados;
+                    }
+                } catch(e) {
+                    console.error("❌ [DEBUG] A API não retornou um JSON válido:", textoBruto);
+                    return;
+                }
+
+                console.log(`📸 [DEBUG] Fotos encontradas para o evento "${eventoAtivo}":`, fotos.length);
+
                 const invertidas = fotos.reverse();
                 
-                if (JSON.stringify(invertidas.map(f => f.key || f.id)) !== JSON.stringify(todasFotos.map(f => f.key || f.id))) {
+                if (JSON.stringify(invertidas.map(f => f.key || f.id || f.nome)) !== JSON.stringify(todasFotos.map(f => f.key || f.id || f.nome))) {
                     todasFotos = invertidas;
                     renderizarGaleria();
                 }
             } catch (e) {
-                console.error('Erro syncDados:', e);
+                console.error('❌ Erro fatal no syncDados:', e);
             }
         }
 

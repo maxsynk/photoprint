@@ -316,6 +316,24 @@
             <button class="ctrl-btn" onclick="limparFilaManual()">
                 <i class="fa-solid fa-broom"></i> Limpar Fila <span class="badge-qty" id="fila-count">0</span>
             </button>
+        <div class="controls">
+            <button class="ctrl-btn pause" id="btn-pause" onclick="togglePausa()">
+                <i class="fa-solid fa-pause"></i> <span id="btn-pause-text">Pausar</span>
+            </button>
+            <button class="ctrl-btn" onclick="limparFilaManual()">
+                <i class="fa-solid fa-broom"></i> Limpar Fila <span class="badge-qty" id="fila-count">0</span>
+            </button>
+            
+            <!-- ⬇️ NOVO BOTÃO AQUI ⬇️ -->
+            <button class="ctrl-btn" onclick="forcarImpressao()" style="border-color: var(--gold); color: var(--gold);">
+                <i class="fa-solid fa-print"></i> Forçar Impressão
+            </button>
+            <!-- ⬆️ FIM DO NOVO BOTÃO ⬆️ -->
+
+            <button class="ctrl-btn" id="btn-selecao" onclick="toggleModoSelecao()">
+                <i class="fa-solid fa-check-square"></i> <span id="btn-selecao-text">Selecionar</span>
+            </button>
+        </div>
             <button class="ctrl-btn" id="btn-selecao" onclick="toggleModoSelecao()">
                 <i class="fa-solid fa-check-square"></i> <span id="btn-selecao-text">Selecionar</span>
             </button>
@@ -558,7 +576,41 @@
             atualizarUIFolha();
             processarFilaImpressao();
         }
+        
+/* ════════════════ LOCALIZAÇÃO: Linha ~580 (JS) ════════════════ */
 
+        function fecharFolha() {
+            if (sheetBuffer.length === 0) return;
+            const cap = getCapacidade();
+            const slots = sheetBuffer.splice(0, cap.slots);
+            
+            sheetQueue.push({ slots, layout: cap.layout, descricao: `Folha ${traduzirFormato(formatoAtual)}` });
+            
+            mostrarToast('Folha Completa!', 'A foto foi enviada para a impressora.', 'success');
+            addLog(`📄 Folha fechada (${slots.length} slots). Enviando para impressão...`, 'success');
+            
+            atualizarUIFolha();
+            processarFilaImpressao();
+        }
+
+        // ⬇️ NOVA FUNÇÃO AQUI ⬇️
+        function forcarImpressao() {
+            if (sheetBuffer.length === 0) {
+                return mostrarToast('Fila Vazia', 'Não há fotos na folha atual para imprimir.', 'error');
+            }
+            const cap = getCapacidade();
+            const slots = sheetBuffer.splice(0); // Pega tudo o que tem
+            
+            sheetQueue.push({ slots, layout: cap.layout, descricao: `Folha Parcial (${slots.length})` });
+            
+            mostrarToast('Impressão Forçada', `Enviando ${slots.length} foto(s) para a impressora.`, 'success');
+            addLog(`🖨️ Impressão forçada: ${slots.length} slots`, 'warn');
+            
+            atualizarUIFolha();
+            processarFilaImpressao();
+        }
+        // ⬆️ FIM DA NOVA FUNÇÃO ⬆️
+        
         function removerDoBuffer(index) {
             sheetBuffer.splice(index, 1);
             atualizarUIFolha();

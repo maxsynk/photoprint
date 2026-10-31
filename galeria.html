@@ -209,46 +209,110 @@
         Feito com <span class="heart">♥</span> por Photo Print &copy; 2026
     </div>
 
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- INÍCIO DA ATUALIZAÇÃO DO SCRIPT EM galeria.html                    -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
     <script>
         const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
         let fotoUrlAtual = "";
 
         window.addEventListener('load', init);
 
-        function init() {
-            // Pega a URL completa da barra de endereços
+        async function init() {
             const urlParams = new URLSearchParams(window.location.search);
             const fotoKey = urlParams.get('key');
             const fotoId = urlParams.get('id') || urlParams.get('photoId');
-
-            console.log('[GALERIA] Parâmetros recebidos:', { key: fotoKey, id: fotoId });
-
-            if (fotoKey) {
-                // ✅ A MÁGICA ACONTECE AQUI:
-                // Nós NÃO decodificamos a key (não usamos decodeURIComponent).
-                // Nós enviamos a key exatamente como veio na URL (com %2F),
-                // pois a API espera a string codificada.
-                
-                // Limpa qualquer encode duplo que possa ter vindo por engano
-                const keyLimpa = fotoKey; 
-                
-                const url = `${API_URL}/photo?key=${keyLimpa}&t=${Date.now()}`;
-                console.log('[GALERIA] URL final para carregar a imagem:', url);
-                
-                carregarFoto(url, fotoId);
-                return;
-            }
-
             const fotoUrl = urlParams.get('dl');
-            if (fotoUrl) {
-                carregarFoto(decodeURIComponent(fotoUrl), fotoId);
+
+            console.log('[GALERIA] Parâmetros recebidos:', { key: fotoKey, id: fotoId, dl: fotoUrl });
+
+            // 1. Se passou uma key específica via QR Code
+            if (fotoKey) {
+                const url = `${API_URL}/photo?key=${fotoKey}&t=${Date.now()}`;
+                carregarFotoUnica(url, fotoId);
                 return;
             }
 
-            mostrarErro('Nenhuma foto especificada. Use o link recebido no quiosque.');
+            // 2. Se passou uma URL direta de download
+            if (fotoUrl) {
+                carregarFotoUnica(decodeURIComponent(fotoUrl), fotoId);
+                return;
+            }
+
+            // 3. Caso contrário, busca as fotos do evento ATIVO no painel
+            try {
+                const respConfig = await fetch(`${API_URL}/get-all-states`);
+                const dataConfig = await respConfig.json();
+                
+                if (dataConfig && dataConfig.config && dataConfig.config.eventoId) {
+                    const eventoIdAtivo = dataConfig.config.eventoId;
+                    document.querySelector('.brand-subtitle').innerText = dataConfig.config.evento || "Evento Ativo";
+                    await carregarFotosDoEventoAtivo(eventoIdAtivo);
+                } else {
+                    mostrarErro('Nenhum evento ativo no momento ou nenhuma foto especificada.');
+                }
+            } catch (e) {
+                console.error('[GALERIA] Erro ao buscar evento ativo:', e);
+                mostrarErro('Não foi possível carregar o evento ativo.');
+            }
         }
 
-        function carregarFoto(url, id) {
+        async function carregarFotosDoEventoAtivo(eventoId) {
+            const loader = document.getElementById('photo-loader');
+            const card = document.getElementById('photo-card');
+            
+            try {
+                const resp = await fetch(`${API_URL}/fotos?eventoId=${eventoId}`);
+                const data = await resp.json();
+
+                loader.classList.add('hidden');
+
+                if (data.success && data.fotos && data.fotos.length > 0) {
+                    // Transforma o card principal em um container de grade de fotos do evento
+                    card.innerHTML = `
+                        <div style="padding: 20px;">
+                            <h3 style="font-size: 14px; margin-bottom: 14px; color: var(--neon); text-transform: uppercase; font-family: var(--font-mono);">📸 Fotos do Evento</h3>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; max-height: 400px; overflow-y: auto;" id="grid-fotos-evento">
+                                ${data.fotos.map(f => `
+                                    <div onclick="carregarFotoUnica('${f.url}', '${f.id}')" style="cursor: pointer; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-2); aspect-ratio: 1; background: #111; display: flex; align-items: center; justify-content: center;">
+                                        <img src="${f.url}" style="width: 100%; height: 100%; object-fit: cover;" alt="Foto ${f.id}">
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    mostrarErro('Nenhuma foto encontrada para este evento ainda.');
+                }
+            } catch (e) {
+                loader.classList.add('hidden');
+                mostrarErro('Erro ao buscar as fotos do evento.');
+            }
+        }
+
+        function carregarFotoUnica(url, id) {
+            const card = document.getElementById('photo-card');
+            // Restaura o layout padrão de foto única caso tenha sido alterado para a grade
+            card.innerHTML = `
+                <div class="photo-wrapper">
+                    <div class="photo-badge" id="photo-badge">${id ? '#' + id : '#----'}</div>
+                    <div class="photo-loader" id="photo-loader">
+                        <div class="spin"></div>
+                        <div class="loader-text">Carregando Foto...</div>
+                    </div>
+                    <img id="main-photo" src="" alt="Foto do evento" style="opacity: 0;">
+                </div>
+                <div class="photo-actions">
+                    <button class="btn btn-primary" id="btn-download" onclick="baixarFoto()">
+                        <i class="fas fa-download"></i> Baixar Foto
+                    </button>
+                    <button class="btn btn-secondary" id="btn-compartilhar" onclick="compartilharFoto()">
+                        <i class="fas fa-share-alt"></i> Compartilhar
+                    </button>
+                    <div class="status-msg" id="status-msg"></div>
+                </div>
+            `;
+
             const img = document.getElementById('main-photo');
             const loader = document.getElementById('photo-loader');
             const badge = document.getElementById('photo-badge');
@@ -263,16 +327,14 @@
             }
 
             img.onload = () => {
-                console.log('✅ Foto carregada com sucesso!');
                 loader.classList.add('hidden');
                 img.style.transition = 'opacity 0.4s ease';
                 img.style.opacity = '1';
             };
 
             img.onerror = () => {
-                console.error('❌ Erro ao carregar imagem:', url);
                 loader.classList.add('hidden');
-                mostrarErro('Não foi possível carregar a imagem. O link do QR Code pode estar expirado.');
+                mostrarErro('Não foi possível carregar a imagem.');
             };
 
             img.src = url;
@@ -348,10 +410,10 @@
 
             try {
                 await navigator.clipboard.writeText(window.location.href);
-                status.innerText = "🔗 Link copiado! Cole no WhatsApp.";
+                status.innerText = "🔗 Link copiado!";
                 status.className = "status-msg success";
             } catch (e) {
-                status.innerText = "Compartilhamento não disponível neste navegador.";
+                status.innerText = "Compartilhamento não disponível.";
                 status.className = "status-msg error";
             }
         }
@@ -364,7 +426,10 @@
                 document.getElementById('error-text').innerText = mensagem;
             }
         }
-
+    </script>
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- FIM DA ATUALIZAÇÃO DO SCRIPT Em galeria.html                       -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
         let lastTouchEnd = 0;
         document.addEventListener('touchend', (e) => {
             const now = Date.now();

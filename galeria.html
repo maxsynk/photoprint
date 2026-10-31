@@ -209,7 +209,7 @@
         Feito com <span class="heart">♥</span> por Photo Print &copy; 2026
     </div>
 
-  <!-- ═══════════════════════════════════════════════════════════════════ -->
+   <!-- ═══════════════════════════════════════════════════════════════════ -->
 <!-- INÍCIO DO SCRIPT CORRIGIDO — galeria.html                          -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 <script>
@@ -238,17 +238,17 @@
         }
 
         try {
+            // Busca o estado atual do painel para saber o evento ativo
             const respConfig = await fetch(`${API_URL}/get-all-states`);
             const dataConfig = await respConfig.json();
             
-            if (dataConfig && dataConfig.config && dataConfig.config.eventoId) {
-                const eventoIdAtivo = dataConfig.config.eventoId;
-                const nomeEvento = dataConfig.config.evento || "Evento Ativo";
-                
+            if (dataConfig && dataConfig.config && dataConfig.config.evento) {
+                const nomeEventoAtivo = dataConfig.config.evento;
                 const subtitleEl = document.querySelector('.brand-subtitle');
-                if (subtitleEl) subtitleEl.innerText = nomeEvento;
+                if (subtitleEl) subtitleEl.innerText = nomeEventoAtivo;
 
-                await carregarFotosDoEventoAtivo(eventoIdAtivo);
+                // Puxa as fotos usando a rota oficial do seu Worker: /list-photos?evento=...
+                await carregarFotosDoEventoAtivo(nomeEventoAtivo);
             } else {
                 mostrarErro('Nenhum evento ativo no momento. Escaneie o QR Code no quiosque.');
             }
@@ -258,30 +258,32 @@
         }
     }
 
-    async function carregarFotosDoEventoAtivo(eventoId) {
+    async function carregarFotosDoEventoAtivo(nomeEvento) {
         const loader = document.getElementById('photo-loader');
         const card = document.getElementById('photo-card');
         
         try {
-            const resp = await fetch(`${API_URL}/evento/${eventoId}/fotos`);
-            const data = await resp.json();
+            const resp = await fetch(`${API_URL}/list-photos?evento=${encodeURIComponent(nomeEvento)}`);
+            const fotos = await resp.json();
 
             if (loader) loader.classList.add('hidden');
 
-            if (data.success && data.fotos && data.fotos.length > 0) {
+            if (Array.isArray(fotos) && fotos.length > 0) {
                 let htmlGrid = '<div style="padding: 20px;"><h3 style="font-size: 14px; margin-bottom: 14px; color: var(--neon); text-transform: uppercase; font-family: var(--font-mono);">📸 Fotos do Evento</h3><div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; max-height: 400px; overflow-y: auto;">';
                 
-                data.fotos.forEach(f => {
-                    htmlGrid += `<div onclick="carregarFotoUnica('${f.url}', '${f.id}')" style="cursor: pointer; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-2); aspect-ratio: 1; background: #111; display: flex; align-items: center; justify-content: center;"><img src="${f.url}" style="width: 100%; height: 100%; object-fit: cover;" alt="Foto"></div>`;
+                fotos.forEach(f => {
+                    // Cada objeto retornado pelo /list-photos tem a propriedade 'key'
+                    const viewUrl = `${API_URL}/photo?key=${encodeURIComponent(f.key)}`;
+                    htmlGrid += `<div onclick="carregarFotoUnica('${viewUrl}', '')" style="cursor: pointer; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-2); aspect-ratio: 1; background: #111; display: flex; align-items: center; justify-content: center;"><img src="${viewUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="Foto"></div>`;
                 });
                 
                 htmlGrid += '</div></div>';
                 card.innerHTML = htmlGrid;
             } else {
-                card.innerHTML = '<div style="padding: 35px 20px; text-align: center;"><i class="fas fa-camera-retro" style="font-size: 40px; color: var(--neon); margin-bottom: 14px; opacity: 0.8;"></i><h3 style="font-size: 16px; color: #fff; margin-bottom: 8px;">Painel Sincronizado</h3><p style="font-size: 11px; color: var(--text-2); line-height: 1.5;">O evento ativo foi identificado (ID: ' + eventoId + '), mas ainda não há fotos registradas para ele.</p></div>';
+                card.innerHTML = '<div style="padding: 35px 20px; text-align: center;"><i class="fas fa-camera-retro" style="font-size: 40px; color: var(--neon); margin-bottom: 14px; opacity: 0.8;"></i><h3 style="font-size: 16px; color: #fff; margin-bottom: 8px;">Painel Sincronizado</h3><p style="font-size: 11px; color: var(--text-2); line-height: 1.5;">O evento ativo ("' + nomeEvento + '") foi identificado, mas ainda não há fotos registradas para ele.</p></div>';
             }
         } catch (e) {
-            card.innerHTML = '<div style="padding: 35px 20px; text-align: center;"><i class="fas fa-signal" style="font-size: 40px; color: var(--neon); margin-bottom: 14px; opacity: 0.8;"></i><h3 style="font-size: 16px; color: #fff; margin-bottom: 8px;">Conectado ao Evento Ativo</h3><p style="font-size: 11px; color: var(--text-2); line-height: 1.5;">Painel vinculado ao ID ' + eventoId + '. Pronto para exibir as fotos assim que capturadas.</p></div>';
+            card.innerHTML = '<div style="padding: 35px 20px; text-align: center;"><i class="fas fa-signal" style="font-size: 40px; color: var(--neon); margin-bottom: 14px; opacity: 0.8;"></i><h3 style="font-size: 16px; color: #fff; margin-bottom: 8px;">Conectado ao Evento Ativo</h3><p style="font-size: 11px; color: var(--text-2); line-height: 1.5;">Vinculado ao evento "' + nomeEvento + '". Pronto para exibir as fotos assim que capturadas.</p></div>';
         }
     }
 
@@ -435,7 +437,7 @@
 </script>
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 <!-- FIM DO SCRIPT CORRIGIDO — galeria.html                             -->
-<!-- ═══════════════════════════════════════════════════════════════════ --> 
+<!-- ═══════════════════════════════════════════════════════════════════ -->
 
         function carregarFotoUnica(url, id) {
             const card = document.getElementById('photo-card');

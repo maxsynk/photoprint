@@ -1,5 +1,5 @@
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- ▶▶▶ INÍCIO DO ARQUIVO galeria.html — CENTRAL v6.0 PROFISSIONAL ◀◀◀ -->
+<!-- ▶▶▶ INÍCIO DO ARQUIVO galeria.html — CENTRAL v7.0 (A6 AUTO) ◀◀◀    -->
 <!-- (SUBSTITUA O ARQUIVO INTEIRO POR ESTE)                              -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 <!DOCTYPE html>
@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT — Central de Impressão v6.0</title>
+    <title>PHOTO PRINT — Central de Impressão v7.0</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -77,7 +77,6 @@
                 var(--bg-0);
         }
 
-        /* Grid sutil de fundo */
         body::before {
             content: '';
             position: fixed;
@@ -98,13 +97,19 @@
         ::-webkit-scrollbar-thumb:hover { background: var(--accent-dim); }
 
         /* ═══════════════════════════════════════════════════════════════
-           ÁREA DE IMPRESSÃO (@media print)
+           ÁREA DE IMPRESSÃO (@media print) — A6
            ═══════════════════════════════════════════════════════════════ */
         #print-area { display: none; }
 
         @media print {
-            @page { margin: 0; size: auto; }
-            body * { visibility: hidden !important; display: none !important; }
+            @page {
+                size: A6 portrait;
+                margin: 0;
+            }
+            body * {
+                visibility: hidden !important;
+                display: none !important;
+            }
             #print-area, #print-area * {
                 visibility: visible !important;
                 display: block !important;
@@ -126,17 +131,38 @@
                 align-items: center !important;
                 width: 100% !important;
                 height: 100% !important;
-                gap: 4mm !important;
-                padding: 4mm !important;
+                gap: 2mm !important;
+                padding: 2mm !important;
                 background: #fff !important;
+                box-sizing: border-box !important;
             }
-            .print-sheet img {
-                object-fit: contain !important;
-                max-height: 100% !important;
-                max-width: 100% !important;
-                display: block !important;
+            .print-sheet .slot {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                overflow: hidden !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
+            }
+            .print-sheet .slot img {
+                object-fit: contain !important;
+                display: block !important;
+                max-width: 100% !important;
+                max-height: 100% !important;
+            }
+            /* Layout: 1 foto por folha (10x15V, 10x15H) */
+            .print-sheet.layout-1 .slot {
+                width: 100% !important;
+                height: 100% !important;
+            }
+            /* Layout: 2 fotos lado a lado (Polaroid, Tirinha) */
+            .print-sheet.layout-2 {
+                flex-wrap: nowrap !important;
+                flex-direction: row !important;
+            }
+            .print-sheet.layout-2 .slot {
+                width: calc(50% - 1mm) !important;
+                height: 100% !important;
             }
         }
 
@@ -211,7 +237,7 @@
             font-weight: 800;
         }
 
-        /* Barra de status da impressão */
+        /* Barra de status */
         .print-status-bar {
             margin-top: 22px;
             display: inline-flex;
@@ -292,7 +318,53 @@
             border-radius: 20px;
             letter-spacing: 0;
         }
-        .ctrl-btn.pause.active .badge-qty { background: var(--warn); }
+
+        /* ═══════════════════════════════════════════════════════════════
+           SLOT BUFFER (indicador de folha atual)
+           ═══════════════════════════════════════════════════════════════ */
+        .slot-indicator {
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 18px;
+            background: rgba(10, 10, 10, 0.85);
+            border: 1px solid var(--border-1);
+            border-radius: 30px;
+            backdrop-filter: blur(12px);
+        }
+        .slot-indicator-label {
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-3);
+            font-weight: 800;
+        }
+        .slot-dots {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .slot-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid var(--border-2);
+            background: transparent;
+            transition: var(--transition-fast);
+        }
+        .slot-dot.filled {
+            background: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 0 8px var(--accent);
+        }
+        .slot-indicator-count {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 900;
+            color: var(--accent);
+            letter-spacing: 0.5px;
+        }
 
         /* Busca */
         .search-box {
@@ -331,7 +403,7 @@
         .search-btn:hover { box-shadow: var(--accent-glow); transform: translateY(-1px); }
 
         /* ═══════════════════════════════════════════════════════════════
-           BOTÃO MENU (hamburger)
+           BOTÃO MENU + SIDEBAR
            ═══════════════════════════════════════════════════════════════ */
         .menu-trigger {
             position: fixed;
@@ -365,9 +437,6 @@
         .menu-trigger.active span:nth-child(2) { opacity: 0; }
         .menu-trigger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-        /* ═══════════════════════════════════════════════════════════════
-           SIDEBAR
-           ═══════════════════════════════════════════════════════════════ */
         .sidebar {
             position: fixed;
             right: -360px;
@@ -454,8 +523,7 @@
             color: var(--text-1);
             text-transform: uppercase;
         }
-        .config-row select,
-        .config-row input {
+        .config-row select {
             background: var(--bg-1);
             border: 1px solid var(--border-2);
             color: var(--text-0);
@@ -468,8 +536,7 @@
             width: 110px;
             text-align: center;
         }
-        .config-row select:focus,
-        .config-row input:focus { border-color: var(--accent); }
+        .config-row select:focus { border-color: var(--accent); }
 
         /* ═══════════════════════════════════════════════════════════════
            GRID DE FOTOS
@@ -593,7 +660,6 @@
             animation: pulseDot 1.2s infinite;
         }
 
-        /* Empty state */
         .empty-state {
             grid-column: 1/-1;
             text-align: center;
@@ -621,7 +687,7 @@
         }
 
         /* ═══════════════════════════════════════════════════════════════
-           LOG DRAWER (canto inferior direito)
+           LOG DRAWER
            ═══════════════════════════════════════════════════════════════ */
         .log-drawer {
             position: fixed;
@@ -698,7 +764,6 @@
         .log-line.warn .msg { color: var(--warn); }
         .log-line.info .msg { color: var(--info); }
 
-        /* Botão flutuante de log */
         .log-toggle {
             position: fixed;
             bottom: 24px;
@@ -718,7 +783,6 @@
             backdrop-filter: blur(12px);
             box-shadow: var(--shadow-md);
             transition: var(--transition-fast);
-            position: fixed;
         }
         .log-toggle:hover { box-shadow: var(--accent-glow); transform: scale(1.05); }
         .log-toggle .badge-count {
@@ -738,7 +802,6 @@
             justify-content: center;
             padding: 0 4px;
         }
-
         /* ═══════════════════════════════════════════════════════════════
            MODAL DE ZOOM
            ═══════════════════════════════════════════════════════════════ */
@@ -815,7 +878,7 @@
         .btn-excluir:hover { background: #e02020; box-shadow: 0 0 20px rgba(255,49,49,0.5); }
 
         /* ═══════════════════════════════════════════════════════════════
-           DEBUG BAR
+           DEBUG BAR + TOAST
            ═══════════════════════════════════════════════════════════════ */
         .debug-info {
             position: fixed;
@@ -837,10 +900,7 @@
             pointer-events: none;
         }
 
-        /* ═══════════════════════════════════════════════════════════════
-           TOAST
-           ═══════════════════════════════════════════════════════════════ */
-                .toast-container {
+        .toast-container {
             position: fixed;
             top: 24px;
             left: 50%;
@@ -919,7 +979,7 @@
 <body>
 
     <!-- ═══════════════════════════════════════════════════════════════
-         MENU TRIGGER (HAMBURGER)
+         MENU TRIGGER
          ═══════════════════════════════════════════════════════════════ -->
     <div class="menu-trigger" id="menu-trigger" onclick="toggleSidebar()">
         <span></span><span></span><span></span>
@@ -937,7 +997,7 @@
 
         <div class="brand-center">
             <h1>PHOTO PRINT</h1>
-            <div class="brand-subtitle">central de impressão</div>
+            <div class="brand-subtitle">central de impressão A6</div>
 
             <div class="print-status-bar" id="print-status-bar">
                 <span class="dot"></span>
@@ -954,6 +1014,13 @@
                     Limpar Fila
                     <span class="badge-qty" id="fila-count">0</span>
                 </button>
+            </div>
+
+            <!-- Indicador do buffer da folha atual -->
+            <div class="slot-indicator" id="slot-indicator">
+                <span class="slot-indicator-label">Folha Atual</span>
+                <div class="slot-dots" id="slot-dots"></div>
+                <span class="slot-indicator-count" id="slot-count">0/0</span>
             </div>
 
             <div class="search-box">
@@ -986,7 +1053,7 @@
             <div class="sidebar-section-title">Configurações</div>
 
             <div class="config-row">
-                <label>Delay entre jobs</label>
+                <label>Delay entre folhas</label>
                 <select id="config-delay" onchange="salvarConfigDelay(this.value)">
                     <option value="1000">1s</option>
                     <option value="1500">1.5s</option>
@@ -1054,19 +1121,15 @@
         <span class="badge-count" id="log-badge" style="display:none">0</span>
     </button>
 
-    <!-- ═══════════════════════════════════════════════════════════════
-         ÁREA DE IMPRESSÃO (invisível)
-         ═══════════════════════════════════════════════════════════════ -->
+    <!-- Área de impressão A6 (invisível) -->
     <div id="print-area"></div>
 
-    <!-- ═══════════════════════════════════════════════════════════════
-         DEBUG BAR + TOASTS
-         ═══════════════════════════════════════════════════════════════ -->
+    <!-- Debug + toasts -->
     <div class="debug-info" id="debug-info">SISTEMA PRONTO</div>
     <div class="toast-container" id="toast-container"></div>
 
     <!-- ═══════════════════════════════════════════════════════════════
-         SCRIPT PRINCIPAL
+         SCRIPT PRINCIPAL v7.0 — A6 AUTO-BATCH
          ═══════════════════════════════════════════════════════════════ -->
     <script>
         /* ═══════════════════════════════════════════════════════════════
@@ -1076,15 +1139,27 @@
         const POLL_INTERVAL_MS = 4000;
         const MAX_LOG_LINES = 30;
 
-        const LS_QUEUE = 'pp_print_queue_v6';
-        const LS_CONFIG = 'pp_print_config_v6';
-        const LS_HISTORY = 'pp_print_history_v6';
+        const LS_CONFIG = 'pp_print_config_v7';
+        const LS_HISTORY = 'pp_print_history_v7';
+        const SS_BUFFER = 'pp_sheet_buffer_v7';   // buffer da folha atual
+        const SS_QUEUE = 'pp_sheet_queue_v7';     // fila de FOLHAS prontas para imprimir
 
-        const LAYOUT_POR_FORMATO = {
-            "10X15V":   { cols: 1, rows: 1 },
-            "10X15H":   { cols: 1, rows: 1 },
-            "TIRINHA":  { cols: 1, rows: 1 },
-            "POLAROID": { cols: 2, rows: 2 }
+        /*
+         * ═══════════════════════════════════════════════════════════════
+         * CAPACIDADE DE FOLHA A6 POR FORMATO DE FOTO
+         * ═══════════════════════════════════════════════════════════════
+         * A6 = 105×148mm. Cada formato ocupa:
+         *   Polaroid (54×86mm)     → 2 por folha (lado a lado, landscape)
+         *   10x15V (100×150mm)     → 1 por folha (não cabe 2)
+         *   10x15H (150×100mm)     → 1 por folha
+         *   Tirinha (50×150mm)     → 2 por folha (lado a lado, portrait)
+         * ═══════════════════════════════════════════════════════════════
+         */
+        const CAPACIDADE_A6 = {
+            "POLAROID": { slots: 2, layout: 'layout-2', orientacao: 'portrait' },
+            "TIRINHA":  { slots: 2, layout: 'layout-2', orientacao: 'portrait' },
+            "10X15V":   { slots: 1, layout: 'layout-1', orientacao: 'portrait' },
+            "10X15H":   { slots: 1, layout: 'layout-1', orientacao: 'landscape' }
         };
 
         /* ═══════════════════════════════════════════════════════════════
@@ -1097,38 +1172,46 @@
         let formatoAtual = "10X15V";
         let primeiraCarga = true;
 
-        let printQueue = [];
+        // Buffer da folha atual (slots acumulando até completar)
+        let sheetBuffer = [];      // [{ url, key, tipo, origemId }]
+        let sheetQueue = [];       // folhas prontas para imprimir
         let isPrinting = false;
-        let printJobAtual = null;
         let pausado = false;
         let printDelayMs = 2500;
         let autoImpressao = true;
+        let folhaAtualImprimindo = null;
 
         let logHistory = [];
         let logNaoLidas = 0;
         let logAberto = false;
 
         /* ═══════════════════════════════════════════════════════════════
-           PERSISTÊNCIA (sessionStorage + localStorage)
+           PERSISTÊNCIA
            ═══════════════════════════════════════════════════════════════ */
-        function salvarFila() {
-            try { sessionStorage.setItem(LS_QUEUE, JSON.stringify(printQueue)); } catch(e) {}
-        }
-        function carregarFila() {
+        function salvarEstado() {
             try {
-                const raw = sessionStorage.getItem(LS_QUEUE);
-                if (raw) printQueue = JSON.parse(raw) || [];
-            } catch(e) { printQueue = []; }
+                sessionStorage.setItem(SS_BUFFER, JSON.stringify(sheetBuffer));
+                sessionStorage.setItem(SS_QUEUE, JSON.stringify(sheetQueue));
+            } catch(e) {}
         }
-        function limparFilaStorage() {
-            try { sessionStorage.removeItem(LS_QUEUE); } catch(e) {}
+        function carregarEstado() {
+            try {
+                const b = sessionStorage.getItem(SS_BUFFER);
+                const q = sessionStorage.getItem(SS_QUEUE);
+                if (b) sheetBuffer = JSON.parse(b) || [];
+                if (q) sheetQueue = JSON.parse(q) || [];
+            } catch(e) { sheetBuffer = []; sheetQueue = []; }
+        }
+        function limparEstadoStorage() {
+            try {
+                sessionStorage.removeItem(SS_BUFFER);
+                sessionStorage.removeItem(SS_QUEUE);
+            } catch(e) {}
         }
 
         function salvarConfig() {
             try {
-                localStorage.setItem(LS_CONFIG, JSON.stringify({
-                    printDelayMs, autoImpressao
-                }));
+                localStorage.setItem(LS_CONFIG, JSON.stringify({ printDelayMs, autoImpressao }));
             } catch(e) {}
         }
         function carregarConfig() {
@@ -1143,9 +1226,7 @@
         }
 
         function salvarHistorico() {
-            try {
-                localStorage.setItem(LS_HISTORY, JSON.stringify(logHistory.slice(-MAX_LOG_LINES)));
-            } catch(e) {}
+            try { localStorage.setItem(LS_HISTORY, JSON.stringify(logHistory.slice(-MAX_LOG_LINES))); } catch(e) {}
         }
         function carregarHistorico() {
             try {
@@ -1197,7 +1278,7 @@
         }
 
         /* ═══════════════════════════════════════════════════════════════
-           ▶▶▶ LOG DE IMPRESSÃO ◀◀◀
+           LOG
            ═══════════════════════════════════════════════════════════════ */
         function addLog(msg, tipo = 'info') {
             const agora = new Date();
@@ -1205,11 +1286,9 @@
             const entry = { ts, msg, tipo };
             logHistory.push(entry);
             if (logHistory.length > MAX_LOG_LINES) logHistory.shift();
-
             renderLogEntry(entry);
             salvarHistorico();
 
-            // Atualiza badge se o drawer estiver fechado
             if (!logAberto) {
                 logNaoLidas++;
                 const badge = document.getElementById('log-badge');
@@ -1219,7 +1298,6 @@
                 }
             }
         }
-
         function renderLogEntry(entry) {
             const body = document.getElementById('log-body');
             if (!body) return;
@@ -1227,26 +1305,19 @@
             line.className = `log-line ${entry.tipo}`;
             line.innerHTML = `<span class="ts">${entry.ts}</span><span class="msg">${entry.msg}</span>`;
             body.appendChild(line);
-
-            // Mantém apenas MAX_LOG_LINES no DOM
-            while (body.children.length > MAX_LOG_LINES) {
-                body.removeChild(body.firstChild);
-            }
+            while (body.children.length > MAX_LOG_LINES) body.removeChild(body.firstChild);
             body.scrollTop = body.scrollHeight;
         }
-
         function renderLogCompleto() {
             const body = document.getElementById('log-body');
             if (!body) return;
             body.innerHTML = '';
             logHistory.forEach(entry => renderLogEntry(entry));
         }
-
         function toggleLog() {
             logAberto = !logAberto;
             const drawer = document.getElementById('log-drawer');
             drawer.classList.toggle('active', logAberto);
-
             if (logAberto) {
                 logNaoLidas = 0;
                 const badge = document.getElementById('log-badge');
@@ -1256,7 +1327,7 @@
         }
 
         /* ═══════════════════════════════════════════════════════════════
-           ▶▶▶ SIDEBAR + CONFIG ◀◀◀
+           SIDEBAR + CONFIG
            ═══════════════════════════════════════════════════════════════ */
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
@@ -1264,13 +1335,11 @@
             sb.classList.toggle('active');
             trigger.classList.toggle('active');
         }
-
         function salvarConfigDelay(valor) {
             printDelayMs = parseInt(valor, 10) || 2500;
             salvarConfig();
-            mostrarToast('Configuração salva', `Delay entre jobs: ${printDelayMs}ms`, 'info');
+            mostrarToast('Configuração salva', `Delay entre folhas: ${printDelayMs}ms`, 'info');
         }
-
         function salvarConfigAuto(valor) {
             autoImpressao = valor === '1';
             salvarConfig();
@@ -1282,7 +1351,15 @@
         }
 
         /* ═══════════════════════════════════════════════════════════════
-           ▶▶▶ ATUALIZAÇÃO DA GALERIA (polling) ◀◀◀
+           CAPACIDADE ATUAL DA FOLHA A6
+           ═══════════════════════════════════════════════════════════════ */
+        function getCapacidadeA6() {
+            const cfg = CAPACIDADE_A6[formatoAtual] || CAPACIDADE_A6["10X15V"];
+            return cfg;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           ATUALIZAÇÃO DA GALERIA (polling)
            ═══════════════════════════════════════════════════════════════ */
         async function atualizar() {
             try {
@@ -1292,22 +1369,29 @@
                 const config = await r1.json();
                 const evt = (config.config && config.config.evento) ? config.config.evento : "Geral";
                 const evtId = (config.config && config.config.eventoId) ? config.config.eventoId : "";
-                formatoAtual = (config.config && config.config.formato)
+                const novoFormato = (config.config && config.config.formato)
                     ? config.config.formato.toUpperCase().trim()
                     : "10X15V";
 
                 if (eventoIdAtual !== evtId) {
                     eventoAtual = evt;
                     eventoIdAtual = evtId;
+                    formatoAtual = novoFormato;
                     todasFotos = [];
                     chavesLocais.clear();
-                    printQueue = [];
-                    limparFilaStorage();
+                    sheetBuffer = [];
+                    sheetQueue = [];
+                    limparEstadoStorage();
                     primeiraCarga = true;
                     document.getElementById('grid-fotos').innerHTML = "";
                     atualizarBarraStatus();
-                    addLog(`🔄 Troca de evento: ${evt}`, 'info');
+                    atualizarIndicadorFolha();
+                    addLog(`🔄 Troca de evento: ${evt} (${traduzirFormato(formatoAtual)})`, 'info');
                     debug('🔄 Evento: ' + evt);
+                } else if (formatoAtual !== novoFormato) {
+                    formatoAtual = novoFormato;
+                    addLog(`📐 Formato alterado: ${traduzirFormato(formatoAtual)}`, 'info');
+                    atualizarIndicadorFolha();
                 }
 
                 document.getElementById('nome-evento').innerText = eventoAtual;
@@ -1336,9 +1420,10 @@
                     for (const f of novas) {
                         const url = `${API}/photo?key=${encodeURIComponent(f.key)}`;
                         const parsed = analisarNomeFoto(f.key);
+                        const idFoto = todasFotos.length + 1;
 
                         todasFotos.push({
-                            id: todasFotos.length + 1,
+                            id: idFoto,
                             url,
                             key: f.key,
                             copias: parsed.copias,
@@ -1347,9 +1432,9 @@
                         });
                         chavesLocais.add(f.key);
 
+                        // Se auto-impressão ativada e NÃO é primeira carga → alimenta o buffer
                         if (!primeiraCarga && autoImpressao) {
-                            criarJobsImpressao(url, parsed.copias, parsed.guestbook);
-                            addLog(`📥 Nova foto: ${parsed.copias}× ${parsed.guestbook ? '+ guestbook' : ''}`, 'success');
+                            alimentarBuffer(url, f.key, parsed, idFoto);
                         } else if (!primeiraCarga && !autoImpressao) {
                             addLog(`⏸️ Foto recebida (auto-impressão off): ${f.key.split('/').pop()}`, 'warn');
                         }
@@ -1376,7 +1461,289 @@
         }
 
         /* ═══════════════════════════════════════════════════════════════
-           ▶▶▶ RENDERIZAÇÃO DA GRADE ◀◀◀
+           ▶▶▶ CORE: ALIMENTAR BUFFER A6 + FECHAR FOLHA ◀◀◀
+           ═══════════════════════════════════════════════════════════════
+           Esta é a função mais importante. Ela:
+           1) Adiciona N cópias da foto ao buffer da folha atual
+           2) Se guestbook, envia para folha guestbook dedicada
+           3) Quando o buffer atinge a capacidade da A6 → fecha a folha
+           4) Folhas prontas vão para sheetQueue → imprime automaticamente
+           ═══════════════════════════════════════════════════════════════ */
+        function alimentarBuffer(url, key, parsed, origemId) {
+            const { copias, guestbook } = parsed;
+            const cap = getCapacidadeA6();
+
+            // ─── Guestbook: sempre em folha dedicada separada ───
+            if (guestbook) {
+                // Guestbook é uma foto única por folha (não agrupa com outras)
+                sheetQueue.push({
+                    slots: [{ url, key, tipo: 'guestbook', origemId }],
+                    layout: 'layout-1',
+                    totalSlots: 1,
+                    descricao: 'Guestbook (folha dedicada)'
+                });
+                addLog(`📄 Folha Guestbook preparada (foto #${origemId})`, 'info');
+                salvarEstado();
+                processarFilaImpressao();
+                return;
+            }
+
+            // ─── Foto comum: adiciona N slots ao buffer ───
+            for (let i = 0; i < copias; i++) {
+                sheetBuffer.push({ url, key, tipo: 'foto', origemId });
+
+                // Se o buffer encheu a folha → fecha folha
+                if (sheetBuffer.length >= cap.slots) {
+                    fecharFolha();
+                }
+            }
+
+            salvarEstado();
+            atualizarIndicadorFolha();
+            atualizarBarraStatus();
+            render();
+
+            // Se a foto tem 2 cópias mas a folha só cabe 1 → imprime cada uma sozinha
+            // (o loop acima já cuida disso, pois sheetBuffer.length >= cap.slots a cada push)
+        }
+
+        /**
+         * Fecha a folha atual (buffer cheio) e envia para a fila de impressão.
+         */
+        function fecharFolha() {
+            if (sheetBuffer.length === 0) return;
+
+            const cap = getCapacidadeA6();
+            // Pega os slots do buffer (até a capacidade)
+            const slots = sheetBuffer.splice(0, cap.slots);
+
+            sheetQueue.push({
+                slots,
+                layout: cap.layout,
+                totalSlots: slots.length,
+                descricao: `Folha ${traduzirFormato(formatoAtual)} (${slots.length} foto${slots.length > 1 ? 's' : ''})`
+            });
+
+            addLog(`📄 Folha fechada: ${slots.length}/${cap.slots} slots`, 'success');
+            salvarEstado();
+            atualizarIndicadorFolha();
+            atualizarBarraStatus();
+            processarFilaImpressao();
+        }
+
+        /**
+         * Força o fechamento da folha atual mesmo que não esteja cheia.
+         * (usado quando o operador clica "Limpar Fila" ou quando dá timeout)
+         */
+        function forcarFecharFolha() {
+            if (sheetBuffer.length === 0) return;
+            const cap = getCapacidadeA6();
+            const slots = sheetBuffer.splice(0);
+            sheetQueue.push({
+                slots,
+                layout: cap.layout,
+                totalSlots: slots.length,
+                descricao: `Folha parcial (${slots.length}/${cap.slots})`
+            });
+            addLog(`📄 Folha parcial fechada: ${slots.length}/${cap.slots}`, 'warn');
+            salvarEstado();
+            atualizarIndicadorFolha();
+            atualizarBarraStatus();
+            processarFilaImpressao();
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           INDICADOR VISUAL DA FOLHA ATUAL
+           ═══════════════════════════════════════════════════════════════ */
+        function atualizarIndicadorFolha() {
+            const dots = document.getElementById('slot-dots');
+            const count = document.getElementById('slot-count');
+            if (!dots || !count) return;
+
+            const cap = getCapacidadeA6();
+            const usados = sheetBuffer.length;
+
+            dots.innerHTML = '';
+            for (let i = 0; i < cap.slots; i++) {
+                const d = document.createElement('div');
+                d.className = 'slot-dot' + (i < usados ? ' filled' : '');
+                dots.appendChild(d);
+            }
+            count.innerText = `${usados}/${cap.slots}`;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           BARRA DE STATUS + PAUSA
+           ═══════════════════════════════════════════════════════════════ */
+                function atualizarBarraStatus() {
+            const bar = document.getElementById('print-status-bar');
+            const txt = document.getElementById('print-status-text');
+            const filaCount = document.getElementById('fila-count');
+            const btnPause = document.getElementById('btn-pause');
+            const btnPauseText = document.getElementById('btn-pause-text');
+
+            if (filaCount) filaCount.innerText = sheetQueue.length;
+
+            bar.classList.remove('active', 'paused');
+
+            if (pausado) {
+                bar.classList.add('paused');
+                txt.innerText = `⏸️ Pausado (${sheetQueue.length} folha(s) na fila)`;
+                btnPause.classList.add('active');
+                btnPauseText.innerText = 'Retomar';
+                btnPause.querySelector('i').className = 'fa-solid fa-play';
+            } else if (isPrinting && folhaAtualImprimindo) {
+                bar.classList.add('active');
+                txt.innerText = `Imprimindo: ${folhaAtualImprimindo.descricao} (${sheetQueue.length} na fila)`;
+                btnPause.classList.remove('active');
+                btnPauseText.innerText = 'Pausar';
+                btnPause.querySelector('i').className = 'fa-solid fa-pause';
+            } else if (sheetQueue.length > 0) {
+                bar.classList.add('active');
+                txt.innerText = `${sheetQueue.length} folha(s) pronta(s) para imprimir`;
+            } else if (sheetBuffer.length > 0) {
+                const cap = getCapacidadeA6();
+                bar.classList.add('active');
+                txt.innerText = `Preenchendo folha: ${sheetBuffer.length}/${cap.slots}`;
+            } else {
+                txt.innerText = 'Aguardando fotos';
+                btnPause.classList.remove('active');
+                btnPauseText.innerText = 'Pausar';
+                btnPause.querySelector('i').className = 'fa-solid fa-pause';
+            }
+        }
+
+        function togglePausa() {
+            pausado = !pausado;
+            if (pausado) {
+                addLog('⏸️ Impressão pausada', 'warn');
+                mostrarToast('Pausado', 'A impressão de folhas foi pausada.', 'warning');
+            } else {
+                addLog('▶️ Impressão retomada', 'success');
+                mostrarToast('Retomado', 'A impressão foi retomada.', 'success');
+                processarFilaImpressao();
+            }
+            atualizarBarraStatus();
+            render();
+        }
+
+        function limparFilaManual() {
+            const total = sheetQueue.length + sheetBuffer.length;
+            if (total === 0) {
+                mostrarToast('Fila vazia', 'Não há folhas pendentes.', 'info');
+                return;
+            }
+            if (!confirm(`Limpar ${sheetQueue.length} folha(s) prontas + ${sheetBuffer.length} slot(s) do buffer?`)) return;
+
+            sheetQueue = [];
+            sheetBuffer = [];
+            limparEstadoStorage();
+            addLog(`🗑️ Fila limpa (${total} itens removidos)`, 'warn');
+            atualizarBarraStatus();
+            atualizarIndicadorFolha();
+            render();
+            mostrarToast('Fila limpa', `${total} item(ns) removidos.`, 'info');
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           ▶▶▶ PROCESSAMENTO DA FILA DE FOLHAS ◀◀◀
+           ═══════════════════════════════════════════════════════════════ */
+        async function processarFilaImpressao() {
+            if (isPrinting) return;
+            if (pausado) { atualizarBarraStatus(); return; }
+            if (sheetQueue.length === 0) {
+                isPrinting = false;
+                folhaAtualImprimindo = null;
+                atualizarBarraStatus();
+                render();
+                return;
+            }
+
+            isPrinting = true;
+            folhaAtualImprimindo = sheetQueue.shift();
+            salvarEstado();
+            atualizarBarraStatus();
+            render();
+
+            try {
+                await executarImpressaoFolha(folhaAtualImprimindo);
+                addLog(`✅ Impresso: ${folhaAtualImprimindo.descricao}`, 'success');
+            } catch (e) {
+                console.error('Erro ao imprimir folha:', e);
+                addLog(`❌ Erro ao imprimir: ${e.message}`, 'error');
+                debug('❌ Erro: ' + e.message);
+            }
+
+            setTimeout(() => {
+                isPrinting = false;
+                folhaAtualImprimindo = null;
+                atualizarBarraStatus();
+                render();
+                processarFilaImpressao();
+            }, printDelayMs);
+        }
+
+        /**
+         * Executa a impressão real de uma folha A6.
+         * Monta o HTML com N slots lado a lado, aguarda carregar e chama print().
+         */
+        async function executarImpressaoFolha(folha) {
+            debug(`🖨️ Imprimindo folha: ${folha.descricao}`);
+
+            // Pré-carrega todas as imagens da folha
+            await Promise.all(folha.slots.map(s => preloadImagem(s.url)));
+
+            const printArea = document.getElementById('print-area');
+            const sheet = document.createElement('div');
+            sheet.className = `print-sheet ${folha.layout || 'layout-1'}`;
+
+            // Cria um slot para cada foto
+            for (const slot of folha.slots) {
+                const slotEl = document.createElement('div');
+                slotEl.className = 'slot';
+                const img = document.createElement('img');
+                img.src = slot.url;
+                img.alt = slot.tipo || 'foto';
+                slotEl.appendChild(img);
+                sheet.appendChild(slotEl);
+            }
+
+            printArea.innerHTML = '';
+            printArea.appendChild(sheet);
+
+            // Ajusta a orientação da página A6 conforme o layout
+            const cap = getCapacidadeA6();
+            const orientacao = cap.orientacao === 'landscape' ? 'A6 landscape' : 'A6 portrait';
+            let stylePage = document.getElementById('dynamic-page-style');
+            if (!stylePage) {
+                stylePage = document.createElement('style');
+                stylePage.id = 'dynamic-page-style';
+                document.head.appendChild(stylePage);
+            }
+            stylePage.innerHTML = `@media print { @page { size: ${orientacao}; margin: 0; } }`;
+
+            // Aguarda renderização
+            await new Promise(r => setTimeout(r, 400));
+
+            // Dispara impressão
+            window.focus();
+            window.print();
+
+            debug(`✅ Folha "${folha.descricao}" enviada para impressora`);
+        }
+
+        function preloadImagem(url) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve(true);
+                img.onerror = () => resolve(false);
+                img.src = url;
+                setTimeout(() => resolve(false), 8000);
+            });
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           ▶▶▶ RENDERIZAÇÃO DO GRID ◀◀◀
            ═══════════════════════════════════════════════════════════════ */
         function render() {
             const grid = document.getElementById('grid-fotos');
@@ -1391,9 +1758,16 @@
                 return;
             }
 
+            // Conjunto de chaves que estão no buffer OU na fila (para mostrar "na fila")
+            const keysNaFila = new Set([
+                ...sheetBuffer.map(s => s.key),
+                ...sheetQueue.flatMap(f => f.slots.map(s => s.key))
+            ]);
+            const keysImprimindo = folhaAtualImprimindo
+                ? new Set(folhaAtualImprimindo.slots.map(s => s.key))
+                : new Set();
+
             grid.innerHTML = todasFotos.slice().reverse().map((f, i) => {
-                // Determina estado de impressão
-                const estaNaFila = printQueue.some(j => j.url === f.url);
                 let printStateClass = '';
                 let printStateIcon = 'fa-clock';
                 let printStateText = 'NA FILA';
@@ -1402,10 +1776,14 @@
                     printStateClass = 'done';
                     printStateIcon = 'fa-check-circle';
                     printStateText = 'IMPRESSA';
-                } else if (estaNaFila && printJobAtual && printJobAtual.url === f.url) {
+                } else if (keysImprimindo.has(f.key)) {
                     printStateClass = 'printing';
                     printStateIcon = 'fa-spinner fa-spin';
                     printStateText = 'IMPRIMINDO';
+                } else if (keysNaFila.has(f.key)) {
+                    printStateClass = 'printing';
+                    printStateIcon = 'fa-hourglass-half';
+                    printStateText = 'AGUARDANDO';
                 }
 
                 return `
@@ -1421,175 +1799,6 @@
                         <img src="${f.url}" loading="lazy" alt="Foto #${f.id}">
                     </div>`;
             }).join('');
-        }
-
-        /* ═══════════════════════════════════════════════════════════════
-           ▶▶▶ FILA E IMPRESSÃO ◀◀◀
-           ═══════════════════════════════════════════════════════════════ */
-        function criarJobsImpressao(url, copias, guestbook) {
-            printQueue.push({
-                tipo: 'foto',
-                url,
-                quantidade: copias,
-                descricao: `${copias}× cópia${copias > 1 ? 's' : ''}`
-            });
-
-            if (guestbook) {
-                printQueue.push({
-                    tipo: 'guestbook',
-                    url,
-                    quantidade: 1,
-                    descricao: '1× guestbook'
-                });
-            }
-
-            salvarFila();
-            atualizarBarraStatus();
-            processarFilaImpressao();
-        }
-
-        function atualizarBarraStatus() {
-            const bar = document.getElementById('print-status-bar');
-            const txt = document.getElementById('print-status-text');
-            const filaCount = document.getElementById('fila-count');
-            const btnPause = document.getElementById('btn-pause');
-            const btnPauseText = document.getElementById('btn-pause-text');
-
-            if (filaCount) filaCount.innerText = printQueue.length;
-
-            bar.classList.remove('active', 'paused');
-
-            if (pausado) {
-                bar.classList.add('paused');
-                txt.innerText = `⏸️ Pausado (${printQueue.length} na fila)`;
-                btnPause.classList.add('active');
-                btnPauseText.innerText = 'Retomar';
-                btnPause.querySelector('i').className = 'fa-solid fa-play';
-            } else if (isPrinting && printJobAtual) {
-                bar.classList.add('active');
-                txt.innerText = `Imprimindo: ${printJobAtual.descricao} (${printQueue.length} na fila)`;
-                btnPause.classList.remove('active');
-                btnPauseText.innerText = 'Pausar';
-                btnPause.querySelector('i').className = 'fa-solid fa-pause';
-            } else if (printQueue.length > 0) {
-                bar.classList.add('active');
-                txt.innerText = `${printQueue.length} job(s) na fila`;
-            } else {
-                txt.innerText = 'Aguardando fotos';
-                btnPause.classList.remove('active');
-                btnPauseText.innerText = 'Pausar';
-                btnPause.querySelector('i').className = 'fa-solid fa-pause';
-            }
-        }
-
-        function togglePausa() {
-            pausado = !pausado;
-
-            if (pausado) {
-                addLog('⏸️ Impressão pausada', 'warn');
-                mostrarToast('Pausado', 'A impressão foi pausada.', 'warning');
-            } else {
-                addLog('▶️ Impressão retomada', 'success');
-                mostrarToast('Retomado', 'A impressão foi retomada.', 'success');
-                processarFilaImpressao();
-            }
-            atualizarBarraStatus();
-            render();
-        }
-
-        function limparFilaManual() {
-            if (printQueue.length === 0) {
-                mostrarToast('Fila vazia', 'Não há jobs pendentes.', 'info');
-                return;
-            }
-            if (!confirm(`Limpar ${printQueue.length} job(s) da fila?`)) return;
-
-            const qtdRemovida = printQueue.length;
-            printQueue = [];
-            limparFilaStorage();
-            addLog(`🗑️ Fila limpa (${qtdRemovida} job(s) removidos)`, 'warn');
-            atualizarBarraStatus();
-            render();
-            mostrarToast('Fila limpa', `${qtdRemovida} job(s) removidos.`, 'info');
-        }
-
-        async function processarFilaImpressao() {
-            if (isPrinting) return;
-            if (pausado) { atualizarBarraStatus(); return; }
-            if (printQueue.length === 0) {
-                isPrinting = false;
-                printJobAtual = null;
-                limparFilaStorage();
-                atualizarBarraStatus();
-                render();
-                return;
-            }
-
-            isPrinting = true;
-            printJobAtual = printQueue.shift();
-            salvarFila();
-            atualizarBarraStatus();
-            render();
-
-            try {
-                await executarJobImpressao(printJobAtual);
-                addLog(`✅ Impresso: ${printJobAtual.descricao}`, 'success');
-            } catch (e) {
-                console.error('Erro ao imprimir:', e);
-                addLog(`❌ Erro: ${e.message}`, 'error');
-                debug('❌ Erro na impressão: ' + e.message);
-            }
-
-            setTimeout(() => {
-                isPrinting = false;
-                printJobAtual = null;
-                atualizarBarraStatus();
-                render();
-                processarFilaImpressao();
-            }, printDelayMs);
-        }
-
-        async function executarJobImpressao(job) {
-            debug(`🖨️ Imprimindo: ${job.descricao}`);
-
-            await preloadImagem(job.url);
-
-            const printArea = document.getElementById('print-area');
-            const sheet = document.createElement('div');
-            sheet.className = 'print-sheet';
-
-            const layout = LAYOUT_POR_FORMATO[formatoAtual] || { cols: 1, rows: 1 };
-            const totalFotosFolha = Math.min(job.quantidade, layout.cols * layout.rows);
-
-            for (let i = 0; i < totalFotosFolha; i++) {
-                const img = document.createElement('img');
-                img.src = job.url;
-                img.alt = `Cópia ${i + 1}`;
-                const isMulti = totalFotosFolha > 1;
-                img.style.width = isMulti ? `${100 / layout.cols - 2}%` : '100%';
-                img.style.height = isMulti ? `${100 / layout.rows - 2}%` : '100%';
-                sheet.appendChild(img);
-            }
-
-            printArea.innerHTML = '';
-            printArea.appendChild(sheet);
-
-            await new Promise(r => setTimeout(r, 400));
-
-            window.focus();
-            window.print();
-
-            debug(`✅ Job "${job.descricao}" enviado`);
-        }
-
-        function preloadImagem(url) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.onload = () => resolve(true);
-                img.onerror = () => resolve(false);
-                img.src = url;
-                setTimeout(() => resolve(false), 8000);
-            });
         }
 
         /* ═══════════════════════════════════════════════════════════════
@@ -1618,12 +1827,12 @@
 
             const foto = todasFotos.find(f => f.url === url);
             if (!foto) {
-                criarJobsImpressao(url, 1, false);
+                alimentarBuffer(url, `manual_${Date.now()}`, { copias: 1, guestbook: false }, 0);
                 return;
             }
 
-            criarJobsImpressao(foto.url, foto.copias, foto.guestbook);
-            addLog(`🔁 Reimpressão solicitada: ${foto.copias}× ${foto.guestbook ? '+ guestbook' : ''}`, 'info');
+            alimentarBuffer(foto.url, foto.key, { copias: foto.copias, guestbook: foto.guestbook }, foto.id);
+            addLog(`🔁 Reimpressão: ${foto.copias}× ${foto.guestbook ? '+ guestbook' : ''}`, 'info');
             fecharZoom();
         }
 
@@ -1637,9 +1846,18 @@
                 chavesLocais.delete(key);
                 todasFotos.forEach((f, i) => f.id = i + 1);
 
+                // Remove slots do buffer/fila que usem essa foto
+                sheetBuffer = sheetBuffer.filter(s => s.key !== key);
+                sheetQueue = sheetQueue.map(folha => ({
+                    ...folha,
+                    slots: folha.slots.filter(s => s.key !== key)
+                })).filter(folha => folha.slots.length > 0);
+
+                salvarEstado();
                 fecharZoom();
                 render();
                 atualizarBarraStatus();
+                atualizarIndicadorFolha();
                 addLog(`🗑️ Foto excluída: ${key.split('/').pop()}`, 'warn');
                 debug('🗑️ Foto excluída');
             } catch (e) {
@@ -1648,18 +1866,16 @@
         }
 
         /* ═══════════════════════════════════════════════════════════════
-           ▶▶▶ BUSCA POR ID ◀◀◀
+           ▶▶▶ BUSCA ◀◀◀
            ═══════════════════════════════════════════════════════════════ */
         function executarBusca() {
             const input = document.getElementById('input-busca');
             const idBusca = parseInt(input.value, 10);
-
             if (!idBusca || isNaN(idBusca)) {
                 mostrarToast('ID inválido', 'Digite um número válido.', 'error');
                 return;
             }
-
-                       const foto = todasFotos.find(f => f.id === idBusca);
+            const foto = todasFotos.find(f => f.id === idBusca);
             if (foto) {
                 abrirZoom(foto.id);
                 input.value = '';
@@ -1676,36 +1892,29 @@
                 mostrarToast('Sem fotos', 'Nenhuma foto para baixar.', 'info');
                 return;
             }
-
             mostrarToast('Preparando ZIP', `${todasFotos.length} foto(s) para baixar...`, 'info');
-            addLog(`📦 Iniciando download ZIP (${todasFotos.length} fotos)`, 'info');
+            addLog(`📦 Iniciando ZIP (${todasFotos.length} fotos)`, 'info');
 
             try {
                 const zip = new JSZip();
                 let baixadas = 0;
-
                 for (const f of todasFotos) {
                     try {
                         const blob = await fetch(f.url).then(r => r.blob());
                         const nome = `foto_${String(f.id).padStart(3, '0')}_${f.copias}c${f.guestbook ? '_guestbook' : ''}.jpg`;
                         zip.file(nome, blob);
                         baixadas++;
-                    } catch (e) {
-                        console.warn('Falha ao baixar foto', f.id, e);
-                    }
+                    } catch (e) {}
                 }
-
                 if (baixadas === 0) {
                     mostrarToast('Erro', 'Nenhuma foto pôde ser baixada.', 'error');
                     return;
                 }
-
                 const content = await zip.generateAsync({ type: "blob" });
                 const nomeZip = `galeria_${eventoAtual.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.zip`;
                 saveAs(content, nomeZip);
-
                 addLog(`✅ ZIP gerado (${baixadas} fotos)`, 'success');
-                mostrarToast('Download iniciado', `${baixadas} foto(s) no arquivo ZIP.`, 'success');
+                mostrarToast('Download iniciado', `${baixadas} foto(s) no ZIP.`, 'success');
             } catch (e) {
                 addLog(`❌ Erro no ZIP: ${e.message}`, 'error');
                 mostrarToast('Erro', 'Falha ao gerar o ZIP.', 'error');
@@ -1717,28 +1926,24 @@
            ═══════════════════════════════════════════════════════════════ */
         async function limparTudo() {
             if (!confirm("⚠️ ATENÇÃO!\n\nIsso vai APAGAR TODAS as fotos do evento ativo no servidor.\n\nEsta ação é IRREVERSÍVEL.\n\nDeseja continuar?")) return;
-
             const senha = prompt("Digite a senha mestra para confirmar:");
             if (senha !== "1234") {
                 mostrarToast('Cancelado', 'Senha incorreta.', 'error');
                 return;
             }
-
             mostrarToast('Apagando', 'Removendo fotos do servidor...', 'warning');
-
             try {
                 await fetch(`${API}/photo?key=all`, { method: 'DELETE' });
-
                 todasFotos = [];
                 chavesLocais.clear();
-                printQueue = [];
-                limparFilaStorage();
+                sheetBuffer = [];
+                sheetQueue = [];
+                limparEstadoStorage();
                 render();
                 atualizarBarraStatus();
-
-                addLog(`🗑️ Servidor limpo — todas as fotos removidas`, 'warn');
+                atualizarIndicadorFolha();
+                addLog(`🗑️ Servidor limpo`, 'warn');
                 mostrarToast('Servidor limpo', 'Todas as fotos foram removidas.', 'success');
-                debug('🗑️ Servidor limpo');
             } catch (e) {
                 addLog(`❌ Erro ao limpar: ${e.message}`, 'error');
                 mostrarToast('Erro', 'Não foi possível limpar o servidor.', 'error');
@@ -1760,46 +1965,45 @@
             }
         });
 
-        // Fecha modal ao clicar fora
         document.getElementById('modal-zoom').addEventListener('click', (e) => {
             if (e.target.id === 'modal-zoom') fecharZoom();
         });
 
-        // Re-sync quando aba volta ao foco
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden) atualizar();
         });
 
-        // Persiste a fila antes de sair (F5 acidental)
         window.addEventListener('beforeunload', () => {
-            salvarFila();
+            salvarEstado();
         });
 
         /* ═══════════════════════════════════════════════════════════════
            ▶▶▶ INICIALIZAÇÃO ◀◀◀
            ═══════════════════════════════════════════════════════════════ */
         window.addEventListener('load', () => {
-            // Restaura config e histórico
             carregarConfig();
             carregarHistorico();
             renderLogCompleto();
 
-            // Aplica config na UI
             const selDelay = document.getElementById('config-delay');
             if (selDelay) selDelay.value = String(printDelayMs);
             const selAuto = document.getElementById('config-auto');
             if (selAuto) selAuto.value = autoImpressao ? '1' : '0';
 
-            // Restaura fila persistida (se houver)
-            carregarFila();
+            carregarEstado();
 
-            addLog('🚀 Central de Impressão v6.0 iniciada', 'success');
-            debug('🚀 Central de Impressão v6.0 pronta');
+            addLog('🚀 Central A6 v7.0 iniciada', 'success');
+            debug('🚀 Central A6 v7.0 pronta');
 
-            // Se havia fila pendente, retoma processamento
-            if (printQueue.length > 0) {
-                addLog(`♻️ Fila restaurada (${printQueue.length} job(s))`, 'info');
+            // Se buffer/fila já existia (F5), atualiza UI
+            atualizarIndicadorFolha();
+            atualizarBarraStatus();
+            if (sheetQueue.length > 0) {
+                addLog(`♻️ Fila restaurada (${sheetQueue.length} folha(s))`, 'info');
                 processarFilaImpressao();
+            }
+            if (sheetBuffer.length > 0) {
+                addLog(`♻️ Buffer restaurado (${sheetBuffer.length} slot(s))`, 'info');
             }
 
             atualizar();
@@ -1809,5 +2013,6 @@
 </body>
 </html>
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- ◀◀◀ FIM DO ARQUIVO galeria.html — CENTRAL v6.0 PROFISSIONAL ▶▶▶    -->
-<!-- ═══════════════════════════════════════════════════════════════════ --> 
+<!-- ◀◀◀ FIM DO ARQUIVO galeria.html — CENTRAL v7.0 (A6 AUTO) ▶▶▶       -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+       

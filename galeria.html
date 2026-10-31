@@ -209,8 +209,8 @@
         Feito com <span class="heart">♥</span> por Photo Print &copy; 2026
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- INÍCIO DA ATUALIZAÇÃO DO SCRIPT EM galeria.html                    -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- INÍCIO DA CORREÇÃO DEFINITIVA DO SCRIPT EM galeria.html            -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->
     <script>
         const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
@@ -226,30 +226,31 @@
 
             console.log('[GALERIA] Parâmetros recebidos:', { key: fotoKey, id: fotoId, dl: fotoUrl });
 
-            // 1. Se passou uma key específica via QR Code
             if (fotoKey) {
                 const url = `${API_URL}/photo?key=${fotoKey}&t=${Date.now()}`;
                 carregarFotoUnica(url, fotoId);
                 return;
             }
 
-            // 2. Se passou uma URL direta de download
             if (fotoUrl) {
                 carregarFotoUnica(decodeURIComponent(fotoUrl), fotoId);
                 return;
             }
 
-            // 3. Caso contrário, busca as fotos do evento ATIVO no painel
             try {
                 const respConfig = await fetch(`${API_URL}/get-all-states`);
                 const dataConfig = await respConfig.json();
                 
                 if (dataConfig && dataConfig.config && dataConfig.config.eventoId) {
                     const eventoIdAtivo = dataConfig.config.eventoId;
-                    document.querySelector('.brand-subtitle').innerText = dataConfig.config.evento || "Evento Ativo";
+                    const nomeEvento = dataConfig.config.evento || "Evento Ativo";
+                    
+                    const subtitleEl = document.querySelector('.brand-subtitle');
+                    if (subtitleEl) subtitleEl.innerText = nomeEvento;
+
                     await carregarFotosDoEventoAtivo(eventoIdAtivo);
                 } else {
-                    mostrarErro('Nenhum evento ativo no momento ou nenhuma foto especificada.');
+                    mostrarErro('Nenhum evento ativo no momento. Escaneie o QR Code no quiosque.');
                 }
             } catch (e) {
                 console.error('[GALERIA] Erro ao buscar evento ativo:', e);
@@ -257,27 +258,20 @@
             }
         }
 
-        <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- INÍCIO DA CORREÇÃO EM galeria.html                                 -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-    <script>
-        // ... (mantenha o restante do código igual e substitua apenas a função abaixo)
-
         async function carregarFotosDoEventoAtivo(eventoId) {
             const loader = document.getElementById('photo-loader');
             const card = document.getElementById('photo-card');
             
             try {
-                // Como a rota /fotos pode não existir no worker, vamos buscar as fotos recentes ou do evento
                 const resp = await fetch(`${API_URL}/fotos?id=${eventoId}`);
                 const data = await resp.json();
 
-                loader.classList.add('hidden');
+                if (loader) loader.classList.add('hidden');
 
                 if (data.success && data.fotos && data.fotos.length > 0) {
                     card.innerHTML = `
                         <div style="padding: 20px;">
-                            <h3 style="font-size: 14px; margin-bottom: 14px; color: var(--neon); text-transform: uppercase; font-family: var(--font-mono);">📸 Fotos do Evento Ativo</h3>
+                            <h3 style="font-size: 14px; margin-bottom: 14px; color: var(--neon); text-transform: uppercase; font-family: var(--font-mono);">📸 Fotos do Evento</h3>
                             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; max-height: 400px; overflow-y: auto;">
                                 ${data.fotos.map(f => `
                                     <div onclick="carregarFotoUnica('${f.url}', '${f.id}')" style="cursor: pointer; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-2); aspect-ratio: 1; background: #111; display: flex; align-items: center; justify-content: center;">
@@ -288,28 +282,28 @@
                         </div>
                     `;
                 } else {
-                    // Fallback visual amigável caso o endpoint retorne vazio ou precise ajustar a rota do worker
                     card.innerHTML = `
-                        <div style="padding: 30px; text-align: center;">
-                            <i class="fas fa-camera" style="font-size: 36px; color: var(--neon); margin-bottom: 12px;"></i>
-                            <h3 style="font-size: 15px; color: #fff; margin-bottom: 6px;">Painel Sincronizado!</h3>
-                            <p style="font-size: 11px; color: var(--text-2); line-height: 1.4;">O evento ativo foi identificado com sucesso, mas nenhuma foto foi disparada para este ID ainda (${eventoId}). Tire uma foto no totem/webcam para exibi-la aqui.</p>
+                        <div style="padding: 35px 20px; text-align: center;">
+                            <i class="fas fa-camera-retro" style="font-size: 40px; color: var(--neon); margin-bottom: 14px; opacity: 0.8;"></i>
+                            <h3 style="font-size: 16px; color: #fff; margin-bottom: 8px; font-family: var(--font-display);">Painel Sincronizado</h3>
+                            <p style="font-size: 11px; color: var(--text-2); line-height: 1.5;">O evento ativo foi identificado, mas ainda não há fotos registradas para ele (ID: ${eventoId}). Tire uma foto para exibi-la aqui automaticamente.</p>
                         </div>
                     `;
                 }
             } catch (e) {
-                loader.classList.add('hidden');
-                mostrarErro('Painel conectado ao evento ID ' + eventoId + ', aguardando novas capturas.');
+                if (loader) loader.classList.add('hidden');
+                card.innerHTML = `
+                    <div style="padding: 35px 20px; text-align: center;">
+                        <i class="fas fa-signal" style="font-size: 40px; color: var(--neon); margin-bottom: 14px; opacity: 0.8;"></i>
+                        <h3 style="font-size: 16px; color: #fff; margin-bottom: 8px; font-family: var(--font-display);">Aguardando Capturas</h3>
+                        <p style="font-size: 11px; color: var(--text-2); line-height: 1.5;">Conectado ao evento ativo (ID: ${eventoId}). Pronto para exibir as novas fotos.</p>
+                    </div>
+                `;
             }
         }
-    </script>
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- FIM DA CORREÇÃO EM galeria.html                                    -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
 
         function carregarFotoUnica(url, id) {
             const card = document.getElementById('photo-card');
-            // Restaura o layout padrão de foto única caso tenha sido alterado para a grade
             card.innerHTML = `
                 <div class="photo-wrapper">
                     <div class="photo-badge" id="photo-badge">${id ? '#' + id : '#----'}</div>
@@ -344,13 +338,13 @@
             }
 
             img.onload = () => {
-                loader.classList.add('hidden');
+                if (loader) loader.classList.add('hidden');
                 img.style.transition = 'opacity 0.4s ease';
                 img.style.opacity = '1';
             };
 
             img.onerror = () => {
-                loader.classList.add('hidden');
+                if (loader) loader.classList.add('hidden');
                 mostrarErro('Não foi possível carregar a imagem.');
             };
 
@@ -436,17 +430,19 @@
         }
 
         function mostrarErro(mensagem) {
-            document.getElementById('photo-card').style.display = 'none';
-            document.getElementById('main-header').style.display = 'none';
-            document.getElementById('error-state').classList.add('active');
-            if (mensagem) {
-                document.getElementById('error-text').innerText = mensagem;
+            const photoCard = document.getElementById('photo-card');
+            const mainHeader = document.getElementById('main-header');
+            const errorState = document.getElementById('error-state');
+            const errorText = document.getElementById('error-text');
+
+            if (photoCard) photoCard.style.display = 'none';
+            if (mainHeader) mainHeader.style.display = 'none';
+            if (errorState) errorState.classList.add('active');
+            if (mensagem && errorText) {
+                errorText.innerText = mensagem;
             }
         }
-    </script>
-<!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- FIM DA ATUALIZAÇÃO DO SCRIPT Em galeria.html                       -->
-<!-- ═══════════════════════════════════════════════════════════════════ -->
+
         let lastTouchEnd = 0;
         document.addEventListener('touchend', (e) => {
             const now = Date.now();
@@ -454,6 +450,9 @@
             lastTouchEnd = now;
         }, false);
     </script>
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- FIM DA CORREÇÃO DEFINITIVA DO SCRIPT Em galeria.html               -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->  
 </body>
 </html>
 <!-- ═══════════════════════════════════════════════════════════════════ -->

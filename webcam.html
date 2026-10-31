@@ -109,7 +109,6 @@
                 const res = await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`);
                 if (!res || !res.ok) throw new Error();
                 const data = await res.json();
-                // CORREÇÃO: Só mostra offline se for erro de rede, não se o status for OFFLINE no banco
                 sistemaOnline = true; 
                 document.getElementById('offline-overlay').classList.remove('active');
                 return data;
@@ -291,8 +290,11 @@
             };
             r.readAsDataURL(f);
         });
-        function removeBackground() { localStorage.removeItem('photoprint_bg'); document.getElementById('dynamic-bg').style.backgroundImage = ""; document.getElementById('dynamic-bg').classList.remove('active'); document.getElementById('bg-menu').classList.remove('active'); }
-        (function() { const bg = localStorage.getItem('photoprint_bg'); if (bg) { document.getElementById('dynamic-bg').style.backgroundImage = `url('${bg}')`; document.getElementById('dynamic-bg').classList.add('active'); } })();
+        function removeBackground() { localStorage.removeItem('photoprint_bg'); document.getElementById('dynamic-bg').style.backgroundImage = ""; document.getElementById('dynamic-bg').classList.remove('active'); document.getElementById('bg-menu').classList.remove('active');
+         (function() { 
+            const bg = localStorage.getItem('photoprint_bg'); 
+            if (bg) { document.getElementById('dynamic-bg').style.backgroundImage = `url('${bg}')`; document.getElementById('dynamic-bg').classList.add('active'); } 
+        })();
 
         window.addEventListener('load', () => {
             initCamera(); // Ativa câmera imediatamente

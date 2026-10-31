@@ -1,0 +1,117 @@
+/* ═══════════════════════════════════════════════════════════════════
+   PHOTO PRINT — TEMA GLOBAL (v1.0)
+   Arquivo: style.css
+   ═══════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root {
+    /* Cores Principais */
+    --accent: #00E5FF; /* Azul Elétrico */
+    --accent-dim: rgba(0, 229, 255, 0.12);
+    --accent-glow: 0 0 20px rgba(0, 229, 255, 0.4);
+    
+    /* Cores de Status */
+    --danger: #FF3B30;
+    --danger-dim: rgba(255, 59, 48, 0.15);
+    --warn: #FFCC00;
+    --warn-dim: rgba(255, 204, 0, 0.15);
+    --success: #34C759;
+    --success-dim: rgba(52, 199, 89, 0.15);
+
+    /* Cores de Fundo (Grafite) */
+    --bg-0: #050505;
+    --bg-1: #0F0F12;
+    --bg-2: #18181D;
+    --bg-3: #232329;
+    --bg-4: #2E2E36;
+
+    /* Textos */
+    --text-0: #F5F5F7;
+    --text-1: #D1D1D6;
+    --text-2: #8E8E93;
+    --text-3: #54545A;
+
+    /* Bordas */
+    --border-1: rgba(255, 255, 255, 0.06);
+    --border-2: rgba(255, 255, 255, 0.12);
+    --border-3: rgba(255, 255, 255, 0.20);
+
+    /* Arredondamentos */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --radius-xl: 24px;
+
+    /* Fontes */
+    --font-display: 'Outfit', sans-serif;
+    --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+    --font-mono: 'Space Grotesk', monospace;
+}
+
+/* Reset Básico */
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+    font-family: var(--font-body);
+    background: var(--bg-0);
+    color: var(--text-0);
+    height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    /* Fundo Quadriculado Global */
+    background-image: 
+        radial-gradient(circle at 50% 0%, rgba(0, 229, 255, 0.05) 0%, transparent 60%),
+        linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+    background-size: 100% 100%, 40px 40px, 40px 40px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg-4); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-dim); }
+
+/* Classes Utilitárias (Podem ser usadas em qualquer arquivo) */
+.text-accent { color: var(--accent); text-shadow: var(--accent-glow); }
+.text-danger { color: var(--danger); }
+
+.card-padrao {
+    background: var(--bg-2);
+    border: 1px solid var(--border-1);
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+
+.btn-padrao {
+    background: var(--bg-2);
+    border: 1px solid var(--border-2);
+    color: var(--text-1);
+    padding: 12px 20px;
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-padrao:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--bg-3);
+}
+
+.btn-primario {
+    background: var(--accent);
+    color: var(--bg-0);
+    border: none;
+}
+
+.btn-primario:hover {
+    box-shadow: var(--accent-glow);
+    transform: translateY(-2px);
+    color: var(--bg-0);
+}

@@ -826,6 +826,13 @@ function atualizarUIFolha() {
             addLog('🚀 Central v11.4 iniciada', 'success');
         });
     </script>
+ <script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  });
+}
+</script>   
 </body>
 </html>
 <!-- ◀◀◀ FIM DO ARQUIVO galeria.html — v11.4 ▶▶▶ -->

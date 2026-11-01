@@ -59,7 +59,7 @@
     <script>
         const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
         let sistemaOnline = false, eventoAtivo = false, processando = false, intervaloSync = null;
-        let falhasRede = 0, leiturasOffline = 0, consultando = false, ultimoLog = '';
+        let falhasRede = 0, leiturasOffline = 0, consultando = false, ultimoLog = '', primeiraConsulta = true, jaSincronizou = false;
 
         function log(msg, tipo = '') {
             const box = document.getElementById('log-box'), line = document.createElement('div');
@@ -81,11 +81,16 @@
 
             if (!sistemaOnline || !eventoAtivo) {
                 btn.classList.add('disabled');
-                if (!processando) btnText.innerText = "Aguardando Sincronização";
-                if (!sistemaOnline) eventName.innerText = "—";
-                else if (!eventoAtivo) eventName.innerText = "Nenhum evento ativo";
+                if (!jaSincronizou) {
+                    if (!processando) btnText.innerText = "Aguardando Sincronização";
+                    eventName.innerText = "—"; eventName.style.color = '';
+                } else {
+                    if (!processando) btnText.innerText = "Indisponível";
+                    eventName.innerText = "SISTEMA EM MANUTENÇÃO"; eventName.style.color = 'var(--danger)';
+                }
             } else {
                 btn.classList.remove('disabled');
+                eventName.style.color = '';
                 if (!processando) btnText.innerText = "DISPARAR CAPTURA";
             }
         }
@@ -103,16 +108,24 @@
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 const data = await res.json();
                 falhasRede = 0;
+                // ▶▶▶ INÍCIO: manutenção quando NÃO há evento ativo no painel ◀◀◀
                 const cfg = data.config || {};
-                if (cfg.status === 'ONLINE') {
-                    leiturasOffline = 0; sistemaOnline = true;
-                    logMudanca('Painel ONLINE.', 'success');
-                } else if (cfg.status === 'OFFLINE') {
+                const comEvento = cfg.status === 'ONLINE' && !!cfg.eventoId && !!cfg.evento && cfg.evento !== 'Geral';
+                jaSincronizou = true;
+                if (comEvento) {
+                    leiturasOffline = 0; sistemaOnline = true; eventoAtivo = true;
+                    document.getElementById('event-name').innerText = cfg.evento;
+                    logMudanca('Evento ativo: ' + cfg.evento, 'success');
+                } else {
                     leiturasOffline++;
-                    if (leiturasOffline >= 2) { sistemaOnline = false; logMudanca('Painel OFFLINE.', 'error'); }
+                    // 1ª consulta ao abrir a página mostra na hora; depois confirma com 2 leituras seguidas
+                    if (leiturasOffline >= 2 || primeiraConsulta) {
+                        sistemaOnline = false; eventoAtivo = false;
+                        logMudanca('Nenhum evento ativo no painel.', 'error');
+                    }
                 }
-                eventoAtivo = !!(cfg.evento && cfg.evento !== 'Geral');
-                if (eventoAtivo) document.getElementById('event-name').innerText = cfg.evento;
+                primeiraConsulta = false;
+                // ▶▶▶ FIM: manutenção quando NÃO há evento ativo no painel ◀◀◀
             } catch (e) {
                 falhasRede++;
                 // servidor instável: mantém o último estado do painel (falha de rede NÃO derruba a botoeira)

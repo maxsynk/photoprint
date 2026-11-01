@@ -51,6 +51,10 @@
         #camera-canvas { width: 100%; height: 100%; object-fit: cover; display: none; transform: scaleX(-1); }
         #foto-preview { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; display: none; z-index: 5; }
         #flash { position: absolute; inset: 0; background: #fff; display: none; z-index: 55; pointer-events: none; }
+        /* ▶▶▶ INÍCIO: marcação de enquadramento (área que será fotografada) ◀◀◀ */
+        #guia { position: absolute; display: none; z-index: 4; pointer-events: none; border: 3px solid var(--accent); border-radius: 10px; box-shadow: 0 0 22px var(--accent), 0 0 0 100vmax rgba(0,0,0,0.6); }
+        #guia::after { content: 'ENQUADRE-SE AQUI'; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); font-family: var(--font-body); font-size: 12px; font-weight: 800; letter-spacing: 2px; color: var(--accent); background: rgba(0,0,0,0.65); padding: 4px 12px; border-radius: 12px; white-space: nowrap; }
+        /* ▶▶▶ FIM: marcação de enquadramento ◀◀◀ */
         .fun-text { position: absolute; bottom: 18%; left: 50%; transform: translateX(-50%); font-family: var(--font-display); font-size: clamp(24px, 4vw, 36px); font-weight: 900; text-align: center; color: #fff; text-transform: uppercase; text-shadow: 0 0 15px var(--accent); animation: funPulse 0.6s infinite alternate; z-index: 50; background: rgba(0,0,0,0.7); padding: 14px 32px; border-radius: 40px; border: 2px solid var(--accent); display: none; letter-spacing: 2px; }
         @keyframes funPulse { 0% { transform: translateX(-50%) scale(0.95); } 100% { transform: translateX(-50%) scale(1.05); } }
         #options-overlay { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); background: rgba(10,10,10,0.95); padding: 24px 50px; border-radius: 60px; box-shadow: 0 20px 60px rgba(0,0,0,0.6), var(--accent-glow); z-index: 60; text-align: center; display: none; border: 2px solid var(--accent); backdrop-filter: blur(16px); white-space: nowrap; }
@@ -78,6 +82,7 @@
         <div id="camera-wrapper">
             <video id="camera-feed" autoplay playsinline muted></video>
             <canvas id="camera-canvas"></canvas>
+            <div id="guia"></div>
             <img id="foto-preview" alt="">
             <div id="flash"></div>
             <div id="fun-text" class="fun-text"></div>
@@ -98,8 +103,9 @@
         const MSG_MOSTRAR = '🖐️ MOSTRE A MÃO ABERTA';
         const MSG_FECHAR = '✊ AGORA FECHE A MÃO';
         const COPIAS_PADRAO = 1;          // cópias impressas por foto tirada na webcam
-        const SEGUNDOS_RESULTADO = 10;     // tempo da foto na tela antes de voltar ao início
-        const INTERVALO_BOTOEIRA_MS = 3000; // de quanto em quanto tempo a webcam pergunta se a botoeira foi apertada
+        const SEGUNDOS_RESULTADO = 5;     // tempo da foto na tela antes de voltar ao início
+        const INTERVALO_BOTOEIRA_MS = 1500; // de quanto em quanto tempo a webcam pergunta se a botoeira foi apertada
+        const CAMERA_LARGURA = 1280, CAMERA_ALTURA = 720;   // resolução pedida à webcam (ex.: 1920 x 1080 para mais nitidez)
 
         let stream = null, lastState = 'start', captureInProgress = false, handDetector = null;
         let handOpen = false, gestureActive = false, sistemaOnline = true;
@@ -125,13 +131,13 @@
             iniciandoCamera = true;
             try {
                 if (stream) stream.getTracks().forEach(t => t.stop());
-                const tmp = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+                const tmp = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: CAMERA_LARGURA }, height: { ideal: CAMERA_ALTURA } }, audio: false });
                 stream = tmp;
                 const cams = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
                 const pref = cams.find(c => /logitech|usb|c920/i.test(c.label));
                 if (pref && tmp.getVideoTracks()[0].getSettings().deviceId !== pref.deviceId) {
                     try {
-                        const s2 = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: pref.deviceId }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+                        const s2 = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: pref.deviceId }, width: { ideal: CAMERA_LARGURA }, height: { ideal: CAMERA_ALTURA } }, audio: false });
                         tmp.getTracks().forEach(t => t.stop());
                         stream = s2;
                     } catch (e) {}
@@ -214,6 +220,8 @@
                     eventoAtual = data.config.evento; eventoId = novoEventoId; formatoAtual = novoFormato;
                     molduraBase64 = novaMoldura;
                     updateEventoUI();
+                    analisarMoldura();   // descobre a "janela" da moldura para a marcação de enquadramento
+                    atualizarGuia();
                 }
             } else {
                 eventoAtual = null; eventoId = null; molduraBase64 = null;
@@ -225,6 +233,84 @@
             const el = document.getElementById('active-event-name');
             if (eventoAtual) { el.classList.add('visible'); el.innerHTML = `🎉 ${eventoAtual} | ${formatoAtual}`; } else el.classList.remove('visible');
         }
+
+        // ▶▶▶ INÍCIO DO BLOCO NOVO — Marcação de enquadramento ◀◀◀
+        // Mostra na tela exatamente a área que vira foto, de acordo com o formato do evento.
+        //  - TIRINHA: cada uma das 3 fotos ocupa um encaixe de proporção fixa (a marcação mostra esse encaixe)
+        //  - Demais formatos: a foto é cortada na proporção da folha; se a moldura tiver uma "janela"
+        //    transparente, a marcação mostra a janela (a parte realmente visível na foto final)
+        let janelaMoldura = null, molduraAnalisada = null, guiaVisivel = false;
+
+        async function analisarMoldura() {
+            const src = molduraBase64;
+            if (!src) { janelaMoldura = null; molduraAnalisada = null; atualizarGuia(); return; }
+            if (molduraAnalisada === src) return;
+            molduraAnalisada = src;
+            janelaMoldura = null;
+            try {
+                const img = await carregarImg(src);
+                const mw = 240, mh = Math.max(1, Math.round(240 * img.height / img.width));
+                const cv = document.createElement('canvas'); cv.width = mw; cv.height = mh;
+                const c = cv.getContext('2d', { willReadFrequently: true });
+                c.drawImage(img, 0, 0, mw, mh);
+                const px = c.getImageData(0, 0, mw, mh).data;
+                // acha a maior região transparente conectada = janela da foto
+                const total = mw * mh, rotulo = new Uint8Array(total), pilha = new Int32Array(total);
+                const transp = (p) => px[p * 4 + 3] < 40;
+                let melhor = null;
+                for (let i = 0; i < total; i++) {
+                    if (rotulo[i] || !transp(i)) continue;
+                    let topo = 0, area = 0, x0 = mw, y0 = mh, x1 = 0, y1 = 0;
+                    pilha[topo++] = i; rotulo[i] = 1;
+                    while (topo) {
+                        const p = pilha[--topo], x = p % mw, y = (p / mw) | 0;
+                        area++;
+                        if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+                        if (x > 0 && !rotulo[p - 1] && transp(p - 1)) { rotulo[p - 1] = 1; pilha[topo++] = p - 1; }
+                        if (x < mw - 1 && !rotulo[p + 1] && transp(p + 1)) { rotulo[p + 1] = 1; pilha[topo++] = p + 1; }
+                        if (y > 0 && !rotulo[p - mw] && transp(p - mw)) { rotulo[p - mw] = 1; pilha[topo++] = p - mw; }
+                        if (y < mh - 1 && !rotulo[p + mw] && transp(p + mw)) { rotulo[p + mw] = 1; pilha[topo++] = p + mw; }
+                    }
+                    if (!melhor || area > melhor.area) melhor = { area, x0, y0, x1, y1 };
+                }
+                if (melhor && melhor.area > total * 0.12) {
+                    const j = { x0: melhor.x0 / mw, y0: melhor.y0 / mh, x1: (melhor.x1 + 1) / mw, y1: (melhor.y1 + 1) / mh };
+                    // janela quase do tamanho da folha inteira = moldura sem janela definida
+                    if (!((j.x1 - j.x0) > 0.97 && (j.y1 - j.y0) > 0.97)) janelaMoldura = j;
+                }
+            } catch (e) { janelaMoldura = null; debug('análise da moldura falhou: ' + e.message); }
+            atualizarGuia();
+        }
+
+        function mostrarGuia() { guiaVisivel = true; atualizarGuia(); }
+        function esconderGuia() { guiaVisivel = false; document.getElementById('guia').style.display = 'none'; }
+
+        function atualizarGuia() {
+            if (!guiaVisivel) return;
+            const wrap = document.getElementById('camera-wrapper'), g = document.getElementById('guia');
+            const W = wrap.clientWidth, H = wrap.clientHeight;
+            if (!W || !H) return;
+            const vw = videoFeed.videoWidth || CAMERA_LARGURA, vh = videoFeed.videoHeight || CAMERA_ALTURA;
+            const fmt = FORMATOS[formatoAtual] || FORMATOS['POLAROID'];
+            let A, jan = null;
+            if (formatoAtual === 'TIRINHA') { A = (fmt.w * 0.88) / (fmt.h * 0.254); }   // proporção do encaixe de cada foto
+            else { A = fmt.w / fmt.h; jan = janelaMoldura; }
+            // área do vídeo que vira foto (corte centralizado, igual ao da montagem final)
+            let cropW, cropH;
+            if (A <= vw / vh) { cropH = vh; cropW = vh * A; } else { cropW = vw; cropH = vw / A; }
+            const s = Math.max(W / vw, H / vh);          // escala do vídeo na tela (object-fit: cover)
+            const rw = cropW * s, rh = cropH * s, rx = (W - rw) / 2, ry = (H - rh) / 2;
+            const j = jan || { x0: 0, y0: 0, x1: 1, y1: 1 };
+            g.style.left = (rx + j.x0 * rw) + 'px';
+            g.style.top = (ry + j.y0 * rh) + 'px';
+            g.style.width = ((j.x1 - j.x0) * rw) + 'px';
+            g.style.height = ((j.y1 - j.y0) * rh) + 'px';
+            g.style.display = 'block';
+        }
+
+        window.addEventListener('resize', atualizarGuia);
+        videoFeed.addEventListener('loadedmetadata', atualizarGuia);
+        // ▶▶▶ FIM DO BLOCO NOVO — Marcação de enquadramento ◀◀◀
 
         // ===== Detecção de presença =====
         let motionCanvas = null, motionCtx = null, previousFrame = null;
@@ -271,6 +357,7 @@
             optionsOverlay.classList.remove('active');
             document.getElementById('gesto-msg').classList.add('active');
             setMsg(MSG_MOSTRAR);
+            mostrarGuia();
             // se ninguém fizer o gesto em 30s, volta para o início
             clearTimeout(gestoTimeout);
             gestoTimeout = setTimeout(() => { if (lastState === 'capturing' && !captureInProgress) resetToStart(); }, 30000);
@@ -320,6 +407,7 @@
             videoFeed.style.display = 'block'; canvasCapture.style.display = 'none'; fotoPreview.style.display = 'none';
             optionsOverlay.classList.remove('active');
             document.getElementById('gesto-msg').classList.remove('active');
+            mostrarGuia();
             iniciarSequencia();
         }
         // ▶▶▶ FIM DO BLOCO NOVO — Botoeira aciona a webcam ◀◀◀
@@ -455,6 +543,7 @@
             fotoPreview.src = cv.toDataURL('image/jpeg', 0.85);
             fotoPreview.style.display = 'block';
             canvasCapture.style.display = 'none';
+            esconderGuia();
             return await new Promise(r => cv.toBlob(r, 'image/jpeg', 0.95));
         }
 
@@ -508,6 +597,7 @@
 
         // ===== Volta para a tela inicial =====
         function resetToStart() {
+            esconderGuia();
             rodadaId++;
             clearTimeout(gestoTimeout);
             document.querySelectorAll('.screen').forEach(e => e.classList.remove('active'));

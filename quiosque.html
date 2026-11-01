@@ -206,5 +206,12 @@
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (document.getElementById('modal').classList.contains('active')) fecharModal(); else if (document.getElementById('numpad-overlay').classList.contains('active')) toggleNumpad(false); } });
         window.addEventListener('beforeunload', () => { if (inactivityTimer) clearTimeout(inactivityTimer); if (ssInterval) clearInterval(ssInterval); });
     </script>
+    <script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  });
+}
+</script>
 </body>
 </html>

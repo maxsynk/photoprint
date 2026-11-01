@@ -178,7 +178,7 @@
             } catch (e) {
                 falhasRede++;
                 console.log('falha de rede (' + falhasRede + '):', e.message);
-                if (falhasRede >= 4) { sistemaOnline = false; mostrarOffline(true, 'sem resposta do servidor (' + e.message + ')'); }
+                // servidor instável: mantém o último estado do painel (falha de rede NÃO gera manutenção)
                 data = null;
             } finally {
                 consultando = false;

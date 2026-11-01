@@ -142,38 +142,47 @@
             text.innerText = online ? 'Online' : 'Offline';
         }
 
-        async function verificarStatus() {
-            try {
-                const res = await fetch(`${API}/get-all-states?t=${Date.now()}`);
-                if (!res.ok) throw new Error();
-                const data = await res.json();
-                sistemaOnline = true;
-                document.getElementById('offline-overlay').classList.remove('active');
-                atualizarBadgeStatus(true);
-                return data;
-            } catch (e) {
-                sistemaOnline = false;
-                document.getElementById('offline-overlay').classList.add('active');
-                atualizarBadgeStatus(false);
-                return null;
-            }
-        }
+        let falhasRede = 0;
+async function verificarStatus() {
+    let data = null;
+    try {
+        const ctrl = new AbortController();
+        const to = setTimeout(() => ctrl.abort(), 6000);
+        const res = await fetch(`${API}/get-all-states?t=${Date.now()}`, { cache: 'no-store', signal: ctrl.signal });
+        clearTimeout(to);
+        if (!res.ok) throw new Error('http');
+        data = await res.json();
+        falhasRede = 0;
+        sistemaOnline = !!(data.config && data.config.status === 'ONLINE');
+    } catch (e) {
+        falhasRede++;
+        if (falhasRede < 3) return null;   // falha pontual: mantém o estado atual
+        sistemaOnline = false;
+    }
+    document.getElementById('offline-overlay').classList.toggle('active', !sistemaOnline);
+    atualizarBadgeStatus(sistemaOnline);
+    return sistemaOnline ? data : null;
+}
 
-        async function sync() {
-            const data = await verificarStatus();
-            if (!data) return;
-            if (data.config && data.config.evento && data.config.evento !== 'Geral') {
-                ev = data.config.evento;
-                formatStr = (data.config.formato || 'POLAROID').toUpperCase().trim();
-                eventoId = data.config.eventoId;
-                guestbookAtivo = (data.config.livro === true || data.config.livro === 1);
-                molduraBase64 = data.moldura || '';
-            } else {
-                ev = "Geral"; formatStr = "POLAROID"; eventoId = ""; molduraBase64 = ""; guestbookAtivo = false;
-            }
-            document.getElementById('nome-evento-capa').innerText = ev || "—";
-            configAtual = FORMATOS[formatStr] || FORMATOS["POLAROID"];
-        }
+async function sync() {
+    const data = await verificarStatus();
+    if (!sistemaOnline) {
+        if (stream && !captureInProgress) voltarHome();   // painel ficou offline com a câmera aberta
+        return;
+    }
+    if (!data) return;
+    if (data.config && data.config.evento && data.config.evento !== 'Geral') {
+        ev = data.config.evento;
+        formatStr = (data.config.formato || 'POLAROID').toUpperCase().trim();
+        eventoId = data.config.eventoId;
+        guestbookAtivo = (data.config.livro === true || data.config.livro === 1);
+        molduraBase64 = data.moldura || '';
+    } else {
+        ev = "Geral"; formatStr = "POLAROID"; eventoId = ""; molduraBase64 = ""; guestbookAtivo = false;
+    }
+    document.getElementById('nome-evento-capa').innerText = ev || "—";
+    configAtual = FORMATOS[formatStr] || FORMATOS["POLAROID"];
+}
 
         async function startStream() {
             if (stream) stream.getTracks().forEach(t => t.stop());
@@ -192,6 +201,7 @@
         }
 
         async function ligar() {
+            if (!sistemaOnline) return mostrarToast("Offline", "Sistema desligado no painel.", "error");
             if (!molduraBase64) return mostrarToast("Moldura ausente", "Configure no painel.", "warning");
             document.getElementById('cam-container').classList.add('active');
             document.getElementById('info-topo').innerText = `${ev} | ${formatStr}`;
@@ -330,7 +340,7 @@
 
         window.addEventListener('load', () => {
             sync();
-            intervaloStatus = setInterval(sync, 10000);
+            intervaloStatus = setInterval(sync, 5000);
             const bg = localStorage.getItem('photoprint_bg_mobile');
             if (bg) { document.getElementById('dynamic-bg').style.backgroundImage = `url('${bg}')`; document.getElementById('dynamic-bg').classList.add('active'); }
         });

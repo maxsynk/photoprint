@@ -25,13 +25,14 @@
         .bg-btn { padding: 12px 22px; border-radius: var(--radius-md); border: 1px solid var(--accent); background: rgba(0,0,0,0.85); color: var(--text-0); font-family: var(--font-body); font-size: 13px; font-weight: 800; cursor: pointer; backdrop-filter: blur(12px); transition: all 0.3s; display: flex; align-items: center; gap: 8px; }
         .bg-btn:hover { transform: translateY(-2px); border-color: var(--accent); color: var(--accent); box-shadow: var(--accent-glow); }
         #bg-input { display: none; }
-        #offline-overlay { position: fixed; inset: 0; background: #000; z-index: 9999; display: none; align-items: center; justify-content: center; flex-direction: column; }
+        #offline-overlay { position: fixed; inset: 0; background: #000; z-index: 9999; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 18px; }
         #offline-overlay.active { display: flex; }
         .offline-text { font-family: var(--font-display); font-size: clamp(28px, 5vw, 42px); font-weight: 900; color: var(--danger); text-shadow: 0 0 20px var(--danger); animation: pulseOff 1.5s infinite; text-transform: uppercase; letter-spacing: 4px; text-align: center; }
+        #offline-motivo { font-family: var(--font-mono, monospace); font-size: 12px; color: var(--text-3); letter-spacing: 1px; text-align: center; max-width: 90vw; }
         @keyframes pulseOff { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
         #gesto-msg { position: fixed; bottom: 20%; left: 50%; transform: translateX(-50%); z-index: 45; pointer-events: none; display: none; }
         #gesto-msg.active { display: block; }
-        .msg-text { font-family: var(--font-display); font-size: clamp(20px, 3vw, 28px); font-weight: 900; color: #fff; text-shadow: 0 0 30px var(--accent); animation: pulseGesto 1.2s ease-in-out infinite; text-transform: uppercase; letter-spacing: 3px; text-align: center; background: rgba(0,0,0,0.8); padding: 16px 36px; border-radius: 30px; border: 2px solid var(--accent); backdrop-filter: blur(10px); }
+        .msg-text { font-family: var(--font-display); font-size: clamp(20px, 3vw, 28px); font-weight: 900; color: #fff; text-shadow: 0 0 30px var(--accent); animation: pulseGesto 1.2s ease-in-out infinite; text-transform: uppercase; letter-spacing: 3px; text-align: center; background: rgba(0,0,0,0.8); padding: 16px 36px; border-radius: 30px; border: 2px solid var(--accent); backdrop-filter: blur(10px); white-space: nowrap; }
         @keyframes pulseGesto { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.03); } }
         .screen { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 20; flex-direction: column; }
         .screen.active { display: flex; }
@@ -45,9 +46,11 @@
         #camera-wrapper { position: absolute; inset: 0; width: 100vw; height: 100vh; background: #000; overflow: hidden; }
         #camera-feed { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: block; }
         #camera-canvas { width: 100%; height: 100%; object-fit: cover; display: none; transform: scaleX(-1); }
+        #foto-preview { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; display: none; z-index: 5; }
+        #flash { position: absolute; inset: 0; background: #fff; display: none; z-index: 55; pointer-events: none; }
         .fun-text { position: absolute; bottom: 18%; left: 50%; transform: translateX(-50%); font-family: var(--font-display); font-size: clamp(24px, 4vw, 36px); font-weight: 900; text-align: center; color: #fff; text-transform: uppercase; text-shadow: 0 0 15px var(--accent); animation: funPulse 0.6s infinite alternate; z-index: 50; background: rgba(0,0,0,0.7); padding: 14px 32px; border-radius: 40px; border: 2px solid var(--accent); display: none; letter-spacing: 2px; }
         @keyframes funPulse { 0% { transform: translateX(-50%) scale(0.95); } 100% { transform: translateX(-50%) scale(1.05); } }
-        #options-overlay { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); background: rgba(10,10,10,0.95); padding: 24px 50px; border-radius: 60px; box-shadow: 0 20px 60px rgba(0,0,0,0.6), var(--accent-glow); z-index: 60; text-align: center; display: none; border: 2px solid var(--accent); backdrop-filter: blur(16px); }
+        #options-overlay { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); background: rgba(10,10,10,0.95); padding: 24px 50px; border-radius: 60px; box-shadow: 0 20px 60px rgba(0,0,0,0.6), var(--accent-glow); z-index: 60; text-align: center; display: none; border: 2px solid var(--accent); backdrop-filter: blur(16px); white-space: nowrap; }
         #options-overlay.active { display: block; }
         .options-text { font-family: var(--font-body); font-size: clamp(16px, 2vw, 22px); color: var(--accent); font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
         .status-text { font-family: var(--font-display); font-size: clamp(28px, 4vw, 44px); color: var(--accent); font-weight: 900; letter-spacing: 4px; text-shadow: 0 0 25px var(--accent); text-align: center; animation: pulseText 1.5s infinite; background: rgba(0,0,0,0.85); padding: 40px 80px; border-radius: var(--radius-xl); border: 2px solid var(--accent); backdrop-filter: blur(16px); }
@@ -61,7 +64,7 @@
     <div id="active-event-name"></div>
     <div id="bg-menu"><label class="bg-btn" for="bg-input"><i class="fas fa-image"></i> Alterar Fundo</label><div class="bg-btn" onclick="removeBackground()"><i class="fas fa-times"></i> Sem Fundo</div></div>
     <input type="file" id="bg-input" accept="image/*">
-    <div id="offline-overlay"><div class="offline-text">SISTEMA EM<br>MANUTENÇÃO</div></div>
+    <div id="offline-overlay"><div class="offline-text">SISTEMA EM<br>MANUTENÇÃO</div><div id="offline-motivo"></div></div>
     <div id="gesto-msg"><div class="msg-text" id="msg-texto">🖐️ MOSTRE A MÃO ABERTA</div></div>
 
     <div id="screen-start" class="screen active">
@@ -72,8 +75,10 @@
         <div id="camera-wrapper">
             <video id="camera-feed" autoplay playsinline muted></video>
             <canvas id="camera-canvas"></canvas>
+            <img id="foto-preview" alt="">
+            <div id="flash"></div>
             <div id="fun-text" class="fun-text"></div>
-            <div id="options-overlay"><div class="options-text">ACESSE O TOTEM PARA IMPRIMIR SUA FOTO</div></div>
+            <div id="options-overlay"><div class="options-text" id="options-text">ENVIANDO SUA FOTO...</div></div>
         </div>
     </div>
 
@@ -86,13 +91,24 @@
         const API_BASE = 'https://photoprint-api.maxprimefotovideo.workers.dev';
         const videoFeed = document.getElementById('camera-feed'), canvasCapture = document.getElementById('camera-canvas');
         const ctx = canvasCapture.getContext('2d'), funText = document.getElementById('fun-text'), optionsOverlay = document.getElementById('options-overlay');
+        const fotoPreview = document.getElementById('foto-preview'), optionsTextEl = document.getElementById('options-text');
+        const MSG_MOSTRAR = '🖐️ MOSTRE A MÃO ABERTA';
+        const MSG_FECHAR = '✊ AGORA FECHE A MÃO';
+        const COPIAS_PADRAO = 1;          // cópias impressas por foto tirada na webcam
+        const SEGUNDOS_RESULTADO = 5;     // tempo da foto na tela antes de voltar ao início
+
         let stream = null, lastState = 'start', captureInProgress = false, handDetector = null;
-        let handOpen = false, gestureActive = false, initialLoad = true, sistemaOnline = true;
+        let handOpen = false, gestureActive = false, sistemaOnline = true;
         let eventoAtual = null, eventoId = null, formatoAtual = 'POLAROID', molduraBase64 = null;
-        let handVisibleFrames = 0, openFrames = 0, closedFrames = 0, personDetected = false, inactivityTimeout = null;
+        let handVisibleFrames = 0, openFrames = 0, closedFrames = 0, noHandFrames = 0;
+        let personDetected = false, inactivityTimeout = null, gestoTimeout = null;
+        let cooldownAte = 0, rodadaId = 0;
+        let fotos = [], capFormato = 'POLAROID', capEventoId = null, capMoldura = null;
         const FORMATOS = { "TIRINHA": { w: 591, h: 1819 }, "POLAROID": { w: 1041, h: 1311 }, "10X15V": { w: 1181, h: 1819 }, "10X15H": { w: 1772, h: 1228 } };
 
+        const sleep = (ms) => new Promise(r => setTimeout(r, ms));
         function debug(msg) { console.log(msg); }
+        function setMsg(t) { document.getElementById('msg-texto').innerText = t; }
 
         // ===== Câmera robusta, com retry e watchdog =====
         let iniciandoCamera = false;
@@ -101,10 +117,8 @@
             iniciandoCamera = true;
             try {
                 if (stream) stream.getTracks().forEach(t => t.stop());
-                // 1) pega permissão primeiro (assim os nomes das câmeras aparecem)
                 const tmp = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
                 stream = tmp;
-                // 2) tenta a câmera preferida (Logitech/USB); se falhar, segue com a padrão
                 const cams = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
                 const pref = cams.find(c => /logitech|usb|c920/i.test(c.label));
                 if (pref && tmp.getVideoTracks()[0].getSettings().deviceId !== pref.deviceId) {
@@ -126,7 +140,6 @@
             }
         }
 
-        // Watchdog: se a câmera cair/parar, religa sozinha
         setInterval(() => {
             const t = stream && stream.getVideoTracks()[0];
             if (!stream || !t || t.readyState !== 'live') initCamera();
@@ -134,24 +147,44 @@
         }, 5000);
 
         // ===== Sincronização com o painel =====
-        let falhasRede = 0;
+        // Offline SOMENTE quando o painel diz OFFLINE (2 leituras seguidas)
+        // ou quando o servidor fica realmente sem resposta (4 falhas seguidas).
+        let falhasRede = 0, leiturasOffline = 0, consultando = false;
+
+        function mostrarOffline(on, motivo) {
+            document.getElementById('offline-overlay').classList.toggle('active', on);
+            document.getElementById('offline-motivo').innerText = on ? (motivo || '') : '';
+        }
+
         async function verificarStatus() {
+            if (consultando) return null;      // evita requisições sobrepostas
+            consultando = true;
             let data = null;
             try {
                 const ctrl = new AbortController();
-                const to = setTimeout(() => ctrl.abort(), 6000);
+                const to = setTimeout(() => ctrl.abort(), 20000);   // a moldura é pesada, precisa de folga
                 const res = await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`, { cache: 'no-store', signal: ctrl.signal });
                 clearTimeout(to);
-                if (!res.ok) throw new Error('http');
+                if (!res.ok) throw new Error('HTTP ' + res.status);
                 data = await res.json();
                 falhasRede = 0;
-                sistemaOnline = !!(data.config && data.config.status === 'ONLINE');
+                const st = data && data.config ? data.config.status : undefined;
+                if (st === 'ONLINE') {
+                    leiturasOffline = 0; sistemaOnline = true; mostrarOffline(false);
+                } else if (st === 'OFFLINE') {
+                    leiturasOffline++;
+                    if (leiturasOffline >= 2) { sistemaOnline = false; mostrarOffline(true, 'painel: status OFFLINE'); }
+                } else {
+                    debug('config.status ausente/desconhecido: ' + JSON.stringify(data && data.config));
+                }
             } catch (e) {
                 falhasRede++;
-                if (falhasRede < 3) return null;   // falha pontual: mantém estado
-                sistemaOnline = false;
+                debug('falha de rede (' + falhasRede + '): ' + e.message);
+                if (falhasRede >= 4) { sistemaOnline = false; mostrarOffline(true, 'sem resposta do servidor (' + e.message + ')'); }
+                data = null;
+            } finally {
+                consultando = false;
             }
-            document.getElementById('offline-overlay').classList.toggle('active', !sistemaOnline);
             if (!sistemaOnline && lastState !== 'start' && !captureInProgress) resetToStart();
             return sistemaOnline ? data : null;
         }
@@ -163,7 +196,7 @@
                 const novoEventoId = data.config.eventoId, novoFormato = (data.config.formato || 'POLAROID').toUpperCase().trim();
                 if (eventoAtual !== data.config.evento || eventoId !== novoEventoId || formatoAtual !== novoFormato || !molduraBase64) {
                     eventoAtual = data.config.evento; eventoId = novoEventoId; formatoAtual = novoFormato;
-                    if (data.moldura) molduraBase64 = data.moldura; else molduraBase64 = null;
+                    molduraBase64 = data.moldura ? data.moldura : null;
                     updateEventoUI();
                 }
             } else {
@@ -197,11 +230,11 @@
                             if (diff > 30) changed++;
                         }
                         const movement = (changed / (frame.data.length / 16)) * 100;
-                        if (movement > 3 && !personDetected) { personDetected = true; abrirCameraPorPresenca(); clearTimeout(inactivityTimeout); }
+                        if (movement > 3 && !personDetected && Date.now() > cooldownAte) { personDetected = true; abrirCameraPorPresenca(); clearTimeout(inactivityTimeout); }
                         if (movement < 0.5 && personDetected) {
                             if (!inactivityTimeout) {
                                 inactivityTimeout = setTimeout(() => {
-                                    if (lastState === 'options' || lastState === 'start') { personDetected = false; resetToStart(); }
+                                    if (lastState === 'start') { personDetected = false; }
                                     inactivityTimeout = null;
                                 }, 45000);
                             }
@@ -214,13 +247,17 @@
         }
 
         function abrirCameraPorPresenca() {
-            if (!sistemaOnline || lastState !== 'start' || captureInProgress) return;
+            if (!sistemaOnline || lastState !== 'start' || captureInProgress) { personDetected = false; return; }
             lastState = 'capturing';
             document.getElementById('screen-start').classList.remove('active');
             document.getElementById('screen-camera').classList.add('active');
-            videoFeed.style.display = 'block'; canvasCapture.style.display = 'none';
+            videoFeed.style.display = 'block'; canvasCapture.style.display = 'none'; fotoPreview.style.display = 'none';
+            optionsOverlay.classList.remove('active');
             document.getElementById('gesto-msg').classList.add('active');
-            document.getElementById('msg-texto').innerText = '🖐️ MOSTRE A MÃO ABERTA';
+            setMsg(MSG_MOSTRAR);
+            // se ninguém fizer o gesto em 30s, volta para o início
+            clearTimeout(gestoTimeout);
+            gestoTimeout = setTimeout(() => { if (lastState === 'capturing' && !captureInProgress) resetToStart(); }, 30000);
             initHandDetector();
         }
 
@@ -228,12 +265,18 @@
         async function initHandDetector() {
             if (gestureActive) return;
             gestureActive = true;
+            handVisibleFrames = 0; openFrames = 0; closedFrames = 0; noHandFrames = 0; handOpen = false;
+            if (typeof Hands === 'undefined') {
+                // biblioteca de mãos não carregou: dispara sozinho para não travar
+                setMsg('📸 PREPARE-SE!');
+                setTimeout(() => { if (gestureActive) { gestureActive = false; iniciarSequencia(); } }, 2500);
+                return;
+            }
             if (!handDetector) {
                 handDetector = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
                 handDetector.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.70, minTrackingConfidence: 0.65 });
                 handDetector.onResults(onHandResults);
             }
-            handVisibleFrames = 0; openFrames = 0; closedFrames = 0; handOpen = false;
             const loop = async () => {
                 if (!gestureActive) return;
                 try { if (videoFeed.readyState >= 2) await handDetector.send({ image: videoFeed }); } catch (e) {}
@@ -244,85 +287,178 @@
 
         function onHandResults(results) {
             if (!gestureActive) return;
-            if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) { handVisibleFrames = 0; openFrames = 0; closedFrames = 0; return; }
+            if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
+                handVisibleFrames = 0; openFrames = 0; closedFrames = 0; noHandFrames++;
+                // mão sumiu depois de aberta: volta a pedir para mostrar a mão
+                if (handOpen && noHandFrames > 45) { handOpen = false; setMsg(MSG_MOSTRAR); }
+                return;
+            }
+            noHandFrames = 0;
             handVisibleFrames++;
             const hand = results.multiHandLandmarks[0];
             const dedosAbertos = (hand[8].y < hand[6].y ? 1 : 0) + (hand[12].y < hand[10].y ? 1 : 0) + (hand[16].y < hand[14].y ? 1 : 0) + (hand[20].y < hand[18].y ? 1 : 0);
             if (handVisibleFrames < 8) return;
-            if (dedosAbertos >= 4) { openFrames++; closedFrames = 0; if (openFrames == 10) handOpen = true; }
-            if (handOpen && dedosAbertos <= 1) {
-                closedFrames++;
-                if (closedFrames == 6) { gestureActive = false; handOpen = false; capturePhoto(); }
+
+            if (!handOpen) {
+                // PASSO 1: mão aberta reconhecida -> muda a mensagem para "feche a mão"
+                if (dedosAbertos >= 4) {
+                    openFrames++;
+                    if (openFrames >= 10) { handOpen = true; closedFrames = 0; setMsg(MSG_FECHAR); }
+                } else { openFrames = 0; }
+            } else {
+                // PASSO 2: mão fechada -> aciona o contador
+                if (dedosAbertos <= 1) {
+                    closedFrames++;
+                    if (closedFrames >= 6) { gestureActive = false; handOpen = false; iniciarSequencia(); }
+                } else { closedFrames = 0; }
             }
-            if (dedosAbertos > 1 && dedosAbertos < 4) { openFrames = 0; closedFrames = 0; }
         }
 
-        function capturePhoto() {
+        // ===== Captura =====
+        function capturarFrame() {
+            const w = videoFeed.videoWidth || 1280, h = videoFeed.videoHeight || 720;
+            canvasCapture.width = w; canvasCapture.height = h;
+            ctx.drawImage(videoFeed, 0, 0, w, h);          // quadro cru (o espelho é aplicado na montagem)
+            return canvasCapture.toDataURL('image/jpeg', 0.92);
+        }
+
+        function piscar() {
+            const f = document.getElementById('flash');
+            f.style.display = 'block'; setTimeout(() => { f.style.display = 'none'; }, 120);
+        }
+
+        async function iniciarSequencia() {
+            if (captureInProgress) return;
             captureInProgress = true;
+            clearTimeout(gestoTimeout);
             document.getElementById('gesto-msg').classList.remove('active');
-            funText.style.display = 'block'; funText.innerHTML = "✨ PREPARE-SE! ✨";
-            setTimeout(() => {
-                let cd = 3;
-                funText.innerHTML = `😁 SORRIA! 😁<br>⏳ ${cd}`;
-                const t = setInterval(() => {
-                    cd--;
-                    if (cd > 0) { funText.innerHTML = `😁 SORRIA! 😁<br>⏳ ${cd}`; }
-                    else {
-                        funText.style.display = 'none'; clearInterval(t);
-                        canvasCapture.width = videoFeed.videoWidth || 1280; canvasCapture.height = videoFeed.videoHeight || 720;
-                        ctx.save(); ctx.scale(-1, 1); ctx.drawImage(videoFeed, -canvasCapture.width, 0, canvasCapture.width, canvasCapture.height); ctx.restore();
-                        videoFeed.style.display = 'block'; canvasCapture.style.display = 'block';
-                        fetch(`${API_BASE}/set-state`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state: 'options' }) }).catch(() => {});
-                        captureInProgress = false; optionsOverlay.classList.add('active');
-                        lastState = 'options';
-                        document.getElementById('gesto-msg').classList.add('active'); document.getElementById('msg-texto').innerText = '👉 RETIRE SUA FOTO NO TOTEM';
-                    }
-                }, 1000);
-            }, 2500);
+            capFormato = formatoAtual; capEventoId = eventoId; capMoldura = molduraBase64;
+            const total = capFormato === 'TIRINHA' ? 3 : 1;
+            fotos = [];
+            funText.style.display = 'block';
+            for (let n = 1; n <= total; n++) {
+                funText.innerHTML = total > 1 ? `✨ FOTO ${n} DE ${total} ✨` : '✨ PREPARE-SE! ✨';
+                await sleep(n === 1 ? 1500 : 1000);
+                for (let cd = 3; cd > 0; cd--) {
+                    funText.innerHTML = total > 1 ? `📸 FOTO ${n} DE ${total}<br>⏳ ${cd}` : `😁 SORRIA! 😁<br>⏳ ${cd}`;
+                    await sleep(1000);
+                }
+                funText.style.display = 'none';
+                fotos.push(capturarFrame());
+                piscar();
+                videoFeed.style.display = 'block'; canvasCapture.style.display = 'block';   // congela o quadro
+                if (n < total) {
+                    await sleep(800);
+                    canvasCapture.style.display = 'none';
+                    funText.style.display = 'block';
+                }
+            }
+            captureInProgress = false;
+            finalizarFoto();
         }
 
-        async function composeAndUpload(opcaoCopias) {
-            if (!molduraBase64) return;
-            const copiasFisicas = opcaoCopias === 1 ? 1 : opcaoCopias === 2 ? 2 : opcaoCopias === 3 ? 2 : 3;
+        function carregarImg(src) {
+            return new Promise((resolve, reject) => { const img = new Image(); img.onload = () => resolve(img); img.onerror = reject; img.src = src; });
+        }
+
+        function desenharCover(c, img, dx, dy, dw, dh, espelhar) {
+            c.save();
+            c.beginPath(); c.rect(dx, dy, dw, dh); c.clip();
+            if (espelhar) { c.translate(dx + dw / 2, 0); c.scale(-1, 1); c.translate(-(dx + dw / 2), 0); }
+            const r = Math.max(dw / img.width, dh / img.height);
+            c.drawImage(img, dx + (dw - img.width * r) / 2, dy + (dh - img.height * r) / 2, img.width * r, img.height * r);
+            c.restore();
+        }
+
+        async function comporFoto() {
+            const fmt = FORMATOS[capFormato] || FORMATOS['POLAROID'];
+            const cv = document.createElement('canvas'); cv.width = fmt.w; cv.height = fmt.h;
+            const c = cv.getContext('2d'); c.fillStyle = '#FFFFFF'; c.fillRect(0, 0, cv.width, cv.height);
+            const imgs = await Promise.all(fotos.map(carregarImg));
+            if (capFormato === 'TIRINHA') {
+                const slots = [{ y: 0.030, h: 0.254 }, { y: 0.296, h: 0.254 }, { y: 0.559, h: 0.254 }];
+                imgs.forEach((img, i) => {
+                    const s = slots[i];
+                    desenharCover(c, img, cv.width * 0.06, cv.height * s.y, cv.width * 0.88, cv.height * s.h, true);
+                });
+            } else {
+                desenharCover(c, imgs[0], 0, 0, cv.width, cv.height, true);
+            }
+            if (capMoldura) {
+                try { const m = await carregarImg(capMoldura); c.drawImage(m, 0, 0, cv.width, cv.height); }
+                catch (e) { debug('moldura não carregou: ' + e.message); }
+            }
+            // mostra a foto final montada na tela
+            fotoPreview.src = cv.toDataURL('image/jpeg', 0.85);
+            fotoPreview.style.display = 'block';
+            canvasCapture.style.display = 'none';
+            return await new Promise(r => cv.toBlob(r, 'image/jpeg', 0.95));
+        }
+
+        async function enviarFoto(blob) {
+            if (!capEventoId) { debug('sem eventoId, foto não enviada'); return false; }
+            const copias = COPIAS_PADRAO, ts = Date.now();
+            for (let tentativa = 1; tentativa <= 3; tentativa++) {
+                try {
+                    const fd = new FormData();
+                    fd.append('foto', blob, `foto_${ts}_${copias}c.jpg`);
+                    fd.append('eventoId', capEventoId);
+                    fd.append('timestamp', String(ts) + '_' + copias + 'c');
+                    fd.append('copias', String(copias));
+                    const res = await fetch(`${API_BASE}/salvar-foto`, { method: 'POST', body: fd });
+                    if (res.ok) return true;
+                    debug('salvar-foto HTTP ' + res.status);
+                } catch (e) { debug('salvar-foto erro: ' + e.message); }
+                await sleep(1000);
+            }
+            return false;
+        }
+
+        async function finalizarFoto() {
+            lastState = 'options';
+            const minha = ++rodadaId;
+            let restante = SEGUNDOS_RESULTADO, status = 'enviando';
+            const atualizar = () => {
+                if (minha !== rodadaId) return;
+                const base = status === 'ok' ? '✅ FOTO ENVIADA!' : status === 'erro' ? '⚠️ FALHA NO ENVIO' : '⏳ ENVIANDO SUA FOTO...';
+                optionsTextEl.innerText = `${base}  •  VOLTANDO EM ${restante}s`;
+            };
+            optionsOverlay.classList.add('active');
+            atualizar();
+            const timer = setInterval(() => {
+                if (minha !== rodadaId) { clearInterval(timer); return; }
+                restante--;
+                if (restante <= 0) { clearInterval(timer); resetToStart(); }
+                else atualizar();
+            }, 1000);
+            fetch(`${API_BASE}/set-state`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state: 'options' }) }).catch(() => {});
             try {
-                const fotoImg = await new Promise(r => { const img = new Image(); img.onload = () => r(img); img.src = canvasCapture.toDataURL('image/jpeg', 0.92); });
-                const molduraImg = await new Promise((rs, rj) => { const img = new Image(); img.onload = () => rs(img); img.onerror = rj; img.src = molduraBase64; });
-                const fmt = FORMATOS[formatoAtual] || FORMATOS['POLAROID'];
-                const canvas = document.createElement('canvas'); canvas.width = fmt.w; canvas.height = fmt.h;
-                const cctx = canvas.getContext('2d'); cctx.fillStyle = '#FFFFFF'; cctx.fillRect(0, 0, canvas.width, canvas.height);
-                const scale = Math.max(canvas.width / fotoImg.width, canvas.height / fotoImg.height);
-                cctx.drawImage(fotoImg, (canvas.width - fotoImg.width * scale) / 2, (canvas.height - fotoImg.height * scale) / 2, fotoImg.width * scale, fotoImg.height * scale);
-                cctx.drawImage(molduraImg, 0, 0, canvas.width, canvas.height);
-                const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.95));
-                const temGuestbook = (opcaoCopias === 3 || opcaoCopias === 4);
-                const sufixo = temGuestbook ? '_guestbook' : '';
-                const fd = new FormData();
-                fd.append('foto', blob, `foto_${Date.now()}_${copiasFisicas}c${sufixo}.jpg`);
-                fd.append('eventoId', eventoId);
-                fd.append('timestamp', String(Date.now()) + '_' + copiasFisicas + 'c' + sufixo);
-                fd.append('copias', String(copiasFisicas));
-                await fetch(`${API_BASE}/salvar-foto`, { method: 'POST', body: fd });
-                showThanks();
-            } catch (e) { debug('❌ ' + e.message); }
+                const blob = await comporFoto();
+                const ok = await enviarFoto(blob);
+                status = ok ? 'ok' : 'erro';
+            } catch (e) {
+                debug('❌ ' + e.message);
+                status = 'erro';
+            }
+            atualizar();
         }
 
-        function showThanks() {
-            document.querySelectorAll('.screen').forEach(e => e.classList.remove('active'));
-            document.getElementById('screen-thanks').classList.add('active');
-            document.getElementById('thanks-text').innerHTML = "🖨️ AGUARDE A IMPRESSÃO...";
-            setTimeout(() => { document.getElementById('thanks-text').innerHTML = "💖 OBRIGADO! 💖"; setTimeout(resetToStart, 2500); }, 2500);
-        }
-
+        // ===== Volta para a tela inicial =====
         function resetToStart() {
+            rodadaId++;
+            clearTimeout(gestoTimeout);
             document.querySelectorAll('.screen').forEach(e => e.classList.remove('active'));
             document.getElementById('screen-start').classList.add('active');
             ctx.clearRect(0, 0, canvasCapture.width, canvasCapture.height);
-            canvasCapture.style.display = 'none'; videoFeed.style.display = 'block';
+            canvasCapture.style.display = 'none'; fotoPreview.style.display = 'none'; fotoPreview.removeAttribute('src');
+            videoFeed.style.display = 'block';
             captureInProgress = false; lastState = 'start'; personDetected = false; gestureActive = false;
             document.getElementById('gesto-msg').classList.remove('active');
             optionsOverlay.classList.remove('active'); funText.style.display = 'none';
-            handVisibleFrames = 0; openFrames = 0; closedFrames = 0; handOpen = false;
+            handVisibleFrames = 0; openFrames = 0; closedFrames = 0; noHandFrames = 0; handOpen = false;
             previousFrame = null;
+            cooldownAte = Date.now() + 4000;     // evita reabrir na hora com a pessoa ainda na frente
+            fotos = [];
             fetch(`${API_BASE}/set-state`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state: 'start' }) }).catch(() => {});
         }
 
@@ -360,13 +496,14 @@
         })();
 
         window.addEventListener('load', () => {
-            initCamera(); // Ativa câmera imediatamente
+            initCamera();
             syncEvento();
             setInterval(syncEvento, 5000);
         });
         window.addEventListener('beforeunload', () => {
             if (stream) stream.getTracks().forEach(t => t.stop());
             if (inactivityTimeout) clearTimeout(inactivityTimeout);
+            if (gestoTimeout) clearTimeout(gestoTimeout);
         });
     </script>
 </body>

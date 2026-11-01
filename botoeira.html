@@ -59,6 +59,7 @@
     <script>
         const API = "https://photoprint-api.maxprimefotovideo.workers.dev";
         let sistemaOnline = false, eventoAtivo = false, processando = false, intervaloSync = null;
+        let falhasRede = 0, leiturasOffline = 0, consultando = false, ultimoLog = '';
 
         function log(msg, tipo = '') {
             const box = document.getElementById('log-box'), line = document.createElement('div');
@@ -68,43 +69,61 @@
             if (box.children.length > 15) box.removeChild(box.firstChild);
         }
 
+        // registra no log só quando o estado muda (evita encher o log a cada consulta)
+        function logMudanca(msg, tipo = '') { if (msg !== ultimoLog) { ultimoLog = msg; log(msg, tipo); } }
+
         function atualizarStatusUI() {
             const badge = document.getElementById('status-badge'), text = document.getElementById('status-text');
             const btn = document.getElementById('btn-trigger'), btnText = document.getElementById('btn-text'), eventName = document.getElementById('event-name');
-            
+
             badge.classList.toggle('online', sistemaOnline);
             text.innerText = sistemaOnline ? "Online" : "Offline";
-            
+
             if (!sistemaOnline || !eventoAtivo) {
                 btn.classList.add('disabled');
-                btnText.innerText = "Aguardando Sincronização";
-                eventName.innerText = sistemaOnline ? "Nenhum evento ativo" : "—";
+                if (!processando) btnText.innerText = "Aguardando Sincronização";
+                if (!sistemaOnline) eventName.innerText = "—";
+                else if (!eventoAtivo) eventName.innerText = "Nenhum evento ativo";
             } else {
                 btn.classList.remove('disabled');
                 if (!processando) btnText.innerText = "DISPARAR CAPTURA";
             }
         }
 
-        let falhasRede = 0;
-async function verificarSistema() {
-    try {
-        const ctrl = new AbortController();
-        const to = setTimeout(() => ctrl.abort(), 6000);
-        const res = await fetch(`${API}/get-all-states?t=${Date.now()}`, { cache: 'no-store', signal: ctrl.signal });
-        clearTimeout(to);
-        if (!res.ok) throw new Error('http');
-        const data = await res.json();
-        falhasRede = 0;
-        const cfg = data.config || {};
-        sistemaOnline = cfg.status === 'ONLINE';
-        eventoAtivo = !!(cfg.evento && cfg.evento !== 'Geral');
-        document.getElementById('event-name').innerText = eventoAtivo ? cfg.evento : '—';
-    } catch (e) {
-        falhasRede++;
-        if (falhasRede >= 3) { sistemaOnline = false; eventoAtivo = false; }
-    }
-    atualizarStatusUI();
-}
+        // Offline SOMENTE quando o painel diz OFFLINE (2 leituras seguidas)
+        // ou quando o servidor fica realmente sem resposta (4 falhas seguidas).
+        async function verificarSistema() {
+            if (consultando) return;           // evita requisições sobrepostas
+            consultando = true;
+            try {
+                const ctrl = new AbortController();
+                const to = setTimeout(() => ctrl.abort(), 20000);   // a resposta é pesada, precisa de folga
+                const res = await fetch(`${API}/get-all-states?t=${Date.now()}`, { cache: 'no-store', signal: ctrl.signal });
+                clearTimeout(to);
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+                falhasRede = 0;
+                const cfg = data.config || {};
+                if (cfg.status === 'ONLINE') {
+                    leiturasOffline = 0; sistemaOnline = true;
+                    logMudanca('Painel ONLINE.', 'success');
+                } else if (cfg.status === 'OFFLINE') {
+                    leiturasOffline++;
+                    if (leiturasOffline >= 2) { sistemaOnline = false; logMudanca('Painel OFFLINE.', 'error'); }
+                }
+                eventoAtivo = !!(cfg.evento && cfg.evento !== 'Geral');
+                if (eventoAtivo) document.getElementById('event-name').innerText = cfg.evento;
+            } catch (e) {
+                falhasRede++;
+                if (falhasRede >= 4) {
+                    sistemaOnline = false; eventoAtivo = false;
+                    logMudanca('Sem resposta do servidor (' + e.message + ').', 'error');
+                }
+            } finally {
+                consultando = false;
+            }
+            atualizarStatusUI();
+        }
 
         async function dispararCaptura() {
             if (processando || !sistemaOnline || !eventoAtivo) return;
@@ -116,7 +135,7 @@ async function verificarSistema() {
                 if (res.ok) {
                     log("Sucesso! Câmera acionada.", "success");
                     btn.classList.remove('processing'); btn.classList.add('success'); btnText.innerText = "CAPTURADO!";
-                    setTimeout(() => { btn.classList.remove('success'); processando = false; btnText.innerText = "DISPARAR CAPTURA"; }, 2000);
+                    setTimeout(() => { btn.classList.remove('success'); processando = false; btnText.innerText = "DISPARAR CAPTURA"; atualizarStatusUI(); }, 2000);
                 } else throw new Error('Falha');
             } catch (e) {
                 log("Erro ao enviar comando.", "error");
@@ -125,11 +144,11 @@ async function verificarSistema() {
             }
         }
 
-        window.addEventListener('load', () => { 
-            verificarSistema(); 
-            intervaloSync = setInterval(verificarSistema, 2000); // Sincroniza a cada 2 segundos
+        window.addEventListener('load', () => {
+            verificarSistema();
+            intervaloSync = setInterval(verificarSistema, 4000); // sincroniza a cada 4 segundos
         });
-        
+
         window.addEventListener('beforeunload', () => { if (intervaloSync) clearInterval(intervaloSync); });
     </script>
 </body>

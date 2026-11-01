@@ -157,7 +157,7 @@
         // ===== Sincronização com o painel =====
         // Offline SOMENTE quando o painel diz OFFLINE (2 leituras seguidas)
         // ou quando o servidor fica realmente sem resposta (4 falhas seguidas).
-        let falhasRede = 0, leiturasOffline = 0, consultando = false;
+        let falhasRede = 0, leiturasOffline = 0, consultando = false, primeiraConsulta = true;
 
         function mostrarOffline(on, motivo) {
             document.getElementById('offline-overlay').classList.toggle('active', on);
@@ -176,15 +176,22 @@
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 data = await res.json();
                 falhasRede = 0;
-                const st = data && data.config ? data.config.status : undefined;
-                if (st === 'ONLINE') {
-                    leiturasOffline = 0; sistemaOnline = true; mostrarOffline(false);
-                } else if (st === 'OFFLINE') {
-                    leiturasOffline++;
-                    if (leiturasOffline >= 2) { sistemaOnline = false; mostrarOffline(true, 'painel: status OFFLINE'); }
+                // ▶▶▶ INÍCIO: manutenção quando NÃO há evento ativo no painel ◀◀◀
+                const cfg = data && data.config;
+                if (cfg) {
+                    const comEvento = cfg.status === 'ONLINE' && !!cfg.eventoId && !!cfg.evento && cfg.evento !== 'Geral';
+                    if (comEvento) {
+                        leiturasOffline = 0; sistemaOnline = true; mostrarOffline(false);
+                    } else {
+                        leiturasOffline++;
+                        // 1ª consulta ao abrir a página mostra na hora; depois confirma com 2 leituras seguidas
+                        if (leiturasOffline >= 2 || primeiraConsulta) { sistemaOnline = false; mostrarOffline(true, 'nenhum evento ativo no painel'); }
+                    }
+                    primeiraConsulta = false;
                 } else {
-                    debug('config.status ausente/desconhecido: ' + JSON.stringify(data && data.config));
+                    debug('resposta sem config: ' + JSON.stringify(data));
                 }
+                // ▶▶▶ FIM: manutenção quando NÃO há evento ativo no painel ◀◀◀
             } catch (e) {
                 falhasRede++;
                 debug('falha de rede (' + falhasRede + '): ' + e.message);
@@ -292,7 +299,7 @@
                 if (apenasLimpar) { await limparEstadoBotoeira(); return; }
 
                 // só aceita com a câmera ligada e livre (não durante a contagem nem com a foto na tela)
-                const livre = stream && !captureInProgress && (lastState === 'start' || lastState === 'capturing');
+                const livre = sistemaOnline && stream && !captureInProgress && (lastState === 'start' || lastState === 'capturing');
                 if (livre) {
                     await limparEstadoBotoeira();   // consome o comando (evita disparar duas vezes)
                     acionarPorBotoeira();

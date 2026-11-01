@@ -1,7 +1,9 @@
-/* ▶▶▶ INÍCIO TRECHO — sw.js (Cache do App Shell) ◀◀◀ */
-const CACHE_NAME = 'photoprint-v1';
+/* ▶▶▶ INÍCIO TRECHO — sw.js (Cache do App Shell do Hub) ◀◀◀ */
+const CACHE_NAME = 'photoprint-hub-v1';
 const ASSETS = [
+  './index.html',
   './celular.html',
+  './quiosque.html',
   './style.css',
   './manifest.json',
   './icons/icon-192.png',
@@ -22,7 +24,7 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  // Ignora requisições para a API (sempre busca dados frescos)
+  // Ignora a API (sempre dados frescos)
   if (e.request.url.includes('workers.dev')) return;
   
   e.respondWith(

@@ -115,10 +115,8 @@
                 if (eventoAtivo) document.getElementById('event-name').innerText = cfg.evento;
             } catch (e) {
                 falhasRede++;
-                if (falhasRede >= 4) {
-                    sistemaOnline = false; eventoAtivo = false;
-                    logMudanca('Sem resposta do servidor (' + e.message + ').', 'error');
-                }
+                // servidor instável: mantém o último estado do painel (falha de rede NÃO derruba a botoeira)
+                if (falhasRede >= 4) logMudanca('Servidor instável (' + e.message + '). Mantendo o último estado.', 'error');
             } finally {
                 consultando = false;
             }

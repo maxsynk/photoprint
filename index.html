@@ -6,6 +6,11 @@
     <title>PHOTO PRINT — Master Hub</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Photo Print">
+<meta name="theme-color" content="#00E5FF">
     <style>
         body { display: flex; align-items: center; justify-content: center; padding: 24px; overflow-x: hidden; }
         .grid-bg { position: fixed; inset: 0; background-image: linear-gradient(rgba(0,229,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,255,0.02) 1px, transparent 1px); background-size: 50px 50px; pointer-events: none; z-index: 0; mask-image: radial-gradient(circle at 50% 50%, black 30%, transparent 70%); -webkit-mask-image: radial-gradient(circle at 50% 50%, black 30%, transparent 70%); }
@@ -137,5 +142,11 @@
         document.getElementById('pass').addEventListener('keydown', (event) => { if (event.key === 'Enter') checkPass(); });
         document.addEventListener('keydown', (e) => { if (e.ctrlKey && e.shiftKey && e.key === 'L') { e.preventDefault(); logout(); } });
     </script>
+<script src="install.js"></script>
+<script>
+  document.querySelectorAll('.module-card').forEach(link => {
+    link.removeAttribute('target'); 
+  });
+</script>
 </body>
 </html>

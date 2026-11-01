@@ -45,6 +45,7 @@
         #sub-count { font-family: var(--font-body); font-size: 11px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-top: 6px; display: block; }
         #cam-controls { position: absolute; bottom: 40px; left: 0; right: 0; display: flex; align-items: center; justify-content: space-evenly; width: 100%; padding: 0 24px; pointer-events: auto; }
         .cam-btn { width: 58px; height: 58px; background: rgba(0,0,0,0.8); border: 1.5px solid var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(12px); }
+        .cam-btn.disabled { opacity: 0.35; pointer-events: none; }
         .cam-btn i { color: var(--accent); font-size: 20px; }
         .shutter-wrapper { position: relative; width: 96px; height: 96px; display: flex; align-items: center; justify-content: center; }
         .shutter-btn { position: relative; width: 76px; height: 76px; background: radial-gradient(circle, #000 40%, rgba(0,229,255,0.1) 100%); border-radius: 50%; border: 4px solid var(--accent); cursor: pointer; box-shadow: 0 0 24px var(--accent); z-index: 2; }
@@ -54,9 +55,10 @@
         #loader.active { display: flex; }
         .spin { width: 60px; height: 60px; border: 4px solid rgba(0,229,255,0.15); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        #offline-overlay { position: fixed; inset: 0; background: #000; z-index: 9999; display: none; align-items: center; justify-content: center; flex-direction: column; padding: 30px; }
+        #offline-overlay { position: fixed; inset: 0; background: #000; z-index: 9999; display: none; align-items: center; justify-content: center; flex-direction: column; padding: 30px; gap: 16px; }
         #offline-overlay.active { display: flex; }
         .offline-text { font-family: var(--font-display); font-size: 26px; font-weight: 900; color: var(--danger); text-transform: uppercase; letter-spacing: 3px; text-align: center; }
+        #offline-motivo { font-family: var(--font-mono, monospace); font-size: 11px; color: var(--text-3); letter-spacing: 1px; text-align: center; }
         .print-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 90%; max-width: 360px; margin: 20px auto; }
         .print-capsule-btn { background: rgba(0,0,0,0.6); border: 2px solid var(--accent); color: var(--accent); padding: 14px 15px; font-size: 11px; font-weight: 800; border-radius: 50px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; }
         .print-capsule-btn.active { background: var(--accent); color: var(--bg-0); }
@@ -68,7 +70,7 @@
 <body>
     <div id="dynamic-bg"></div>
     <div class="status-badge" id="status-badge"><span class="dot"></span><span id="status-text">Offline</span></div>
-    <div id="offline-overlay"><div class="offline-text">Sistema em<br>Manutenção</div></div>
+    <div id="offline-overlay"><div class="offline-text">Sistema em<br>Manutenção</div><div id="offline-motivo"></div></div>
     <div id="flash"></div>
     <div id="loader"></div>
 
@@ -142,47 +144,67 @@
             text.innerText = online ? 'Online' : 'Offline';
         }
 
-        let falhasRede = 0;
-async function verificarStatus() {
-    let data = null;
-    try {
-        const ctrl = new AbortController();
-        const to = setTimeout(() => ctrl.abort(), 6000);
-        const res = await fetch(`${API}/get-all-states?t=${Date.now()}`, { cache: 'no-store', signal: ctrl.signal });
-        clearTimeout(to);
-        if (!res.ok) throw new Error('http');
-        data = await res.json();
-        falhasRede = 0;
-        sistemaOnline = !!(data.config && data.config.status === 'ONLINE');
-    } catch (e) {
-        falhasRede++;
-        if (falhasRede < 3) return null;   // falha pontual: mantém o estado atual
-        sistemaOnline = false;
-    }
-    document.getElementById('offline-overlay').classList.toggle('active', !sistemaOnline);
-    atualizarBadgeStatus(sistemaOnline);
-    return sistemaOnline ? data : null;
-}
+        function mostrarOffline(on, motivo) {
+            document.getElementById('offline-overlay').classList.toggle('active', on);
+            document.getElementById('offline-motivo').innerText = on ? (motivo || '') : '';
+            atualizarBadgeStatus(!on);
+        }
 
-async function sync() {
-    const data = await verificarStatus();
-    if (!sistemaOnline) {
-        if (stream && !captureInProgress) voltarHome();   // painel ficou offline com a câmera aberta
-        return;
-    }
-    if (!data) return;
-    if (data.config && data.config.evento && data.config.evento !== 'Geral') {
-        ev = data.config.evento;
-        formatStr = (data.config.formato || 'POLAROID').toUpperCase().trim();
-        eventoId = data.config.eventoId;
-        guestbookAtivo = (data.config.livro === true || data.config.livro === 1);
-        molduraBase64 = data.moldura || '';
-    } else {
-        ev = "Geral"; formatStr = "POLAROID"; eventoId = ""; molduraBase64 = ""; guestbookAtivo = false;
-    }
-    document.getElementById('nome-evento-capa').innerText = ev || "—";
-    configAtual = FORMATOS[formatStr] || FORMATOS["POLAROID"];
-}
+        // Offline SOMENTE quando o painel diz OFFLINE (2 leituras seguidas)
+        // ou quando o servidor fica realmente sem resposta (4 falhas seguidas).
+        let falhasRede = 0, leiturasOffline = 0, consultando = false;
+
+        async function verificarStatus() {
+            if (consultando) return null;      // evita requisições sobrepostas
+            consultando = true;
+            let data = null;
+            try {
+                const ctrl = new AbortController();
+                const to = setTimeout(() => ctrl.abort(), 20000);   // a moldura é pesada, precisa de folga
+                const res = await fetch(`${API}/get-all-states?t=${Date.now()}`, { cache: 'no-store', signal: ctrl.signal });
+                clearTimeout(to);
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                data = await res.json();
+                falhasRede = 0;
+                const st = data && data.config ? data.config.status : undefined;
+                if (st === 'ONLINE') {
+                    leiturasOffline = 0; sistemaOnline = true; mostrarOffline(false);
+                } else if (st === 'OFFLINE') {
+                    leiturasOffline++;
+                    if (leiturasOffline >= 2) { sistemaOnline = false; mostrarOffline(true, 'painel: status OFFLINE'); }
+                } else {
+                    console.log('config.status ausente/desconhecido:', data && data.config);
+                }
+            } catch (e) {
+                falhasRede++;
+                console.log('falha de rede (' + falhasRede + '):', e.message);
+                if (falhasRede >= 4) { sistemaOnline = false; mostrarOffline(true, 'sem resposta do servidor (' + e.message + ')'); }
+                data = null;
+            } finally {
+                consultando = false;
+            }
+            return sistemaOnline ? data : null;
+        }
+
+        async function sync() {
+            const data = await verificarStatus();
+            if (!sistemaOnline) {
+                if (stream && !captureInProgress) voltarHome();   // painel ficou offline com a câmera aberta
+                return;
+            }
+            if (!data) return;
+            if (data.config && data.config.evento && data.config.evento !== 'Geral') {
+                ev = data.config.evento;
+                formatStr = (data.config.formato || 'POLAROID').toUpperCase().trim();
+                eventoId = data.config.eventoId;
+                guestbookAtivo = (data.config.livro === true || data.config.livro === 1);
+                molduraBase64 = data.moldura || '';
+            } else {
+                ev = "Geral"; formatStr = "POLAROID"; eventoId = ""; molduraBase64 = ""; guestbookAtivo = false;
+            }
+            document.getElementById('nome-evento-capa').innerText = ev || "—";
+            configAtual = FORMATOS[formatStr] || FORMATOS["POLAROID"];
+        }
 
         async function startStream() {
             if (stream) stream.getTracks().forEach(t => t.stop());
@@ -202,6 +224,7 @@ async function sync() {
 
         async function ligar() {
             if (!sistemaOnline) return mostrarToast("Offline", "Sistema desligado no painel.", "error");
+            if (!configAtual) configAtual = FORMATOS["POLAROID"];
             if (!molduraBase64) return mostrarToast("Moldura ausente", "Configure no painel.", "warning");
             document.getElementById('cam-container').classList.add('active');
             document.getElementById('info-topo').innerText = `${ev} | ${formatStr}`;
@@ -214,6 +237,7 @@ async function sync() {
             if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
             document.getElementById('cam-container').classList.remove('active');
             document.getElementById('shutter-placeholder').style.visibility = "visible";
+            document.getElementById('btn-switch').classList.remove('disabled');
         }
 
         async function iniciarSequencia() {
@@ -253,12 +277,12 @@ async function sync() {
             document.getElementById('loader').innerHTML = `<div class="spin"></div><p style="color:var(--accent);margin-top:20px;font-weight:700;">Processando...</p>`;
             document.getElementById('loader').classList.add('active');
             const cv = document.getElementById('c-strip'), ctx = cv.getContext('2d'), molduraImg = new Image();
-            
+
             molduraImg.onload = () => {
                 cv.width = configAtual.w; cv.height = configAtual.h;
                 ctx.fillStyle = "white"; ctx.fillRect(0, 0, cv.width, cv.height);
                 if (formatStr === "TIRINHA") {
-                                        const slots = [{ y: 0.030, h: 0.254 }, { y: 0.296, h: 0.254 }, { y: 0.559, h: 0.254 }];
+                    const slots = [{ y: 0.030, h: 0.254 }, { y: 0.296, h: 0.254 }, { y: 0.559, h: 0.254 }];
                     let count = 0;
                     pics.forEach((src, i) => {
                         const img = new Image();

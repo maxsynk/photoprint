@@ -34,6 +34,9 @@
         #gesto-msg.active { display: block; }
         .msg-text { font-family: var(--font-display); font-size: clamp(20px, 3vw, 28px); font-weight: 900; color: #fff; text-shadow: 0 0 30px var(--accent); animation: pulseGesto 1.2s ease-in-out infinite; text-transform: uppercase; letter-spacing: 3px; text-align: center; background: rgba(0,0,0,0.8); padding: 16px 36px; border-radius: 30px; border: 2px solid var(--accent); backdrop-filter: blur(10px); white-space: nowrap; }
         @keyframes pulseGesto { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.03); } }
+        /* ▶▶▶ INÍCIO: cor da mensagem "FECHE A MÃO" (muda de ciano/branco para verde) ◀◀◀ */
+        .msg-text.fechar { color: #39ff14; background: rgba(0,35,0,0.9); border-color: #39ff14; text-shadow: 0 0 24px #39ff14; box-shadow: 0 0 36px rgba(57,255,20,0.55); }
+        /* ▶▶▶ FIM: cor da mensagem "FECHE A MÃO" ◀◀◀ */
         .screen { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 20; flex-direction: column; }
         .screen.active { display: flex; }
         .btn-start { position: relative; width: clamp(280px, 40vw, 380px); height: clamp(280px, 40vw, 380px); border-radius: 50%; border: 4px solid var(--accent); background: radial-gradient(circle at center, rgba(0,229,255,0.15), rgba(0,0,0,0.96)); overflow: hidden; transition: all 0.3s; display: flex; align-items: center; justify-content: center; padding: 40px; box-shadow: 0 0 40px rgba(0,229,255,0.5); z-index: 30; animation: startPulse 2.5s infinite; }
@@ -109,7 +112,11 @@
 
         const sleep = (ms) => new Promise(r => setTimeout(r, ms));
         function debug(msg) { console.log(msg); }
-        function setMsg(t) { document.getElementById('msg-texto').innerText = t; }
+        function setMsg(t) {
+            const el = document.getElementById('msg-texto');
+            el.innerText = t;
+            el.classList.toggle('fechar', t === MSG_FECHAR);   // só a mensagem "feche a mão" usa a cor verde
+        }
 
         // ===== Câmera robusta, com retry e watchdog =====
         let iniciandoCamera = false;

@@ -96,6 +96,7 @@
         const MSG_FECHAR = '✊ AGORA FECHE A MÃO';
         const COPIAS_PADRAO = 1;          // cópias impressas por foto tirada na webcam
         const SEGUNDOS_RESULTADO = 5;     // tempo da foto na tela antes de voltar ao início
+        const INTERVALO_BOTOEIRA_MS = 1500; // de quanto em quanto tempo a webcam pergunta se a botoeira foi apertada
 
         let stream = null, lastState = 'start', captureInProgress = false, handDetector = null;
         let handOpen = false, gestureActive = false, sistemaOnline = true;
@@ -261,6 +262,53 @@
             gestoTimeout = setTimeout(() => { if (lastState === 'capturing' && !captureInProgress) resetToStart(); }, 30000);
             initHandDetector();
         }
+
+        // ▶▶▶ INÍCIO DO BLOCO NOVO — Botoeira aciona a webcam ◀◀◀
+        // A botoeira grava state='capturing' no Worker (/set-state). A webcam lê esse valor
+        // (/get-state), consome (volta para 'start') e dispara a foto na hora, sem esperar o gesto.
+        let consultandoBotoeira = false;
+
+        function limparEstadoBotoeira() {
+            return fetch(`${API_BASE}/set-state`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state: 'start' }) }).catch(() => {});
+        }
+
+        async function checarBotoeira(apenasLimpar) {
+            if (consultandoBotoeira) return;
+            consultandoBotoeira = true;
+            try {
+                const res = await fetch(`${API_BASE}/get-state?t=${Date.now()}`, { cache: 'no-store' });
+                if (!res.ok) return;
+                const data = await res.json();
+                if (!data || data.state !== 'capturing') return;
+
+                // ao abrir a página, apaga um 'capturing' antigo para não disparar sozinho
+                if (apenasLimpar) { await limparEstadoBotoeira(); return; }
+
+                // só aceita com a câmera ligada e livre (não durante a contagem nem com a foto na tela)
+                const livre = stream && !captureInProgress && (lastState === 'start' || lastState === 'capturing');
+                if (livre) {
+                    await limparEstadoBotoeira();   // consome o comando (evita disparar duas vezes)
+                    acionarPorBotoeira();
+                }
+                // se estiver ocupada, ignora: o resetToStart() já volta o estado para 'start'
+            } catch (e) {
+            } finally {
+                consultandoBotoeira = false;
+            }
+        }
+
+        function acionarPorBotoeira() {
+            gestureActive = false; handOpen = false;       // para a detecção de mão, se estava ativa
+            clearTimeout(gestoTimeout);
+            lastState = 'capturing'; personDetected = true;
+            document.getElementById('screen-start').classList.remove('active');
+            document.getElementById('screen-camera').classList.add('active');
+            videoFeed.style.display = 'block'; canvasCapture.style.display = 'none'; fotoPreview.style.display = 'none';
+            optionsOverlay.classList.remove('active');
+            document.getElementById('gesto-msg').classList.remove('active');
+            iniciarSequencia();
+        }
+        // ▶▶▶ FIM DO BLOCO NOVO — Botoeira aciona a webcam ◀◀◀
 
         // ===== Detector de mão (sem desligar a webcam) =====
         async function initHandDetector() {
@@ -500,6 +548,8 @@
             initCamera();
             syncEvento();
             setInterval(syncEvento, 5000);
+            checarBotoeira(true);                                        // limpa 'capturing' antigo, sem disparar
+            setInterval(() => checarBotoeira(false), INTERVALO_BOTOEIRA_MS);
         });
         window.addEventListener('beforeunload', () => {
             if (stream) stream.getTracks().forEach(t => t.stop());

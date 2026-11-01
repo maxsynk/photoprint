@@ -63,11 +63,11 @@
     <input type="file" id="bg-input" accept="image/*">
     <div id="offline-overlay"><div class="offline-text">SISTEMA EM<br>MANUTENÇÃO</div></div>
     <div id="gesto-msg"><div class="msg-text" id="msg-texto">🖐️ MOSTRE A MÃO ABERTA</div></div>
-    
+
     <div id="screen-start" class="screen active">
         <div class="btn-start"><div class="start-content"><div class="start-icon"><i class="fas fa-camera"></i></div><div class="start-title">PHOTO PRINT</div><div class="start-subtitle">Aproxime-se para ativar</div></div></div>
     </div>
-    
+
     <div id="screen-camera" class="screen" style="z-index:40;">
         <div id="camera-wrapper">
             <video id="camera-feed" autoplay playsinline muted></video>
@@ -76,7 +76,7 @@
             <div id="options-overlay"><div class="options-text">ACESSE O TOTEM PARA IMPRIMIR SUA FOTO</div></div>
         </div>
     </div>
-    
+
     <div id="screen-thanks" class="screen"><div class="status-text" id="thanks-text">🖨️ AGUARDE A IMPRESSÃO...</div></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
@@ -86,37 +86,74 @@
         const API_BASE = 'https://photoprint-api.maxprimefotovideo.workers.dev';
         const videoFeed = document.getElementById('camera-feed'), canvasCapture = document.getElementById('camera-canvas');
         const ctx = canvasCapture.getContext('2d'), funText = document.getElementById('fun-text'), optionsOverlay = document.getElementById('options-overlay');
-        let stream = null, lastState = 'start', captureInProgress = false, handDetector = null, handCamera = null;
+        let stream = null, lastState = 'start', captureInProgress = false, handDetector = null;
         let handOpen = false, gestureActive = false, initialLoad = true, sistemaOnline = true;
         let eventoAtual = null, eventoId = null, formatoAtual = 'POLAROID', molduraBase64 = null;
         let handVisibleFrames = 0, openFrames = 0, closedFrames = 0, personDetected = false, inactivityTimeout = null;
         const FORMATOS = { "TIRINHA": { w: 591, h: 1819 }, "POLAROID": { w: 1041, h: 1311 }, "10X15V": { w: 1181, h: 1819 }, "10X15H": { w: 1772, h: 1228 } };
 
-        // Inicialização imediata da câmera
+        function debug(msg) { console.log(msg); }
+
+        // ===== Câmera robusta, com retry e watchdog =====
+        let iniciandoCamera = false;
         async function initCamera() {
+            if (iniciandoCamera) return;
+            iniciandoCamera = true;
             try {
-                const devices = await navigator.mediaDevices.enumerateDevices(), cameras = devices.filter(d => d.kind === 'videoinput');
-                let selectedDevice = null;
-                for (const cam of cameras) { const name = cam.label.toLowerCase(); if (name.includes('logitech') || name.includes('usb') || name.includes('c920')) { selectedDevice = cam; break; } }
-                if (!selectedDevice && cameras.length > 0) selectedDevice = cameras[0];
-                stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: selectedDevice ? { exact: selectedDevice.deviceId } : undefined, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
-                videoFeed.srcObject = stream; startMotionDetection();
-            } catch (err) { document.querySelector('.start-subtitle').innerText = 'Câmera não encontrada'; }
+                if (stream) stream.getTracks().forEach(t => t.stop());
+                // 1) pega permissão primeiro (assim os nomes das câmeras aparecem)
+                const tmp = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+                stream = tmp;
+                // 2) tenta a câmera preferida (Logitech/USB); se falhar, segue com a padrão
+                const cams = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
+                const pref = cams.find(c => /logitech|usb|c920/i.test(c.label));
+                if (pref && tmp.getVideoTracks()[0].getSettings().deviceId !== pref.deviceId) {
+                    try {
+                        const s2 = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: pref.deviceId }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+                        tmp.getTracks().forEach(t => t.stop());
+                        stream = s2;
+                    } catch (e) {}
+                }
+                videoFeed.srcObject = stream;
+                try { await videoFeed.play(); } catch (e) {}
+                document.querySelector('.start-subtitle').innerText = 'Aproxime-se para ativar';
+                if (!motionCtx) startMotionDetection();
+            } catch (err) {
+                document.querySelector('.start-subtitle').innerText = 'Câmera indisponível — tentando de novo...';
+                setTimeout(initCamera, 4000);
+            } finally {
+                iniciandoCamera = false;
+            }
         }
 
+        // Watchdog: se a câmera cair/parar, religa sozinha
+        setInterval(() => {
+            const t = stream && stream.getVideoTracks()[0];
+            if (!stream || !t || t.readyState !== 'live') initCamera();
+            else if (videoFeed.paused) videoFeed.play().catch(() => {});
+        }, 5000);
+
+        // ===== Sincronização com o painel =====
+        let falhasRede = 0;
         async function verificarStatus() {
+            let data = null;
             try {
-                const res = await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`);
-                if (!res || !res.ok) throw new Error();
-                const data = await res.json();
-                sistemaOnline = true; 
-                document.getElementById('offline-overlay').classList.remove('active');
-                return data;
-            } catch (e) { 
-                sistemaOnline = false; 
-                document.getElementById('offline-overlay').classList.add('active'); 
-                return null; 
+                const ctrl = new AbortController();
+                const to = setTimeout(() => ctrl.abort(), 6000);
+                const res = await fetch(`${API_BASE}/get-all-states?t=${Date.now()}`, { cache: 'no-store', signal: ctrl.signal });
+                clearTimeout(to);
+                if (!res.ok) throw new Error('http');
+                data = await res.json();
+                falhasRede = 0;
+                sistemaOnline = !!(data.config && data.config.status === 'ONLINE');
+            } catch (e) {
+                falhasRede++;
+                if (falhasRede < 3) return null;   // falha pontual: mantém estado
+                sistemaOnline = false;
             }
+            document.getElementById('offline-overlay').classList.toggle('active', !sistemaOnline);
+            if (!sistemaOnline && lastState !== 'start' && !captureInProgress) resetToStart();
+            return sistemaOnline ? data : null;
         }
 
         async function syncEvento() {
@@ -129,6 +166,9 @@
                     if (data.moldura) molduraBase64 = data.moldura; else molduraBase64 = null;
                     updateEventoUI();
                 }
+            } else {
+                eventoAtual = null; eventoId = null; molduraBase64 = null;
+                updateEventoUI();
             }
         }
 
@@ -137,6 +177,7 @@
             if (eventoAtual) { el.classList.add('visible'); el.innerHTML = `🎉 ${eventoAtual} | ${formatoAtual}`; } else el.classList.remove('visible');
         }
 
+        // ===== Detecção de presença =====
         let motionCanvas = null, motionCtx = null, previousFrame = null;
         function startMotionDetection() {
             motionCanvas = document.createElement('canvas'); motionCanvas.width = 160; motionCanvas.height = 90;
@@ -173,7 +214,7 @@
         }
 
         function abrirCameraPorPresenca() {
-            if (lastState !== 'start' || captureInProgress) return;
+            if (!sistemaOnline || lastState !== 'start' || captureInProgress) return;
             lastState = 'capturing';
             document.getElementById('screen-start').classList.remove('active');
             document.getElementById('screen-camera').classList.add('active');
@@ -183,14 +224,22 @@
             initHandDetector();
         }
 
+        // ===== Detector de mão (sem desligar a webcam) =====
         async function initHandDetector() {
             if (gestureActive) return;
             gestureActive = true;
-            handDetector = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
-            handDetector.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.70, minTrackingConfidence: 0.65 });
-            handDetector.onResults(onHandResults);
-            handCamera = new Camera(videoFeed, { onFrame: async () => { if (gestureActive) await handDetector.send({ image: videoFeed }); }, width: 1280, height: 720 });
-            handCamera.start();
+            if (!handDetector) {
+                handDetector = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+                handDetector.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.70, minTrackingConfidence: 0.65 });
+                handDetector.onResults(onHandResults);
+            }
+            handVisibleFrames = 0; openFrames = 0; closedFrames = 0; handOpen = false;
+            const loop = async () => {
+                if (!gestureActive) return;
+                try { if (videoFeed.readyState >= 2) await handDetector.send({ image: videoFeed }); } catch (e) {}
+                requestAnimationFrame(loop);
+            };
+            loop();
         }
 
         function onHandResults(results) {
@@ -225,6 +274,7 @@
                         videoFeed.style.display = 'block'; canvasCapture.style.display = 'block';
                         fetch(`${API_BASE}/set-state`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state: 'options' }) }).catch(() => {});
                         captureInProgress = false; optionsOverlay.classList.add('active');
+                        lastState = 'options';
                         document.getElementById('gesto-msg').classList.add('active'); document.getElementById('msg-texto').innerText = '👉 RETIRE SUA FOTO NO TOTEM';
                     }
                 }, 1000);
@@ -267,13 +317,16 @@
             document.querySelectorAll('.screen').forEach(e => e.classList.remove('active'));
             document.getElementById('screen-start').classList.add('active');
             ctx.clearRect(0, 0, canvasCapture.width, canvasCapture.height);
+            canvasCapture.style.display = 'none'; videoFeed.style.display = 'block';
             captureInProgress = false; lastState = 'start'; personDetected = false; gestureActive = false;
-            document.getElementById('gesto-msg').classList.remove('active'); optionsOverlay.classList.remove('active'); funText.style.display = 'none';
-            if (handCamera) { try { handCamera.stop(); } catch(e) {} handCamera = null; }
-            handDetector = null; handVisibleFrames = 0; openFrames = 0; closedFrames = 0;
+            document.getElementById('gesto-msg').classList.remove('active');
+            optionsOverlay.classList.remove('active'); funText.style.display = 'none';
+            handVisibleFrames = 0; openFrames = 0; closedFrames = 0; handOpen = false;
+            previousFrame = null;
             fetch(`${API_BASE}/set-state`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state: 'start' }) }).catch(() => {});
         }
 
+        // ===== Menu secreto de fundo (7 cliques no logo) =====
         let clickCount = 0, clickTimer = null;
         document.getElementById('secret-logo').addEventListener('click', () => {
             clickCount++; clearTimeout(clickTimer);
@@ -290,10 +343,20 @@
             };
             r.readAsDataURL(f);
         });
-        function removeBackground() { localStorage.removeItem('photoprint_bg'); document.getElementById('dynamic-bg').style.backgroundImage = ""; document.getElementById('dynamic-bg').classList.remove('active'); document.getElementById('bg-menu').classList.remove('active');
-         (function() { 
-            const bg = localStorage.getItem('photoprint_bg'); 
-            if (bg) { document.getElementById('dynamic-bg').style.backgroundImage = `url('${bg}')`; document.getElementById('dynamic-bg').classList.add('active'); } 
+
+        function removeBackground() {
+            localStorage.removeItem('photoprint_bg');
+            document.getElementById('dynamic-bg').style.backgroundImage = "";
+            document.getElementById('dynamic-bg').classList.remove('active');
+            document.getElementById('bg-menu').classList.remove('active');
+        }
+
+        (function () {
+            const bg = localStorage.getItem('photoprint_bg');
+            if (bg) {
+                document.getElementById('dynamic-bg').style.backgroundImage = `url('${bg}')`;
+                document.getElementById('dynamic-bg').classList.add('active');
+            }
         })();
 
         window.addEventListener('load', () => {
@@ -303,7 +366,6 @@
         });
         window.addEventListener('beforeunload', () => {
             if (stream) stream.getTracks().forEach(t => t.stop());
-            if (handCamera) { try { handCamera.stop(); } catch(e) {} }
             if (inactivityTimeout) clearTimeout(inactivityTimeout);
         });
     </script>

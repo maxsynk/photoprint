@@ -103,8 +103,8 @@
         const MSG_MOSTRAR = '🖐️ MOSTRE A MÃO ABERTA';
         const MSG_FECHAR = '✊ AGORA FECHE A MÃO';
         const COPIAS_PADRAO = 1;          // cópias impressas por foto tirada na webcam
-        const SEGUNDOS_RESULTADO = 5;     // tempo da foto na tela antes de voltar ao início
-        const INTERVALO_BOTOEIRA_MS = 1500; // de quanto em quanto tempo a webcam pergunta se a botoeira foi apertada
+        const SEGUNDOS_RESULTADO = 15;     // tempo da foto na tela antes de voltar ao início
+        const INTERVALO_BOTOEIRA_MS = 4000; // de quanto em quanto tempo a webcam pergunta se a botoeira foi apertada
         const CAMERA_LARGURA = 1280, CAMERA_ALTURA = 720;   // resolução pedida à webcam (ex.: 1920 x 1080 para mais nitidez)
 
         let stream = null, lastState = 'start', captureInProgress = false, handDetector = null;

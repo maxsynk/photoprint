@@ -1,0 +1,26 @@
+{
+  "id": "photoprint-galeria",
+  "name": "PHOTO PRINT - Galeria",
+  "short_name": "Galeria",
+  "description": "Sistema PHOTO PRINT - Galeria",
+  "start_url": "./galeria.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0f0f14",
+  "theme_color": "#0ea5e9",
+  "icons": [
+    {
+      "src": "icon-galeria-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-galeria-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

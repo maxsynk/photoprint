@@ -1,0 +1,26 @@
+{
+  "id": "photoprint-quiosque",
+  "name": "PHOTO PRINT - Quiosque",
+  "short_name": "Quiosque",
+  "description": "Sistema PHOTO PRINT - Quiosque",
+  "start_url": "./quiosque.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#0f0f14",
+  "theme_color": "#f59e0b",
+  "icons": [
+    {
+      "src": "icon-quiosque-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-quiosque-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

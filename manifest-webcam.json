@@ -4,7 +4,7 @@
   "short_name": "Webcam",
   "description": "Sistema PHOTO PRINT - Webcam",
   "start_url": "./webcam.html",
-  "scope": "./",
+  "scope": "./webcam.html",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#0f0f14",

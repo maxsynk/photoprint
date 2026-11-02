@@ -4,7 +4,7 @@
   "short_name": "Galeria",
   "description": "Sistema PHOTO PRINT - Galeria",
   "start_url": "./galeria.html",
-  "scope": "./",
+  "scope": "./galeria.html",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#0f0f14",

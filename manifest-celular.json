@@ -4,7 +4,7 @@
   "short_name": "Celular",
   "description": "Sistema PHOTO PRINT - Celular",
   "start_url": "./celular.html",
-  "scope": "./",
+  "scope": "./celular.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0f0f14",

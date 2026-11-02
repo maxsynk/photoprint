@@ -4,7 +4,7 @@
   "short_name": "Painel",
   "description": "Sistema PHOTO PRINT - Painel",
   "start_url": "./painel.html",
-  "scope": "./",
+  "scope": "./painel.html",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#0f0f14",

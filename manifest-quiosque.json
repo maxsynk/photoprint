@@ -4,7 +4,7 @@
   "short_name": "Quiosque",
   "description": "Sistema PHOTO PRINT - Quiosque",
   "start_url": "./quiosque.html",
-  "scope": "./",
+  "scope": "./quiosque.html",
   "display": "fullscreen",
   "orientation": "any",
   "background_color": "#0f0f14",

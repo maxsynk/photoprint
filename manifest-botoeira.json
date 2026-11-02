@@ -4,7 +4,7 @@
   "short_name": "Botoeira",
   "description": "Sistema PHOTO PRINT - Botoeira",
   "start_url": "./botoeira.html",
-  "scope": "./",
+  "scope": "./botoeira.html",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#0f0f14",

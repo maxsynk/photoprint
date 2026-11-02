@@ -4,7 +4,7 @@
   "short_name": "Telão",
   "description": "Sistema PHOTO PRINT - Telão",
   "start_url": "./telao.html",
-  "scope": "./",
+  "scope": "./telao.html",
   "display": "fullscreen",
   "orientation": "landscape",
   "background_color": "#0f0f14",

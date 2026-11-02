@@ -1,5 +1,5 @@
 /* ▶▶▶ INÍCIO TRECHO — sw.js (Cache do App Shell do Hub) ◀◀◀ */
-const CACHE_NAME = 'photoprint-hub-v1';
+const CACHE_NAME = 'photoprint-hub-v3';
 const ASSETS = [
   './index.html',
   './celular.html',

@@ -1,12 +1,12 @@
 <!-- ═══════════════════════════════════════════════════════════════════ -->
-<!-- ▶▶▶ INÍCIO DO ARQUIVO galeria.html — CENTRAL v11.4 FINAL ◀◀◀        -->
+<!-- ▶▶▶ INÍCIO DO ARQUIVO galeria.html — CENTRAL v11.5 (AUTO-IMPRESSÃO COM RETENTATIVA) ◀◀◀ -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTO PRINT — Central de Impressão v11.4</title>
+    <title>PHOTO PRINT — Central de Impressão v11.5</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -82,7 +82,7 @@
            ═══════════════════════════════════════════════════════════════ */
         #print-area { display: none; }
 
-        /* ▶▶▶ INÍCIO TRECHO 1 — @media print (substitui o bloco inteiro) ◀◀◀ */
+        /* ▶▶▶ INÍCIO TRECHO 1 — @media print ◀◀◀ */
 @media print {
     @page { size: A4 portrait; margin: 0; }
     body * { visibility: hidden !important; display: none !important; }
@@ -152,10 +152,15 @@
             border-radius: var(--radius-md); display: flex; align-items: center; gap: 10px;
             font-family: var(--font-mono); font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-2);
         }
-        .print-status-bar .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-3); }
+        .print-status-bar .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-3); flex-shrink: 0; }
         .print-status-bar.active { color: var(--accent); border-color: var(--accent); background: rgba(0,229,255,0.05); }
         .print-status-bar.active .dot { background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        /* ▶▶▶ INÍCIO PATCH CSS — status de erro ◀◀◀ */
+        .print-status-bar.error { color: var(--danger); border-color: var(--danger); background: var(--danger-dim); line-height: 1.4; }
+        .print-status-bar.error .dot { background: var(--danger); box-shadow: 0 0 10px var(--danger); animation: pulse 1s infinite; }
+        /* ◀◀◀ FIM PATCH CSS — status de erro ▶▶▶ */
 
         .controls { margin: 16px 20px 0; display: flex; flex-direction: column; gap: 8px; }
         .ctrl-btn {
@@ -370,6 +375,17 @@
                     <option value="0">Desativada</option>
                 </select>
             </div>
+            <!-- ▶▶▶ INÍCIO PATCH HTML — Folha parcial automática ◀◀◀ -->
+            <div class="config-row">
+                <label>Folha parcial após</label>
+                <select id="config-flush" onchange="salvarConfigFlush(this.value)">
+                    <option value="0">Desligado</option>
+                    <option value="30">30 segundos</option>
+                    <option value="60">1 minuto</option>
+                    <option value="120">2 minutos</option>
+                </select>
+            </div>
+            <!-- ◀◀◀ FIM PATCH HTML — Folha parcial automática ▶▶▶ -->
         </div>
     </aside>
 
@@ -411,7 +427,14 @@
         let modoSelecao = false, selecionadas = new Set();
         let logHistory = [], logAberto = false;
 
-        /* ▶▶▶ INÍCIO TRECHO 2 — getCapacidade (substitui a função inteira) ◀◀◀ */
+        /* ▶▶▶ INÍCIO — estado de erro / persistência (declarações) ◀◀◀ */
+        let errosSeguidos = 0, erroMsg = '';
+        let retryTimer = null, flushTimer = null;
+        let chavesImpressas = null; // Set das fotos já impressas (null = sem histórico ainda)
+        let autoFlushSeg = parseInt(localStorage.getItem('pp_flush') || '0', 10) || 0;
+        /* ◀◀◀ FIM — estado de erro / persistência (declarações) ▶▶▶ */
+
+        /* ▶▶▶ INÍCIO TRECHO 2 — getCapacidade ◀◀◀ */
 function getCapacidade() {
     // Normaliza: tira espaços, "_" e "-" (aceita "10x15 H", "10X15_H", etc.)
     const fmt = String(formatoAtual || '').toUpperCase().replace(/[\s_\-]/g, '');
@@ -429,7 +452,7 @@ function getCapacidade() {
 
         function addLog(msg, tipo = 'info') {
             const ts = new Date().toLocaleTimeString('pt-BR');
-                        logHistory.push({ ts, msg, tipo });
+            logHistory.push({ ts, msg, tipo });
             if (logHistory.length > 30) logHistory.shift();
             renderLog();
         }
@@ -470,6 +493,12 @@ function getCapacidade() {
                 if (eventoIdAtual !== evtId) {
                     eventoAtual = evt; eventoIdAtual = evtId; formatoAtual = novoFormato;
                     todasFotos = []; chavesLocais.clear(); sheetBuffer = []; sheetQueue = []; primeiraCarga = true;
+                    /* ▶▶▶ INÍCIO PATCH 6A — restaura fila/impressas do evento ◀◀◀ */
+                    carregarEstado(); carregarImpressas();
+                    errosSeguidos = 0; erroMsg = ''; clearTimeout(retryTimer);
+                    atualizarUIFolha();
+                    setTimeout(processarFilaImpressao, 1500); // retoma o que ficou pendente
+                    /* ◀◀◀ FIM PATCH 6A ▶▶▶ */
                     document.getElementById('grid-fotos').innerHTML = "";
                     addLog(`🔄 Evento: ${evt} (${traduzirFormato(formatoAtual)})`, 'success');
                     atualizarUIStatus();
@@ -492,19 +521,34 @@ function getCapacidade() {
                 const dados = await r2.json();
 
                 const fotosValidas = Array.isArray(dados) ? dados.filter(f => f.key && !f.key.toLowerCase().includes('moldura')) : [];
+
+                /* ▶▶▶ INÍCIO PATCH 6B — reconhece fotos não impressas ◀◀◀ */
+                // Primeira vez neste evento: o que já existe conta como impresso (base)
+                if (primeiraCarga && chavesImpressas === null) {
+                    chavesImpressas = new Set(fotosValidas.map(f => f.key));
+                    salvarImpressas();
+                }
+
                 const novas = fotosValidas.filter(f => !chavesLocais.has(f.key));
 
                 if (novas.length > 0) {
+                    const emAndamento = new Set([
+                        ...sheetBuffer.map(s => s.key),
+                        ...sheetQueue.flatMap(fl => fl.slots.map(s => s.key))
+                    ]);
                     for (const f of novas) {
                         const url = `${API}/photo?key=${encodeURIComponent(f.key)}`;
                         const parsed = analisarNomeFoto(f.key);
                         const idFoto = todasFotos.length + 1;
-                        todasFotos.push({ id: idFoto, url, key: f.key, copias: parsed.copias, guestbook: parsed.guestbook, impressa: primeiraCarga });
+                        const jaImpressa = !!(chavesImpressas && chavesImpressas.has(f.key));
+                        const pendente = !jaImpressa && !emAndamento.has(f.key);
+                        todasFotos.push({ id: idFoto, url, key: f.key, copias: parsed.copias, guestbook: parsed.guestbook, impressa: jaImpressa });
                         chavesLocais.add(f.key);
-                        if (!primeiraCarga && autoImpressao) alimentarBuffer(url, f.key, parsed, idFoto);
+                        if (pendente && autoImpressao) alimentarBuffer(url, f.key, parsed, idFoto);
                     }
                     render(); atualizarUIFolha();
                 }
+                /* ◀◀◀ FIM PATCH 6B ▶▶▶ */
                 primeiraCarga = false;
             } catch (e) { 
                 console.error('[GALERIA]', e); 
@@ -547,38 +591,111 @@ function getCapacidade() {
     render();
 } 
 
+        /* ▶▶▶ INÍCIO PATCH 3 — MOTOR DE IMPRESSÃO (fecharFolha até imprimirFolhaReal) ◀◀◀ */
+        function chaveStore(nome) { return `pp_${nome}_${eventoIdAtual}`; }
+
+        function salvarEstado() {
+            if (!eventoIdAtual) return;
+            try { localStorage.setItem(chaveStore('fila'), JSON.stringify({ buffer: sheetBuffer, fila: sheetQueue })); } catch (e) {}
+        }
+        function carregarEstado() {
+            try {
+                const s = JSON.parse(localStorage.getItem(chaveStore('fila')) || 'null');
+                if (s) { sheetBuffer = s.buffer || []; sheetQueue = s.fila || []; }
+            } catch (e) {}
+        }
+        function carregarImpressas() {
+            try {
+                const s = JSON.parse(localStorage.getItem(chaveStore('impressas')) || 'null');
+                chavesImpressas = Array.isArray(s) ? new Set(s) : null;
+            } catch (e) { chavesImpressas = null; }
+        }
+        function salvarImpressas() {
+            if (!eventoIdAtual || !chavesImpressas) return;
+            try { localStorage.setItem(chaveStore('impressas'), JSON.stringify([...chavesImpressas])); } catch (e) {}
+        }
+
+        /* ───── Folha parcial automática (opcional) ───── */
+        function agendarFlush() {
+            clearTimeout(flushTimer);
+            if (!autoFlushSeg || pausado || sheetBuffer.length === 0) return;
+            flushTimer = setTimeout(() => { if (sheetBuffer.length > 0) forcarImpressao(); }, autoFlushSeg * 1000);
+        }
+        function salvarConfigFlush(v) {
+            autoFlushSeg = parseInt(v, 10) || 0;
+            try { localStorage.setItem('pp_flush', String(autoFlushSeg)); } catch (e) {}
+            agendarFlush();
+        }
+        window.addEventListener('load', () => {
+            const s = document.getElementById('config-flush');
+            if (s) s.value = String(autoFlushSeg);
+        });
+
+        /* ───── Volta a imprimir sozinho quando a internet retorna ───── */
+        window.addEventListener('online', () => {
+            if (sheetQueue.length > 0) { clearTimeout(retryTimer); processarFilaImpressao(); }
+        });
+
+        function agendarRetentativa() {
+            clearTimeout(retryTimer);
+            const espera = Math.min(5000 * errosSeguidos, 30000);
+            retryTimer = setTimeout(() => processarFilaImpressao(), espera);
+        }
+
+        function marcarImpressa(folha) {
+            if (!chavesImpressas) chavesImpressas = new Set();
+            folha.slots.forEach(s => {
+                chavesImpressas.add(s.key);
+                const f = todasFotos.find(x => x.key === s.key);
+                if (f) f.impressa = true;
+            });
+            salvarImpressas();
+            render();
+        }
+
+        /* ───── Folha / fila ───── */
         function fecharFolha() {
             if (sheetBuffer.length === 0) return;
             const cap = getCapacidade();
             const slots = sheetBuffer.splice(0, cap.slots);
-            
-            sheetQueue.push({ slots, layout: cap.layout, descricao: `Folha ${traduzirFormato(formatoAtual)}` });
-            
-            mostrarToast('Folha Completa!', 'A foto foi enviada para a impressora.', 'success');
-            addLog(`📄 Folha fechada (${slots.length} slots). Enviando para impressão...`, 'success');
-            
+
+            sheetQueue.push({ slots, layout: cap.layout, descricao: `Folha ${traduzirFormato(formatoAtual)}`, tentativas: 0 });
+
+            addLog(`📄 Folha fechada (${slots.length} slots). Na fila de impressão.`, 'success');
             atualizarUIFolha();
             processarFilaImpressao();
         }
 
         function forcarImpressao() {
             if (sheetBuffer.length === 0) {
+                // Sem fotos na folha, mas com folhas na fila (ex.: erro): tenta reenviar agora
+                if (sheetQueue.length > 0 && !isPrinting) {
+                    clearTimeout(retryTimer);
+                    processarFilaImpressao();
+                    return mostrarToast('Reenviando', 'Tentando imprimir a fila novamente.', 'info');
+                }
                 return mostrarToast('Fila Vazia', 'Não há fotos na folha atual para imprimir.', 'error');
             }
             const cap = getCapacidade();
             const slots = sheetBuffer.splice(0);
-            
-            sheetQueue.push({ slots, layout: cap.layout, descricao: `Folha Parcial (${slots.length})` });
-            
+
+            sheetQueue.push({ slots, layout: cap.layout, descricao: `Folha Parcial (${slots.length})`, tentativas: 0 });
+
             mostrarToast('Impressão Forçada', `Enviando ${slots.length} foto(s) para a impressora.`, 'success');
             addLog(`🖨️ Impressão forçada: ${slots.length} slots`, 'warn');
-            
+
             atualizarUIFolha();
             processarFilaImpressao();
         }
 
         function removerDoBuffer(index) {
-            sheetBuffer.splice(index, 1);
+            const removido = sheetBuffer.splice(index, 1)[0];
+            // Removida de propósito: não volta para a fila se a página recarregar
+            if (removido) {
+                if (!chavesImpressas) chavesImpressas = new Set();
+                chavesImpressas.add(removido.key);
+                salvarImpressas();
+            }
             atualizarUIFolha();
             render();
             addLog(`🗑️ Foto removida da folha`, 'warn');
@@ -586,19 +703,36 @@ function getCapacidade() {
 
         async function processarFilaImpressao() {
             if (isPrinting || pausado || sheetQueue.length === 0) return;
-            
+
             isPrinting = true;
-            const folha = sheetQueue.shift();
-            atualizarUIFolha();
+            clearTimeout(retryTimer);
+            atualizarUIStatus();
+
+            const folha = sheetQueue[0]; // só sai da fila quando a impressão é confirmada
 
             try {
                 await imprimirFolhaReal(folha);
+                sheetQueue.shift();
+                marcarImpressa(folha);
+                if (errosSeguidos > 0) addLog('✅ Impressão normalizada', 'success');
+                errosSeguidos = 0; erroMsg = '';
+                addLog(`✅ ${folha.descricao} impressa`, 'success');
+                salvarEstado();
             } catch (e) {
-                addLog(`❌ Erro na impressão: ${e.message}`, 'error');
+                errosSeguidos++;
+                erroMsg = e.message || 'erro desconhecido';
+                folha.tentativas = (folha.tentativas || 0) + 1;
+                addLog(`❌ Erro: ${erroMsg} (tentativa ${folha.tentativas}). Nova tentativa automática.`, 'error');
+                isPrinting = false;
+                salvarEstado();
+                atualizarUIFolha();
+                agendarRetentativa();
+                return;
             }
 
             setTimeout(() => {
                 isPrinting = false;
+                atualizarUIFolha();
                 processarFilaImpressao();
             }, 2500);
         }
@@ -606,41 +740,76 @@ function getCapacidade() {
         async function imprimirFolhaReal(folha) {
             const printArea = document.getElementById('print-area');
             printArea.className = `print-sheet ${folha.layout}`;
-            
+
             printArea.innerHTML = folha.slots.map(s => `
                 <div class="slot"><img src="${s.url}"></div>
             `).join('');
 
-            // CORREÇÃO FINAL DA ROTAÇÃO (Força o Chrome a esquecer a anterior)
+            // 1) Garante que TODAS as fotos carregaram (senão vira erro e tenta de novo)
+            const imgs = Array.from(printArea.querySelectorAll('img'));
+            await Promise.all(imgs.map(img => new Promise((resolve, reject) => {
+                if (img.complete) {
+                    return img.naturalWidth > 0 ? resolve() : reject(new Error('Falha ao carregar foto (internet/servidor)'));
+                }
+                const t = setTimeout(() => reject(new Error('Tempo esgotado carregando foto')), 20000);
+                img.onload = () => { clearTimeout(t); resolve(); };
+                img.onerror = () => { clearTimeout(t); reject(new Error('Falha ao carregar foto (internet/servidor)')); };
+            })));
+
+            // 2) Orientação da folha
             let stylePage = document.getElementById('dynamic-page-style');
             if (stylePage) stylePage.remove();
-            
             stylePage = document.createElement('style');
             stylePage.id = 'dynamic-page-style';
             document.head.appendChild(stylePage);
-            
-            // Define a folha correta com base no layout
-            // A4 PORTRAIT: Polaroid, 10x15 V, 10x15 H
-            // A4 LANDSCAPE: Tirinha
+
             let pageRule = '@page { size: A4 portrait; margin: 0; }';
-            if (folha.layout === 'layout-tirinha') {
-                pageRule = '@page { size: A4 landscape; margin: 0; }';
-            }
-            
+            if (folha.layout === 'layout-tirinha') pageRule = '@page { size: A4 landscape; margin: 0; }';
             stylePage.innerHTML = `@media print { ${pageRule} }`;
 
-            await new Promise(r => setTimeout(r, 600)); // Aguarda renderizar
-            window.print();
+            await new Promise(r => setTimeout(r, 600));
+
+            // 3) Imprime e espera a confirmação (afterprint). Sem confirmação em 90s = erro
+            await new Promise((resolve, reject) => {
+                let terminou = false;
+                let limite = null;
+                const fim = () => {
+                    if (terminou) return;
+                    terminou = true;
+                    clearTimeout(limite);
+                    window.removeEventListener('afterprint', fim);
+                    resolve();
+                };
+                limite = setTimeout(() => {
+                    if (terminou) return;
+                    terminou = true;
+                    window.removeEventListener('afterprint', fim);
+                    reject(new Error('Impressão não confirmada (tempo esgotado)'));
+                }, 90000);
+                window.addEventListener('afterprint', fim);
+                try { window.print(); }
+                catch (e) {
+                    terminou = true;
+                    clearTimeout(limite);
+                    window.removeEventListener('afterprint', fim);
+                    reject(e);
+                }
+            });
         }
+        /* ◀◀◀ FIM PATCH 3 — MOTOR DE IMPRESSÃO ▶▶▶ */
 
         /* ════════════════ INTERFACE (UI) ════════════════ */
+        /* ▶▶▶ INÍCIO PATCH 4 — atualizarUIStatus ◀◀◀ */
         function atualizarUIStatus() {
             const bar = document.getElementById('print-status-bar');
             const txt = document.getElementById('print-status-text');
-            
+
             if (pausado) {
                 bar.className = 'print-status-bar paused';
                 txt.innerText = 'Pausado';
+            } else if (errosSeguidos > 0 && !isPrinting) {
+                bar.className = 'print-status-bar error';
+                txt.innerText = `Erro: ${erroMsg} — tentando de novo (${sheetQueue.length} na fila)`;
             } else if (isPrinting) {
                 bar.className = 'print-status-bar active';
                 txt.innerText = 'Imprimindo...';
@@ -649,10 +818,13 @@ function getCapacidade() {
                 txt.innerText = sheetQueue.length > 0 ? `${sheetQueue.length} na fila` : 'Aguardando fotos';
             }
         }
+        /* ◀◀◀ FIM PATCH 4 — atualizarUIStatus ▶▶▶ */
 
-        /* ▶▶▶ INÍCIO TRECHO 3 — atualizarUIFolha (substitui a função inteira) ◀◀◀ */
+        /* ▶▶▶ INÍCIO TRECHO 3 + PATCH 5 — atualizarUIFolha ◀◀◀ */
 function atualizarUIFolha() {
     const cap = getCapacidade();
+    salvarEstado();
+    agendarFlush();
     document.getElementById('sheet-count').innerText = `${sheetBuffer.length}/${cap.slots}`;
     document.getElementById('fila-count').innerText = sheetQueue.length;
 
@@ -682,7 +854,7 @@ function atualizarUIFolha() {
     }
     atualizarUIStatus();
 }
-/* ◀◀◀ FIM TRECHO 3 — atualizarUIFolha ▶▶▶ */
+/* ◀◀◀ FIM TRECHO 3 + PATCH 5 — atualizarUIFolha ▶▶▶ */
 
         function render() {
             const grid = document.getElementById('grid-fotos');
@@ -757,14 +929,23 @@ function atualizarUIFolha() {
             document.getElementById('btn-pause').classList.toggle('active', pausado);
             document.getElementById('btn-pause-text').innerText = pausado ? 'Retomar' : 'Pausar';
             atualizarUIStatus();
+            agendarFlush();
             if (!pausado) processarFilaImpressao();
         }
 
+        /* ▶▶▶ INÍCIO PATCH 7 — limparFilaManual ◀◀◀ */
         function limparFilaManual() {
-            if (!confirm('Limpar todas as fotos da folha atual?')) return;
+            if (!confirm('Limpar todas as fotos da folha atual e da fila?')) return;
+            const keys = [...sheetBuffer.map(s => s.key), ...sheetQueue.flatMap(f => f.slots.map(s => s.key))];
+            if (!chavesImpressas) chavesImpressas = new Set();
+            keys.forEach(k => chavesImpressas.add(k)); // descartadas de propósito: não voltam no reload
+            todasFotos.forEach(f => { if (keys.includes(f.key)) f.impressa = true; });
+            salvarImpressas();
             sheetBuffer = []; sheetQueue = [];
+            errosSeguidos = 0; erroMsg = ''; clearTimeout(retryTimer);
             atualizarUIFolha(); render();
         }
+        /* ◀◀◀ FIM PATCH 7 — limparFilaManual ▶▶▶ */
 
         /* ════════════════ MODAL E BUSCA ════════════════ */
         function abrirZoom(id) {
@@ -823,7 +1004,7 @@ function atualizarUIFolha() {
             atualizarUIFolha();
             atualizar();
             setInterval(atualizar, POLL_INTERVAL);
-            addLog('🚀 Central v11.4 iniciada', 'success');
+            addLog('🚀 Central v11.5 iniciada', 'success');
         });
     </script>
  <script>
@@ -835,4 +1016,4 @@ if ('serviceWorker' in navigator) {
 </script>   
 </body>
 </html>
-<!-- ◀◀◀ FIM DO ARQUIVO galeria.html — v11.4 ▶▶▶ -->
+<!-- ◀◀◀ FIM DO ARQUIVO galeria.html — v11.5 ▶▶▶ -->

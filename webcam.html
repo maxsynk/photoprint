@@ -140,12 +140,32 @@
         const SEGUNDOS_PREPARO = 6;          // "PREPARE-SE" antes do SORRIA (1ª foto)
         const SEGUNDOS_PREPARO_TIRINHA = 4;  // "PREPARE-SE" entre uma foto e outra da tirinha
         const SEGUNDOS_SORRIA = 2;           // "SORRIA" visível ANTES do disparo
-        const MAO_CONFIANCA_DETECCAO = 0.6;  // menor = enxerga mais longe (a validação geométrica evita falsos)
-        const MAO_CONFIANCA_RASTREIO = 0.6;
-        const MAO_SCORE_MIN = 0.8;           // certeza mínima de que é uma mão (suba para 0.85 se houver falsos)
-        const MAO_TAMANHO_MIN = 0.04;        // tamanho mínimo da mão (suba p/ 0.05-0.06 se houver falsos; baixe p/ 0.03 p/ pegar de mais longe)
-        const MAO_RAZAO_ABERTO = 1.12;       // dedo estendido
-        const MAO_RAZAO_FECHADO = 0.95;      // dedo dobrado
+        // ▶▶▶ INÍCIO: sensibilidade do gesto (VERSÃO RIGOROSA) ◀◀◀
+        const MAO_CONFIANCA_DETECCAO = 0.7;  // certeza do MediaPipe para achar a mão
+        const MAO_CONFIANCA_RASTREIO = 0.7;
+        const MAO_SCORE_MIN = 0.9;           // certeza mínima de que é uma mão (0.85 = mais sensível | 0.95 = mais rigoroso)
+        // DISTÂNCIA MÁXIMA DE ACIONAMENTO ≈ 0.113 ÷ valor (em metros, estimativa p/ C920e sem zoom):
+        // 0.04 ≈ 2,8m | 0.05 ≈ 2,2m | 0.06 ≈ 1,9m | 0.07 ≈ 1,6m | 0.08 ≈ 1,4m
+        const MAO_TAMANHO_MIN = 0.05;        // tamanho mínimo da mão (pulso até base do dedo médio)
+        const MAO_RAZAO_ABERTO = 1.2;        // dedo estendido (mais alto = exige dedo mais esticado)
+        const MAO_RAZAO_FECHADO = 0.9;       // dedo dobrado (mais baixo = exige punho mais fechado)
+        const MAO_ABERTURA_MIN = 1.25;       // mão espalmada: afastamento ponta do indicador↔mindinho ÷ largura da palma
+        const MAO_EXIGE_DEDOS_PARA_CIMA = true; // só vale com a mão levantada (dedos apontando para cima)
+        const MAO_VISIVEL_MS = 400;          // mão precisa ser vista estável por este tempo antes de contar
+        const MAO_ABERTA_MS = 900;           // tempo segurando a mão ABERTA (parada) para confirmar
+        const MAO_FECHADA_MS = 500;          // tempo segurando o PUNHO para disparar
+        const MAO_MOVIMENTO_MAX = 0.05;      // se a mão se desloca mais que isso entre leituras, recomeça (anti-ruído)
+        // ▶▶▶ FIM: sensibilidade do gesto ◀◀◀
+
+        // ▶▶▶ INÍCIO NOVO: qualidade da imagem ◀◀◀
+        const IMG_FPS = 30;                  // evita a webcam cair para 15 fps em pouca luz (menos borrão)
+        const IMG_NITIDEZ_CAMERA = 0.6;      // 0 a 1 dentro da faixa da webcam (0.5 = padrão)
+        const IMG_CONTRASTE_CAMERA = 0.55;
+        const IMG_SATURACAO_CAMERA = 0.55;
+        const FOTO_QUALIDADE_CAPTURA = 0.97; // qualidade JPEG do quadro capturado (0.92 antes)
+        const FOTO_FILTRO = 'contrast(1.04) saturate(1.08) brightness(1.02)'; // "tempero" na foto final ('none' desliga)
+        const FOTO_NITIDEZ = 0.35;           // afinamento (sharpen) após o redimensionamento: 0 desliga | 0.2 leve | 0.5 forte
+        // ▶▶▶ FIM NOVO: qualidade da imagem ◀◀◀
         const MAO_RECORTE_QUADRADO = true;   // recorta o centro da imagem para a mão ficar maior para o detector
         const SOM_ATIVO = true;              // bips da contagem, confirmação da mão e som de obturador
         // ▶▶▶ FIM NOVO: ajustes de tempo, gestos e som ◀◀◀
@@ -223,6 +243,12 @@
                 if (cap.focusMode && cap.focusMode.includes('continuous')) ajustes.push({ focusMode: 'continuous' });
                 if (cap.exposureMode && cap.exposureMode.includes('continuous')) ajustes.push({ exposureMode: 'continuous' });
                 if (cap.whiteBalanceMode && cap.whiteBalanceMode.includes('continuous')) ajustes.push({ whiteBalanceMode: 'continuous' });
+                // ▶▶▶ INÍCIO NOVO: nitidez, contraste e saturação da própria webcam ◀◀◀
+                const faixa = (c, f) => { const st = c.step || 1; return c.min + Math.round(((c.max - c.min) * f) / st) * st; };
+                if (cap.sharpness) ajustes.push({ sharpness: faixa(cap.sharpness, IMG_NITIDEZ_CAMERA) });
+                if (cap.contrast) ajustes.push({ contrast: faixa(cap.contrast, IMG_CONTRASTE_CAMERA) });
+                if (cap.saturation) ajustes.push({ saturation: faixa(cap.saturation, IMG_SATURACAO_CAMERA) });
+                // ▶▶▶ FIM NOVO: nitidez, contraste e saturação da webcam ◀◀◀
                 for (const a of ajustes) { try { await track.applyConstraints({ advanced: [a] }); } catch (e) {} }
             } catch (e) {}
         }
@@ -245,13 +271,13 @@
             iniciandoCamera = true;
             try {
                 if (stream) stream.getTracks().forEach(t => t.stop());
-                const tmp = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: CAMERA_LARGURA }, height: { ideal: CAMERA_ALTURA } }, audio: false });
+                const tmp = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: CAMERA_LARGURA }, height: { ideal: CAMERA_ALTURA }, frameRate: { ideal: IMG_FPS } }, audio: false });
                 stream = tmp;
                 const cams = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
                 const pref = cams.find(c => /logitech|usb|c920/i.test(c.label));
                 if (pref && tmp.getVideoTracks()[0].getSettings().deviceId !== pref.deviceId) {
                     try {
-                        const s2 = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: pref.deviceId }, width: { ideal: CAMERA_LARGURA }, height: { ideal: CAMERA_ALTURA } }, audio: false });
+                        const s2 = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: pref.deviceId }, width: { ideal: CAMERA_LARGURA }, height: { ideal: CAMERA_ALTURA }, frameRate: { ideal: IMG_FPS } }, audio: false });
                         tmp.getTracks().forEach(t => t.stop());
                         stream = s2;
                     } catch (e) {}
@@ -568,8 +594,20 @@
             return cvMao;
         }
 
+        let desdeVisivel = 0, desdeAberta = 0, desdeFechada = 0;   // marcas de tempo (0 = não está contando)
+
         function resetarGesto() {
             handVisibleFrames = 0; openFrames = 0; closedFrames = 0; noHandFrames = 0; handOpen = false; ultimoCentro = null;
+            desdeVisivel = 0; desdeAberta = 0; desdeFechada = 0;
+        }
+
+        // mão realmente espalmada e levantada (rejeita braço, rosto, objetos e mão de lado)
+        function maoEspalmada(h) {
+            const palma = distancia(h[5], h[17]) || 0.0001;
+            const abertura = distancia(h[8], h[20]) / palma;
+            if (abertura < MAO_ABERTURA_MIN) return false;
+            if (MAO_EXIGE_DEDOS_PARA_CIMA && !(h[12].y < h[0].y && h[8].y < h[5].y && h[20].y < h[17].y)) return false;
+            return true;
         }
 
         async function initHandDetector() {
@@ -596,45 +634,50 @@
             loop();
         }
 
+        // ▶▶▶ INÍCIO: onHandResults (VERSÃO RIGOROSA: por tempo, mão parada, espalmada e levantada) ◀◀◀
         function onHandResults(results) {
             if (!gestureActive) return;
+            const agora = performance.now();
             const hand = results.multiHandLandmarks && results.multiHandLandmarks[0];
             const score = (results.multiHandedness && results.multiHandedness[0]) ? results.multiHandedness[0].score : 1;
 
-            // sem mão, com pouca certeza ou pequena demais = ignora (não é mão de verdade)
+            // sem mão, com pouca certeza ou pequena demais (longe) = ignora
             if (!hand || score < MAO_SCORE_MIN || distancia(hand[0], hand[9]) < MAO_TAMANHO_MIN) {
-                handVisibleFrames = 0; openFrames = 0; closedFrames = 0; noHandFrames++; ultimoCentro = null;
+                noHandFrames++; ultimoCentro = null; desdeVisivel = 0; desdeAberta = 0; desdeFechada = 0;
                 if (handOpen && noHandFrames > 45) { handOpen = false; setMsg(MSG_MOSTRAR); }
                 if (!handOpen || noHandFrames > 45) setProgresso(0, '');
                 return;
             }
             noHandFrames = 0;
 
-            // "mão" que pula de lugar entre frames = ruído, recomeça a contagem
+            // mão que se desloca/pula entre leituras = ruído (ou gente passando): recomeça
             const centro = hand[9];
-            if (ultimoCentro && distancia(centro, ultimoCentro) > 0.15) { handVisibleFrames = 0; openFrames = 0; closedFrames = 0; }
+            if (ultimoCentro && distancia(centro, ultimoCentro) > MAO_MOVIMENTO_MAX) { desdeVisivel = 0; desdeAberta = 0; desdeFechada = 0; }
             ultimoCentro = centro;
 
-            handVisibleFrames++;
-            if (handVisibleFrames < 8) { setProgresso(0, '🔍 Reconhecendo...'); return; }
+            if (!desdeVisivel) desdeVisivel = agora;
+            if (agora - desdeVisivel < MAO_VISIVEL_MS) { setProgresso(0, '🔍 Reconhecendo...'); return; }
 
             const { abertos, fechados } = contarDedos(hand);
             if (!handOpen) {
-                // PASSO 1: mão aberta -> pede para fechar
-                if (abertos >= 4) {
-                    openFrames++;
-                    setProgresso(openFrames / 10, '✋ Mantenha a mão aberta');
-                    if (openFrames >= 10) { handOpen = true; closedFrames = 0; setMsg(MSG_FECHAR); somConfirma(); setProgresso(0, '✅ Mão reconhecida! Feche o punho', true); }
-                } else { openFrames = 0; setProgresso(0, '🖐️ Abra bem os dedos'); }
+                // PASSO 1: mão ABERTA, espalmada e parada por MAO_ABERTA_MS -> pede para fechar
+                if (abertos >= 4 && maoEspalmada(hand)) {
+                    if (!desdeAberta) desdeAberta = agora;
+                    const prog = (agora - desdeAberta) / MAO_ABERTA_MS;
+                    setProgresso(prog, '✋ Mantenha a mão aberta');
+                    if (prog >= 1) { handOpen = true; desdeFechada = 0; setMsg(MSG_FECHAR); somConfirma(); setProgresso(0, '✅ Mão reconhecida! Feche o punho', true); }
+                } else { desdeAberta = 0; setProgresso(0, '🖐️ Abra bem os dedos'); }
             } else {
-                // PASSO 2: punho fechado -> aciona a contagem
+                // PASSO 2: PUNHO fechado por MAO_FECHADA_MS -> aciona a contagem
                 if (fechados >= 3 && abertos === 0) {
-                    closedFrames++;
-                    setProgresso(closedFrames / 6, '✊ Segure fechada', true);
-                    if (closedFrames >= 6) { gestureActive = false; handOpen = false; setProgresso(0, ''); iniciarSequencia(); }
-                } else { closedFrames = 0; setProgresso(0, '✅ Mão reconhecida! Feche o punho', true); }
+                    if (!desdeFechada) desdeFechada = agora;
+                    const prog = (agora - desdeFechada) / MAO_FECHADA_MS;
+                    setProgresso(prog, '✊ Segure fechada', true);
+                    if (prog >= 1) { gestureActive = false; handOpen = false; setProgresso(0, ''); iniciarSequencia(); }
+                } else { desdeFechada = 0; setProgresso(0, '✅ Mão reconhecida! Feche o punho', true); }
             }
         }
+        // ▶▶▶ FIM: onHandResults ◀◀◀
         // ▶▶▶ FIM: detector de mão ◀◀◀
 
         // ===== Captura =====
@@ -642,7 +685,7 @@
             const w = videoFeed.videoWidth || CAMERA_LARGURA, h = videoFeed.videoHeight || CAMERA_ALTURA;
             canvasCapture.width = w; canvasCapture.height = h;
             ctx.drawImage(videoFeed, 0, 0, w, h);          // quadro cru (o espelho é aplicado na montagem)
-            return canvasCapture.toDataURL('image/jpeg', 0.92);
+            return canvasCapture.toDataURL('image/jpeg', FOTO_QUALIDADE_CAPTURA);
         }
 
         function piscar() {
@@ -700,6 +743,7 @@
 
         function desenharCover(c, img, dx, dy, dw, dh, espelhar) {
             c.save();
+            c.filter = FOTO_FILTRO;   // NOVO: contraste/saturação/brilho só na foto (a moldura não é afetada)
             c.beginPath(); c.rect(dx, dy, dw, dh); c.clip();
             if (espelhar) { c.translate(dx + dw / 2, 0); c.scale(-1, 1); c.translate(-(dx + dw / 2), 0); }
             const r = Math.max(dw / img.width, dh / img.height);
@@ -707,10 +751,29 @@
             c.restore();
         }
 
+        // ▶▶▶ INÍCIO NOVO: afinamento (sharpen) da foto final ◀◀◀
+        // Realça a nitidez depois do redimensionamento (a webcam é 1080p e a folha pede mais pixels).
+        function afinar(c, w, h, q) {
+            const img = c.getImageData(0, 0, w, h), s = img.data, d = new Uint8ClampedArray(s);
+            const centro = 1 + 4 * q, W4 = w * 4;
+            for (let y = 1; y < h - 1; y++) {
+                let i = y * W4 + 4;
+                for (let x = 1; x < w - 1; x++, i += 4) {
+                    for (let k = 0; k < 3; k++) {
+                        const p = i + k;
+                        d[p] = centro * s[p] - q * (s[p - 4] + s[p + 4] + s[p - W4] + s[p + W4]);
+                    }
+                }
+            }
+            img.data.set(d); c.putImageData(img, 0, 0);
+        }
+        // ▶▶▶ FIM NOVO: afinamento ◀◀◀
+
         async function comporFoto() {
             const fmt = FORMATOS[capFormato] || FORMATOS['POLAROID'];
             const cv = document.createElement('canvas'); cv.width = fmt.w; cv.height = fmt.h;
             const c = cv.getContext('2d'); c.fillStyle = '#FFFFFF'; c.fillRect(0, 0, cv.width, cv.height);
+            c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high';   // NOVO: redimensionamento de melhor qualidade
             const imgs = await Promise.all(fotos.map(carregarImg));
             if (capFormato === 'TIRINHA') {
                 const slots = [{ y: 0.030, h: 0.254 }, { y: 0.296, h: 0.254 }, { y: 0.559, h: 0.254 }];
@@ -721,16 +784,17 @@
             } else {
                 desenharCover(c, imgs[0], 0, 0, cv.width, cv.height, true);
             }
+            if (FOTO_NITIDEZ > 0) afinar(c, cv.width, cv.height, FOTO_NITIDEZ);   // NOVO: nitidez antes da moldura
             if (capMoldura) {
                 try { const m = await carregarImg(capMoldura); c.drawImage(m, 0, 0, cv.width, cv.height); }
                 catch (e) { debug('moldura não carregou: ' + e.message); }
             }
             // mostra a foto final montada na tela
-            fotoPreview.src = cv.toDataURL('image/jpeg', 0.85);
+            fotoPreview.src = cv.toDataURL('image/jpeg', 0.92);
             fotoPreview.style.display = 'block';
             canvasCapture.style.display = 'none';
             esconderGuia();
-            return await new Promise(r => cv.toBlob(r, 'image/jpeg', 0.95));
+            return await new Promise(r => cv.toBlob(r, 'image/jpeg', 0.97));
         }
 
         async function enviarFoto(blob) {

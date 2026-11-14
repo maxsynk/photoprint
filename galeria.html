@@ -88,14 +88,17 @@
     body * { visibility: hidden !important; display: none !important; }
     #print-area, #print-area * { visibility: visible !important; display: block !important; }
 
+        /* ▶▶▶ INÍCIO PATCH A — #print-area começando no topo com margem de segurança ◀◀◀ */
     #print-area {
         position: absolute !important; inset: 0 !important;
-        background: #fff !important; margin: 0 !important; padding: 0 !important;
+        background: #fff !important; margin: 0 !important;
+        padding: var(--margem-topo, 6mm) 0 0 0 !important;   /* margem de segurança no topo */
         display: grid !important;
         justify-content: center !important;
-        align-content: center !important;
+        align-content: var(--alinhar-v, start) !important;   /* start = começa no topo da folha */
         overflow: hidden !important;
     }
+    /* ◀◀◀ FIM PATCH A ▶▶▶ */
 
     /* ── POLAROID: 6 por folha EM PÉ (3x2), 68x98mm ── */
     #print-area.layout-polaroid {
@@ -386,6 +389,25 @@
                 </select>
             </div>
             <!-- ◀◀◀ FIM PATCH HTML — Folha parcial automática ▶▶▶ -->
+                        <!-- ▶▶▶ INÍCIO PATCH B — Posição da impressão na folha ◀◀◀ -->
+            <div class="config-row">
+                <label>Começar a imprimir</label>
+                <select id="config-posicao" onchange="salvarConfigPosicao()">
+                    <option value="topo">No topo da folha</option>
+                    <option value="centro">Centralizado</option>
+                </select>
+            </div>
+            <div class="config-row">
+                <label>Margem do topo</label>
+                <select id="config-margem" onchange="salvarConfigPosicao()">
+                    <option value="3">3 mm</option>
+                    <option value="5">5 mm</option>
+                    <option value="6">6 mm</option>
+                    <option value="8">8 mm</option>
+                    <option value="10">10 mm</option>
+                </select>
+            </div>
+            <!-- ◀◀◀ FIM PATCH B ▶▶▶ -->
         </div>
     </aside>
 
@@ -998,7 +1020,35 @@ function atualizarUIFolha() {
                 mostrarToast('Sucesso', 'Fotos removidas.', 'success');
             } catch (e) { mostrarToast('Erro', 'Falha ao limpar.', 'error'); }
         }
+        /* ▶▶▶ INÍCIO PATCH C — posição da impressão (topo + margem de segurança) ◀◀◀ */
+        let posImpressao = localStorage.getItem('pp_pos') || 'topo';   // 'topo' ou 'centro'
+        let margemTopoMm = parseInt(localStorage.getItem('pp_margem') || '6', 10) || 6;
 
+        function aplicarPosicaoImpressao() {
+            const r = document.documentElement.style;
+            if (posImpressao === 'topo') {
+                r.setProperty('--alinhar-v', 'start');
+                r.setProperty('--margem-topo', margemTopoMm + 'mm');
+            } else {
+                r.setProperty('--alinhar-v', 'center');
+                r.setProperty('--margem-topo', '0mm');
+            }
+        }
+
+        function salvarConfigPosicao() {
+            posImpressao = document.getElementById('config-posicao').value;
+            margemTopoMm = parseInt(document.getElementById('config-margem').value, 10) || 6;
+            try { localStorage.setItem('pp_pos', posImpressao); localStorage.setItem('pp_margem', String(margemTopoMm)); } catch (e) {}
+            aplicarPosicaoImpressao();
+        }
+
+        window.addEventListener('load', () => {
+            document.getElementById('config-posicao').value = posImpressao;
+            document.getElementById('config-margem').value = String(margemTopoMm);
+            aplicarPosicaoImpressao();
+        });
+        /* ◀◀◀ FIM PATCH C ▶▶▶ */
+        
         /* ════════════════ INICIALIZAÇÃO ════════════════ */
         window.addEventListener('load', () => {
             atualizarUIFolha();

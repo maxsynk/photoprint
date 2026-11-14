@@ -104,7 +104,7 @@
     #print-area.layout-polaroid {
         width: 210mm; height: 297mm; gap: 1mm !important;
         grid-template-columns: repeat(3, 68mm) !important;
-        grid-auto-rows: 98mm !important;
+        grid-auto-rows: 90mm !important;
     }
 
     /* ── TIRINHA: 5 por folha DEITADA (5x1), cada uma 50x150mm (5x15cm) ──
@@ -468,7 +468,7 @@ function getCapacidade() {
     if (fmt.includes('TIRINHA') || fmt.includes('STRIP') || fmt.includes('5X15'))
         return { slots: 5, layout: 'layout-tirinha', cols: 5, rows: 1, landscape: true };
     // Polaroid (padrão)
-    return { slots: 6, layout: 'layout-polaroid', cols: 3, rows: 2, landscape: false };
+    return { slots: 9, layout: 'layout-polaroid', cols: 3, rows: 3, landscape: false };
 }
 /* ◀◀◀ FIM TRECHO 2 — getCapacidade ▶▶▶ */
 

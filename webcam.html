@@ -13,6 +13,11 @@
 <meta name="apple-mobile-web-app-title" content="Webcam">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="icon-webcam-192.png">
+    <!--
+        MODO QUIOSQUE (Windows): abra o Chrome com este atalho
+        chrome.exe --kiosk --autoplay-policy=no-user-gesture-required --app=https://SEU-ENDERECO/webcam.html
+        (o parâmetro de autoplay libera os bips sem precisar de um clique)
+    -->
     <style>
         html, body { width: 100vw; height: 100vh; height: 100dvh; overflow: hidden; user-select: none; position: relative; background: radial-gradient(circle at 50% 0%, rgba(0,229,255,0.05) 0%, transparent 40%), var(--bg-0); }
         #dynamic-bg { position: fixed; inset: 0; z-index: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 0.6s; pointer-events: none; }
@@ -44,6 +49,17 @@
         /* ▶▶▶ INÍCIO: cor da mensagem "FECHE A MÃO" (muda de ciano/branco para verde) ◀◀◀ */
         .msg-text.fechar { color: #39ff14; background: rgba(0,35,0,0.9); border-color: #39ff14; text-shadow: 0 0 24px #39ff14; box-shadow: 0 0 36px rgba(57,255,20,0.55); }
         /* ▶▶▶ FIM: cor da mensagem "FECHE A MÃO" ◀◀◀ */
+
+        /* ▶▶▶ INÍCIO NOVO: indicador de mão reconhecida (barra de progresso) ◀◀◀ */
+        #mao-ind { margin-top: 14px; display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: 0; transition: opacity 0.2s; }
+        #mao-barra { width: min(340px, 70vw); height: 12px; border-radius: 8px; border: 2px solid var(--accent); background: rgba(0,0,0,0.75); overflow: hidden; }
+        #mao-barra-fill { width: 0%; height: 100%; background: var(--accent); box-shadow: 0 0 14px var(--accent); transition: width 0.1s linear; }
+        #mao-ind-txt { font-family: var(--font-body); font-size: 14px; font-weight: 800; letter-spacing: 2px; color: var(--accent); background: rgba(0,0,0,0.75); padding: 6px 16px; border-radius: 14px; text-transform: uppercase; white-space: nowrap; }
+        #mao-ind.verde #mao-barra { border-color: #39ff14; }
+        #mao-ind.verde #mao-barra-fill { background: #39ff14; box-shadow: 0 0 14px #39ff14; }
+        #mao-ind.verde #mao-ind-txt { color: #39ff14; }
+        /* ▶▶▶ FIM NOVO: indicador de mão reconhecida ◀◀◀ */
+
         .screen { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 20; flex-direction: column; }
         .screen.active { display: flex; }
         .btn-start { position: relative; width: clamp(280px, 40vw, 380px); height: clamp(280px, 40vw, 380px); border-radius: 50%; border: 4px solid var(--accent); background: radial-gradient(circle at center, rgba(0,229,255,0.15), rgba(0,0,0,0.96)); overflow: hidden; transition: all 0.3s; display: flex; align-items: center; justify-content: center; padding: 40px; box-shadow: 0 0 40px rgba(0,229,255,0.5); z-index: 30; animation: startPulse 2.5s infinite; }
@@ -79,7 +95,12 @@
     <div id="bg-menu"><label class="bg-btn" for="bg-input"><i class="fas fa-image"></i> Alterar Fundo</label><div class="bg-btn" onclick="removeBackground()"><i class="fas fa-times"></i> Sem Fundo</div></div>
     <input type="file" id="bg-input" accept="image/*">
     <div id="offline-overlay"><div class="offline-text">SISTEMA EM<br>MANUTENÇÃO</div><div id="offline-motivo"></div></div>
-    <div id="gesto-msg"><div class="msg-text" id="msg-texto">🖐️ MOSTRE A MÃO ABERTA</div></div>
+    <!-- ▶▶▶ INÍCIO: mensagem de gesto + indicador de mão reconhecida (NOVO: #mao-ind) ◀◀◀ -->
+    <div id="gesto-msg">
+        <div class="msg-text" id="msg-texto">🖐️ MOSTRE A MÃO ABERTA</div>
+        <div id="mao-ind"><div id="mao-barra"><div id="mao-barra-fill"></div></div><div id="mao-ind-txt"></div></div>
+    </div>
+    <!-- ▶▶▶ FIM: mensagem de gesto + indicador de mão reconhecida ◀◀◀ -->
 
     <div id="screen-start" class="screen active">
         <div class="btn-start"><div class="start-content"><div class="start-icon"><i class="fas fa-camera"></i></div><div class="start-title">PHOTO PRINT</div><div class="start-subtitle">Aproxime-se para ativar</div></div></div>
@@ -112,7 +133,22 @@
         const COPIAS_PADRAO = 1;          // cópias impressas por foto tirada na webcam
         const SEGUNDOS_RESULTADO = 15;     // tempo da foto na tela antes de voltar ao início
         const INTERVALO_BOTOEIRA_MS = 4000; // de quanto em quanto tempo a webcam pergunta se a botoeira foi apertada
-        const CAMERA_LARGURA = 1280, CAMERA_ALTURA = 720;   // resolução pedida à webcam (ex.: 1920 x 1080 para mais nitidez)
+        // ▶▶▶ ALTERADO: resolução Full HD para mais nitidez (C920e suporta 1920x1080) ◀◀◀
+        const CAMERA_LARGURA = 1920, CAMERA_ALTURA = 1080;   // resolução pedida à webcam
+
+        // ▶▶▶ INÍCIO NOVO: ajustes de tempo, gestos e som ◀◀◀
+        const SEGUNDOS_PREPARO = 6;          // "PREPARE-SE" antes do SORRIA (1ª foto)
+        const SEGUNDOS_PREPARO_TIRINHA = 4;  // "PREPARE-SE" entre uma foto e outra da tirinha
+        const SEGUNDOS_SORRIA = 2;           // "SORRIA" visível ANTES do disparo
+        const MAO_CONFIANCA_DETECCAO = 0.6;  // menor = enxerga mais longe (a validação geométrica evita falsos)
+        const MAO_CONFIANCA_RASTREIO = 0.6;
+        const MAO_SCORE_MIN = 0.8;           // certeza mínima de que é uma mão (suba para 0.85 se houver falsos)
+        const MAO_TAMANHO_MIN = 0.04;        // tamanho mínimo da mão (suba p/ 0.05-0.06 se houver falsos; baixe p/ 0.03 p/ pegar de mais longe)
+        const MAO_RAZAO_ABERTO = 1.12;       // dedo estendido
+        const MAO_RAZAO_FECHADO = 0.95;      // dedo dobrado
+        const MAO_RECORTE_QUADRADO = true;   // recorta o centro da imagem para a mão ficar maior para o detector
+        const SOM_ATIVO = true;              // bips da contagem, confirmação da mão e som de obturador
+        // ▶▶▶ FIM NOVO: ajustes de tempo, gestos e som ◀◀◀
 
         let stream = null, lastState = 'start', captureInProgress = false, handDetector = null;
         let handOpen = false, gestureActive = false, sistemaOnline = true;
@@ -130,6 +166,77 @@
             el.innerText = t;
             el.classList.toggle('fechar', t === MSG_FECHAR);   // só a mensagem "feche a mão" usa a cor verde
         }
+
+        // ▶▶▶ INÍCIO NOVO: sons (bips da contagem, confirmação e obturador) via Web Audio ◀◀◀
+        let audioCtx = null;
+        function audioPronto() {
+            if (!SOM_ATIVO) return;
+            try {
+                if (!audioCtx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) audioCtx = new AC(); }
+                if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+            } catch (e) {}
+        }
+        function bip(freq, dur, vol, tipo, atraso) {
+            if (!SOM_ATIVO) return;
+            try {
+                audioPronto();
+                if (!audioCtx) return;
+                const t0 = audioCtx.currentTime + (atraso || 0);
+                const osc = audioCtx.createOscillator(), g = audioCtx.createGain();
+                osc.type = tipo || 'sine'; osc.frequency.value = freq;
+                g.gain.setValueAtTime(0.0001, t0);
+                g.gain.exponentialRampToValueAtTime(vol, t0 + 0.01);
+                g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+                osc.connect(g); g.connect(audioCtx.destination);
+                osc.start(t0); osc.stop(t0 + dur + 0.02);
+            } catch (e) {}
+        }
+        function somTique()      { bip(660, 0.08, 0.25); }                                   // a cada segundo do preparo
+        function somSorria()     { bip(1040, 0.14, 0.32); }                                  // a cada segundo do SORRIA
+        function somConfirma()   { bip(880, 0.10, 0.28); bip(1320, 0.14, 0.28, 'sine', 0.11); } // mão aberta reconhecida
+        function somObturador()  { bip(1900, 0.03, 0.45, 'square'); bip(800, 0.06, 0.45, 'square', 0.06); } // clique da foto
+        // destrava o áudio no primeiro toque/tecla (caso o Chrome não esteja com autoplay liberado)
+        ['click', 'touchstart', 'keydown', 'pointerdown'].forEach(ev => window.addEventListener(ev, audioPronto, { passive: true }));
+        // ▶▶▶ FIM NOVO: sons ◀◀◀
+
+        // ▶▶▶ INÍCIO NOVO: tela sempre ligada (Wake Lock) ◀◀◀
+        let wakeLock = null;
+        async function manterTelaLigada() {
+            try {
+                if ('wakeLock' in navigator && !wakeLock) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    wakeLock.addEventListener('release', () => { wakeLock = null; });
+                }
+            } catch (e) { wakeLock = null; }
+        }
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') manterTelaLigada(); });
+        // ▶▶▶ FIM NOVO: tela sempre ligada ◀◀◀
+
+        // ▶▶▶ INÍCIO NOVO: ajustes da webcam (zoom mínimo, foco/exposição/balanço automáticos contínuos) ◀◀◀
+        // O "RightLight" e o enquadramento automático da Logitech devem ser desligados no Logi Tune / G HUB (são do driver).
+        async function ajustarCamera(track) {
+            if (!track || !track.getCapabilities) return;
+            try {
+                const cap = track.getCapabilities();
+                const ajustes = [];
+                if (cap.zoom && typeof cap.zoom.min === 'number') ajustes.push({ zoom: cap.zoom.min });   // sem zoom: abre o campo de visão
+                if (cap.focusMode && cap.focusMode.includes('continuous')) ajustes.push({ focusMode: 'continuous' });
+                if (cap.exposureMode && cap.exposureMode.includes('continuous')) ajustes.push({ exposureMode: 'continuous' });
+                if (cap.whiteBalanceMode && cap.whiteBalanceMode.includes('continuous')) ajustes.push({ whiteBalanceMode: 'continuous' });
+                for (const a of ajustes) { try { await track.applyConstraints({ advanced: [a] }); } catch (e) {} }
+            } catch (e) {}
+        }
+        // ▶▶▶ FIM NOVO: ajustes da webcam ◀◀◀
+
+        // ▶▶▶ INÍCIO NOVO: indicador visual de mão reconhecida ◀◀◀
+        const maoInd = document.getElementById('mao-ind'), maoFill = document.getElementById('mao-barra-fill'), maoTxt = document.getElementById('mao-ind-txt');
+        function setProgresso(frac, txt, verde) {
+            maoInd.style.opacity = txt ? '1' : '0';
+            maoFill.style.width = (Math.max(0, Math.min(1, frac)) * 100) + '%';
+            maoTxt.innerText = txt || '';
+            maoInd.classList.toggle('verde', !!verde);
+        }
+        // ▶▶▶ FIM NOVO: indicador visual de mão reconhecida ◀◀◀
 
         // ===== Câmera robusta, com retry e watchdog =====
         let iniciandoCamera = false;
@@ -151,6 +258,7 @@
                 }
                 videoFeed.srcObject = stream;
                 try { await videoFeed.play(); } catch (e) {}
+                ajustarCamera(stream.getVideoTracks()[0]);   // NOVO: zoom mínimo e automáticos contínuos
                 document.querySelector('.start-subtitle').innerText = 'Aproxime-se para ativar';
                 if (!motionCtx) startMotionDetection();
             } catch (err) {
@@ -241,7 +349,7 @@
             if (eventoAtual) { el.classList.add('visible'); el.innerHTML = `🎉 ${eventoAtual} | ${formatoAtual}`; } else el.classList.remove('visible');
         }
 
-        // ▶▶▶ INÍCIO DO BLOCO NOVO — Marcação de enquadramento ◀◀◀
+        // ▶▶▶ INÍCIO DO BLOCO — Marcação de enquadramento ◀◀◀
         // Mostra na tela exatamente a área que vira foto, de acordo com o formato do evento.
         //  - TIRINHA: cada uma das 3 fotos ocupa um encaixe de proporção fixa (a marcação mostra esse encaixe)
         //  - Demais formatos: a foto é cortada na proporção da folha; se a moldura tiver uma "janela"
@@ -317,7 +425,7 @@
 
         window.addEventListener('resize', atualizarGuia);
         videoFeed.addEventListener('loadedmetadata', atualizarGuia);
-        // ▶▶▶ FIM DO BLOCO NOVO — Marcação de enquadramento ◀◀◀
+        // ▶▶▶ FIM DO BLOCO — Marcação de enquadramento ◀◀◀
 
         // ===== Detecção de presença =====
         let motionCanvas = null, motionCtx = null, previousFrame = null;
@@ -364,6 +472,7 @@
             optionsOverlay.classList.remove('active');
             document.getElementById('gesto-msg').classList.add('active');
             setMsg(MSG_MOSTRAR);
+            setProgresso(0, '');   // NOVO: zera o indicador de mão
             mostrarGuia();
             // se ninguém fizer o gesto em 30s, volta para o início
             clearTimeout(gestoTimeout);
@@ -371,7 +480,7 @@
             initHandDetector();
         }
 
-        // ▶▶▶ INÍCIO DO BLOCO NOVO — Botoeira aciona a webcam ◀◀◀
+        // ▶▶▶ INÍCIO DO BLOCO — Botoeira aciona a webcam ◀◀◀
         // A botoeira grava state='capturing' no Worker (/set-state). A webcam lê esse valor
         // (/get-state), consome (volta para 'start') e dispara a foto na hora, sem esperar o gesto.
         let consultandoBotoeira = false;
@@ -414,30 +523,74 @@
             videoFeed.style.display = 'block'; canvasCapture.style.display = 'none'; fotoPreview.style.display = 'none';
             optionsOverlay.classList.remove('active');
             document.getElementById('gesto-msg').classList.remove('active');
+            setProgresso(0, '');
             mostrarGuia();
             iniciarSequencia();
         }
-        // ▶▶▶ FIM DO BLOCO NOVO — Botoeira aciona a webcam ◀◀◀
+        // ▶▶▶ FIM DO BLOCO — Botoeira aciona a webcam ◀◀◀
 
-        // ===== Detector de mão (sem desligar a webcam) =====
+        // ▶▶▶ INÍCIO: detector de mão (CORRIGIDO + indicador visual + som de confirmação) ◀◀◀
+        const cvMao = document.createElement('canvas'), ctxMao = cvMao.getContext('2d');
+        let ultimoCentro = null, maoPronta = false;
+
+        function distancia(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+
+        // dedo estendido = ponta bem mais longe do pulso que a articulação do meio; dobrado = mais perto
+        function contarDedos(h) {
+            let abertos = 0, fechados = 0;
+            [[8, 6], [12, 10], [16, 14], [20, 18]].forEach(([ponta, meio]) => {
+                const r = distancia(h[ponta], h[0]) / distancia(h[meio], h[0]);
+                if (r > MAO_RAZAO_ABERTO) abertos++;
+                else if (r < MAO_RAZAO_FECHADO) fechados++;
+            });
+            return { abertos, fechados };
+        }
+
+        function criarDetector() {
+            if (handDetector || typeof Hands === 'undefined') return;
+            handDetector = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+            handDetector.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: MAO_CONFIANCA_DETECCAO, minTrackingConfidence: MAO_CONFIANCA_RASTREIO });
+            handDetector.onResults(onHandResults);
+        }
+
+        // carrega o modelo ao abrir a página, para o 1º convidado não esperar
+        async function prepararMaos() {
+            criarDetector();
+            if (handDetector && !maoPronta) { try { await handDetector.initialize(); maoPronta = true; } catch (e) {} }
+        }
+
+        // recorte quadrado central: o MediaPipe trabalha em imagem quadrada, então a mão fica maior
+        function imagemParaMao() {
+            if (!MAO_RECORTE_QUADRADO) return videoFeed;
+            const vw = videoFeed.videoWidth, vh = videoFeed.videoHeight, lado = Math.min(vw, vh);
+            if (cvMao.width !== 640) { cvMao.width = 640; cvMao.height = 640; }
+            ctxMao.drawImage(videoFeed, (vw - lado) / 2, (vh - lado) / 2, lado, lado, 0, 0, 640, 640);
+            return cvMao;
+        }
+
+        function resetarGesto() {
+            handVisibleFrames = 0; openFrames = 0; closedFrames = 0; noHandFrames = 0; handOpen = false; ultimoCentro = null;
+        }
+
         async function initHandDetector() {
             if (gestureActive) return;
             gestureActive = true;
-            handVisibleFrames = 0; openFrames = 0; closedFrames = 0; noHandFrames = 0; handOpen = false;
-            if (typeof Hands === 'undefined') {
+            resetarGesto();
+            criarDetector();
+            if (!handDetector) {
                 // biblioteca de mãos não carregou: dispara sozinho para não travar
                 setMsg('📸 PREPARE-SE!');
                 setTimeout(() => { if (gestureActive) { gestureActive = false; iniciarSequencia(); } }, 2500);
                 return;
             }
-            if (!handDetector) {
-                handDetector = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
-                handDetector.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.70, minTrackingConfidence: 0.65 });
-                handDetector.onResults(onHandResults);
-            }
+            let ultimoEnvio = 0;
             const loop = async () => {
                 if (!gestureActive) return;
-                try { if (videoFeed.readyState >= 2) await handDetector.send({ image: videoFeed }); } catch (e) {}
+                const agora = performance.now();
+                if (agora - ultimoEnvio >= 50 && videoFeed.readyState >= 2) {   // ~20 análises por segundo
+                    ultimoEnvio = agora;
+                    try { await handDetector.send({ image: imagemParaMao() }); } catch (e) {}
+                }
                 requestAnimationFrame(loop);
             };
             loop();
@@ -445,36 +598,48 @@
 
         function onHandResults(results) {
             if (!gestureActive) return;
-            if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
-                handVisibleFrames = 0; openFrames = 0; closedFrames = 0; noHandFrames++;
-                // mão sumiu depois de aberta: volta a pedir para mostrar a mão
+            const hand = results.multiHandLandmarks && results.multiHandLandmarks[0];
+            const score = (results.multiHandedness && results.multiHandedness[0]) ? results.multiHandedness[0].score : 1;
+
+            // sem mão, com pouca certeza ou pequena demais = ignora (não é mão de verdade)
+            if (!hand || score < MAO_SCORE_MIN || distancia(hand[0], hand[9]) < MAO_TAMANHO_MIN) {
+                handVisibleFrames = 0; openFrames = 0; closedFrames = 0; noHandFrames++; ultimoCentro = null;
                 if (handOpen && noHandFrames > 45) { handOpen = false; setMsg(MSG_MOSTRAR); }
+                if (!handOpen || noHandFrames > 45) setProgresso(0, '');
                 return;
             }
             noHandFrames = 0;
-            handVisibleFrames++;
-            const hand = results.multiHandLandmarks[0];
-            const dedosAbertos = (hand[8].y < hand[6].y ? 1 : 0) + (hand[12].y < hand[10].y ? 1 : 0) + (hand[16].y < hand[14].y ? 1 : 0) + (hand[20].y < hand[18].y ? 1 : 0);
-            if (handVisibleFrames < 8) return;
 
+            // "mão" que pula de lugar entre frames = ruído, recomeça a contagem
+            const centro = hand[9];
+            if (ultimoCentro && distancia(centro, ultimoCentro) > 0.15) { handVisibleFrames = 0; openFrames = 0; closedFrames = 0; }
+            ultimoCentro = centro;
+
+            handVisibleFrames++;
+            if (handVisibleFrames < 8) { setProgresso(0, '🔍 Reconhecendo...'); return; }
+
+            const { abertos, fechados } = contarDedos(hand);
             if (!handOpen) {
-                // PASSO 1: mão aberta reconhecida -> muda a mensagem para "feche a mão"
-                if (dedosAbertos >= 4) {
+                // PASSO 1: mão aberta -> pede para fechar
+                if (abertos >= 4) {
                     openFrames++;
-                    if (openFrames >= 10) { handOpen = true; closedFrames = 0; setMsg(MSG_FECHAR); }
-                } else { openFrames = 0; }
+                    setProgresso(openFrames / 10, '✋ Mantenha a mão aberta');
+                    if (openFrames >= 10) { handOpen = true; closedFrames = 0; setMsg(MSG_FECHAR); somConfirma(); setProgresso(0, '✅ Mão reconhecida! Feche o punho', true); }
+                } else { openFrames = 0; setProgresso(0, '🖐️ Abra bem os dedos'); }
             } else {
-                // PASSO 2: mão fechada -> aciona o contador
-                if (dedosAbertos <= 1) {
+                // PASSO 2: punho fechado -> aciona a contagem
+                if (fechados >= 3 && abertos === 0) {
                     closedFrames++;
-                    if (closedFrames >= 6) { gestureActive = false; handOpen = false; iniciarSequencia(); }
-                } else { closedFrames = 0; }
+                    setProgresso(closedFrames / 6, '✊ Segure fechada', true);
+                    if (closedFrames >= 6) { gestureActive = false; handOpen = false; setProgresso(0, ''); iniciarSequencia(); }
+                } else { closedFrames = 0; setProgresso(0, '✅ Mão reconhecida! Feche o punho', true); }
             }
         }
+        // ▶▶▶ FIM: detector de mão ◀◀◀
 
         // ===== Captura =====
         function capturarFrame() {
-            const w = videoFeed.videoWidth || 1280, h = videoFeed.videoHeight || 720;
+            const w = videoFeed.videoWidth || CAMERA_LARGURA, h = videoFeed.videoHeight || CAMERA_ALTURA;
             canvasCapture.width = w; canvasCapture.height = h;
             ctx.drawImage(videoFeed, 0, 0, w, h);          // quadro cru (o espelho é aplicado na montagem)
             return canvasCapture.toDataURL('image/jpeg', 0.92);
@@ -485,9 +650,11 @@
             f.style.display = 'block'; setTimeout(() => { f.style.display = 'none'; }, 120);
         }
 
+        // ▶▶▶ INÍCIO: iniciarSequencia (PREPARE-SE longo → SORRIA 2s antes do disparo → foto, com bips) ◀◀◀
         async function iniciarSequencia() {
             if (captureInProgress) return;
             captureInProgress = true;
+            audioPronto();
             clearTimeout(gestoTimeout);
             document.getElementById('gesto-msg').classList.remove('active');
             capFormato = formatoAtual; capEventoId = eventoId; capMoldura = molduraBase64;
@@ -495,14 +662,25 @@
             fotos = [];
             funText.style.display = 'block';
             for (let n = 1; n <= total; n++) {
-                funText.innerHTML = total > 1 ? `✨ FOTO ${n} DE ${total} ✨` : '✨ PREPARE-SE! ✨';
-                await sleep(n === 1 ? 1500 : 1000);
-                for (let cd = 3; cd > 0; cd--) {
-                    funText.innerHTML = total > 1 ? `📸 FOTO ${n} DE ${total}<br>⏳ ${cd}` : `😁 SORRIA! 😁<br>⏳ ${cd}`;
+                const cab = total > 1 ? `📸 FOTO ${n} DE ${total}<br>` : '';
+                const preparo = n === 1 ? SEGUNDOS_PREPARO : SEGUNDOS_PREPARO_TIRINHA;
+
+                // fase 1: tempo para se arrumar
+                for (let s = preparo; s > 0; s--) {
+                    funText.innerHTML = `${cab}✨ PREPARE-SE ✨<br>⏳ ${s}`;
+                    somTique();
                     await sleep(1000);
                 }
+                // fase 2: SORRIA aparece e fica na tela ANTES do disparo
+                for (let s = SEGUNDOS_SORRIA; s > 0; s--) {
+                    funText.innerHTML = `${cab}😁 SORRIA! 😁<br>⏳ ${s}`;
+                    somSorria();
+                    await sleep(1000);
+                }
+
                 funText.style.display = 'none';
                 fotos.push(capturarFrame());
+                somObturador();
                 piscar();
                 videoFeed.style.display = 'block'; canvasCapture.style.display = 'block';   // congela o quadro
                 if (n < total) {
@@ -514,6 +692,7 @@
             captureInProgress = false;
             finalizarFoto();
         }
+        // ▶▶▶ FIM: iniciarSequencia ◀◀◀
 
         function carregarImg(src) {
             return new Promise((resolve, reject) => { const img = new Image(); img.crossOrigin = 'anonymous'; img.onload = () => resolve(img); img.onerror = reject; img.src = src; });
@@ -615,7 +794,8 @@
             captureInProgress = false; lastState = 'start'; personDetected = false; gestureActive = false;
             document.getElementById('gesto-msg').classList.remove('active');
             optionsOverlay.classList.remove('active'); funText.style.display = 'none';
-            handVisibleFrames = 0; openFrames = 0; closedFrames = 0; noHandFrames = 0; handOpen = false;
+            resetarGesto();
+            setProgresso(0, '');
             previousFrame = null;
             cooldownAte = Date.now() + 4000;     // evita reabrir na hora com a pessoa ainda na frente
             fotos = [];
@@ -655,8 +835,14 @@
             }
         })();
 
+        // ▶▶▶ NOVO: modo quiosque — bloqueia menu de contexto (clique direito) ◀◀◀
+        window.addEventListener('contextmenu', (e) => e.preventDefault());
+
         window.addEventListener('load', () => {
             initCamera();
+            prepararMaos();                  // NOVO: pré-carrega o modelo de mão
+            manterTelaLigada();              // NOVO: impede a tela de apagar
+            setInterval(manterTelaLigada, 60000);
             syncEvento();
             setInterval(syncEvento, 5000);
             checarBotoeira(true);                                        // limpa 'capturing' antigo, sem disparar
@@ -666,6 +852,7 @@
             if (stream) stream.getTracks().forEach(t => t.stop());
             if (inactivityTimeout) clearTimeout(inactivityTimeout);
             if (gestoTimeout) clearTimeout(gestoTimeout);
+            if (wakeLock) { try { wakeLock.release(); } catch (e) {} }
         });
     </script>
    <script>

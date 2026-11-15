@@ -119,14 +119,18 @@
     #print-area.layout-10x15v {
         width: 210mm; height: 297mm; gap: 2mm !important;
         grid-template-columns: repeat(2, 100mm) !important;
-        grid-auto-rows: 150mm !important;
+        grid-template-rows: repeat(2, 140mm) !important;
+        justify-content: center;
+        align-content: center;
     }
 
     /* ── 10x15 HORIZONTAL: folha EM PÉ, 2 fotos UMA EM CIMA DA OUTRA (150x100mm) ── */
     #print-area.layout-10x15h {
-        width: 210mm; height: 297mm; gap: 5mm !important;
+        width: 210mm; height: 297mm; gap: 2mm !important;
         grid-template-columns: 150mm !important;
-        grid-auto-rows: 100mm !important;
+        grid-template-rows: repeat(3, 95mm) !important;
+        justify-content: center;
+        align-content: center;
     }
 
     .slot { width: 100% !important; height: 100% !important; display: flex !important; align-items: center !important; justify-content: center !important; overflow: hidden !important; background: #fff !important; }
@@ -462,9 +466,9 @@ function getCapacidade() {
     const fmt = String(formatoAtual || '').toUpperCase().replace(/[\s_\-]/g, '');
 
     if (fmt.includes('10X15H'))
-        return { slots: 2, layout: 'layout-10x15h', cols: 1, rows: 2, landscape: false };
+        return { slots: 3, layout: 'layout-10x15h', cols: 1, rows: 3, landscape: false };
     if (fmt.includes('10X15V'))
-        return { slots: 2, layout: 'layout-10x15v', cols: 2, rows: 1, landscape: false };
+        return { slots: 4, layout: 'layout-10x15v', cols: 2, rows: 2, landscape: false };
     if (fmt.includes('TIRINHA') || fmt.includes('STRIP') || fmt.includes('5X15'))
         return { slots: 5, layout: 'layout-tirinha', cols: 5, rows: 1, landscape: true };
     // Polaroid (padrão)

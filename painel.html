@@ -86,32 +86,68 @@
         .btn-primary:hover { box-shadow: var(--accent-glow); transform: translateY(-1px); }
         .btn-outline { background: transparent; color: var(--text-0); border-color: var(--border-2); }
         .btn-outline:hover { background: var(--bg-2); border-color: var(--accent); color: var(--accent); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         
         .eventos-list { display: flex; flex-direction: column; gap: 10px; }
-        .evento-item { background: var(--bg-1); border: 1px solid var(--border-1); border-radius: var(--radius-md); padding: 14px 18px; display: flex; align-items: center; gap: 16px; transition: all 0.3s; position: relative; }
+        .evento-item { background: var(--bg-1); border: 1px solid var(--border-1); border-radius: var(--radius-md); padding: 14px 18px; display: flex; align-items: center; gap: 12px; transition: all 0.3s; position: relative; }
         .evento-item:hover { border-color: var(--border-2); background: var(--bg-2); }
         .evento-item.ativo { border-color: var(--accent); background: linear-gradient(90deg, var(--accent-dim) 0%, var(--bg-1) 40%); }
         .evento-item.ativo::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent); box-shadow: var(--accent-glow); border-radius: 3px 0 0 3px; }
-        .evento-info { flex: 1; }
-        .evento-nome { font-size: 13px; font-weight: 700; color: var(--text-0); margin-bottom: 3px; }
-        .evento-meta { font-size: 10px; color: var(--text-3); font-weight: 500; }
+        .evento-item.loading { opacity: 0.6; pointer-events: none; }
+        .evento-info { flex: 1; min-width: 0; }
+        .evento-nome { font-size: 13px; font-weight: 700; color: var(--text-0); margin-bottom: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .evento-meta { font-size: 10px; color: var(--text-3); font-weight: 500; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .badge-mini { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 10px; font-size: 9px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
+        .badge-guestbook { background: var(--warn-dim); color: var(--warn); border: 1px solid var(--warn); }
+        .badge-moldura { background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent); }
+        .badge-sem-moldura { background: var(--bg-4); color: var(--text-3); border: 1px solid var(--border-2); }
+        .evento-actions { display: flex; gap: 6px; flex-shrink: 0; }
+        .evento-actions .btn { padding: 8px 12px; font-size: 10px; }
+        
+        .search-bar { display: flex; gap: 10px; margin-bottom: 16px; }
+        .search-bar .form-control { flex: 1; }
+        
+        .empty-state { text-align: center; padding: 50px 20px; color: var(--text-3); }
+        .empty-state i { font-size: 42px; margin-bottom: 12px; opacity: 0.4; }
+        .empty-state div { font-size: 12px; font-weight: 600; }
         
         .upload-zone { border: 2px dashed var(--bg-4); border-radius: var(--radius-md); padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s; background: var(--bg-0); }
-        .upload-zone:hover { border-color: var(--accent); background: var(--accent-dim); }
+        .upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: var(--accent-dim); }
+        
+        .copia-opt:hover { border-color: var(--accent) !important; }
+        .copia-opt.selected { border-color: var(--accent) !important; background: var(--accent-dim) !important; }
+        .copia-opt.selected div:first-child { color: var(--accent); }
+        .copia-opt.selected div:last-child { color: var(--accent); }
         
         .toast-container { position: fixed; top: 24px; right: 24px; z-index: 5000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
         .toast { background: var(--bg-1); border: 1px solid var(--border-2); border-left: 3px solid var(--accent); border-radius: var(--radius-md); padding: 12px 16px; min-width: 260px; max-width: 360px; display: flex; align-items: center; gap: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); pointer-events: auto; animation: toastIn 0.3s; }
         .toast.error { border-left-color: var(--danger); }
+        .toast.warning { border-left-color: var(--warn); }
         .toast-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; background: var(--accent-dim); color: var(--accent); }
         .toast.error .toast-icon { background: var(--danger-dim); color: var(--danger); }
+        .toast.warning .toast-icon { background: var(--warn-dim); color: var(--warn); }
         .toast.info .toast-icon { background: rgba(0,150,255,0.15); color: #0096ff; }
         .toast-title { font-size: 11px; font-weight: 700; margin-bottom: 2px; }
         .toast-message { font-size: 10px; color: var(--text-2); }
         @keyframes toastIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+        
         .loading-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 4000; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 14px; }
         .loading-overlay.active { display: flex; }
         .spinner { width: 42px; height: 42px; border: 3px solid var(--bg-4); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 4500; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: var(--bg-1); border: 1px solid var(--border-2); border-radius: var(--radius-lg); max-width: 420px; width: 100%; overflow: hidden; animation: modalIn 0.25s ease; }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .modal-header { padding: 18px 20px; border-bottom: 1px solid var(--border-1); display: flex; align-items: center; gap: 10px; background: var(--bg-2); }
+        .modal-header i { color: var(--danger); font-size: 16px; }
+        .modal-header h3 { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        .modal-body { padding: 20px; font-size: 12px; color: var(--text-1); line-height: 1.5; }
+        .modal-body strong { color: var(--accent); }
+        .modal-footer { padding: 14px 20px; display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid var(--border-1); background: var(--bg-2); }
+        .btn-danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+        .btn-danger:hover { box-shadow: 0 0 20px rgba(239,68,68,0.5); transform: translateY(-1px); }
     </style>
 </head>
 <body>
@@ -163,8 +199,13 @@
 
             <div id="view-eventos" class="view-container">
                 <div class="card">
-                    <div class="card-header"><span><i class="fas fa-database"></i> Base de Eventos</span><button class="btn btn-outline" onclick="carregarEventosDoServidor()"><i class="fas fa-sync-alt"></i> Sincronizar</button></div>
-                    <div class="card-body"><div class="eventos-list" id="corpo-lista"></div></div>
+                    <div class="card-header"><span><i class="fas fa-database"></i> Base de Eventos <span id="contador-eventos" style="color: var(--text-3); font-weight: 600; margin-left: 8px; text-transform: none; letter-spacing: 0;"></span></span><button class="btn btn-outline" onclick="carregarEventosDoServidor()"><i class="fas fa-sync-alt"></i> Sincronizar</button></div>
+                    <div class="card-body">
+                        <div class="search-bar">
+                            <input type="text" id="input-busca" class="form-control" placeholder="🔍 Buscar por nome ou data..." oninput="renderizarLista()">
+                        </div>
+                        <div class="eventos-list" id="corpo-lista"></div>
+                    </div>
                 </div>
             </div>
 
@@ -191,6 +232,31 @@
                                 <label class="switch"><input type="checkbox" id="input-livro"><span class="switch-slider"></span></label>
                             </div>
                         </div>
+                        <!-- ========== INÍCIO: Cópias extras (Guestbook) ========== -->
+                        <div class="form-group" id="grupo-copias-extras" style="display: none;">
+                            <label class="form-label"><i class="fas fa-copy"></i> Cópias extras por foto</label>
+                            <div style="display: flex; gap: 10px;">
+                                <label style="flex: 1; cursor: pointer;">
+                                    <input type="radio" name="copias-extras" value="1" checked style="display: none;">
+                                    <div class="copia-opt" data-val="1" style="padding: 14px; text-align: center; border: 1px solid var(--bg-4); border-radius: var(--radius-sm); background: var(--bg-0); transition: all 0.2s;">
+                                        <div style="font-size: 18px; font-weight: 900; font-family: var(--font-display);">1</div>
+                                        <div style="font-size: 9px; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">+1 foto</div>
+                                    </div>
+                                </label>
+                                <label style="flex: 1; cursor: pointer;">
+                                    <input type="radio" name="copias-extras" value="2" style="display: none;">
+                                    <div class="copia-opt" data-val="2" style="padding: 14px; text-align: center; border: 1px solid var(--bg-4); border-radius: var(--radius-sm); background: var(--bg-0); transition: all 0.2s;">
+                                        <div style="font-size: 18px; font-weight: 900; font-family: var(--font-display);">2</div>
+                                        <div style="font-size: 9px; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">+2 fotos</div>
+                                    </div>
+                                </label>
+                            </div>
+                            <div style="font-size: 10px; color: var(--text-3); margin-top: 8px; line-height: 1.4;">
+                                <i class="fas fa-info-circle" style="color: var(--accent);"></i>
+                                <span id="copias-info-text">Imprimirá 2 fotos por clique (1 padrão + 1 extra).</span>
+                            </div>
+                        </div>
+                        <!-- ========== FIM: Cópias extras (Guestbook) ========== -->
                         <div class="form-group">
                             <label class="form-label"><i class="fas fa-image"></i> <span id="label-moldura">Moldura</span></label>
                             <input type="file" id="input-moldura" accept="image/png" style="display:none" onchange="uploadMoldura(this)">
@@ -213,14 +279,32 @@
     <div class="loading-overlay" id="loading-overlay"><div class="spinner"></div><div style="font-size: 11px; font-weight: 700; color: var(--accent); letter-spacing: 2px; text-transform: uppercase;" id="loading-text">...</div></div>
     <div class="toast-container" id="toast-container"></div>
 
+    <!-- ========== INÍCIO: Modal de exclusão ========== -->
+    <div class="modal-overlay" id="modal-exclusao">
+        <div class="modal">
+            <div class="modal-header"><i class="fas fa-exclamation-triangle"></i><h3>Confirmar Exclusão</h3></div>
+            <div class="modal-body">
+                Tem certeza que deseja excluir o evento <strong id="modal-evento-nome">—</strong>?<br>
+                <span style="color: var(--text-3); font-size: 11px; display: inline-block; margin-top: 8px;">Esta ação não pode ser desfeita.</span>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="fecharModalExclusao()">Cancelar</button>
+                <button class="btn btn-danger" id="btn-confirmar-exclusao"><i class="fas fa-trash"></i> Excluir</button>
+            </div>
+        </div>
+    </div>
+    <!-- ========== FIM: Modal de exclusão ========== -->
+
     <script>
         const API_URL = "https://photoprint-api.maxprimefotovideo.workers.dev";
         const RESOLUCOES = { 'POLAROID': { w: 1041, h: 1311, label: 'Polaroid' }, 'TIRINHA': { w: 591, h: 1819, label: 'Tirinha' }, '10X15V': { w: 1181, h: 1819, label: '10x15 V' }, '10X15H': { w: 1772, h: 1228, label: '10x15 H' } };
         let eventos = [], molduras = { polaroid: null, tirinha: null, '10x15v': null, '10x15h': null }, autoRefreshInterval = null;
+        let eventoParaExcluir = null;
 
         function mostrarToast(titulo, mensagem, tipo = 'success') {
+            const icone = tipo==='success'?'check':tipo==='error'?'exclamation-triangle':tipo==='warning'?'exclamation-circle':'info';
             const toast = document.createElement('div'); toast.className = `toast ${tipo}`;
-            toast.innerHTML = `<div class="toast-icon"><i class="fas fa-${tipo==='success'?'check':tipo==='error'?'exclamation-triangle':'info'}"></i></div><div><div class="toast-title">${titulo}</div><div class="toast-message">${mensagem}</div></div>`;
+            toast.innerHTML = `<div class="toast-icon"><i class="fas fa-${icone}"></i></div><div><div class="toast-title">${titulo}</div><div class="toast-message">${mensagem}</div></div>`;
             document.getElementById('toast-container').appendChild(toast);
             setTimeout(() => toast.remove(), 3500);
         }
@@ -240,9 +324,20 @@
                 const resp = await fetch(`${API_URL}/eventos`); 
                 const data = await resp.json();
                 if (data.success && data.eventos) {
-                    eventos = data.eventos.map(ev => ({ id: ev.id, nome: ev.nome, data: ev.data, dataRaw: ev.data, formato: ev.formato || 'POLAROID', livro: ev.livro === 1, ativo: ev.ativo === 1, temMoldura: ev.tem_moldura === 1 }));
+                    // ========== INÍCIO: map eventos (com copias_extras) ==========
+                    eventos = data.eventos.map(ev => ({ 
+                        id: ev.id, 
+                        nome: ev.nome, 
+                        data: ev.data, 
+                        dataRaw: ev.data, 
+                        formato: ev.formato || 'POLAROID', 
+                        livro: ev.livro === 1, 
+                        ativo: ev.ativo === 1, 
+                        temMoldura: ev.tem_moldura === 1,
+                        copiasExtras: ev.copias_extras ?? 0
+                    }));
+                    // ========== FIM ==========
                 }
-                // Após carregar, verifica o status real no Worker
                 await verificarEstadoAtual();
                 renderizarLista(); 
                 atualizarMetricas();
@@ -262,8 +357,6 @@
                     const online = data.config.status === "ONLINE";
                     atualizarUIStatus(online);
                     document.getElementById('server-status').checked = online;
-                    
-                    // Atualiza a lista de eventos com base no que o worker diz que está ativo
                     const activeId = data.config.eventoId ? String(data.config.eventoId) : null;
                     eventos.forEach(ev => ev.ativo = (String(ev.id) === activeId));
                 }
@@ -274,14 +367,10 @@
             const lb = document.getElementById('label-status');
             const dot = document.getElementById('sidebar-dot');
             const statusText = document.getElementById('sidebar-status-text');
-            
             lb.innerText = on ? "ONLINE" : "OFFLINE";
             lb.style.color = on ? "var(--accent)" : "var(--danger)";
-            
             dot.classList.toggle('online', on);
             statusText.innerText = on ? "Online" : "Offline";
-            
-            // Atualiza badge do topo
             const ativo = eventos.find(e => e.ativo);
             document.getElementById('topbar-active-badge').classList.toggle('hidden', !ativo);
             if (ativo) document.getElementById('topbar-active-name').innerText = ativo.nome;
@@ -302,56 +391,109 @@
             document.getElementById('badge-total').innerText = eventos.length;
         }
 
+        // ========== INÍCIO: renderizarLista (busca + ordenação + badges + loading) ==========
         function renderizarLista() {
             const container = document.getElementById('corpo-lista');
-            if (eventos.length === 0) return container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-3);">Nenhum evento.</div>';
-            container.innerHTML = eventos.map((ev, i) => `<div class="evento-item ${ev.ativo ? 'ativo' : ''}"><div class="evento-info"><div class="evento-nome">${ev.nome}</div><div class="evento-meta">${ev.data} · ${ev.formato}</div></div><button class="btn btn-outline" onclick="editarEvento(${i})"><i class="fas fa-edit"></i></button><button class="btn btn-outline" onclick="excluirEvento(${i})" style="color:var(--danger);border-color:var(--danger);"><i class="fas fa-trash"></i></button><button class="btn ${ev.ativo ? 'btn-primary' : 'btn-outline'}" onclick="ativarEvento(${i})">${ev.ativo ? 'Ativado' : 'Ativar'}</button></div>`).join('');
+            const termo = (document.getElementById('input-busca')?.value || '').toLowerCase().trim();
+            
+            // Filtro
+            let filtrados = eventos.filter(ev => {
+                if (!termo) return true;
+                return ev.nome.toLowerCase().includes(termo) || String(ev.data).includes(termo);
+            });
+            
+            // Ordenação: ativos primeiro, depois data desc
+            filtrados.sort((a, b) => {
+                if (a.ativo !== b.ativo) return a.ativo ? -1 : 1;
+                return String(b.data).localeCompare(String(a.data));
+            });
+            
+            // Contador
+            document.getElementById('contador-eventos').innerText = termo 
+                ? `(${filtrados.length} de ${eventos.length})` 
+                : `(${eventos.length})`;
+            
+            if (filtrados.length === 0) {
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-${termo ? 'search' : 'calendar-times'}"></i><div>${termo ? 'Nenhum evento encontrado para esta busca.' : 'Nenhum evento cadastrado ainda.'}</div></div>`;
+                return;
+            }
+            
+            container.innerHTML = filtrados.map((ev) => {
+                const realIndex = eventos.findIndex(e => e.id === ev.id);
+                const guestBadge = ev.livro 
+                    ? `<span class="badge-mini badge-guestbook"><i class="fas fa-book-open"></i> +${ev.copiasExtras || 1}</span>` 
+                    : '';
+                const molduraBadge = ev.temMoldura 
+                    ? `<span class="badge-mini badge-moldura"><i class="fas fa-image"></i> Moldura</span>` 
+                    : `<span class="badge-mini badge-sem-moldura"><i class="fas fa-image"></i> Sem moldura</span>`;
+                return `<div class="evento-item ${ev.ativo ? 'ativo' : ''}" data-id="${ev.id}">
+                    <div class="evento-info">
+                        <div class="evento-nome">${ev.nome} ${ev.ativo ? '🟢' : ''}</div>
+                        <div class="evento-meta">
+                            <span>${ev.data} · ${ev.formato}</span>
+                            ${guestBadge}
+                            ${molduraBadge}
+                        </div>
+                    </div>
+                    <div class="evento-actions">
+                        <button class="btn btn-outline" title="Duplicar" onclick="duplicarEvento(${realIndex})"><i class="fas fa-copy"></i></button>
+                        <button class="btn btn-outline" title="Editar" onclick="editarEvento(${realIndex})"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-outline" title="Excluir" onclick="abrirModalExclusao(${realIndex})" style="color:var(--danger);border-color:var(--danger);"><i class="fas fa-trash"></i></button>
+                        <button class="btn ${ev.ativo ? 'btn-primary' : 'btn-outline'}" onclick="ativarEvento(${realIndex})">${ev.ativo ? 'Ativado' : 'Ativar'}</button>
+                    </div>
+                </div>`;
+            }).join('');
         }
+        // ========== FIM ==========
 
+        // ========== INÍCIO: ativarEvento (com loading por linha + copiasExtras) ==========
         async function ativarEvento(index) {
             const ev = eventos[index]; 
             const novo = !ev.ativo; 
+            const item = document.querySelector(`.evento-item[data-id="${ev.id}"]`);
+            if (item) item.classList.add('loading');
             mostrarLoading(true, "Alterando...");
             try { 
-                // Se estiver ativando um novo, desativa todos os outros no banco primeiro
                 if (novo) {
-                    for(let e of eventos) {
+                    for (let e of eventos) {
                         if (e.ativo && e.id !== ev.id) {
-                            await fetch(`${API_URL}/atualizar-evento/${e.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome: e.nome, data: e.dataRaw, formato: e.formato, livro: e.livro, ativo: false }) });
+                            await fetch(`${API_URL}/atualizar-evento/${e.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome: e.nome, data: e.dataRaw, formato: e.formato, livro: e.livro, ativo: false, copiasExtras: e.copiasExtras || 0 }) });
                         }
                     }
                 }
+                await fetch(`${API_URL}/atualizar-evento/${ev.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome: ev.nome, data: ev.dataRaw, formato: ev.formato, livro: ev.livro, ativo: novo, copiasExtras: ev.copiasExtras || 0 }) }); 
                 
-                await fetch(`${API_URL}/atualizar-evento/${ev.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome: ev.nome, data: ev.dataRaw, formato: ev.formato, livro: ev.livro, ativo: novo }) }); 
-                
-                // Envia pro Worker
-                if(novo) {
-                    await fetch(`${API_URL}/set-config`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ evento: ev.nome, status: "ONLINE", formato: ev.formato, livro: ev.livro, eventoId: ev.id, temMoldura: ev.temMoldura }) });
+                // ========== INÍCIO: set-config com copiasExtras ==========
+                if (novo) {
+                    await fetch(`${API_URL}/set-config`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ evento: ev.nome, status: "ONLINE", formato: ev.formato, livro: ev.livro, eventoId: ev.id, temMoldura: ev.temMoldura, copiasExtras: ev.copiasExtras || 0 }) });
                 } else {
-                    await fetch(`${API_URL}/set-config`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ evento: "Geral", status: "OFFLINE", formato: "POLAROID", livro: false, eventoId: "", temMoldura: false }) });
+                    await fetch(`${API_URL}/set-config`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ evento: "Geral", status: "OFFLINE", formato: "POLAROID", livro: false, eventoId: "", temMoldura: false, copiasExtras: 0 }) });
                 }
+                // ========== FIM ==========
 
-                await carregarEventosDoServidor(); // Recarrega tudo pra garantir
+                await carregarEventosDoServidor();
+                mostrarToast("Sucesso", novo ? "Evento ativado!" : "Evento desativado.", novo ? "success" : "info");
             } catch (e) { 
                 mostrarToast("Erro", e.message, "error"); 
             } finally { 
                 mostrarLoading(false); 
+                if (item) item.classList.remove('loading');
             }
         }
+        // ========== FIM ==========
 
         async function salvarStatusRede() {
             const on = document.getElementById('server-status').checked;
             const ativo = eventos.find(e => e.ativo);
-            
-            // Se tentar ligar o status sem evento ativo, impede
             if (on && !ativo) {
                 document.getElementById('server-status').checked = false;
                 return mostrarToast("Erro", "Ative um evento primeiro.", "error");
             }
-
             try {
                 if (ativo) {
-                                   await fetch(`${API_URL}/set-config`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ evento: ativo.nome, status: on ? "ONLINE" : "OFFLINE", formato: ativo.formato, livro: ativo.livro, eventoId: ativo.id, temMoldura: ativo.temMoldura }) });
+                    // ========== INÍCIO: set-config em salvarStatusRede ==========
+                    await fetch(`${API_URL}/set-config`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ evento: ativo.nome, status: on ? "ONLINE" : "OFFLINE", formato: ativo.formato, livro: ativo.livro, eventoId: ativo.id, temMoldura: ativo.temMoldura, copiasExtras: ativo.copiasExtras || 0 }) });
+                    // ========== FIM ==========
                 }
                 atualizarUIStatus(on);
                 mostrarToast("Status Alterado", on ? "Sistema Online" : "Sistema Offline", on ? "success" : "warning");
@@ -369,7 +511,18 @@
             document.getElementById('input-livro').checked = ev.livro; 
             document.getElementById('edit-id').value = ev.id; 
             document.getElementById('btn-text').innerText = "Salvar"; 
-            document.getElementById('btn-cancelar').style.display = 'inline-flex'; 
+            document.getElementById('btn-cancelar').style.display = 'inline-flex';
+            document.getElementById('card-form-title').innerHTML = '<i class="fas fa-edit"></i> Editar Evento';
+            
+            // ========== INÍCIO: preencher cópias extras na edição ==========
+            const copiaVal = String(ev.copiasExtras || 1);
+            const radio = document.querySelector(`input[name="copias-extras"][value="${copiaVal}"]`);
+            if (radio) radio.checked = true;
+            atualizarUIcopiasExtras();
+            toggleCopiasExtras();
+            // ========== FIM ==========
+            
+            atualizarLabelMoldura();
             trocarAba('novo', document.querySelector('[data-aba="novo"]')); 
         }
 
@@ -377,29 +530,86 @@
             document.getElementById('input-evento').value = ""; 
             document.getElementById('input-data').value = ""; 
             document.getElementById('edit-id').value = ""; 
+            document.getElementById('input-livro').checked = false;
             document.getElementById('btn-text').innerText = "Criar Evento"; 
-            document.getElementById('btn-cancelar').style.display = 'none'; 
+            document.getElementById('btn-cancelar').style.display = 'none';
+            document.getElementById('card-form-title').innerHTML = '<i class="fas fa-plus-circle"></i> Cadastrar Novo Evento';
+            // ========== INÍCIO: reset cópias extras ==========
+            const radioPadrao = document.querySelector('input[name="copias-extras"][value="1"]');
+            if (radioPadrao) radioPadrao.checked = true;
+            atualizarUIcopiasExtras();
+            toggleCopiasExtras();
+            // ========== FIM ==========
             trocarAba('eventos', document.querySelector('[data-aba="eventos"]')); 
         }
 
-        async function excluirEvento(index) { 
-            if (!confirm("Excluir?")) return; 
-            const ev = eventos[index]; 
+        // ========== INÍCIO: duplicarEvento ==========
+        function duplicarEvento(index) {
+            const ev = eventos[index];
+            document.getElementById('input-evento').value = ev.nome + ' (cópia)';
+            document.getElementById('input-data').value = ev.dataRaw;
+            document.getElementById('select-formato').value = ev.formato;
+            document.getElementById('input-livro').checked = ev.livro;
+            document.getElementById('edit-id').value = '';
+            document.getElementById('btn-text').innerText = "Criar Evento";
+            document.getElementById('btn-cancelar').style.display = 'inline-flex';
+            document.getElementById('card-form-title').innerHTML = '<i class="fas fa-copy"></i> Duplicar Evento';
+            
+            const copiaVal = String(ev.copiasExtras || 1);
+            const radio = document.querySelector(`input[name="copias-extras"][value="${copiaVal}"]`);
+            if (radio) radio.checked = true;
+            atualizarUIcopiasExtras();
+            toggleCopiasExtras();
+            
+            atualizarLabelMoldura();
+            trocarAba('novo', document.querySelector('[data-aba="novo"]'));
+            mostrarToast("Duplicar", "Ajuste os dados e clique em Criar Evento.", "info");
+        }
+        // ========== FIM ==========
+
+        // ========== INÍCIO: Modal de exclusão ==========
+        function abrirModalExclusao(index) {
+            eventoParaExcluir = index;
+            document.getElementById('modal-evento-nome').innerText = eventos[index].nome;
+            document.getElementById('modal-exclusao').classList.add('active');
+        }
+        function fecharModalExclusao() {
+            eventoParaExcluir = null;
+            document.getElementById('modal-exclusao').classList.remove('active');
+        }
+        // ========== FIM ==========
+
+        // ========== INÍCIO: excluirEvento (usa modal) ==========
+        async function excluirEventoConfirmado() {
+            if (eventoParaExcluir === null) return;
+            const ev = eventos[eventoParaExcluir];
+            const item = document.querySelector(`.evento-item[data-id="${ev.id}"]`);
+            if (item) item.classList.add('loading');
+            const btn = document.getElementById('btn-confirmar-exclusao');
+            btn.disabled = true;
             try { 
                 await fetch(`${API_URL}/deletar-evento/${ev.id}`, { method: 'DELETE' }); 
-                eventos.splice(index, 1); 
+                eventos.splice(eventoParaExcluir, 1);
+                fecharModalExclusao();
                 renderizarLista(); 
-                atualizarMetricas(); 
+                atualizarMetricas();
+                mostrarToast("Excluído", "Evento removido com sucesso.", "success");
             } catch (e) { 
                 mostrarToast("Erro", e.message, "error"); 
-            } 
+            } finally {
+                btn.disabled = false;
+                if (item) item.classList.remove('loading');
+            }
         }
+        // ========== FIM ==========
 
+        // ========== INÍCIO: salvarEvento (com copiasExtras) ==========
         async function salvarEvento() {
             const nome = document.getElementById('input-evento').value.trim(); 
             const data = document.getElementById('input-data').value; 
             const formato = document.getElementById('select-formato').value; 
             const livro = document.getElementById('input-livro').checked; 
+            const copiasExtras = getCopiasExtras();
             const editId = document.getElementById('edit-id').value;
             if (!nome || !data) return mostrarToast("Erro", "Preencha tudo.", "error"); 
             
@@ -407,21 +617,24 @@
             try {
                 if (editId) {
                     const atual = eventos.find(e => String(e.id) === String(editId));
-                    await fetch(`${API_URL}/atualizar-evento/${editId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome, data, formato, livro, ativo: atual ? atual.ativo : false }) });
+                    // ========== INÍCIO: PUT com copiasExtras ==========
+                    await fetch(`${API_URL}/atualizar-evento/${editId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome, data, formato, livro, ativo: atual ? atual.ativo : false, copiasExtras }) });
+                    // ========== FIM ==========
                 } else { 
-                    const resp = await fetch(`${API_URL}/criar-evento`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome, data, formato, livro }) }); 
+                    // ========== INÍCIO: POST com copiasExtras ==========
+                    await fetch(`${API_URL}/criar-evento`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome, data, formato, livro, copiasExtras }) }); 
+                    // ========== FIM ==========
                 }
                 
-                // Upload de moldura (se houver)
                 const temMoldura = Object.values(molduras).some(f => f !== null);
                 if (temMoldura) {
                     const evId = editId || (await fetch(`${API_URL}/eventos`).then(r => r.json())).eventos[0].id;
-                    for (const [formato, arquivo] of Object.entries(molduras)) {
+                    for (const [fmt, arquivo] of Object.entries(molduras)) {
                         if (!arquivo) continue;
                         const formData = new FormData();
                         formData.append('moldura', arquivo);
                         formData.append('eventoId', evId);
-                        formData.append('formato', formato);
+                        formData.append('formato', fmt);
                         await fetch(`${API_URL}/upload-moldura`, { method: 'POST', body: formData });
                     }
                 }
@@ -435,6 +648,7 @@
                 mostrarLoading(false); 
             }
         }
+        // ========== FIM ==========
 
         async function uploadMoldura(input) {
             if (input.files && input.files[0]) { 
@@ -460,15 +674,76 @@
             }
         }
 
+        function handleDrop(ev) {
+            ev.preventDefault();
+            document.getElementById('upload-zone').classList.remove('dragover');
+            if (ev.dataTransfer.files && ev.dataTransfer.files[0]) {
+                const dt = new DataTransfer();
+                dt.items.add(ev.dataTransfer.files[0]);
+                const input = document.getElementById('input-moldura');
+                input.files = dt.files;
+                uploadMoldura(input);
+            }
+        }
+
         function atualizarLabelMoldura() {
             const formato = document.getElementById('select-formato').value;
             document.getElementById('label-moldura').innerText = 'Moldura — ' + (RESOLUCOES[formato]?.label || formato);
         }
 
+        // ========== INÍCIO: Listeners cópias extras ==========
+        document.addEventListener('change', function(e) {
+            if (e.target.name === 'copias-extras') atualizarUIcopiasExtras();
+        });
+
+        function atualizarUIcopiasExtras() {
+            const selecionado = document.querySelector('input[name="copias-extras"]:checked')?.value || '1';
+            document.querySelectorAll('.copia-opt').forEach(el => {
+                el.classList.toggle('selected', el.dataset.val === selecionado);
+            });
+            const total = 1 + parseInt(selecionado);
+            const info = document.getElementById('copias-info-text');
+            if (info) info.innerText = `Imprimirá ${total} foto${total > 1 ? 's' : ''} por clique (1 padrão + ${selecionado} extra${selecionado > 1 ? 's' : ''}).`;
+        }
+
+        function toggleCopiasExtras() {
+            const isLivro = document.getElementById('input-livro').checked;
+            document.getElementById('grupo-copias-extras').style.display = isLivro ? 'block' : 'none';
+        }
+
+        function getCopiasExtras() {
+            const isLivro = document.getElementById('input-livro').checked;
+            if (!isLivro) return 0;
+            return parseInt(document.querySelector('input[name="copias-extras"]:checked')?.value || '1');
+        }
+        // ========== FIM ==========
+
+        // ========== INÍCIO: Bloco load ==========
         window.addEventListener('load', () => { 
             carregarEventosDoServidor(); 
             autoRefreshInterval = setInterval(carregarEventosDoServidor, 30000); 
-        });
+            
+            // Controle do seletor de cópias extras
+            document.getElementById('input-livro').addEventListener('change', toggleCopiasExtras);
+            atualizarUIcopiasExtras();
+            toggleCopiasExtras();
+            
+            // Botão de confirmar exclusão
+            document.getElementById('btn-confirmar-exclusao').addEventListener('click', excluirEventoConfirmado);
+            
+            // Fechar modal com ESC
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && document.getElementById('modal-exclusao').classList.contains('active')) {
+                    fecharModalExclusao();
+                }
+            });
+            
+            // Fechar modal clicando no overlay
+            document.getElementById('modal-exclusao').addEventListener('click', (e) => {
+                if (e.target.id === 'modal-exclusao') fecharModalExclusao();
+            });
+        }); 
+        // ========== FIM ==========
     </script>
     <script>
 if ('serviceWorker' in navigator) {
@@ -478,4 +753,4 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 </body>
-</html>     
+</html>
